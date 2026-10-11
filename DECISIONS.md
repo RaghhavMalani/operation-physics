@@ -110,3 +110,63 @@ worth a second look.
   constants in `graph.py`. Every experiment-level threshold is in `configs/*.yaml`.
 - **Why:** g defines the physics and is not tunable. Putting it in YAML would invite silent changes to ground
   truth. (Changing it in code would require bumping the generator version.)
+
+## Phase 2 — Verifier
+
+### D13. Failures score the rule's floor, not a literal 0 **[REVIEW]**
+- **Decision:** a parse failure scores `score_final = floor` and `score_steps = 0`, so the total is
+  w_final·floor. A unit mismatch scores `score_final = floor`, and its steps are still credited. The floor is
+  −5 for CRPS (the clip), −10 for log_score, −5 for abs_rel_error and 0 for binary. For the binary reward this
+  is exactly the spec's "reward 0".
+- **Alternative:** the literal spec, "reward 0" / "final score 0".
+- **Why:** under CRPS every valid answer scores below 0 (−CRPS < 0). A literal 0 for malformed output would make
+  garbage the *best* possible output: an immediate reward hack. The spec's 0 was clearly written with the
+  binary reward in mind. A second alternative was to remap CRPS affinely to [0, 1] (1 − CRPS/5), so failure = 0
+  holds literally. I rejected it because it multiplies the relative weight of step credit by 5 compared with
+  the spec's −CRPS + 0.2·steps.
+
+### D14. "Steps can never outweigh the final answer" is checked at load time
+- **Decision:** `validate_reward_config` requires w_steps < w_final·(ceiling − floor) of the active rule. In
+  words: a perfect final answer with no steps must beat a failed final answer with every step correct. The
+  defaults pass with a large margin (0.2 vs 5).
+
+### D15. The spec's relative CRPS is only approximately proper; `crps_log` was added as an option **[REVIEW]**
+- **Finding:** dividing by the *truth* |y| weights each outcome by 1/|y|. So the score is proper for the
+  re-weighted belief p(y)/|y|, not for p(y). By Monte Carlo, the optimal μ is biased by −0.24% at 5% relative
+  spread, −1.0% at 10%, −4.4% at 20% and −11% at 30%. The optimal σ is inflated by up to 7%. The same issue
+  applies to `log_score`. For a small model, whose relative errors are often 10–100%, the incentive to shade
+  μ downwards is real, and it confounds research question 2 (is σ calibrated?).
+- **Decision:** keep the spec's `crps` as the default, as written. Add `crps_log` as an extra config option:
+  score ln(y) against N(ln μ, (σ/μ)²). It is strictly proper for log-normal beliefs and still scale-free. Its
+  failure floor and clip are the same as `crps`. Tests pin both behaviours.
+- **Recommendation:** consider making `crps_log` the main rule before phase 5, or at least run it as one of
+  the phase-7 ablations.
+
+### D16. Parser leniency
+- **Decision:** lenient about notation, strict about structure. Accepted: ±, +/-, +-, \pm; unicode minus and
+  superscripts; ×10^k with x, ×, *, \times, and unicode exponents; LaTeX wrappers; `\boxed{}`; markdown bold;
+  `[unit]`; a `symbol =` prefix; `(μ ± σ) × 10^k unit`; `μ unit ± σ unit` with different units; σ as a percent;
+  "dimensionless"; thousands separators. Rejected (parse_fail): no `<answer>` block, more than one `<answer>`
+  (prevents hedging), an unclosed tag (truncation), no leading number, two ± signs, non-finite numbers, and a
+  missing ± under rules that need σ. A negative σ is read as its absolute value.
+- **Why:** the untrained baseline will use many notations. Rejecting notation variants would measure formatting
+  rather than physics, and would make the zero-variance problem worse early in RL.
+
+### D17. `<steps>` is optional; free reasoning is allowed before it
+- **Decision:** the system prompt allows thinking before `<steps>`. A missing `<steps>` block is not a parse
+  failure; it just earns no step credit (`steps_block_found=False` is logged). Step symbols are matched after
+  canonicalization (`t_1` = `t1`, `v_{avg}` = `v_avg`), case-sensitively (`F` ≠ `f`). The last line wins. Each
+  step needs the right dimensions.
+- **Alternative:** require the exact two-block output with no reasoning.
+- **Why:** a 1.5B model benefits from chain of thought, and the 512-token budget allows a short one. The spec's
+  format block shows the *ending* of the completion.
+
+### D18. Depth-1 problems: step score = `steps.empty_score` = 0
+- **Alternatives:** 1.0 (vacuously all correct), or renormalizing the reward without the steps term.
+- **Why:** GRPO normalizes within a group of the same problem, so a per-problem constant has no effect on
+  training. 0 keeps the mean reward of a depth-1 problem from looking inflated. It is configurable.
+
+### D19. Copied-given check
+- **Decision:** `copied_given` is true if the answer's number equals a given's (or distractor's) *displayed*
+  number within 0.1%, or its SI value equals a same-dimension given's SI value within 0.1%. It is logged only;
+  it never touches the reward.

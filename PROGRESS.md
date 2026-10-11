@@ -186,3 +186,63 @@ Step 2 [K11: t_tot = t1 + t2 + t3]  t_tot = t1 + t2 + t3  with t1 = 11.3654 s, t
 Answer: t_tot = 21.0354 s (SI) = 0.350589 min (requested unit)
 ```
 
+
+## Phase 2 — Verifier: plan
+
+1. `physcal/prompt.py`: system prompt enforcing the `<steps>` / `<answer>` format, plus chat-message builder.
+2. `physcal/verify/parse.py`: extract exactly one `<answer>` and the `<steps>` block. Normalize unicode/LaTeX
+   (±, +/-, \pm, −, superscripts, ×10^k, \text{}), and accept forms like `μ ± σ unit`, `(μ ± σ) unit`,
+   `(μ ± σ) × 10^k unit`, `μ unit ± σ unit`, `μ unit ± 5%`, and a `symbol =` prefix. Step lines are
+   `symbol = ... = value unit`, with symbols canonicalized (`t_1` == `t1`, `v_{avg}` == `v_avg`).
+3. `physcal/verify/units.py`: pint gate. Convert to SI, and raise `unit_mismatch` on wrong dimensions or an
+   unparseable unit.
+4. `physcal/verify/scoring.py`: Gaussian CRPS in relative units (main), plus `binary`, `log_score`,
+   `abs_rel_error`; clip floors from config.
+5. `physcal/verify/reward.py`: `reward(problem, completion, cfg) -> (float, breakdown)`. Step credit within 2%.
+   total = w_final·score_final + w_steps·score_steps. Config validation that steps can never outweigh the final
+   answer. The breakdown carries everything eval needs (relative error, relative σ, z, PIT, 1σ/2σ hits,
+   copied-given flag, scores under every rule).
+6. `configs/reward.yaml`: rule, weights, tolerances, clips, σ floor.
+7. Tests: hand-written edge cases (wrong units, missing ±, negative values, scientific notation, LaTeX, percent σ,
+   multiple answers, truncated output). CRPS closed form vs numerical integration. Monte Carlo propriety:
+   the expected CRPS is minimized at the true σ (and true μ). Reward weighting and config validation.
+
+## Phase 2 — Verifier: results
+
+**Status: done. 194 tests pass in total** (`uv run pytest`, ~28 s). Phase 2 adds 107: 68 parser/units-gate
+cases in `test_verify_parse.py`, 15 scoring tests in `test_verify_scoring.py`, and 24 reward tests in
+`test_verify_reward.py`.
+
+What exists:
+- `physcal/prompt.py`: system prompt (free reasoning allowed, then `<steps>` and exactly one `<answer>`).
+- `physcal/verify/parse.py`: tolerant normalization (±, +/-, \pm, unicode minus and superscripts,
+  ×10^k, LaTeX \text/\mathrm/\boxed, markdown bold, `[unit]`, thousands separators, percent σ,
+  `(μ ± σ) × 10^k unit`, separate units for μ and σ). Strict about structure: exactly one `<answer>`, a number
+  must come first, at most one ±, and non-finite numbers are rejected.
+- `physcal/verify/units.py`: pint gate. Wrong dimensions, a missing unit on a dimensional quantity, or an
+  unparseable unit gives `unit_mismatch`. Numeric scaling factors inside a unit ("1000 m") are rejected.
+- `physcal/verify/scoring.py`: Gaussian CRPS in relative units (spec, default), `binary`, `log_score`,
+  `abs_rel_error`, plus `crps_log` (strictly proper alternative, see D15).
+- `physcal/verify/reward.py`: `reward(problem, completion, cfg) -> (float, breakdown)`. The breakdown is
+  JSON-safe and contains the reason, scores under every rule, relative error, raw and floored relative σ, z,
+  PIT, 1σ/2σ hits, per-step credit, and a copied-given flag.
+- `configs/reward.yaml`: rule, weights (1.0 / 0.2), σ floor 1e-3, clip 5, step tolerance 2%,
+  binary tolerance 1%.
+
+Checks that matter:
+- Closed-form CRPS equals the integral definition ∫(F − 1[x ≥ y])² dx (scipy quad).
+- Monte Carlo: the expected CRPS is minimized at the true σ and the true μ (400k samples). It still
+  is through the full relative pipeline at 2% spread.
+- **Finding:** the spec's normalization by the truth |y| is only approximately proper. Optimal reports under
+  a Gaussian belief with relative spread s0:
+
+  | s0   | optimal μ bias | optimal σ / s0 |
+  |------|----------------|----------------|
+  | 2%   | −0.04%         | 1.002          |
+  | 5%   | −0.24%         | 1.001          |
+  | 10%  | −1.0%          | 1.004          |
+  | 20%  | −4.4%          | 1.024          |
+  | 30%  | −11.0%         | 1.066          |
+
+  Documented in D15, with a test that pins this behaviour. `crps_log` is implemented and tested as a proper
+  alternative. The default stays the spec's `crps`.
