@@ -1,0 +1,231 @@
+{
+  "run_id": "baseline-group-probe-prompt-v2",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "oom_fallback": false,
+  "oom_error": null,
+  "generation_seconds": 606.7539212703705,
+  "memory": {
+    "torch_max_allocated_gib": 3.802609920501709,
+    "torch_max_reserved_gib": 3.90234375,
+    "device_total_gib": 7.99560546875,
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "nvidia_smi_peak_used_gib_device_wide": 5.09375
+  },
+  "generator_version": "1.0.0+afcc2019",
+  "reward_rule": "crps",
+  "prompt_id": "v2_reason_first",
+  "skipped_splits": {},
+  "splits": {
+    "id": {
+      "n": 384,
+      "n_answered": 198,
+      "n_with_sigma": 198,
+      "accuracy": 0.0026041666666666665,
+      "accuracy_among_answered": 0.005050505050505051,
+      "median_rel_error": 0.9940876052424595,
+      "parse_fail_rate": 0.4375,
+      "unit_mismatch_rate": 0.046875,
+      "missing_sigma_rate": 0.18489583333333334,
+      "coverage_1sigma": 0.020202020202020204,
+      "coverage_2sigma": 0.04040404040404041,
+      "mean_rel_sigma": 1.5622720762344646,
+      "median_rel_sigma": 0.02216191732284163,
+      "mean_reward": -3.5022115423443787,
+      "mean_score_by_rule": {
+        "crps": -3.502558764566601,
+        "binary": 0.0026041666666666665,
+        "log_score": -9.622322191064088,
+        "abs_rel_error": -3.511420608918446,
+        "crps_log": -3.6836098263482757
+      },
+      "mean_step_score": 0.0023148148148148147,
+      "copied_given_rate": 0.0,
+      "steps_block_rate": 0.4010416666666667,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": 0.0,
+          "n": 198
+        },
+        {
+          "nominal": 0.2,
+          "observed": 0.0,
+          "n": 198
+        },
+        {
+          "nominal": 0.3,
+          "observed": 0.0,
+          "n": 198
+        },
+        {
+          "nominal": 0.4,
+          "observed": 0.005050505050505051,
+          "n": 198
+        },
+        {
+          "nominal": 0.5,
+          "observed": 0.015151515151515152,
+          "n": 198
+        },
+        {
+          "nominal": 0.6,
+          "observed": 0.015151515151515152,
+          "n": 198
+        },
+        {
+          "nominal": 0.7,
+          "observed": 0.020202020202020204,
+          "n": 198
+        },
+        {
+          "nominal": 0.8,
+          "observed": 0.030303030303030304,
+          "n": 198
+        },
+        {
+          "nominal": 0.9,
+          "observed": 0.03535353535353535,
+          "n": 198
+        },
+        {
+          "nominal": 0.95,
+          "observed": 0.04040404040404041,
+          "n": 198
+        },
+        {
+          "nominal": 0.99,
+          "observed": 0.05555555555555555,
+          "n": 198
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          99,
+          1,
+          1,
+          0,
+          0,
+          0,
+          1,
+          1,
+          2,
+          93
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 198
+      },
+      "truncation_rate": 0.15885416666666666,
+      "mean_completion_tokens": 198.5625,
+      "by_depth": {
+        "1": {
+          "n": 96,
+          "accuracy": 0.0,
+          "median_rel_error": 0.9691415623438677,
+          "parse_fail_rate": 0.4375,
+          "unit_mismatch_rate": 0.041666666666666664,
+          "coverage_1sigma": 0.0
+        },
+        "2": {
+          "n": 96,
+          "accuracy": 0.0,
+          "median_rel_error": 0.9802191839934962,
+          "parse_fail_rate": 0.375,
+          "unit_mismatch_rate": 0.0625,
+          "coverage_1sigma": 0.037037037037037035
+        },
+        "3": {
+          "n": 96,
+          "accuracy": 0.0,
+          "median_rel_error": 0.9935313589604101,
+          "parse_fail_rate": 0.4479166666666667,
+          "unit_mismatch_rate": 0.041666666666666664,
+          "coverage_1sigma": 0.0
+        },
+        "4": {
+          "n": 96,
+          "accuracy": 0.010416666666666666,
+          "median_rel_error": 2.0961228697898466,
+          "parse_fail_rate": 0.4895833333333333,
+          "unit_mismatch_rate": 0.041666666666666664,
+          "coverage_1sigma": 0.044444444444444446
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 128,
+          "accuracy": 0.0,
+          "median_rel_error": 1.8645170683575416,
+          "parse_fail_rate": 0.4765625,
+          "unit_mismatch_rate": 0.0546875,
+          "coverage_1sigma": 0.016666666666666666
+        },
+        "energy": {
+          "n": 128,
+          "accuracy": 0.0078125,
+          "median_rel_error": 0.937819,
+          "parse_fail_rate": 0.421875,
+          "unit_mismatch_rate": 0.0234375,
+          "coverage_1sigma": 0.04225352112676056
+        },
+        "kinematics": {
+          "n": 128,
+          "accuracy": 0.0,
+          "median_rel_error": 0.9955769113385315,
+          "parse_fail_rate": 0.4140625,
+          "unit_mismatch_rate": 0.0625,
+          "coverage_1sigma": 0.0
+        }
+      },
+      "groups": {
+        "k": 8,
+        "n_groups": 48,
+        "zero_variance_fraction_main_reward": 0.14583333333333334,
+        "zero_variance_fraction_binary": 0.9791666666666666,
+        "pass_at_k": 0.020833333333333332,
+        "mean_pass_rate": 0.0026041666666666665,
+        "by_depth": {
+          "1": {
+            "n_groups": 12,
+            "zero_variance_fraction_main_reward": 0.08333333333333333,
+            "zero_variance_fraction_binary": 1.0,
+            "pass_at_k": 0.0,
+            "mean_pass_rate": 0.0
+          },
+          "2": {
+            "n_groups": 12,
+            "zero_variance_fraction_main_reward": 0.08333333333333333,
+            "zero_variance_fraction_binary": 1.0,
+            "pass_at_k": 0.0,
+            "mean_pass_rate": 0.0
+          },
+          "3": {
+            "n_groups": 12,
+            "zero_variance_fraction_main_reward": 0.16666666666666666,
+            "zero_variance_fraction_binary": 1.0,
+            "pass_at_k": 0.0,
+            "mean_pass_rate": 0.0
+          },
+          "4": {
+            "n_groups": 12,
+            "zero_variance_fraction_main_reward": 0.25,
+            "zero_variance_fraction_binary": 0.9166666666666666,
+            "pass_at_k": 0.08333333333333333,
+            "mean_pass_rate": 0.010416666666666666
+          }
+        }
+      }
+    }
+  }
+}

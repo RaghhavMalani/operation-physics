@@ -20,7 +20,7 @@ from physcal.config import REPO_ROOT, load_config
 from physcal.env.formulas import FAMILY_NAMES
 from physcal.env.generator import Problem, env_config, generate_problem, generator_version
 from physcal.eval import calibration
-from physcal.prompt import SYSTEM_PROMPT, build_messages
+from physcal.prompt import SYSTEM_PROMPTS, build_messages
 from physcal.tape.tape import TapeWriter
 from physcal.verify.reward import reward, reward_config
 
@@ -108,30 +108,40 @@ class HFBackend:
         self.eos_ids = set(eos if isinstance(eos, list) else [eos])
 
     def __call__(self, conversations: list[list[dict]]) -> list[Generation]:
+        """`num_samples` completions per conversation, flattened conversation-major."""
         torch = self.torch
+        g = self.gen_cfg
+        k = g["num_samples"]
+        # Every decoding parameter is explicit: the model's generation_config.json would otherwise
+        # silently add its own defaults (Qwen2.5 ships repetition_penalty=1.1).
+        decoding = {"do_sample": True, "temperature": g["temperature"], "top_p": g["top_p"], "top_k": g["top_k"]} \
+            if g["do_sample"] else {"do_sample": False, "temperature": None, "top_p": None, "top_k": None}
+        torch.manual_seed(g["seed"])
         prompts = [self.tok.apply_chat_template(c, tokenize=False, add_generation_prompt=True) for c in conversations]
         order = sorted(range(len(prompts)), key=lambda i: -len(prompts[i]))  # largest batch first: OOM early
-        results: list[Generation | None] = [None] * len(prompts)
-        bs = self.gen_cfg["batch_size"]
+        results: list[list[Generation]] = [[] for _ in prompts]
+        per_batch = max(1, g["batch_size"] // k)
         t0 = time.time()
-        for start in range(0, len(order), bs):
-            idx = order[start:start + bs]
+        for start in range(0, len(order), per_batch):
+            idx = order[start:start + per_batch]
             enc = self.tok([prompts[i] for i in idx], return_tensors="pt", padding=True).to("cuda")
             with torch.inference_mode():
                 out = self.model.generate(
                     **enc,
-                    max_new_tokens=self.gen_cfg["max_new_tokens"],
-                    do_sample=self.gen_cfg["do_sample"],
-                    temperature=None, top_p=None, top_k=None,
+                    max_new_tokens=g["max_new_tokens"],
+                    repetition_penalty=g["repetition_penalty"],
+                    num_return_sequences=k,
                     pad_token_id=self.tok.pad_token_id,
+                    **decoding,
                 )
-            for row, i in zip(out[:, enc["input_ids"].shape[1]:].tolist(), idx):
-                end = next((k for k, t in enumerate(row) if t in self.eos_ids), None)
+            rows = out[:, enc["input_ids"].shape[1]:].tolist()
+            for j, row in enumerate(rows):  # prompt-major: k consecutive rows per prompt
+                end = next((p for p, t in enumerate(row) if t in self.eos_ids), None)
                 n = len(row) if end is None else end + 1
-                results[i] = Generation(self.tok.decode(row[:n], skip_special_tokens=True), n, end is None)
-            done = min(start + bs, len(order))
-            print(f"  generated {done}/{len(order)}  ({time.time() - t0:.0f}s)", flush=True)
-        return results  # type: ignore[return-value]
+                results[idx[j // k]].append(Generation(self.tok.decode(row[:n], skip_special_tokens=True), n, end is None))
+            done = min(start + per_batch, len(order))
+            print(f"  generated {done * k}/{len(order) * k}  ({time.time() - t0:.0f}s)", flush=True)
+        return [gen for per_prompt in results for gen in per_prompt]
 
     def memory_stats(self) -> dict[str, float]:
         torch = self.torch
@@ -173,8 +183,11 @@ def run(
         else:
             skipped[name] = f"no implemented families for '{split_cfg['families']}'"
     items = [(name, p) for name, ps in splits.items() for p in ps]
-    conversations = [build_messages(p.text) for _, p in items]
-    print(f"eval: {len(items)} problems in splits {list(splits)}; skipped {list(skipped)}", flush=True)
+    conversations = [build_messages(p.text, eval_cfg["prompt"]) for _, p in items]
+    k = eval_cfg["generation"]["num_samples"]
+    if k > 1 and not eval_cfg["generation"]["do_sample"]:
+        raise ValueError("num_samples > 1 needs do_sample: true (greedy samples would be identical)")
+    print(f"eval: {len(items)} problems x {k} samples in splits {list(splits)}; skipped {list(skipped)}", flush=True)
 
     model_id, oom_fallback, oom_error = eval_cfg["model"]["id"], False, None
     t0 = time.time()
@@ -194,6 +207,8 @@ def run(
             backend = factory(model_id)
             generations = backend(conversations)
     gen_seconds = time.time() - t0
+    if len(generations) != len(items) * k:
+        raise RuntimeError(f"backend returned {len(generations)} completions, expected {len(items) * k}")
     memory = backend.memory_stats() if hasattr(backend, "memory_stats") else {}
     if poller.peak_mib:
         memory["nvidia_smi_peak_used_gib_device_wide"] = poller.peak_mib / 1024
@@ -207,16 +222,18 @@ def run(
         "env_config": env_cfg,
         "reward_config": rw_cfg,
         "eval_config": eval_cfg,
-        "system_prompt": SYSTEM_PROMPT,
+        "prompt_id": eval_cfg["prompt"],
+        "system_prompt": SYSTEM_PROMPTS[eval_cfg["prompt"]],
         "git_commit": _git_commit(),
     }
     tape_path = out / "rollouts.jsonl"
     tape_path.unlink(missing_ok=True)
     records: dict[str, list[dict]] = {name: [] for name in splits}
     with TapeWriter(tape_path, eval_cfg["run_id"], meta) as tape:
-        for (name, problem), gen in zip(items, generations):
+        for n, gen in enumerate(generations):
+            name, problem = items[n // k]
             r, bd = reward(problem, gen.text, rw_cfg)
-            extra = {"split": name, "n_tokens": gen.n_tokens, "truncated": gen.truncated}
+            extra = {"split": name, "sample": n % k, "n_tokens": gen.n_tokens, "truncated": gen.truncated}
             tape.log(0, problem, gen.text, r, bd, model_id, None, extra)
             records[name].append({"problem": problem.to_dict(), "breakdown": bd, **extra})
 
@@ -230,6 +247,7 @@ def run(
         "memory": memory,
         "generator_version": meta["generator_version"],
         "reward_rule": rw_cfg["scoring"]["rule"],
+        "prompt_id": eval_cfg["prompt"],
         "skipped_splits": skipped,
         "splits": {},
     }
@@ -240,6 +258,8 @@ def run(
         summary["mean_completion_tokens"] = sum(r["n_tokens"] for r in recs) / len(recs)
         summary["by_depth"] = calibration.breakdown_by(recs, "depth")
         summary["by_family"] = calibration.breakdown_by(recs, "family")
+        if k > 1:
+            summary["groups"] = calibration.group_stats(recs)
         metrics["splits"][name] = summary
         calibration.plot_split(name, summary, out / f"calibration_{name}.png")
     calibration.plot_reliability_all(metrics["splits"], out / "reliability_all_splits.png")
@@ -267,7 +287,7 @@ def render_summary(m: dict) -> str:
         f"# Eval summary: {m['run_id']}",
         "",
         f"- model: `{m['model_id']}`" + (" (**OOM fallback**)" if m["oom_fallback"] else ""),
-        f"- generator: `{m['generator_version']}`, reward rule: `{m['reward_rule']}`",
+        f"- generator: `{m['generator_version']}`, reward rule: `{m['reward_rule']}`, prompt: `{m.get('prompt_id', 'v1')}`",
         f"- generation time: {m['generation_seconds']:.0f} s",
     ]
     for k, v in m["memory"].items():

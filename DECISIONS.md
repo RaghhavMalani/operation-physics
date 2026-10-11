@@ -213,3 +213,38 @@ worth a second look.
 - **Decision:** 200 problems per split, assigned round-robin to (family, depth) cells (ID: 3 families × depths
   1–4 = 12 cells, ~17 each; depth extrapolation: 3 cells, ~67 each). Seeds: `eval_seed_offset + split_index ×
   1e6 + i`, so no two splits share a seed and none collides with training seeds (< 1e9).
+
+### D26. Every decoding parameter is explicit; the official baseline uses repetition_penalty = 1.0 **[REVIEW]**
+- **Finding:** my first baseline run passed only `do_sample=False`, so `generate()` silently took
+  `repetition_penalty: 1.1` from Qwen2.5's `generation_config.json`. HF applies that penalty to every token in
+  the context, *including the prompt*, which pushes the model away from reusing the problem's numbers and units.
+- **Decision:** `configs/eval.yaml` now sets `repetition_penalty`, `temperature`, `top_p`, `top_k`,
+  `num_samples` and `seed` explicitly. The official baseline is pure greedy with `repetition_penalty: 1.0`. The
+  first run is kept, clearly labelled, in `results/baseline_qwen_genconfig_rep1.1/` with a NOTE.md.
+- **Alternative:** treat the vendor default (1.1) as the baseline.
+- **Why:** TRL's GRPO rollouts use repetition_penalty 1.0 by default, so trained checkpoints should be evaluated
+  with the same decoding as the baseline. Hidden defaults make runs irreproducible across model versions. The
+  two runs are both reported so the effect is visible.
+
+### D27. Sampled group-variance probe (inference only), to size up phase 4
+- **Decision:** `configs/eval_group_probe.yaml` samples k = 8 completions at T = 1.0 (top_p 1, top_k off,
+  repetition penalty 1.0) for 48 ID problems (4 per family×depth cell). Per GRPO-style group it reports pass@8,
+  the mean pass rate, and the fraction of zero-variance groups under the binary reward and under the main CRPS
+  reward. Results go to `results/baseline_group_probe/`.
+- **Why:** phase 4 is "first GRPO run with the binary reward". With 0–1% greedy accuracy, most binary groups
+  will carry no gradient. This measures how bad that is before anyone spends GPU hours on it. No training.
+
+### D28. Prompt variants are diagnostics; the official baseline stays on prompt v1 **[REVIEW]**
+- **Decision:** `physcal/prompt.py` holds three system prompts, selected by `prompt:` in the eval config:
+  `v1` (official baseline, also the default for training), `v2_reason_first` (asks explicitly for worked
+  reasoning first) and `v3_worked_example` (v1's rules plus one fully worked example from a *training*-seed
+  problem, embedded verbatim). v2/v3 results live in `results/baseline_prompt_v2|v3/` and are reported as
+  prompt-sensitivity diagnostics, not as the baseline.
+- **Why:** the baseline was at 0%, so it was worth knowing whether that is a prompting artefact before
+  phase 4. Which prompt training uses is a research-design choice, and it's yours.
+- **Caveat:** v3's example states "about 1%" uncertainty, which is itself a cue for σ. If v3 is adopted, that
+  cue confounds the calibration question (RQ2); a version without a σ heuristic would be cleaner.
+- **Related finding (not changed):** the generator's depth-1 sentence "No intermediate values need to be
+  reported, so <steps> may be empty." makes the model skip its calculation (96% answer-only at depth 1, 0% at
+  depths 2–5). Replacing it (diagnostic, `scripts/diag_depth1_wording.py`) cut answer-only to 34%, but
+  accuracy stayed 0%. Changing it would bump the generator version, so I left it for you to decide.

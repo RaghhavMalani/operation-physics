@@ -142,3 +142,40 @@ def test_run_falls_back_on_oom(tmp_path):
     m = run(cfg, backend_factory=factory, limit=2, output_dir=tmp_path)
     assert m["oom_fallback"] and m["model_id"] == cfg["model"]["fallback_id"]
     assert calls == [cfg["model"]["id"], cfg["model"]["fallback_id"]]
+
+
+def test_multi_sample_groups(tmp_path):
+    """k samples per problem: the first sample is right, the rest unparseable -> every group has variance."""
+    import copy
+
+    cfg = copy.deepcopy(load_config("eval"))
+    cfg["generation"].update(do_sample=True, num_samples=3)
+    env_cfg = env_config()
+    for i, (name, scfg) in enumerate(cfg["splits"].items()):
+        for p in build_split(i, scfg, cfg, env_cfg, limit=4):
+            _ORACLE[p.text] = p
+
+    def factory(_):
+        oracle = _oracle_backend(None)
+        def generate(convs):
+            out = []
+            for g in oracle(convs):
+                out += [g, Generation("garbage", 1, False), Generation("garbage", 1, False)]
+            return out
+        return generate
+
+    m = run(cfg, backend_factory=factory, limit=4, output_dir=tmp_path)
+    groups = m["splits"]["id"]["groups"]
+    assert groups["k"] == 3 and groups["n_groups"] == 4
+    assert groups["pass_at_k"] == 1.0 and groups["mean_pass_rate"] == pytest.approx(1 / 3)
+    assert groups["zero_variance_fraction_binary"] == 0.0 and groups["zero_variance_fraction_main_reward"] == 0.0
+    assert replay(tmp_path / "rollouts.jsonl").ok
+
+
+def test_greedy_with_several_samples_is_rejected(tmp_path):
+    import copy
+
+    cfg = copy.deepcopy(load_config("eval"))
+    cfg["generation"].update(do_sample=False, num_samples=4)
+    with pytest.raises(ValueError):
+        run(cfg, backend_factory=lambda _: (lambda convs: []), limit=1, output_dir=tmp_path)

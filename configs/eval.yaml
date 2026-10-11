@@ -2,6 +2,8 @@
 run_id: baseline-qwen2.5-1.5b-instruct
 output_dir: results/baseline
 
+prompt: v1                                  # system prompt id, see physcal/prompt.py
+
 model:
   id: Qwen/Qwen2.5-1.5B-Instruct
   fallback_id: Qwen/Qwen2.5-0.5B-Instruct   # used if the main model hits CUDA OOM
@@ -10,8 +12,14 @@ model:
 
 generation:
   max_new_tokens: 512
-  batch_size: 16
+  batch_size: 16                            # sequences per forward pass (prompts per batch = batch_size // num_samples)
   do_sample: false                          # greedy decoding for a deterministic baseline
+  repetition_penalty: 1.0                   # explicit: Qwen2.5's generation_config.json would otherwise apply 1.1
+  temperature: 1.0                          # sampling only
+  top_p: 1.0                                # sampling only; 1.0 disables nucleus filtering
+  top_k: 0                                  # sampling only; 0 disables top-k
+  num_samples: 1                            # completions per problem (> 1 needs do_sample)
+  seed: 0                                   # torch seed for sampling
 
 # Each split gets its own block of seeds: eval_seed_offset (env.yaml) + index * seed_block + i.
 # `families: train` = registered families that are not held out; `heldout` = held-out families that exist.

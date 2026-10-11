@@ -1,0 +1,224 @@
+{
+  "id": {
+    "n": 200,
+    "n_answered": 106,
+    "n_with_sigma": 100,
+    "accuracy": 0.02,
+    "accuracy_among_answered": 0.03773584905660377,
+    "median_rel_error": 0.9592399318871865,
+    "parse_fail_rate": 0.455,
+    "unit_mismatch_rate": 0.015,
+    "missing_sigma_rate": 0.0,
+    "coverage_1sigma": 0.03,
+    "coverage_2sigma": 0.03,
+    "mean_rel_sigma": 0.21873408572676492,
+    "median_rel_sigma": 0.0005280799057777731,
+    "mean_reward": 0.025500000000000002,
+    "mean_score_by_rule": {
+      "crps": -3.2743610998849353,
+      "binary": 0.02,
+      "log_score": -9.795805332384234,
+      "abs_rel_error": -3.1922825093210814,
+      "crps_log": -3.5557198783650765
+    },
+    "mean_step_score": 0.03666666666666667,
+    "copied_given_rate": 0.05660377358490566,
+    "steps_block_rate": 0.31,
+    "reliability": [
+      {
+        "nominal": 0.1,
+        "observed": 0.01,
+        "n": 100
+      },
+      {
+        "nominal": 0.2,
+        "observed": 0.02,
+        "n": 100
+      },
+      {
+        "nominal": 0.3,
+        "observed": 0.02,
+        "n": 100
+      },
+      {
+        "nominal": 0.4,
+        "observed": 0.02,
+        "n": 100
+      },
+      {
+        "nominal": 0.5,
+        "observed": 0.03,
+        "n": 100
+      },
+      {
+        "nominal": 0.6,
+        "observed": 0.03,
+        "n": 100
+      },
+      {
+        "nominal": 0.7,
+        "observed": 0.03,
+        "n": 100
+      },
+      {
+        "nominal": 0.8,
+        "observed": 0.03,
+        "n": 100
+      },
+      {
+        "nominal": 0.9,
+        "observed": 0.03,
+        "n": 100
+      },
+      {
+        "nominal": 0.95,
+        "observed": 0.03,
+        "n": 100
+      },
+      {
+        "nominal": 0.99,
+        "observed": 0.03,
+        "n": 100
+      }
+    ],
+    "pit_histogram": {
+      "counts": [
+        36,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        61
+      ],
+      "edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004,
+        0.4,
+        0.5,
+        0.6000000000000001,
+        0.7000000000000001,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "n": 100
+    }
+  },
+  "depth_extrapolation": {
+    "n": 200,
+    "n_answered": 59,
+    "n_with_sigma": 50,
+    "accuracy": 0.0,
+    "accuracy_among_answered": 0.0,
+    "median_rel_error": 0.9763378751597036,
+    "parse_fail_rate": 0.705,
+    "unit_mismatch_rate": 0.0,
+    "missing_sigma_rate": 0.0,
+    "coverage_1sigma": 0.02,
+    "coverage_2sigma": 0.02,
+    "mean_rel_sigma": 0.05693651584051313,
+    "median_rel_sigma": 0.0012393011581437721,
+    "mean_reward": 0.0022500000000000003,
+    "mean_score_by_rule": {
+      "crps": -4.230283828940466,
+      "binary": 0.0,
+      "log_score": -9.943644745081642,
+      "abs_rel_error": -4.095084081766882,
+      "crps_log": -4.324992290657446
+    },
+    "mean_step_score": 0.01125,
+    "copied_given_rate": 0.0847457627118644,
+    "steps_block_rate": 0.285,
+    "reliability": [
+      {
+        "nominal": 0.1,
+        "observed": 0.0,
+        "n": 50
+      },
+      {
+        "nominal": 0.2,
+        "observed": 0.0,
+        "n": 50
+      },
+      {
+        "nominal": 0.3,
+        "observed": 0.0,
+        "n": 50
+      },
+      {
+        "nominal": 0.4,
+        "observed": 0.0,
+        "n": 50
+      },
+      {
+        "nominal": 0.5,
+        "observed": 0.02,
+        "n": 50
+      },
+      {
+        "nominal": 0.6,
+        "observed": 0.02,
+        "n": 50
+      },
+      {
+        "nominal": 0.7,
+        "observed": 0.02,
+        "n": 50
+      },
+      {
+        "nominal": 0.8,
+        "observed": 0.02,
+        "n": 50
+      },
+      {
+        "nominal": 0.9,
+        "observed": 0.02,
+        "n": 50
+      },
+      {
+        "nominal": 0.95,
+        "observed": 0.02,
+        "n": 50
+      },
+      {
+        "nominal": 0.99,
+        "observed": 0.02,
+        "n": 50
+      }
+    ],
+    "pit_histogram": {
+      "counts": [
+        26,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        23
+      ],
+      "edges": [
+        0.0,
+        0.1,
+        0.2,
+        0.30000000000000004,
+        0.4,
+        0.5,
+        0.6000000000000001,
+        0.7000000000000001,
+        0.8,
+        0.9,
+        1.0
+      ],
+      "n": 50
+    }
+  }
+}

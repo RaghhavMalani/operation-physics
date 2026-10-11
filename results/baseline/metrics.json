@@ -3,13 +3,13 @@
   "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
   "oom_fallback": false,
   "oom_error": null,
-  "generation_seconds": 621.261378288269,
+  "generation_seconds": 451.24989318847656,
   "memory": {
     "torch_max_allocated_gib": 3.7637557983398438,
     "torch_max_reserved_gib": 3.84375,
     "device_total_gib": 7.99560546875,
     "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
-    "nvidia_smi_peak_used_gib_device_wide": 4.9345703125
+    "nvidia_smi_peak_used_gib_device_wide": 4.953125
   },
   "generator_version": "1.0.0+afcc2019",
   "reward_rule": "crps",
@@ -20,98 +20,98 @@
   "splits": {
     "id": {
       "n": 200,
-      "n_answered": 127,
-      "n_with_sigma": 127,
-      "accuracy": 0.005,
-      "accuracy_among_answered": 0.007874015748031496,
-      "median_rel_error": 0.9466168309871786,
-      "parse_fail_rate": 0.35,
-      "unit_mismatch_rate": 0.015,
-      "missing_sigma_rate": 0.205,
-      "coverage_1sigma": 0.007874015748031496,
-      "coverage_2sigma": 0.007874015748031496,
-      "mean_rel_sigma": 0.14837348694922814,
-      "median_rel_sigma": 0.0050305306395997725,
-      "mean_reward": -2.8246974562733795,
+      "n_answered": 147,
+      "n_with_sigma": 147,
+      "accuracy": 0.0,
+      "accuracy_among_answered": 0.0,
+      "median_rel_error": 0.9213962021524141,
+      "parse_fail_rate": 0.265,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.2,
+      "coverage_1sigma": 0.006802721088435374,
+      "coverage_2sigma": 0.013605442176870748,
+      "mean_rel_sigma": 0.23325399360936255,
+      "median_rel_sigma": 0.004646289784103977,
+      "mean_reward": -2.408315424436658,
       "mean_score_by_rule": {
-        "crps": -2.825697456273379,
-        "binary": 0.005,
-        "log_score": -9.770260932021383,
-        "abs_rel_error": -2.8305990479578678,
-        "crps_log": -3.128645763088233
+        "crps": -2.409815424436658,
+        "binary": 0.0,
+        "log_score": -9.709184295730001,
+        "abs_rel_error": -2.4175957421510903,
+        "crps_log": -2.8334604034491537
       },
-      "mean_step_score": 0.006666666666666667,
-      "copied_given_rate": 0.08661417322834646,
-      "steps_block_rate": 0.495,
+      "mean_step_score": 0.01,
+      "copied_given_rate": 0.08843537414965986,
+      "steps_block_rate": 0.565,
       "reliability": [
         {
           "nominal": 0.1,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.0,
+          "n": 147
         },
         {
           "nominal": 0.2,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.0,
+          "n": 147
         },
         {
           "nominal": 0.3,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.006802721088435374,
+          "n": 147
         },
         {
           "nominal": 0.4,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.006802721088435374,
+          "n": 147
         },
         {
           "nominal": 0.5,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.006802721088435374,
+          "n": 147
         },
         {
           "nominal": 0.6,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.006802721088435374,
+          "n": 147
         },
         {
           "nominal": 0.7,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.006802721088435374,
+          "n": 147
         },
         {
           "nominal": 0.8,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.006802721088435374,
+          "n": 147
         },
         {
           "nominal": 0.9,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.006802721088435374,
+          "n": 147
         },
         {
           "nominal": 0.95,
-          "observed": 0.007874015748031496,
-          "n": 127
+          "observed": 0.013605442176870748,
+          "n": 147
         },
         {
           "nominal": 0.99,
-          "observed": 0.031496062992125984,
-          "n": 127
+          "observed": 0.027210884353741496,
+          "n": 147
         }
       ],
       "pit_histogram": {
         "counts": [
-          47,
-          0,
-          0,
+          48,
           0,
           0,
           1,
           0,
           0,
           0,
-          79
+          0,
+          0,
+          98
         ],
         "edges": [
           0.0,
@@ -126,41 +126,41 @@
           0.9,
           1.0
         ],
-        "n": 127
+        "n": 147
       },
-      "truncation_rate": 0.11,
-      "mean_completion_tokens": 214.06,
+      "truncation_rate": 0.06,
+      "mean_completion_tokens": 114.985,
       "by_depth": {
         "1": {
           "n": 50,
-          "accuracy": 0.02,
-          "median_rel_error": 0.9300812027420162,
-          "parse_fail_rate": 0.38,
+          "accuracy": 0.0,
+          "median_rel_error": 0.9342565616216216,
+          "parse_fail_rate": 0.3,
           "unit_mismatch_rate": 0.0,
-          "coverage_1sigma": 0.03225806451612903
+          "coverage_1sigma": 0.02857142857142857
         },
         "2": {
           "n": 50,
           "accuracy": 0.0,
-          "median_rel_error": 0.946837760401304,
-          "parse_fail_rate": 0.42,
-          "unit_mismatch_rate": 0.02,
+          "median_rel_error": 0.9575100368763116,
+          "parse_fail_rate": 0.3,
+          "unit_mismatch_rate": 0.0,
           "coverage_1sigma": 0.0
         },
         "3": {
           "n": 50,
           "accuracy": 0.0,
-          "median_rel_error": 0.883411653014344,
-          "parse_fail_rate": 0.28,
-          "unit_mismatch_rate": 0.02,
+          "median_rel_error": 0.9150795133869292,
+          "parse_fail_rate": 0.3,
+          "unit_mismatch_rate": 0.0,
           "coverage_1sigma": 0.0
         },
         "4": {
           "n": 50,
           "accuracy": 0.0,
-          "median_rel_error": 0.980089864798686,
-          "parse_fail_rate": 0.32,
-          "unit_mismatch_rate": 0.02,
+          "median_rel_error": 0.8593614964662348,
+          "parse_fail_rate": 0.16,
+          "unit_mismatch_rate": 0.0,
           "coverage_1sigma": 0.0
         }
       },
@@ -168,123 +168,123 @@
         "dynamics": {
           "n": 68,
           "accuracy": 0.0,
-          "median_rel_error": 0.9402401942136218,
-          "parse_fail_rate": 0.3088235294117647,
-          "unit_mismatch_rate": 0.014705882352941176,
-          "coverage_1sigma": 0.0
+          "median_rel_error": 0.8300230524581521,
+          "parse_fail_rate": 0.17647058823529413,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.017857142857142856
         },
         "energy": {
           "n": 64,
-          "accuracy": 0.015625,
-          "median_rel_error": 0.9014779401771227,
-          "parse_fail_rate": 0.25,
+          "accuracy": 0.0,
+          "median_rel_error": 0.9195442273399015,
+          "parse_fail_rate": 0.234375,
           "unit_mismatch_rate": 0.0,
-          "coverage_1sigma": 0.020833333333333332
+          "coverage_1sigma": 0.0
         },
         "kinematics": {
           "n": 68,
           "accuracy": 0.0,
-          "median_rel_error": 0.9566645680253313,
-          "parse_fail_rate": 0.4852941176470588,
-          "unit_mismatch_rate": 0.029411764705882353,
+          "median_rel_error": 0.9816893595827494,
+          "parse_fail_rate": 0.38235294117647056,
+          "unit_mismatch_rate": 0.0,
           "coverage_1sigma": 0.0
         }
       }
     },
     "depth_extrapolation": {
       "n": 200,
-      "n_answered": 134,
-      "n_with_sigma": 134,
+      "n_answered": 156,
+      "n_with_sigma": 156,
       "accuracy": 0.0,
       "accuracy_among_answered": 0.0,
-      "median_rel_error": 0.8662353496809891,
-      "parse_fail_rate": 0.325,
+      "median_rel_error": 0.9338938736552789,
+      "parse_fail_rate": 0.215,
       "unit_mismatch_rate": 0.005,
-      "missing_sigma_rate": 0.185,
+      "missing_sigma_rate": 0.2,
       "coverage_1sigma": 0.0,
-      "coverage_2sigma": 0.007462686567164179,
-      "mean_rel_sigma": 2.671342093341306,
-      "median_rel_sigma": 0.006250678707814449,
-      "mean_reward": -2.6415549131179548,
+      "coverage_2sigma": 0.03205128205128205,
+      "mean_rel_sigma": 5.635687143923407,
+      "median_rel_sigma": 0.010378446376060176,
+      "mean_reward": -2.306953486883866,
       "mean_score_by_rule": {
-        "crps": -2.641804913117954,
+        "crps": -2.307453486883866,
         "binary": 0.0,
-        "log_score": -9.894109905095165,
-        "abs_rel_error": -2.6468263724373005,
-        "crps_log": -3.0156163959211657
+        "log_score": -9.580726671529774,
+        "abs_rel_error": -2.3149256724200353,
+        "crps_log": -2.7969290824645934
       },
-      "mean_step_score": 0.00125,
-      "copied_given_rate": 0.1044776119402985,
-      "steps_block_rate": 0.67,
+      "mean_step_score": 0.0025,
+      "copied_given_rate": 0.038461538461538464,
+      "steps_block_rate": 0.78,
       "reliability": [
         {
           "nominal": 0.1,
           "observed": 0.0,
-          "n": 134
+          "n": 156
         },
         {
           "nominal": 0.2,
           "observed": 0.0,
-          "n": 134
+          "n": 156
         },
         {
           "nominal": 0.3,
           "observed": 0.0,
-          "n": 134
+          "n": 156
         },
         {
           "nominal": 0.4,
           "observed": 0.0,
-          "n": 134
+          "n": 156
         },
         {
           "nominal": 0.5,
           "observed": 0.0,
-          "n": 134
+          "n": 156
         },
         {
           "nominal": 0.6,
           "observed": 0.0,
-          "n": 134
+          "n": 156
         },
         {
           "nominal": 0.7,
           "observed": 0.0,
-          "n": 134
+          "n": 156
         },
         {
           "nominal": 0.8,
-          "observed": 0.0,
-          "n": 134
+          "observed": 0.01282051282051282,
+          "n": 156
         },
         {
           "nominal": 0.9,
-          "observed": 0.007462686567164179,
-          "n": 134
+          "observed": 0.03205128205128205,
+          "n": 156
         },
         {
           "nominal": 0.95,
-          "observed": 0.007462686567164179,
-          "n": 134
+          "observed": 0.03205128205128205,
+          "n": 156
         },
         {
           "nominal": 0.99,
-          "observed": 0.014925373134328358,
-          "n": 134
+          "observed": 0.038461538461538464,
+          "n": 156
         }
       ],
       "pit_histogram": {
         "counts": [
-          49,
+          50,
+          1,
           0,
           0,
           0,
           0,
           0,
           0,
-          0,
-          0,
-          85
+          1,
+          104
         ],
         "edges": [
           0.0,
@@ -299,16 +299,16 @@
           0.9,
           1.0
         ],
-        "n": 134
+        "n": 156
       },
-      "truncation_rate": 0.135,
-      "mean_completion_tokens": 254.83,
+      "truncation_rate": 0.015,
+      "mean_completion_tokens": 125.79,
       "by_depth": {
         "5": {
           "n": 200,
           "accuracy": 0.0,
-          "median_rel_error": 0.8662353496809891,
-          "parse_fail_rate": 0.325,
+          "median_rel_error": 0.9338938736552789,
+          "parse_fail_rate": 0.215,
           "unit_mismatch_rate": 0.005,
           "coverage_1sigma": 0.0
         }
@@ -317,25 +317,25 @@
         "dynamics": {
           "n": 67,
           "accuracy": 0.0,
-          "median_rel_error": 0.965960408726327,
-          "parse_fail_rate": 0.417910447761194,
-          "unit_mismatch_rate": 0.0,
+          "median_rel_error": 0.9923911582970077,
+          "parse_fail_rate": 0.11940298507462686,
+          "unit_mismatch_rate": 0.014925373134328358,
           "coverage_1sigma": 0.0
         },
         "energy": {
           "n": 66,
           "accuracy": 0.0,
-          "median_rel_error": 0.8178785730394822,
-          "parse_fail_rate": 0.24242424242424243,
+          "median_rel_error": 0.8946944652990985,
+          "parse_fail_rate": 0.30303030303030304,
           "unit_mismatch_rate": 0.0,
           "coverage_1sigma": 0.0
         },
         "kinematics": {
           "n": 67,
           "accuracy": 0.0,
-          "median_rel_error": 0.8235267227749282,
-          "parse_fail_rate": 0.31343283582089554,
-          "unit_mismatch_rate": 0.014925373134328358,
+          "median_rel_error": 0.856075639745101,
+          "parse_fail_rate": 0.22388059701492538,
+          "unit_mismatch_rate": 0.0,
           "coverage_1sigma": 0.0
         }
       }

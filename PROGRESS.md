@@ -270,38 +270,47 @@ Checks that matter:
 
 ## Phase 3 — Baseline eval: results
 
-**Status: done. 207 tests pass** (`uv run pytest`, ~33 s). Phase 3 adds 13: 3 in `tests/test_tape.py`,
-7 in `tests/test_eval.py`, and 3 generator regression tests for a bug the eval seeds exposed (below).
+**Status: done. 210 tests pass** (`uv run pytest`, ~33 s). Phase 3 adds 16: 3 in `tests/test_tape.py`, 9 in
+`tests/test_eval.py`, 3 generator regression tests for a bug the eval seeds exposed (below), and 1 check that
+every system prompt's example parses. All 6 result tapes (2,368 rollouts) replay with exact rewards.
 
-Run: `uv run python -m physcal.eval.run_eval` → `results/baseline/` (metrics.json, summary.md,
+Command: `uv run python -m physcal.eval.run_eval` → `results/baseline/` (metrics.json, summary.md,
 rollouts.jsonl + meta, calibration_id.png, calibration_depth_extrapolation.png, reliability_all_splits.png,
 rescored_binary.json).
-Model **Qwen/Qwen2.5-1.5B-Instruct** (no OOM, so no fallback was needed), bf16, greedy, batch 16, 512 new tokens.
-Generation time 621 s for 400 problems.
-**Peak VRAM:** torch max allocated 3.76 GiB / reserved 3.84 GiB. Device-wide peak (nvidia-smi, includes
-~1.9 GB used by the Windows display) 4.93 GiB of 8 GiB.
-`replay()` on the real 400-completion tape reproduces every reward exactly.
+Model: **Qwen/Qwen2.5-1.5B-Instruct** (no OOM, so no fallback was needed). Decoding: bf16, pure greedy
+(repetition_penalty 1.0, see D26), batch 16, ≤ 512 new tokens, system prompt `v1`. Generation took 451 s for
+400 problems.
+**Peak VRAM:** torch max allocated **3.76 GiB** / reserved 3.84 GiB. Device-wide peak (nvidia-smi, includes
+~1.9 GB used by the Windows display) **4.95 GiB** of 8 GiB. There is plenty of headroom.
+`replay()` on the 400-completion baseline tape reproduces every reward exactly.
 
 | split | n | accuracy (≤1%) | σ-free accuracy* | median rel. err | parse fail | of which missing ± | unit mismatch | 1σ cov | 2σ cov | median rel. σ | mean reward (CRPS) | truncated |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| id (depth 1–4) | 200 | 0.5% | 1.0% | 0.95 | 35.0% | 20.5% | 1.5% | 0.8% (n=127) | 0.8% | 0.50% | −2.82 | 11.0% |
-| depth_extrapolation (5) | 200 | 0.0% | 0.0% | 0.87 | 32.5% | 18.5% | 0.5% | 0.0% (n=134) | 0.7% | 0.63% | −2.64 | 13.5% |
+| id (depth 1–4) | 200 | **0.0%** | 0.5% | 0.92 | **26.5%** | 20.0% | **0.0%** | **0.7%** (n=147) | 1.4% | 0.47% | −2.41 | 6.0% |
+| depth_extrapolation (5) | 200 | **0.0%** | 0.0% | 0.93 | **21.5%** | 20.0% | **0.5%** | **0.0%** (n=156) | 3.2% | 1.0% | −2.31 | 1.5% |
+| *ref: id, rep. penalty 1.1* | 200 | 0.5% | 1.0% | 0.95 | 35.0% | 20.5% | 1.5% | 0.8% | 0.8% | 0.50% | −2.82 | 11.0% |
+| *ref: depth 5, rep. penalty 1.1* | 200 | 0.0% | 0.0% | 0.87 | 32.5% | 18.5% | 0.5% | 0.0% | 0.7% | 0.63% | −2.64 | 13.5% |
 
 \* σ-free accuracy = the same completions re-scored with the `binary` rule, which doesn't require ±
 (`uv run python -m physcal.eval.rescore results/baseline/rollouts.jsonl --rule binary`).
+"ref" rows: the first run, which silently used Qwen's default repetition_penalty 1.1
+(`results/baseline_qwen_genconfig_rep1.1/`, see its NOTE.md and D26).
+
+Mean score per rule, ID split (failures at the rule's floor): crps −2.41, binary 0.00, log_score −9.71,
+abs_rel_error −2.42, crps_log −2.83. Mean step score 0.01. Copied-given rate 8.8% (ID) / 3.9% (depth 5).
+A `<steps>` block is present in 57% (ID) / 78% (depth 5) of completions.
 
 Reading:
-- The untrained model is essentially at zero: 1 correct answer in 200 ID problems (2/200 if ± is not
-  required), and depth 1 is only 2%. I checked by hand that this is the model, not the verifier. It usually
-  writes a `<symbols>`/`<solution>` block, then gives a guessed number (e.g. `mu = 0.25` when f_k/N = 0.0757),
-  often with no computation at all.
-- Parse failures (135 of 400): 78 omit ± (wrong format under CRPS), 49 hit the 512-token limit in repetition
-  loops, 3 have no `<answer>`, 5 put a formula or text in `<answer>`.
-- σ is wildly over-confident: median stated relative σ ≈ 0.5% against a median relative error of ≈ 90%.
-  1σ coverage is 0–1% (target 68%). The PIT histogram has all its mass in the two end bins.
-- Copied-given rate is 8.7% (ID) and 10.4% (depth 5): the answer repeats a number from the problem.
-- Step credit is ≈ 0 (mean 0.007). Only 50–67% of completions contain a `<steps>` block, and those usually hold
-  formulas rather than numbers.
+- The untrained model is at zero: 0/200 correct within 1% on both splits, including depth 1. I checked by hand
+  that this is the model, not the verifier. The closest depth-1 answer is 1.3% off, and the attempted
+  calculations are wrong (e.g. t1 = s1/(u+v)·(u+v)/2). 48 of 400 completions contain no calculation at all,
+  just `<answer>` with a guess (median 17 tokens). Depth-1 problems say "<steps> may be empty", and the model
+  often takes that as permission to skip the work.
+- Parse failures (96 of 400): 80 omit ± (wrong format under the CRPS rule), 15 hit the 512-token limit, 1 has
+  no `<answer>`. Unit mismatches are rare (0–0.5%): when the model answers, it uses the requested unit.
+- σ is wildly over-confident: median stated relative σ ≈ 0.5–1% against a median relative error of ≈ 92%.
+  1σ coverage is 0–0.7% (target 68%). The PIT histogram has all its mass in the two end bins (see
+  `calibration_*.png`).
 
 **Bug found and fixed during this phase:** eval seed 1001000087 (kinematics, depth 5) crashed the generator.
 A subtraction step came out exactly 0 after rounding, and the next step divided by it (Python float →
@@ -309,3 +318,52 @@ A subtraction step came out exactly 0 after rounding, and the next step divided 
 first non-positive or non-finite intermediate, and the condition number is ∞ when a perturbation leaves the
 valid domain (previously `max(k, nan)` silently ignored it). There are regression tests, plus a 30,000-seed
 stress run with 0 failures (κ median 2.0, p99 4.9).
+
+### Phase 3 addendum: diagnostics for phase 4 (inference only, no training)
+
+Every run below uses the same model, the same eval problems and pure-greedy or explicit sampling settings.
+Each is logged to its own folder, with a tape and plots.
+
+**1. Decoding hygiene (D26).** The first baseline run silently used Qwen's `repetition_penalty: 1.1`.
+Rerunning with explicit pure greedy (the official baseline above) gave lower parse failure (35% → 26.5% ID) and
+fewer truncations (11% → 6%), and accuracy stayed ≈ 0.
+
+**2. Group-variance probe: what a GRPO group of 8 would see** (`configs/eval_group_probe*.yaml`;
+48 ID problems, 4 per family×depth cell, k = 8, T = 1.0, top_p 1, no top-k, rep. penalty 1.0):
+
+| prompt | samples correct | pass@8 | zero-variance groups, **binary** reward | zero-variance groups, CRPS reward | parse fail |
+|---|---|---|---|---|---|
+| v1 (official) | 0 / 384 | 0.0% | **100%** (48/48) | 4.2% | 32.6% |
+| v2 reason-first | 1 / 384 | 2.1% | **97.9%** | 14.6% | 43.8% |
+
+→ A phase-4 GRPO run with the binary reward, from this model and prompt, gets **no gradient at all**. The CRPS
+reward is dense: almost every group has reward variance even when every answer is wrong.
+
+**3. Prompt sensitivity, greedy, 200 + 200 problems** (`results/baseline_prompt_v2|v3/`, see D28):
+
+| prompt | split | accuracy | σ-free acc. | parse fail | missing ± | truncated (512 tok) | mean tokens | median rel. err | 1σ cov |
+|---|---|---|---|---|---|---|---|---|---|
+| v1 (official) | id | 0.0% | 0.5% | 26.5% | 20.0% | 6.0% | 115 | 0.92 | 0.7% |
+| v1 (official) | depth 5 | 0.0% | 0.0% | 21.5% | 20.0% | 1.5% | 126 | 0.93 | 0.0% |
+| v2 reason-first | id | 0.0% | 0.5% | 31.5% | 26.0% | 5.5% | 107 | 0.93 | 2.3% |
+| v2 reason-first | depth 5 | 0.0% | 0.0% | 36.0% | 28.5% | 7.5% | 141 | 0.91 | 0.8% |
+| v3 worked example | id | **1.5%** | **2.0%** | 49.0% | 3.5% | **45.0%** | 341 | 0.93 | 3.0% |
+| v3 worked example | depth 5 | 0.0% | 0.0% | 75.0% | 4.5% | **68.0%** | 436 | 0.98 | 2.0% |
+
+- v2 (an instruction to reason first) changes nothing. The model mostly ignores it.
+- v3 (one worked example) makes the model actually compute: 12 of the 150 parsed ID answers are within 10%,
+  versus almost none before. But its reasoning is verbose: 45% (ID) and 68% (depth 5) of completions hit the
+  spec's 512-token cap before `<answer>`. The 512-token budget, not just competence, becomes the limit.
+- v3 nearly eliminates missing ± (20% → 3.5%), but stated σ gets even sharper (median relative σ 0.05%). The
+  example's "about 1%" is probably being copied as a template.
+
+**4. Depth-1 wording** (`scripts/diag_depth1_wording.py`, `results/diagnostics/depth1_wording/`): under every
+prompt, 96–98% of depth-1 completions answer with no calculation, versus 0% at depths 2–5. The trigger is the
+generator's sentence "No intermediate values need to be reported, so <steps> may be empty." Replacing only that
+sentence on the same 50 problems cut answer-only completions to 34%, but accuracy stayed 0% (median error 0.93).
+I didn't change the generator (it would need a version bump); see D28.
+
+**5. How the model fails when it does show work:** it fills `<steps>` with restated givens and formulas, then
+writes a placeholder-like round number ("1.0 s", "0.500 kg", "10000 cm/s^2"). It often does this right after
+writing the correct formula (e.g. `t2 = t_tot - t1 - t3`, truth 14.1 s, answer 1.0 s). It almost never carries
+out the arithmetic unless shown a worked example.

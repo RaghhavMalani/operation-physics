@@ -108,6 +108,40 @@ def breakdown_by(records: list[dict], key: str) -> dict[str, dict]:
     return out
 
 
+def group_stats(records: list[dict]) -> dict[str, Any]:
+    """With several samples per problem: how often would a GRPO group carry no learning signal?
+
+    A group = all samples of one problem. It has zero variance under a reward if every sample gets the same
+    reward (all correct / all wrong under binary; identical scores, e.g. all parse failures, under CRPS).
+    """
+    groups: dict[tuple, list[dict]] = defaultdict(list)
+    for r in records:
+        p = r["problem"]
+        groups[(p["family"], p["depth"], p["seed"])].append(r["breakdown"])
+
+    def describe(keys: list[tuple]) -> dict[str, Any]:
+        zero_main, zero_bin, any_correct, pass_rates = [], [], [], []
+        for key in keys:
+            bds = groups[key]
+            correct = [b["reason"] == "ok" and bool(b.get("correct")) for b in bds]
+            rewards = [b["reward"] for b in bds]
+            zero_main.append(max(rewards) - min(rewards) == 0.0)
+            zero_bin.append(all(correct) or not any(correct))
+            any_correct.append(any(correct))
+            pass_rates.append(sum(correct) / len(correct))
+        return {
+            "n_groups": len(keys),
+            "zero_variance_fraction_main_reward": _mean(zero_main),
+            "zero_variance_fraction_binary": _mean(zero_bin),
+            "pass_at_k": _mean(any_correct),
+            "mean_pass_rate": _mean(pass_rates),
+        }
+
+    keys = sorted(groups)
+    by_depth = {str(d): describe([k for k in keys if k[1] == d]) for d in sorted({k[1] for k in keys})}
+    return {"k": len(groups[keys[0]]) if keys else 0, **describe(keys), "by_depth": by_depth}
+
+
 # ---------------------------------------------------------------------------------------------- plots
 def _style(ax) -> None:
     ax.set_facecolor(SURFACE)

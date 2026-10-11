@@ -60,7 +60,13 @@
     "generation": {
       "batch_size": 16,
       "do_sample": false,
-      "max_new_tokens": 512
+      "max_new_tokens": 512,
+      "num_samples": 1,
+      "repetition_penalty": 1.0,
+      "seed": 0,
+      "temperature": 1.0,
+      "top_k": 0,
+      "top_p": 1.0
     },
     "memory_poll_seconds": 2.0,
     "model": {
@@ -109,10 +115,16 @@
   "generation": {
     "batch_size": 16,
     "do_sample": false,
-    "max_new_tokens": 512
+    "max_new_tokens": 512,
+    "num_samples": 1,
+    "repetition_penalty": 1.0,
+    "seed": 0,
+    "temperature": 1.0,
+    "top_k": 0,
+    "top_p": 1.0
   },
   "generator_version": "1.0.0+afcc2019",
-  "git_commit": "487c6cfbe792f9e7c78de6389cf114e440d3d67a",
+  "git_commit": "044ae7676dbba81d48c136bb620b5af6ca131aac",
   "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
   "oom_error": null,
   "oom_fallback": false,

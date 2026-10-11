@@ -1,0 +1,13 @@
+{
+  "n": 50,
+  "replacement": "Show your calculation first; no intermediate values need to be listed in <steps>.",
+  "original": "No intermediate values need to be reported, so <steps> may be empty.",
+  "answer_only_rate": 0.34,
+  "accuracy": 0.0,
+  "median_abs_rel_error": 0.9292786421499293,
+  "reasons": {
+    "ok": 29,
+    "parse_fail": 21
+  },
+  "mean_tokens": 129.26
+}

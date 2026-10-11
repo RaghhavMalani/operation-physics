@@ -1,0 +1,135 @@
+{
+  "env_config": {
+    "generator": {
+      "condition_rel_step": 1e-06,
+      "display": {
+        "fixed_exponent_range": [
+          -2,
+          4
+        ],
+        "magnitude_range": [
+          0.01,
+          10000.0
+        ],
+        "sig_figs": 3
+      },
+      "distractors": [
+        0,
+        2
+      ],
+      "max_attempts": 200,
+      "max_condition_number": 5.0,
+      "max_world_tries": 100,
+      "version": "1.0.0",
+      "worlds_per_chain": 10
+    },
+    "splits": {
+      "depths": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "eval_seed_offset": 1000000000,
+      "heldout_depths": [
+        5
+      ],
+      "heldout_families": [
+        "optics"
+      ]
+    }
+  },
+  "eval_config": {
+    "calibration": {
+      "pit_bins": 10,
+      "reliability_levels": [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        0.95,
+        0.99
+      ]
+    },
+    "generation": {
+      "batch_size": 16,
+      "do_sample": true,
+      "max_new_tokens": 512,
+      "num_samples": 8,
+      "repetition_penalty": 1.0,
+      "seed": 0,
+      "temperature": 1.0,
+      "top_k": 0,
+      "top_p": 1.0
+    },
+    "memory_poll_seconds": 2.0,
+    "model": {
+      "dtype": "bfloat16",
+      "fallback_id": "Qwen/Qwen2.5-0.5B-Instruct",
+      "id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "lora": null
+    },
+    "output_dir": "results/baseline_group_probe",
+    "prompt": "v1",
+    "run_id": "baseline-group-probe-qwen2.5-1.5b-instruct",
+    "seed_block": 1000000,
+    "splits": {
+      "id": {
+        "depths": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "families": "train",
+        "n": 48
+      }
+    }
+  },
+  "generation": {
+    "batch_size": 16,
+    "do_sample": true,
+    "max_new_tokens": 512,
+    "num_samples": 8,
+    "repetition_penalty": 1.0,
+    "seed": 0,
+    "temperature": 1.0,
+    "top_k": 0,
+    "top_p": 1.0
+  },
+  "generator_version": "1.0.0+afcc2019",
+  "git_commit": "044ae7676dbba81d48c136bb620b5af6ca131aac",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "oom_error": null,
+  "oom_fallback": false,
+  "prompt_id": "v1",
+  "reward_config": {
+    "checks": {
+      "copy_tolerance": 0.001
+    },
+    "scoring": {
+      "abs_rel_error_clip": 5.0,
+      "binary_tolerance": 0.01,
+      "crps_clip": 5.0,
+      "log_score_clip": 10.0,
+      "rule": "crps",
+      "sigma_floor": 0.001
+    },
+    "steps": {
+      "empty_score": 0.0,
+      "tolerance": 0.02
+    },
+    "weights": {
+      "final": 1.0,
+      "steps": 0.2
+    }
+  },
+  "run_id": "baseline-group-probe-qwen2.5-1.5b-instruct",
+  "system_prompt": "You are a careful physics problem solver.\n\nSolve the problem. You may think step by step first. Then finish with exactly this format:\n\n<steps>\nsymbol = value unit\n</steps>\n<answer>value \u00b1 uncertainty unit</answer>\n\nRules:\n- In <steps>, write one line per intermediate quantity the problem asks you to report, using the problem's symbol names, each with a number and a unit.\n- In <answer>, give the final value in the unit the problem asks for, then \u00b1 and your honest one-standard-deviation uncertainty in the same unit. The true value should lie within \u00b1 one uncertainty of your value about 68% of the time: say a large uncertainty when unsure and a small one when confident.\n- Numbers may use scientific notation such as 1.23e-4.\n- Write exactly one <answer> block, and nothing after it.\n\nExample of the format:\n<steps>\na = 2.45 m/s^2\nt = 4.1 s\n</steps>\n<answer>12.4 \u00b1 0.8 m/s</answer>"
+}

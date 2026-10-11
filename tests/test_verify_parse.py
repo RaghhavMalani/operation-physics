@@ -175,3 +175,12 @@ def test_units_gate_rejects(unit, si_unit):
 def test_units_gate_rejects_scaling_factor_in_unit():
     with pytest.raises(UnitMismatch):
         to_si_checked(1.0, "1000 m", "m")
+
+
+def test_every_system_prompt_example_parses():
+    from physcal.prompt import SYSTEM_PROMPTS
+
+    for prompt_id, text in SYSTEM_PROMPTS.items():
+        parsed = parse_completion(text[text.rindex("<steps>"):])
+        assert parsed.answer.sigma is not None, prompt_id
+        assert parsed.steps, prompt_id
