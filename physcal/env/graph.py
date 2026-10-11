@@ -316,29 +316,46 @@ class Family:
         return options[rng.integers(len(options))]
 
     def evaluate_chain(self, chain: Chain, givens_si: dict[str, float]) -> dict[str, float]:
-        """Run the chain on plain SI floats. Returns every step output."""
+        """Run the chain on plain SI floats. Returns every step output.
+
+        Evaluation stops at the first non-positive or non-finite output (e.g. a difference that rounds to
+        exactly zero); that output and all later ones are NaN, so callers reject the problem.
+        """
         env: dict[str, Any] = {**givens_si, **self.si_constants}
-        with np.errstate(invalid="ignore", divide="ignore"):
-            for name, out in chain.steps:
-                env[out] = float(self.formula(name).solved[out](env))
-        return {out: env[out] for _, out in chain.steps}
+        result = {out: math.nan for _, out in chain.steps}
+        for name, out in chain.steps:
+            try:
+                with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+                    val = float(self.formula(name).solved[out](env))
+            except (ZeroDivisionError, OverflowError, ValueError):
+                break
+            if not (math.isfinite(val) and val > 0):
+                break
+            env[out] = result[out] = val
+        return result
 
     def evaluate_chain_with_units(self, chain: Chain, givens_si: dict[str, float]) -> dict[str, float]:
-        """Run the chain with pint quantities, checking every output's dimensions. Returns SI magnitudes."""
+        """Like `evaluate_chain`, but with pint quantities, checking every output's dimensions."""
         env: dict[str, Any] = {g: quantity(v, self.quantities[g].si_unit) for g, v in givens_si.items()}
         env.update({k: quantity(v, u) for k, (v, u) in self.constants.items()})
-        result: dict[str, float] = {}
+        result = {out: math.nan for _, out in chain.steps}
         for name, out in chain.steps:
-            with np.errstate(invalid="ignore", divide="ignore"):
-                val = self.formula(name).solved[out](env)
+            try:
+                with np.errstate(invalid="ignore", divide="ignore", over="ignore"):
+                    val = self.formula(name).solved[out](env)
+            except (ZeroDivisionError, OverflowError, ValueError):
+                break
             if not hasattr(val, "to_base_units"):  # pint collapses a dimensionless result to a float
                 val = quantity(float(val), "")
             val = val.to_base_units()
             expected = quantity(1.0, self.quantities[out].si_unit).dimensionality
             if val.dimensionality != expected:
                 raise ValueError(f"{name} -> {out}: got {val.dimensionality}, expected {expected}")
+            magnitude = float(val.magnitude)
+            if not (math.isfinite(magnitude) and magnitude > 0):
+                break
             env[out] = val
-            result[out] = float(val.magnitude)
+            result[out] = magnitude
         return result
 
     def chain_expression(self, chain: Chain) -> sp.Expr:
@@ -349,7 +366,10 @@ class Family:
         return expr
 
     def condition_number(self, chain: Chain, givens_si: dict[str, float], rel_step: float) -> float:
-        """max over givens and outputs of |d ln(output) / d ln(given)|, by finite differences."""
+        """max over givens and outputs of |d ln(output) / d ln(given)|, by finite differences.
+
+        Infinite if the chain (or a tiny perturbation of it) leaves the valid domain.
+        """
         base = self.evaluate_chain(chain, givens_si)
         kappa = 0.0
         for g in chain.givens:
@@ -357,7 +377,10 @@ class Family:
             bumped[g] *= 1.0 + rel_step
             out = self.evaluate_chain(chain, bumped)
             for k, v in base.items():
-                kappa = max(kappa, abs((out[k] - v) / v) / rel_step)
+                sensitivity = abs((out[k] - v) / v) / rel_step
+                if math.isnan(sensitivity):
+                    return math.inf
+                kappa = max(kappa, sensitivity)
         return kappa
 
     @cached_property

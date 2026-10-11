@@ -246,3 +246,66 @@ Checks that matter:
 
   Documented in D15, with a test that pins this behaviour. `crps_log` is implemented and tested as a proper
   alternative. The default stays the spec's `crps`.
+
+## Phase 3 — Baseline eval: plan
+
+1. `physcal/tape/tape.py`: JSONL rollout tape (spec fields plus split, token count, truncation flag) and a
+   `.meta.json` with the env, reward and eval configs. `replay()` regenerates each problem from
+   (version, family, depth, seed), checks it equals the logged problem, re-scores, and requires an exact
+   reward match.
+2. `physcal/eval/calibration.py`: accuracy (failures count as wrong), median relative error, parse-fail and
+   unit-mismatch rates, missing-± rate, 1σ/2σ coverage, relative σ, mean score under every rule, step score,
+   copied-given rate, reliability curve (central-interval coverage at nominal levels), PIT histogram, and
+   per-depth and per-family breakdowns. PNG plots use the dataviz reference palette.
+3. `physcal/eval/run_eval.py` + `configs/eval.yaml`: splits `id` (train families, depths 1–4),
+   `depth_extrapolation` (depth 5), `heldout_family` and `simulators` (skipped until phase 6), with 200
+   problems each, stratified round-robin over (family, depth) cells, and a disjoint seed block per split.
+   Inference is plain transformers, bf16, left padding, greedy, batch 16, max 512 new tokens. On CUDA OOM it
+   falls back to Qwen2.5-0.5B-Instruct. Peak VRAM is recorded from torch (allocated/reserved) and from
+   device-wide nvidia-smi polling.
+4. Tests: tape replay reproduces rewards exactly and detects tampering; calibration metrics on synthetic,
+   perfectly calibrated predictions (coverage ≈ 68%/95%, uniform PIT); end-to-end `run()` with fake backends
+   (oracle, garbage, OOM-then-fallback).
+5. Run the baseline: `uv run python -m physcal.eval.run_eval`. Results go to `results/baseline/`.
+
+## Phase 3 — Baseline eval: results
+
+**Status: done. 207 tests pass** (`uv run pytest`, ~33 s). Phase 3 adds 13: 3 in `tests/test_tape.py`,
+7 in `tests/test_eval.py`, and 3 generator regression tests for a bug the eval seeds exposed (below).
+
+Run: `uv run python -m physcal.eval.run_eval` → `results/baseline/` (metrics.json, summary.md,
+rollouts.jsonl + meta, calibration_id.png, calibration_depth_extrapolation.png, reliability_all_splits.png,
+rescored_binary.json).
+Model **Qwen/Qwen2.5-1.5B-Instruct** (no OOM, so no fallback was needed), bf16, greedy, batch 16, 512 new tokens.
+Generation time 621 s for 400 problems.
+**Peak VRAM:** torch max allocated 3.76 GiB / reserved 3.84 GiB. Device-wide peak (nvidia-smi, includes
+~1.9 GB used by the Windows display) 4.93 GiB of 8 GiB.
+`replay()` on the real 400-completion tape reproduces every reward exactly.
+
+| split | n | accuracy (≤1%) | σ-free accuracy* | median rel. err | parse fail | of which missing ± | unit mismatch | 1σ cov | 2σ cov | median rel. σ | mean reward (CRPS) | truncated |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| id (depth 1–4) | 200 | 0.5% | 1.0% | 0.95 | 35.0% | 20.5% | 1.5% | 0.8% (n=127) | 0.8% | 0.50% | −2.82 | 11.0% |
+| depth_extrapolation (5) | 200 | 0.0% | 0.0% | 0.87 | 32.5% | 18.5% | 0.5% | 0.0% (n=134) | 0.7% | 0.63% | −2.64 | 13.5% |
+
+\* σ-free accuracy = the same completions re-scored with the `binary` rule, which doesn't require ±
+(`uv run python -m physcal.eval.rescore results/baseline/rollouts.jsonl --rule binary`).
+
+Reading:
+- The untrained model is essentially at zero: 1 correct answer in 200 ID problems (2/200 if ± is not
+  required), and depth 1 is only 2%. I checked by hand that this is the model, not the verifier. It usually
+  writes a `<symbols>`/`<solution>` block, then gives a guessed number (e.g. `mu = 0.25` when f_k/N = 0.0757),
+  often with no computation at all.
+- Parse failures (135 of 400): 78 omit ± (wrong format under CRPS), 49 hit the 512-token limit in repetition
+  loops, 3 have no `<answer>`, 5 put a formula or text in `<answer>`.
+- σ is wildly over-confident: median stated relative σ ≈ 0.5% against a median relative error of ≈ 90%.
+  1σ coverage is 0–1% (target 68%). The PIT histogram has all its mass in the two end bins.
+- Copied-given rate is 8.7% (ID) and 10.4% (depth 5): the answer repeats a number from the problem.
+- Step credit is ≈ 0 (mean 0.007). Only 50–67% of completions contain a `<steps>` block, and those usually hold
+  formulas rather than numbers.
+
+**Bug found and fixed during this phase:** eval seed 1001000087 (kinematics, depth 5) crashed the generator.
+A subtraction step came out exactly 0 after rounding, and the next step divided by it (Python float →
+`ZeroDivisionError` inside pint, which bypassed the NaN rejection path). Chain evaluation now stops at the
+first non-positive or non-finite intermediate, and the condition number is ∞ when a perturbation leaves the
+valid domain (previously `max(k, nan)` silently ignored it). There are regression tests, plus a 30,000-seed
+stress run with 0 failures (κ median 2.0, p99 4.9).

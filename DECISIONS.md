@@ -170,3 +170,46 @@ worth a second look.
 - **Decision:** `copied_given` is true if the answer's number equals a given's (or distractor's) *displayed*
   number within 0.1%, or its SI value equals a same-dimension given's SI value within 0.1%. It is logged only;
   it never touches the reward.
+
+## Phase 3 — Baseline eval
+
+### D20. Baseline uses greedy decoding, one completion per problem **[REVIEW]**
+- **Decision:** `do_sample: false`, `max_new_tokens: 512`, batch 16, bf16, plain transformers.
+- **Alternatives:** sample at the future training temperature, possibly k samples per problem (which would
+  also give pass@k and sample-based calibration).
+- **Why:** deterministic and reproducible, and the standard way to report a single-number baseline. Later
+  checkpoints must be evaluated the same way (greedy) for the comparison to be fair. Note that GRPO rollouts
+  will be sampled, so training-time reward will not equal this eval's reward.
+
+### D21. Held-out-family and simulator splits are configured but skipped in the baseline
+- **Decision:** `configs/eval.yaml` defines all four spec splits. `heldout_family` (optics) and `simulators`
+  are skipped with a logged reason, because neither exists before phase 6.
+- **Alternative:** implement optics/simulators tonight (phase 6 work, outside tonight's scope).
+- **Why:** the untrained model doesn't change, so its numbers on those splits can be added in phase 6 by
+  rerunning the same command. Nothing is lost.
+
+### D22. The rollout tape was built in phase 3, as the eval's logging mechanism
+- **Decision:** `physcal/tape/tape.py` writes the spec's fields, plus `split`, `n_tokens` and `truncated`, one
+  JSON line per completion. A `.meta.json` sidecar stores the env, reward and eval configs, the system prompt
+  and the git commit. `replay()` regenerates each problem from (version, family, depth, seed), checks it is
+  identical, re-scores it, and requires exact float equality of the reward. Eval lines use `step = 0` and
+  `lora_hash = null`.
+- **Why:** "every rollout is logged" is a hard constraint, and eval completions are rollouts.
+
+### D23. Metric denominators
+- **Decision:** accuracy counts parse failures and unit mismatches as incorrect (denominator = all problems).
+  Median relative error is over answers that parsed with valid units. 1σ/2σ coverage, PIT and reliability are
+  over answers that also stated a σ. The `n` behind each is reported (`n_answered`, `n_with_sigma`).
+  `accuracy_among_answered` is reported too. Mean score per rule counts failures at that rule's floor.
+- **Why:** headline accuracy must not improve just because the model stops answering hard problems. Coverage
+  is only defined where a σ exists.
+
+### D24. Peak VRAM is recorded two ways
+- **Decision:** torch `max_memory_allocated` / `max_memory_reserved` (this process only), plus device-wide
+  `nvidia-smi` polling every 2 s. The device-wide number includes ~1.9 GB used by the Windows display/WSL host,
+  which this process does not control.
+
+### D25. Eval split construction
+- **Decision:** 200 problems per split, assigned round-robin to (family, depth) cells (ID: 3 families × depths
+  1–4 = 12 cells, ~17 each; depth extrapolation: 3 cells, ~67 each). Seeds: `eval_seed_offset + split_index ×
+  1e6 + i`, so no two splits share a seed and none collides with training seeds (< 1e9).

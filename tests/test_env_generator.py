@@ -177,3 +177,29 @@ def test_unit_round_trip(value, family, data):
     unit = data.draw(st.sampled_from(q.units))
     back = to_si(from_si(value, q.si_unit, unit), unit)
     assert math.isclose(back, value, rel_tol=1e-12)
+
+
+def test_zero_intermediate_after_rounding_is_rejected_not_crashed():
+    """Regression: for this eval seed a subtraction step (t3 = t_tot - t1 - t2) came out exactly 0 after
+    rounding, and the next step divided by it (ZeroDivisionError inside pint)."""
+    p = generate_problem("kinematics", 5, 1001000087, split="eval")
+    assert p.target_value_si > 0 and all(v > 0 for v in p.intermediates.values())
+
+
+def test_chain_evaluation_stops_at_zero_intermediate():
+    fam = get_family("kinematics")
+    chain = next(c for cs in fam.chains(2).values() for c in cs if c.steps[0] == ("K11", "t3"))
+    # t3 = t_tot - t1 - t2 = 0 exactly; the next step divides by t3.
+    givens = {g: 10.0 for g in chain.givens}
+    givens.update(t_tot=30.0, t1=10.0, t2=20.0)
+    for evaluate in (fam.evaluate_chain, fam.evaluate_chain_with_units):
+        out = evaluate(chain, givens)
+        assert all(math.isnan(v) for v in out.values())
+
+
+def test_condition_number_is_infinite_outside_valid_domain():
+    fam = get_family("kinematics")
+    chain = next(c for cs in fam.chains(2).values() for c in cs if c.steps[0] == ("K11", "t3"))
+    givens = {g: 10.0 for g in chain.givens}
+    givens.update(t_tot=30.0, t1=10.0, t2=20.0)
+    assert fam.condition_number(chain, givens, 1e-6) == math.inf
