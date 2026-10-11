@@ -1,0 +1,130 @@
+"""Problem text: number formatting, unit randomization, phrasing templates, distractors."""
+
+from __future__ import annotations
+
+import math
+from dataclasses import asdict, dataclass
+
+import numpy as np
+
+from physcal.env.graph import Family, Quantity
+from physcal.env.units import from_si, to_si
+
+GIVEN_TEMPLATES = (
+    "The {desc} is {sym} = {val}.",
+    "{sym} = {val} (the {desc}).",
+    "The {desc}, {sym}, equals {val}.",
+    "It is known that {sym} = {val}, where {sym} is the {desc}.",
+)
+
+QUESTION_TEMPLATES = (
+    "Find the {desc}, {sym}, in {unit}.",
+    "What is the {desc}, {sym}? Give your answer in {unit}.",
+    "Determine {sym}, the {desc}. Express the result in {unit}.",
+)
+
+QUESTION_TEMPLATES_DIMENSIONLESS = (
+    "Find the {desc}, {sym}.",
+    "What is the {desc}, {sym}? Give your answer as a pure number.",
+    "Determine {sym}, the {desc}.",
+)
+
+STEPS_TEMPLATES = (
+    "In <steps>, report the intermediate values {syms}.",
+    "Report these intermediate quantities in <steps>: {syms}.",
+    "Your <steps> must include the intermediate values {syms}.",
+)
+
+NO_STEPS_TEMPLATE = "No intermediate values need to be reported, so <steps> may be empty."
+
+CONSTANT_TEMPLATE = "Use {sym} = {val}."
+
+GIVEN_HEADERS = ("Given:", "Known values:", "Data:")
+
+
+@dataclass(frozen=True)
+class ShownValue:
+    """A number as it appears in the text, and its exact SI value."""
+
+    symbol: str
+    desc: str
+    display: str
+    unit: str
+    value_si: float
+
+    @property
+    def text(self) -> str:
+        return f"{self.display} {self.unit}".strip()
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+def format_number(x: float, sig_figs: int, fixed_exponents: tuple[int, int]) -> str:
+    """Round to `sig_figs` significant figures. Fixed notation inside `fixed_exponents`, else e-notation."""
+    if x == 0:
+        return "0"
+    rounded = float(f"{x:.{sig_figs - 1}e}")
+    exp = math.floor(math.log10(abs(rounded)))
+    lo, hi = fixed_exponents
+    if lo <= exp <= hi:
+        decimals = max(sig_figs - 1 - exp, 0)
+        return f"{rounded:.{decimals}f}"
+    mantissa = rounded / 10**exp
+    return f"{mantissa:.{sig_figs - 1}f}e{exp}"
+
+
+def choose_unit(q: Quantity, value_si: float, rng: np.random.Generator, magnitude_range: tuple[float, float]) -> str:
+    """Random unit from the quantity's menu whose magnitude lands in `magnitude_range`; else the SI unit."""
+    lo, hi = magnitude_range
+    options = [u for u in q.units if lo <= abs(from_si(value_si, q.si_unit, u)) < hi]
+    if not options:
+        return q.si_unit
+    return options[rng.integers(len(options))]
+
+
+def show_value(q: Quantity, value_si: float, rng: np.random.Generator, display_cfg: dict) -> ShownValue:
+    """Pick a display unit, round, and return the SI value of exactly what is displayed."""
+    unit = choose_unit(q, value_si, rng, tuple(display_cfg["magnitude_range"]))
+    shown = format_number(from_si(value_si, q.si_unit, unit), display_cfg["sig_figs"], tuple(display_cfg["fixed_exponent_range"]))
+    return ShownValue(q.symbol, q.desc, shown, unit, to_si(float(shown), unit))
+
+
+def _pick(rng: np.random.Generator, options: tuple[str, ...]) -> str:
+    return options[rng.integers(len(options))]
+
+
+def render_text(
+    family: Family,
+    target: Quantity,
+    target_unit: str,
+    shown: list[ShownValue],
+    intermediates: tuple[str, ...],
+    rng: np.random.Generator,
+    display_cfg: dict,
+) -> str:
+    """Assemble intro, givens (in random order), constants, question and the steps instruction."""
+    intro = _pick(rng, family.intros)
+    order = rng.permutation(len(shown))
+    lines = [
+        _pick(rng, GIVEN_TEMPLATES).format(desc=shown[i].desc, sym=shown[i].symbol, val=shown[i].text)
+        for i in order
+    ]
+    for sym, (value, unit) in family.constants.items():
+        val = f"{format_number(value, display_cfg['sig_figs'], tuple(display_cfg['fixed_exponent_range']))} {unit}"
+        lines.append(CONSTANT_TEMPLATE.format(sym=sym, val=val))
+
+    if target_unit:
+        question = _pick(rng, QUESTION_TEMPLATES).format(desc=target.desc, sym=target.symbol, unit=target_unit)
+    else:
+        question = _pick(rng, QUESTION_TEMPLATES_DIMENSIONLESS).format(desc=target.desc, sym=target.symbol)
+    if intermediates:
+        steps = _pick(rng, STEPS_TEMPLATES).format(syms=", ".join(intermediates))
+    else:
+        steps = NO_STEPS_TEMPLATE
+
+    if rng.integers(2):
+        givens = _pick(rng, GIVEN_HEADERS) + "\n" + "\n".join(f"- {line}" for line in lines)
+    else:
+        givens = " ".join(lines)
+    return f"{intro}\n\n{givens}\n\n{question} {steps}"
