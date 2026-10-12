@@ -1,164 +1,133 @@
-# Morning report: overnight session 2026-10-11
+# Morning report: 2026-10-12 (Phase 3.5 + first Phase 4 run)
 
-**Phases 1, 2 and 3 are done, tested and committed. Phase 4 was not started.** 210 tests pass
-(`uv run pytest`, ~33 s). Nothing is BLOCKED. Nothing was pushed.
+**Short version.** All four Phase 3.5 decisions are applied. The model probe ran on all three candidates,
+and the selection rule picked **Qwen3.5-2B**. A first GRPO run (crps_log, per your > 50% rule) ran
+**49 steps** before the hard deadline. It fit easily in memory (4.45 GiB device peak) but **did not learn**:
+82–94% of completions hit the 1024-token cap and scored the floor. The final eval is in §4.
+**What you need to decide next is how to solve completion length / format before more RL** (§6).
+Everything is committed and pushed (`origin/main`), 226 tests pass, nothing is BLOCKED, and all GPU work
+ended before 15:45 IST.
 
-**The headline finding:** untrained Qwen2.5-1.5B-Instruct scores **0%** on these problems. When I sampled
-8 completions per problem, as a GRPO group would, **100% of groups had zero reward variance under the binary
-reward**. Phase 4 as specified (first GRPO run with the binary reward) would therefore get no gradient from this
-starting point. The CRPS reward does not have this problem: only 4% of groups were zero-variance. Details and
-a recommendation are at the end.
-
-Commits (local `main`):
-```
-6b80d63 17:47 phase 1: formula-graph problem generator for kinematics, dynamics, energy
-487c6cf 17:58 phase 2: verifier (parser, pint units gate, CRPS and ablation scores, step credit)
-044ae76 18:19 phase 3: baseline eval of Qwen2.5-1.5B-Instruct, rollout tape, calibration metrics
-e9a2fed 19:17 phase 3: explicit greedy baseline, group-variance probe, prompt diagnostics
-```
-(MORNING.md itself is in a final small commit.) The full log is in [PROGRESS.md](PROGRESS.md). All 28
-decisions are in [DECISIONS.md](DECISIONS.md).
+Earlier reports: phase 1–3 details in [PROGRESS.md](PROGRESS.md), every decision in [DECISIONS.md](DECISIONS.md)
+(D29–D34 are new), research results in [FINDINGS.md](FINDINGS.md) (#1, #2).
 
 ---
 
-## 1. What was completed
+## 1. Phase 3.5: your decisions, applied
 
-### Phase 1: Environment (87 tests)
-- `physcal/env/`: kinematics, dynamics and energy families. Each family is one coherent multi-stage scenario
-  (cart accelerate → cruise → brake; crate pulled, then released; block on ramp → rough patch → spring).
-  Formulas are sympy relations with unique positive solve directions, and dimensions are pint-checked.
-- Problems are linear chains of depth 1–5 with **honest depth**: the minimal derivation depth over all formulas
-  of the family equals the chain length. Givens are **algebraically independent** (Jacobian rank), so no
-  problem is over-determined. Givens are shown at 3 s.f. in random units (km/h, g, min, mN, ...), and ground
-  truth is recomputed from the displayed numbers. Chains whose condition number exceeds 5 are rejected.
-  0–2 irrelevant distractors per problem.
-- Valid chain templates per cell (exhaustively enumerated): kinematics 42/181/251/73/24, dynamics
-  43/158/290/250/97, energy 30/85/112/89/36 for depths 1–5.
-- Tests: 1,000 seeds per family against an independent 30-digit sympy evaluation of the composed chain;
-  hypothesis property tests; physics consistency (every formula holds in every sampled world); plus a
-  30,000-seed stress run with 0 failures.
-- **Hand-check the physics:** 5 random problems with full worked ground truth are in PROGRESS.md
-  ("Five random problems for hand-checking"). I re-derived all of them by hand.
-- Two real bugs were found and fixed with regression tests: over-determined givens (found while hand-checking)
-  and a divide-by-exactly-zero after rounding (found by an eval seed).
+| decision | done | where |
+|---|---|---|
+| Default rule → `crps_log`; relative CRPS kept as a flag | ✓ | `configs/reward.yaml`, D29 (`50bd351`) |
+| −5 failure floor for CRPS; binary floor 0 | ✓ (already implemented, now marked final) | D13 |
+| Depth-1 wording fixed; generator → **1.1.0** (`1.1.0+c735a0d4`); eval sets regenerated; old tapes replayable | ✓ | D30 (`8e34524`); frozen sets in `data/eval_sets/1.1.0+c735a0d4/` with a byte-equality test; all 6 phase-3 tapes (2,368 rollouts) still replay exactly under 1.0.0 |
+| FINDINGS #1: binary 100% zero-variance vs CRPS 4% | ✓ | FINDINGS.md #1 (`57f144c`). Re-scored with a truly σ-free binary rule: still 100% (48/48 groups); relative CRPS 4.2%, crps_log 0.0% |
 
-### Phase 2: Verifier (107 tests)
-- Tolerant parser (±, +/-, \pm, sci notation incl. ×10^k and unicode, LaTeX, `(μ ± σ) unit`, percent σ,
-  `[unit]`). It's strict about structure: exactly one `<answer>`, no truncation.
-- Pint units gate. Relative Gaussian CRPS as specified, plus `binary`, `log_score`, `abs_rel_error`, and an
-  extra `crps_log` (see D15). Step credit within 2%. `reward()` returns `(float, breakdown)`.
-- CRPS is verified against its integral definition. Monte Carlo confirms the expected CRPS is minimized at the
-  true σ.
+## 2. Model probe (inference only)
 
-### Phase 3: Baseline eval (16 tests + runs)
-- Rollout tape with `replay()`. **All 2,368 logged rollouts replay with bit-exact rewards.**
-- Eval harness (`uv run python -m physcal.eval.run_eval`): stratified splits with disjoint seeds, PIT and
-  reliability plots, per-depth and per-family tables, `--replot`, and `physcal.eval.rescore` to re-score a tape
-  under any rule.
-- Held-out-family and simulator splits are configured but skipped: they don't exist until phase 6 (D21).
+Same prompt for all (v4: worked example, no σ hint), 1024 new tokens, generator 1.1.0, crps_log, explicit
+decoding. Greedy: 200 ID + 200 depth-5 problems. Group: 48 ID problems × k = 8 at T = 1.0. Revisions pinned
+and verified after load. Full table: `results/model_probe/summary.md`.
 
----
+| model | greedy ID ≤1% / ≤2% / ≤5% / ≤10% (σ-free) | depth-5 ≤1% | truncated (greedy) | **binary zero-var** | crps_log zero-var | pass@8 | est. GRPO peak | measured inference peak (torch / device) |
+|---|---|---|---|---|---|---|---|---|
+| Qwen2.5-1.5B-Instruct `989aa798` | 2.5 / 3.0 / 4.0 / 5.5% | 1.0% | 42.5% | 91.7% | 2.1% | 8.3% | 3.67 GB | 4.48 / 6.84 GiB |
+| Qwen2.5-Math-1.5B-Instruct `aafeb0fc` | 0 / 0 / 0 / 0% (100% parse fail) | 0% | 28.0% | 97.9% | 95.8% | 2.1% | 3.67 GB | 4.48 / 6.83 GiB |
+| **Qwen3.5-2B** `15852e8c` (non-thinking) | **13.5** / 13.5 / 13.5 / 14.0% | 2.5% | 69.5% | **72.9%** | 56.2% | 27.1% | 4.27 GB | 6.92 / 7.67 GiB |
 
-## 2. Baseline numbers (`results/baseline/`)
+- **Selection rule → train Qwen3.5-2B.** It is the only model under the 80% binary zero-variance threshold,
+  and its estimated footprint (4.27 GB) fits 6.5 GB. Binary zero-variance by depth: 25% / 75% / 100% / 92% for
+  depths 1–4.
+- **Qwen2.5-Math has the best physics but the wrong format** (D32). It always answers in `\boxed{}`. Read
+  out-of-band (diagnostic only, not the verifier), its boxed answers are within 1% on **35% of ID / 8.5% of
+  depth-5** problems (greedy), versus 13.5% / 2.5% for Qwen3.5-2B through the verifier.
+- **Qwen3.5-2B is limited by length.** When it finishes it's mostly right, but 70–76% of completions
+  hit 1024 tokens before `<answer>`.
+- Why Qwen3.5-2B counted as "the strongest current ≤ 2B instruct": D31 (Qwen's card: non-thinking MMLU-Pro
+  55.3 vs Qwen3-1.7B 40.2; LFM2.5-1.2B and granite-4.0-1b compare below Qwen3-1.7B on LiquidAI's card).
+- Two fixes made along the way: Qwen3.5 ships no `generation_config.json` and names the wrong stop token
+  (so generation would never stop at the end of a turn), and its sampled probe had to be re-run at batch 8
+  after an OOM-retry slowdown (D33).
 
-Qwen/Qwen2.5-1.5B-Instruct, bf16, **no OOM** (no fallback needed). Pure greedy, ≤ 512 new tokens, prompt v1.
-**Peak VRAM: 3.76 GiB** allocated by torch (3.84 GiB reserved). The device-wide peak was 4.95 GiB of 8 GiB,
-including ~1.9 GB used by the Windows display. 400 problems took 451 s.
+## 3. Phase 4: install, smoke test, first GRPO run
 
-| split | n | accuracy (≤ 1%) | σ-free accuracy | 1σ coverage | 2σ coverage | parse fail | unit mismatch | median rel. error | median stated rel. σ |
-|---|---|---|---|---|---|---|---|---|---|
-| ID (depth 1–4) | 200 | **0.0%** | 0.5% | **0.7%** | 1.4% | **26.5%** | **0.0%** | 0.92 | 0.47% |
-| depth 5 (extrapolation) | 200 | **0.0%** | 0.0% | **0.0%** | 3.2% | **21.5%** | **0.5%** | 0.93 | 1.0% |
+- **Install (4a):** unsloth 2026.10.3, trl 1.13.0, peft 0.21.2, bitsandbytes 0.50.2. Unsloth needs
+  `transformers <= 5.17.0`, so the project now pins **5.17.0** (the probes used 5.19.0). Qwen3.5 worked on the
+  first attempt, so no fallback model was needed.
+- **Smoke test (4c, 10 steps):** **78 s/step** (step 1: 167 s compile), **peak 3.30 GiB torch / 4.17 GiB
+  device-wide**, which matches the 4.27 GB estimate.
+- **Run (4d):** Qwen3.5-2B, **crps_log** (binary zero-variance 72.9% > 50%), 1 prompt × 8 completions per
+  step, 1024 tokens, LoRA r = 16, lr 5e-6, DAPO loss (TRL default), no KL. It stopped at the **14:55 IST hard
+  deadline after 49 steps** (57 min, 69.4 s/step; your 2 h / 300-step caps didn't bind). Peak **3.29 GiB
+  torch / 4.45 GiB device**. The thermal guard (checked every 5 steps, limit 87 °C) never triggered a pause; spot readings were 69–75 °C.
 
-- Coverage target is 68% (1σ) / 95% (2σ). The model is wildly over-confident: it states ~0.5% σ while its
-  median error is ~92%.
-- Parse failures are mostly answers without ± (20% of all completions), plus some 512-token truncations.
-- σ-free accuracy = the same completions re-scored with the `binary` rule, which doesn't require ±.
-- Mean CRPS reward: −2.41 (ID), −2.31 (depth 5). Mean step credit ≈ 0.01.
+![training curve](results/train/phase4-grpo-qwen3.5-2b-crps_log/training_curve.png)
 
-I checked by hand that the zeros come from the model, not the verifier. The model restates the givens and
-formulas, then writes a placeholder-like guess (e.g. writes `t2 = t_tot - t1 - t3`, truth 14.1 s, answers
-`1.0 s`).
+| steps | mean reward | zero-var (crps_log) | zero-var (binary) | accuracy ≤1% | truncated | mean tokens |
+|---|---|---|---|---|---|---|
+| 1–10 | −4.68 | 50% | 70% | 6.2% | 89% | 956 |
+| 11–20 | −4.60 | 40% | 70% | 7.5% | 84% | 913 |
+| 21–30 | −4.87 | 80% | 90% | 2.5% | 94% | 979 |
+| 31–40 | −4.61 | 60% | 70% | 6.2% | 85% | 923 |
+| 41–49 | −4.90 | 78% | 89% | 4.2% | 82% | 936 |
 
-### Diagnostics run for phase 4 (inference only, all logged under `results/`)
+**Reading:** no learning trend. With 1 prompt per step, a step has a gradient only if at least one of its 8
+completions finishes inside 1024 tokens. That happened in roughly 40% of steps, and 49 steps was far too few
+to change the model's length habit. Predicted σ and coverage are too sparse per step to read: only 0–3
+completions per step even reach `<answer>`.
+Artifacts: `results/train/phase4-grpo-qwen3.5-2b-crps_log/` (train_metrics.jsonl, rollouts.jsonl with 392
+rollouts that replay exactly, summary.json, training_curve.png). The adapter and checkpoint-49 are local only
+(gitignored).
 
-| what | result |
-|---|---|
-| Group probe, k = 8, T = 1.0, prompt v1 (48 ID problems) | 0/384 correct. **Binary: 100% of groups have zero variance.** CRPS: 4% |
-| Same, prompt v2 (an instruction to "reason first") | 1/384 correct. Binary: 97.9% zero-variance. CRPS: 14.6% |
-| Greedy, prompt v3 (one worked example in the system prompt) | ID accuracy **1.5%** (σ-free 2.0%), but **45% (ID) / 68% (depth 5) of completions hit the 512-token cap** |
-| Depth-1 wording | 96–98% of depth-1 answers skip the calculation entirely, caused by the generator's sentence "...<steps> may be empty". Replacing it gives 34% answer-only, but still 0% accuracy |
-| Qwen's default `repetition_penalty=1.1` (silently applied in my first run) | slightly worse (35% parse fail, 11% truncated). Kept as `results/baseline_qwen_genconfig_rep1.1/` for reference |
+## 4. Before / after eval (4e)
 
----
+EVAL_TABLE_PLACEHOLDER
 
-## 3. Decisions to review
+## 5. Decisions to review (new since your last read)
 
-All 28 are in DECISIONS.md. These are the ones I'd most like you to look at, in priority order:
+1. **D34: how phase 4 was run.** Mainly: 1 prompt per step (cheapest; also the reason for the per-step
+   variance); TRL's default DAPO loss; LoRA not on the Gated-DeltaNet projections; the transformers 5.17 pin
+   for Unsloth (eval run with a 5.19 overlay for comparability).
+2. **D31: candidate choice and probe design.** All models use the same prompt and our explicit decoding,
+   not each card's recommended sampling. The 6.5 GB budget is read as decimal GB.
+3. **D32: Qwen2.5-Math scored on format as-is.** The verifier was not changed; the `\boxed{}` diagnostic is
+   reported but not used for selection.
+4. **D33: Qwen3.5 group probe re-run at batch 8.** Same problems/seed, different random stream.
+5. **D30: generator 1.1.0 re-draws every eval problem** (the version seeds the RNG), not just the depth-1
+   text. 1.0.0 and 1.1.0 numbers are on different, identically distributed problem sets.
 
-1. **D13, failures score the rule's floor (−5 under CRPS), not a literal 0.** Under CRPS every valid answer
-   scores < 0, so a literal "reward 0" for malformed output would make garbage the best possible output. For
-   the binary rule the floor is 0, matching the spec exactly.
-2. **D15, the spec's relative CRPS is only approximately proper.** Dividing by the *truth* |y| re-weights
-   outcomes. By Monte Carlo, the optimal reported μ is biased by −1% at 10% relative spread and by −11% at 30%,
-   with σ inflated up to 7%. This matters for a small model and for RQ2. I kept `crps` as the default, per the
-   spec, and added `crps_log` (CRPS on ln y, strictly proper and still scale-free) as a config option, with
-   tests. **Decide before phase 5.**
-3. **D26, decoding is explicit; the official baseline uses repetition_penalty 1.0.** Qwen's
-   `generation_config.json` silently adds 1.1, which also penalizes copying prompt numbers. Both runs are kept.
-4. **D28, prompt choice for training.** v1 is official. v3 (worked example) is the only prompt that moves
-   accuracy off zero, but its "about 1%" uncertainty line would cue σ (confounding RQ2), and its verbosity
-   collides with the 512-token cap. Also: whether to fix the depth-1 sentence (needs a generator version bump).
-5. **D3, a family = one coherent multi-stage scenario**, with the full scenario text in every problem. This was
-   needed to make depth-5 chains unambiguous. Kinematics depth 5 is narrow: 24 chains over 5 targets (D5).
-6. **D8, problem identity is (generator_version, family, depth, seed)**, not just (version, seed), because the
-   curriculum picks the cell. The version string includes a hash of the generator config.
-7. **D20, greedy eval** (deterministic). Trained checkpoints must be evaluated the same way.
+## 6. Recommendation: what to decide next
 
-The rest are lower stakes but worth a skim: D1 (Python 3.11 and the uv/HF caches live inside the project),
-D4 (truth from displayed values), D6 (Jacobian-rank independence), D7 (condition number ≤ 5), D9 (held-out
-cells refused in the generator; eval seeds ≥ 1e9), D10 (dedicated distractors), D11 (plausibility bounds),
-D16–D17 (parser leniency; `<steps>` optional), D18 (depth-1 step score = 0), D21 (held-out/simulator splits
-skipped until phase 6).
+**The bottleneck is no longer the reward. It is that the policy rarely produces a finished, well-formed
+answer inside the token budget.** Every RL signal flows through completions that end with `<answer>`.
+Qwen3.5-2B truncates 70–90% of the time at 1024 tokens; Qwen2.5-Math finishes but in the wrong format.
+Note too that the spec's GRPO budget is **512** tokens (CLAUDE.md), and all of tonight's work used 1024 per
+your brief. At 512, every candidate would be worse.
 
----
+What I'd decide, in order:
 
-## 4. BLOCKED
+1. **Approve a short Phase 3.6 SFT warm-up** on generator-written *concise* solutions: SI conversion, one line
+   per chain step, `<steps>`, `<answer>`, aiming at ≤ 300–400 tokens. Mask the σ tokens out of the SFT loss so
+   σ is learned only from the proper scoring rule in RL. This teaches format and brevity, which are exactly
+   the two failure modes measured. A draft is in [PHASE3_6_PLAN.md](PHASE3_6_PLAN.md) (not approved, not run).
+2. **Pick the base model for that warm-up.** Qwen3.5-2B (passes selection today, follows the format, fits:
+   4.45 GiB in training) or **Qwen2.5-Math-1.5B** (best latent physics, 35% ID within 1%; it only lacks the
+   format, which SFT fixes cheaply; smaller and faster). My suggestion is a 30-minute SFT on each, then
+   re-run the existing group probe (`uv run python -m physcal.eval.model_probe --only <label> --part group`)
+   and let the binary zero-variance number decide.
+3. **Decide the completion budget explicitly:** keep the spec's 512 (needs SFT for brevity), or adopt 1024
+   (memory is fine: 4.45 GiB peak; steps take ~70 s).
+4. **Then re-run phase 4** with 4 prompts × 8 completions per step (less step-to-step variance), a curriculum
+   that starts at depths 1–2 (where Qwen3.5's zero-variance is 25–75%), and a multi-hour budget. Keep binary
+   as the RQ1 comparison arm only once it has non-zero variance; FINDINGS #1 already shows it gets no signal
+   from a cold start.
 
-**Nothing.** No failure persisted after 3 attempts.
+## 7. BLOCKED / housekeeping
 
-One housekeeping item: `uv python install` also created the symlink `~/.local/bin/python3.11`, outside the
-project. My attempt to remove it was denied by the permission system, so it is still there. It is harmless and
-points into `.cache/uv-python/`. Remove it with:
-
-```bash
-rm ~/.local/bin/python3.11
-```
-
----
-
-## 5. Recommended next step
-
-**Fix the starting point before any GRPO.** The phase-4 plan ("binary reward, reward curve goes up") cannot
-work from a model with pass@8 = 0. Every group would be zero-variance. I'd spend an hour on this, using only
-the tools that already exist:
-
-1. **Choose the prompt and the depth-1 wording.** Write a v4 prompt: v3's worked example without the
-   "about 1%" σ hint, and with terser arithmetic so it fits in 512 tokens. Also replace the depth-1
-   "<steps> may be empty" sentence, bumping the generator to 1.1.0 and re-running the baseline.
-2. **Measure with the group probe** until the binary zero-variance fraction is clearly below 100% on the easy
-   cells:
-   ```bash
-   uv run python -m physcal.eval.run_eval --config eval_group_probe
-   ```
-   (Edit `prompt:` in `configs/eval_group_probe.yaml`. Each run takes ~8 min.)
-3. **If the binary pass rate stays ≈ 0:** either (a) treat "binary cannot bootstrap from zero, CRPS can" as a
-   phase-4/RQ1 result, and run the first GRPO pilot with CRPS just to validate the training loop; or (b) do a
-   short SFT warm-start on generator-written solutions (`worked_solution()` already produces the steps). (b)
-   changes the research story, so it's your call.
-4. **Then install phase-4 deps:** `uv add unsloth trl`. Unsloth 2026.10.3 accepts our torch 2.14.1 (it requires
-   `<2.15`) and pins `trl<=1.13.0`; I checked PyPI but didn't install. Decide `crps` vs `crps_log` (D15)
-   before phase 5.
-
-Note on VRAM: inference peaked at 3.8 GiB, so a 4-bit 1.5B model with LoRA and G = 8 should fit within the
-~6 GB available to us. That's still to be confirmed in phase 4.
+- **BLOCKED:** nothing. The install worked first time, and no model switch was needed.
+- `~/.local/bin/python3.11` (a symlink created by `uv python install` yesterday) is still there. It's
+  harmless; remove it with `rm ~/.local/bin/python3.11` if you like.
+- The project now pins `transformers==5.17.0` because of Unsloth. Inference-only runs can still use 5.19 via
+  `uv run --with transformers==5.19.0 ...`.
+- Large local-only artifacts (gitignored): the LoRA adapter and checkpoint in
+  `results/train/phase4-grpo-qwen3.5-2b-crps_log/{final_adapter,checkpoints}/`, and the model weights in
+  `.cache/huggingface/`.

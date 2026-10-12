@@ -395,3 +395,12 @@ Progress:
   Estimated GRPO footprints: 4.27 / 3.67 / 3.67 GB (budget 6.5 GB). **Selection rule → train Qwen3.5-2B.**
   Its binary zero-variance is > 50%, so phase 4 uses `crps_log` (your rule).
   The Qwen3.5 group probe was re-run at batch 8 after an OOM-retry slowdown at batch 16 (D33).
+
+## Phase 4 — First GRPO run (2026-10-12, unattended)
+
+- [x] 4a. Training stack installed (unsloth 2026.10.3, trl 1.13.0, peft 0.21.2, bitsandbytes 0.50.2;
+  transformers pinned to 5.17.0). Qwen3.5-2B supported on the first attempt. 226 tests pass.
+- [x] 4c. 10-step smoke test: 78 s/step (first step 167 s compile), peak 3.30 GiB torch / 4.17 GiB device.
+- [x] 4d. GRPO run, crps_log (D34): 49 steps (hard deadline), 69.4 s/step, peak 3.29 / 4.45 GiB. No
+  improvement: 10-step mean reward −4.68 → −4.90, truncation 82–94%, zero-variance 40–80% of steps.
+- [ ] 4e. Eval of the final adapter on the probe's eval sets (running, ends ≈ 15:31 IST).

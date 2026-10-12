@@ -329,3 +329,37 @@ worth a second look.
   doesn't change what the probe measures (same 48 problems, k = 8, T = 1.0, seed 0), but the random stream
   differs from a batch-16 run. The OOM backoff now prints a line whenever it triggers, so this is visible
   next time. Greedy results (batch 16, no backoffs) are unchanged.
+
+## Phase 4 — First GRPO run (2026-10-12, unattended per your instructions)
+
+### D34. How the first GRPO run was set up **[REVIEW]**
+- **Model and reward:** Qwen3.5-2B (the selection rule's pick). Reward `crps_log` + 0.2·step credit, not
+  binary: its probe binary zero-variance was 72.9% > 50% (your rule).
+- **Stack:** unsloth 2026.10.3 + trl 1.13.0 + peft 0.21.2 + bitsandbytes 0.50.2. Unsloth requires
+  `transformers <= 5.17.0`, so the project now pins `transformers==5.17.0` (the probes ran on 5.19.0).
+  Unsloth supported Qwen3.5 on the first attempt (it bundles the Gated-DeltaNet Triton kernels); there was no
+  fallback model and no install trouble.
+- **GRPO shape:** 1 prompt × 8 completions per optimizer step (micro-batch 2 × 4 accumulation), 1024
+  completion tokens, T = 1.0, top_p 1, top_k off, LoRA r = 16 on q/k/v/o/gate/up/down (the Gated-DeltaNet
+  projections in the linear-attention layers carry no adapter), lr 5e-6 constant after 3 warmup steps,
+  AdamW-8bit, grad-norm clip 0.1, beta 0 (no KL / no reference model). TRL 1.13 defaults kept and recorded:
+  `loss_type = dapo`, `scale_rewards = group`. Training problems: train split, seeds 0.., round-robin over
+  the 12 training cells (the curriculum sampler is phase 5). The model is loaded text-only (vision tower
+  skipped), bf16 compute (Unsloth warns Qwen3.5 GDN layers NaN in fp16).
+- **Caps:** your 2 h / 300 steps, plus a hard stop at 14:55 IST so the eval could finish before the 15:44
+  GPU cutoff. The hard stop bound first: **49 steps** in 57 min. Because of that, no step-50 checkpoint
+  exists; the stop saved `checkpoint-49` and `final_adapter` (both gitignored, kept locally in
+  `results/train/phase4-grpo-qwen3.5-2b-crps_log/`).
+- **Logging:** every rollout goes to `rollouts.jsonl` (392 = 49 × 8, replays exactly). Per step:
+  reward, zero-variance fraction (crps_log and σ-free binary), median/mean predicted relative σ, 1σ/2σ
+  coverage, accuracy, parse/unit failures, truncation and completion length go to `train_metrics.jsonl`.
+  The curve is `training_curve.png`.
+- **Smoke-test fixes:** the step counter read a stale `TrainerState` (TRL replaces it when `train()` starts),
+  and `warmup_ratio` is not accepted by this stack (→ `warmup_steps`). The smoke run's own logs keep step = 1
+  in every row.
+- **Eval of the trained adapter:** same eval sets as the selected model's "before" probe
+  (`eval_probe_greedy`: 200 ID + 200 depth-5, prompt v4, greedy, 1024 tokens), run with
+  `uv run --with transformers==5.19.0` so the library version matches the "before" numbers. The base is
+  loaded text-only (`AutoModelForCausalLM`, because the adapter's keys are `model.layers.*`; CPU-verified that
+  all 96 LoRA modules attach), and LoRA is merged into the bf16 base. The "before" probe loaded the VL
+  class; its text path is the same computation. Guarded by `timeout` until 15:44 IST.
