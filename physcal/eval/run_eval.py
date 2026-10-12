@@ -20,6 +20,7 @@ from physcal.config import REPO_ROOT, load_config
 from physcal.env.formulas import FAMILY_NAMES
 from physcal.env.generator import Problem, env_config, generate_problem, generator_version
 from physcal.eval import calibration
+from physcal.eval.signals import rule_configs, rule_outcomes
 from physcal.prompt import SYSTEM_PROMPTS, build_messages
 from physcal.tape.tape import TapeWriter
 from physcal.verify.reward import reward, reward_config
@@ -229,11 +230,13 @@ def run(
     tape_path = out / "rollouts.jsonl"
     tape_path.unlink(missing_ok=True)
     records: dict[str, list[dict]] = {name: [] for name in splits}
+    per_rule_cfgs = rule_configs(rw_cfg)
     with TapeWriter(tape_path, eval_cfg["run_id"], meta) as tape:
         for n, gen in enumerate(generations):
             name, problem = items[n // k]
             r, bd = reward(problem, gen.text, rw_cfg)
-            extra = {"split": name, "sample": n % k, "n_tokens": gen.n_tokens, "truncated": gen.truncated}
+            extra = {"split": name, "sample": n % k, "n_tokens": gen.n_tokens, "truncated": gen.truncated,
+                     "by_rule": rule_outcomes(problem, gen.text, per_rule_cfgs)}
             tape.log(0, problem, gen.text, r, bd, model_id, None, extra)
             records[name].append({"problem": problem.to_dict(), "breakdown": bd, **extra})
 
@@ -258,6 +261,7 @@ def run(
         summary["mean_completion_tokens"] = sum(r["n_tokens"] for r in recs) / len(recs)
         summary["by_depth"] = calibration.breakdown_by(recs, "depth")
         summary["by_family"] = calibration.breakdown_by(recs, "family")
+        summary["accuracy_at_tolerance"] = calibration.accuracy_at_tolerances(recs, cal["accuracy_tolerances"])
         if k > 1:
             summary["groups"] = calibration.group_stats(recs)
         metrics["splits"][name] = summary

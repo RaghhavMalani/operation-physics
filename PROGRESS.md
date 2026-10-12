@@ -385,3 +385,8 @@ Progress:
 - [x] D29 `crps_log` default (commit 50bd351). The −5 floor for failures was already in place.
 - [x] D30 generator 1.1.0 (`1.1.0+c735a0d4`), frozen eval sets in `data/eval_sets/1.1.0+c735a0d4/`, all phase-3
   tapes still replay exactly. 214 tests pass.
+- [x] FINDINGS.md #1: binary 100% zero-variance groups vs relative CRPS 4.2% / crps_log 0.0%, on the phase-3 probe
+  tape. While writing it I found that the phase-3 group statistic used CRPS-scored correctness (which requires ±).
+  Re-scored with a true σ-free binary rule, the figure is unchanged (100%). Every completion is now scored under
+  every rule (`physcal/eval/signals.py`). Group stats and accuracy at 1/2/5/10% tolerance are reported per rule,
+  in `run_eval` and in `rescore`.

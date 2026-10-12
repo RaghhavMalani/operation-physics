@@ -108,34 +108,54 @@ def breakdown_by(records: list[dict], key: str) -> dict[str, dict]:
     return out
 
 
+def accuracy_at_tolerances(records: list[dict], tolerances: list[float]) -> dict[str, dict[str, float]]:
+    """Fraction of *all* completions within each relative tolerance (failures count as wrong).
+
+    strict: as scored by the main rule (± required by crps_log); sigma_free: as parsed by the binary rule.
+    """
+    n = len(records)
+    out: dict[str, dict[str, float]] = {"strict": {}, "sigma_free": {}}
+    for tol in tolerances:
+        key = f"{tol:g}"
+        out["strict"][key] = sum(
+            r["breakdown"]["reason"] == "ok" and r["breakdown"]["abs_rel_error"] <= tol for r in records
+        ) / n
+        out["sigma_free"][key] = sum(
+            r["by_rule"]["binary"]["abs_rel_error"] is not None and r["by_rule"]["binary"]["abs_rel_error"] <= tol
+            for r in records
+        ) / n
+    return out
+
+
 def group_stats(records: list[dict]) -> dict[str, Any]:
     """With several samples per problem: how often would a GRPO group carry no learning signal?
 
-    A group = all samples of one problem. It has zero variance under a reward if every sample gets the same
-    reward (all correct / all wrong under binary; identical scores, e.g. all parse failures, under CRPS).
+    A group = all samples of one problem. It has zero variance under a reward if every sample gets exactly the
+    same reward (all correct / all wrong under binary; identical scores, e.g. all parse failures, under CRPS).
+    Reported per scoring rule, for the final score alone and for the full reward (final + step credit).
+    The binary rule doesn't need ±, so pass@k and the pass rate are σ-free.
     """
     groups: dict[tuple, list[dict]] = defaultdict(list)
     for r in records:
         p = r["problem"]
-        groups[(p["family"], p["depth"], p["seed"])].append(r["breakdown"])
+        groups[(p["family"], p["depth"], p["seed"])].append(r["by_rule"])
+    rules = sorted(next(iter(groups.values()))[0]) if groups else []
+
+    def zero_var(values: list[float]) -> bool:
+        return max(values) - min(values) == 0.0
 
     def describe(keys: list[tuple]) -> dict[str, Any]:
-        zero_main, zero_bin, any_correct, pass_rates = [], [], [], []
-        for key in keys:
-            bds = groups[key]
-            correct = [b["reason"] == "ok" and bool(b.get("correct")) for b in bds]
-            rewards = [b["reward"] for b in bds]
-            zero_main.append(max(rewards) - min(rewards) == 0.0)
-            zero_bin.append(all(correct) or not any(correct))
-            any_correct.append(any(correct))
-            pass_rates.append(sum(correct) / len(correct))
-        return {
-            "n_groups": len(keys),
-            "zero_variance_fraction_main_reward": _mean(zero_main),
-            "zero_variance_fraction_binary": _mean(zero_bin),
-            "pass_at_k": _mean(any_correct),
-            "mean_pass_rate": _mean(pass_rates),
+        out: dict[str, Any] = {"n_groups": len(keys)}
+        out["zero_variance_fraction"] = {
+            rule: _mean(zero_var([o[rule]["score_final"] for o in groups[k]]) for k in keys) for rule in rules
         }
+        out["zero_variance_fraction_with_steps"] = {
+            rule: _mean(zero_var([o[rule]["reward"] for o in groups[k]]) for k in keys) for rule in rules
+        }
+        correct = [[o["binary"]["score_final"] == 1.0 for o in groups[k]] for k in keys]
+        out["pass_at_k"] = _mean(any(c) for c in correct)
+        out["mean_pass_rate"] = _mean(sum(c) / len(c) for c in correct)
+        return out
 
     keys = sorted(groups)
     by_depth = {str(d): describe([k for k in keys if k[1] == d]) for d in sorted({k[1] for k in keys})}

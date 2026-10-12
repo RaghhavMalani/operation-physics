@@ -44,5 +44,6 @@ splits:
 memory_poll_seconds: 2.0                    # nvidia-smi polling interval for device-wide peak VRAM
 
 calibration:
+  accuracy_tolerances: [0.01, 0.02, 0.05, 0.1]
   pit_bins: 10
   reliability_levels: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]

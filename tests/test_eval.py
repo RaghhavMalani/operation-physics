@@ -168,8 +168,27 @@ def test_multi_sample_groups(tmp_path):
     groups = m["splits"]["id"]["groups"]
     assert groups["k"] == 3 and groups["n_groups"] == 4
     assert groups["pass_at_k"] == 1.0 and groups["mean_pass_rate"] == pytest.approx(1 / 3)
-    assert groups["zero_variance_fraction_binary"] == 0.0 and groups["zero_variance_fraction_main_reward"] == 0.0
+    assert set(groups["zero_variance_fraction"]) == {"crps", "crps_log", "binary", "log_score", "abs_rel_error"}
+    assert all(v == 0.0 for v in groups["zero_variance_fraction"].values())
+    assert all(v == 0.0 for v in groups["zero_variance_fraction_with_steps"].values())
+    acc = m["splits"]["id"]["accuracy_at_tolerance"]
+    assert acc["sigma_free"]["0.01"] == pytest.approx(1 / 3) and acc["strict"]["0.1"] == pytest.approx(1 / 3)
     assert replay(tmp_path / "rollouts.jsonl").ok
+    rescored = rescore(tmp_path / "rollouts.jsonl", "crps_log")["id"]
+    assert rescored["groups"]["zero_variance_fraction"] == groups["zero_variance_fraction"]
+
+
+def test_group_stats_zero_variance_per_rule():
+    """Two groups of two: one all-wrong (zero variance everywhere), one with a correct and an unparseable
+    sample (variance under every rule)."""
+    def rec(seed, score):
+        return {"problem": {"family": "energy", "depth": 1, "seed": seed},
+                "by_rule": {"binary": {"score_final": score, "reward": score},
+                            "crps_log": {"score_final": -5.0 if score == 0 else -0.01,
+                                         "reward": -5.0 if score == 0 else -0.01}}}
+    g = calibration.group_stats([rec(1, 0.0), rec(1, 0.0), rec(2, 1.0), rec(2, 0.0)])
+    assert g["zero_variance_fraction"] == {"binary": 0.5, "crps_log": 0.5}
+    assert g["pass_at_k"] == 0.5 and g["mean_pass_rate"] == 0.25
 
 
 def test_greedy_with_several_samples_is_rejected(tmp_path):
