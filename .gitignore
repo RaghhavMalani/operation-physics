@@ -8,3 +8,7 @@ __pycache__/
 results/train/*/checkpoints/
 results/train/*/final_adapter/
 results/train/*/merged/
+results/sft/*/adapter/
+results/sft/*/merged/
+results/sft/*/checkpoints/
+results/train/*/merged/

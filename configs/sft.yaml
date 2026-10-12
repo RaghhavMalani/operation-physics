@@ -1,0 +1,43 @@
+# Phase 3.6 SFT warm-up (approved; sigma masked from the loss). A/B on two models, ~30 min each.
+output_dir: results/sft
+seed: 0
+prompt: v4_worked_example        # same system prompt as the probes and GRPO, so the warm-up matches inference
+data:
+  n_examples: 3000               # pre-built; training stops on the wall clock, usually before one epoch
+  seed_offset: 10000000          # training seeds 1e7.. (disjoint from GRPO seeds 0.. and eval seeds >= 1e9)
+  sigma_rel: 0.02                # sigma written in the target text; its tokens are masked from the loss
+train:
+  wall_clock_minutes: 30
+  max_steps: 10000               # effectively unbounded; the wall clock binds
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4
+  lr_scheduler_type: constant_with_warmup
+  warmup_steps: 10
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optim: adamw_8bit
+  logging_steps: 5
+lora:
+  r: 16
+  alpha: 16
+  dropout: 0.0
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+guards:
+  max_gpu_temp_c: 87
+  pause_seconds: 600
+  check_every_steps: 10
+
+models:
+  qwen3.5-2b:
+    id: Qwen/Qwen3.5-2B
+    revision: 15852e8c16360a2fea060d615a32b45270f8a8fc
+    max_seq_length: 2048
+    text_only: true
+    chat_template_kwargs: {enable_thinking: false}
+  qwen2.5-math-1.5b-instruct:
+    id: Qwen/Qwen2.5-Math-1.5B-Instruct
+    revision: aafeb0fc6f22cbf0eaeed126eff8be45b0360a35
+    max_seq_length: 2048
+    text_only: false
+    chat_template_kwargs: {}

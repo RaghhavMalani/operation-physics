@@ -363,3 +363,25 @@ worth a second look.
   loaded text-only (`AutoModelForCausalLM`, because the adapter's keys are `model.layers.*`; CPU-verified that
   all 96 LoRA modules attach), and LoRA is merged into the bf16 base. The "before" probe loaded the VL
   class; its text path is the same computation. Guarded by `timeout` until 15:44 IST.
+
+## Phase 3.6 — SFT warm-up A/B and overnight GRPO (2026-10-13, unattended)
+
+### D35. SFT data and loss masking (your approval: plan as drafted, σ masked)
+- **Data:** `physcal/train/sft_data.py` writes one short solution per problem, in the exact output format:
+  an SI-values line, a "Not needed:" line naming distractors, one line per chain step (`out = formula =
+  substituted numbers = value unit`, 4 s.f.), an optional unit-conversion line, then `<steps>` and
+  `<answer>`. Problems come from `generate_problem(..., split="train")` with seeds 1e7.. (disjoint from GRPO
+  seeds 0.. and eval seeds ≥ 1e9), round-robin over the 12 training cells. `build_examples` refuses any
+  seed range that reaches the eval offset. A test runs 240 targets through our own verifier: all are correct,
+  with full step credit.
+- **Loss:** prompt tokens are masked, and so are **the tokens of the σ number** (any token overlapping its
+  character span). `±`, the unit, `</answer>` and the end-of-turn token are trained, so the model learns the
+  format and when to stop. The σ written in the target text is 2% of the value; because it is masked it only
+  serves as context, and the model is never trained to produce it.
+- **Prompt:** v4 (the same system prompt used by the probes and GRPO), so the warm-up matches inference.
+- **Recipe:** LoRA r = 16 / α = 16 on q/k/v/o/gate/up/down, 4-bit base, lr 1e-4 constant after 10 warmup
+  steps, micro-batch 2 × 4 accumulation, AdamW-8bit, 30 min of wall clock per model (it stops before one
+  epoch of the 3,000 pre-built examples).
+- **After SFT:** the adapter is merged into the bf16 base (`physcal/train/merge.py`, peft, CPU) to give an
+  "SFT-only" model directory. GRPO then trains a *fresh* LoRA on top of that merged model, so the RL adapter
+  isolates what RL added.
