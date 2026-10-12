@@ -1,0 +1,37 @@
+# Assumptions behind the estimated GRPO training footprint (physcal/eval/footprint.py).
+# Target setup from the phase-3.5 brief: 4-bit base + LoRA, group of 8, 1024 completion tokens.
+budget_gb: 6.5                    # decimal GB of device memory available to our process (selection rule)
+
+grpo:
+  group_size: 8                   # completions per prompt, generated in one batch
+  completion_tokens: 1024         # max_new_tokens during rollouts
+  micro_batch: 2                  # completions per backward pass (gradient accumulation over the group)
+
+lora:
+  rank: 16                        # applied to every quantized linear layer of the decoder (upper bound)
+  bytes_per_param: 16             # fp32 weight + fp32 grad + two fp32 Adam moments
+
+quantization:
+  bits: 4                         # NF4 for decoder linear layers; embeddings / lm_head / norms stay bf16
+  overhead: 0.03                  # quantization constants (block size 64, double quant) as a fraction
+
+activations:                      # one decoder layer's live working set per token, in units of 2-byte values
+  hidden_factor: 12               # x hidden_size (q/k/v/o, residual, norms, attention output, ...)
+  mlp_factor: 4                   # x intermediate_size (gate, up, activation, product)
+  checkpoint_offload: true        # Unsloth "unsloth" gradient checkpointing offloads layer inputs to CPU
+
+logits:                           # policy log-probs over the completion tokens of one micro-batch
+  bytes_per_entry: 4              # fp32
+  live_copies: 2                  # logits + log-softmax (a fused/chunked kernel avoids more)
+  chunks: 4                       # Unsloth computes log-probs in chunks of the sequence
+
+allocator:
+  fragmentation: 0.10             # extra fraction on top of live tensors
+  cuda_context_gib: 0.45          # CUDA context + cuBLAS workspace, outside torch's allocator
+
+# A deliberately pessimistic variant, reported alongside: plain TRL without Unsloth's memory tricks.
+# Whole group in one backward pass, layer inputs kept on GPU, bf16 logits for every completion token at once.
+pessimistic_overrides:
+  grpo: {micro_batch: 8}
+  activations: {checkpoint_offload: false}
+  logits: {chunks: 1, live_copies: 2, bytes_per_entry: 2}

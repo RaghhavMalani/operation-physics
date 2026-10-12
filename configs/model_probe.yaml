@@ -1,0 +1,26 @@
+# Phase 3.5 model probe: which small model gives GRPO a learning signal from the start?
+output_dir: results/model_probe
+greedy_config: eval_probe_greedy        # configs/eval_probe_greedy.yaml
+group_config: eval_probe_group          # configs/eval_probe_group.yaml
+footprint_config: footprint             # configs/footprint.yaml
+
+selection:
+  max_binary_zero_variance: 0.80        # above this for every model -> no training, write the Phase 3.6 SFT plan
+  # among models whose estimated GRPO footprint fits footprint.budget_gb, pick the lowest binary
+  # (sigma-free, final-score) zero-variance fraction; ties -> higher sigma-free greedy accuracy at 1%
+
+candidates:
+  - label: qwen2.5-1.5b-instruct
+    id: Qwen/Qwen2.5-1.5B-Instruct
+    revision: 989aa7980e4cf806f80c7fef2b1adb7bc71aa306
+    batch_size: 16
+  - label: qwen2.5-math-1.5b-instruct
+    id: Qwen/Qwen2.5-Math-1.5B-Instruct
+    revision: aafeb0fc6f22cbf0eaeed126eff8be45b0360a35
+    batch_size: 16
+  - label: qwen3.5-2b
+    id: Qwen/Qwen3.5-2B
+    revision: 15852e8c16360a2fea060d615a32b45270f8a8fc
+    batch_size: 16
+    model_class: image_text_to_text     # VL checkpoint; the vision tower is loaded but unused (text-only prompts)
+    chat_template_kwargs: {enable_thinking: false}   # the card's default for 2B; thinking would not fit 1024 tokens

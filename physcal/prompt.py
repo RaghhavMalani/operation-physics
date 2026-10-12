@@ -78,10 +78,18 @@ a1 = 2.452 m/s^2
 
 SYSTEM_PROMPT_WORKED_EXAMPLE = SYSTEM_PROMPT[: SYSTEM_PROMPT.index("Example of the format:")] + WORKED_EXAMPLE
 
+# Phase 3.5: the worked example without the uncertainty heuristic. The example's answer line must still show
+# a ± value (that is the format); its solution text no longer explains how the σ was chosen.
+SIGMA_HINT = (" The inputs have 3 significant figures, so I estimate a relative uncertainty of about 1%,"
+              " i.e. ± 0.0003 km.")
+assert WORKED_EXAMPLE.count(SIGMA_HINT) == 1
+SYSTEM_PROMPT_WORKED_EXAMPLE_NO_SIGMA_HINT = SYSTEM_PROMPT_WORKED_EXAMPLE.replace(SIGMA_HINT, "")
+
 SYSTEM_PROMPTS = {
     "v1": SYSTEM_PROMPT,
     "v2_reason_first": SYSTEM_PROMPT_REASON_FIRST,
     "v3_worked_example": SYSTEM_PROMPT_WORKED_EXAMPLE,
+    "v4_worked_example": SYSTEM_PROMPT_WORKED_EXAMPLE_NO_SIGMA_HINT,
 }
 
 

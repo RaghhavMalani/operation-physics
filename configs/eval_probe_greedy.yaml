@@ -1,0 +1,44 @@
+# Phase 3.5 model probe, greedy part: prompt v4 (worked example, no sigma hint), 1024 new tokens.
+# Model id / revision / output dir are filled in per candidate by physcal.eval.model_probe.
+run_id: model-probe-greedy
+output_dir: results/model_probe/_unset
+
+prompt: v4_worked_example                                  # system prompt id, see physcal/prompt.py
+
+model:
+  id: Qwen/Qwen2.5-1.5B-Instruct
+  fallback_id: null                         # no silent fallback in the model probe
+  revision: null                            # set per candidate by physcal.eval.model_probe
+  dtype: bfloat16
+  lora: null                                # path to a LoRA adapter (merged before eval), phase 4+
+
+generation:
+  max_new_tokens: 1024
+  batch_size: 16                            # sequences per forward pass (prompts per batch = batch_size // num_samples)
+  do_sample: false                          # greedy decoding for a deterministic baseline
+  repetition_penalty: 1.0                   # explicit: Qwen2.5's generation_config.json would otherwise apply 1.1
+  temperature: 1.0                          # sampling only
+  top_p: 1.0                                # sampling only; 1.0 disables nucleus filtering
+  top_k: 0                                  # sampling only; 0 disables top-k
+  num_samples: 1                            # completions per problem (> 1 needs do_sample)
+  seed: 0                                   # torch seed for sampling
+
+# Each split gets its own block of seeds: eval_seed_offset (env.yaml) + index * seed_block + i.
+# `families: train` = registered families that are not held out; `heldout` = held-out families that exist.
+seed_block: 1000000
+splits:
+  id:
+    families: train
+    depths: [1, 2, 3, 4]
+    n: 200
+  depth_extrapolation:
+    families: train
+    depths: [5]
+    n: 200
+
+memory_poll_seconds: 2.0                    # nvidia-smi polling interval for device-wide peak VRAM
+
+calibration:
+  accuracy_tolerances: [0.01, 0.02, 0.05, 0.1]
+  pit_bins: 10
+  reliability_levels: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]

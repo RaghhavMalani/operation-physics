@@ -276,3 +276,35 @@ worth a second look.
   `data/eval_sets/<generator_version>/{id,depth_extrapolation}.jsonl` + `manifest.json` (SHA-256 per split). A
   test regenerates them and requires byte equality, so any change in generator output without a version bump
   now fails CI.
+
+### D31. Model-probe design (phase 3.5) **[REVIEW]**
+- **Candidates (pinned):** `Qwen/Qwen2.5-1.5B-Instruct` @ `989aa7980e4cf806f80c7fef2b1adb7bc71aa306`,
+  `Qwen/Qwen2.5-Math-1.5B-Instruct` @ `aafeb0fc6f22cbf0eaeed126eff8be45b0360a35`, and `Qwen/Qwen3.5-2B` @
+  `15852e8c16360a2fea060d615a32b45270f8a8fc`. These are verified on the Hub API (ungated, Apache-2.0). The
+  revision is passed to `from_pretrained`, checked after loading, and recorded in every metrics.json.
+- **Why Qwen3.5-2B is the "strongest current ≤ 2B instruct model":** released 2026-02-28; non-thinking
+  MMLU-Pro 55.3 vs Qwen3-1.7B 40.2 on its card. Using Qwen3-1.7B as the common reference across cards, it
+  is well ahead of LiquidAI LFM2.5-1.2B-Instruct (44.4 vs Qwen3-1.7B 42.9 on LiquidAI's card) and
+  granite-4.0-1b (33.5 there). Its *text* decoder has 1.88B parameters. The checkpoint also contains a 0.39B
+  vision tower and an MTP head, which text-only training doesn't use, and the footprint estimate excludes them.
+  Considered and excluded: Gemma-4-E2B (about 5B total parameters), Llama-3.2-1B-Instruct (gated, and weaker),
+  DeepSeek-R1-Distill-Qwen-1.5B (a reasoning model whose long traces can't fit 1024 tokens), LFM2.5-1.2B (license
+  "other"). I didn't download these.
+- **Qwen3.5-2B runs in non-thinking mode** (`enable_thinking: false`, the card's default for 2B). Thinking
+  traces would blow the 1024-token budget, and the card warns that 2B tends to loop in thinking mode.
+- **Same prompt for all:** `v4_worked_example` = v3 without the sentence "The inputs have 3 significant figures,
+  so I estimate a relative uncertainty of about 1%". The example's answer line still shows `± 0.0003 km`
+  (≈1%): any concrete example of the format implies *some* σ.
+- **Same decoding for all:** our explicit parameters (greedy; or T = 1.0, top_p 1, top_k off, repetition
+  penalty 1.0), not each model card's recommended sampling. This keeps the comparison controlled and matches
+  what GRPO will use.
+- **Out-of-memory handling:** batches back off (prompts split in half, then samples) instead of falling back to a
+  smaller model. Backoffs are counted in metrics.json.
+- **GRPO footprint is estimated, not measured** (`physcal/eval/footprint.py`, `configs/footprint.yaml`): exact
+  parameter counts from safetensors headers; 4-bit decoder linears + bf16 embeddings; LoRA r = 16 on every linear
+  with fp32 Adam; rollout KV cache for 8 × (prompt + 1024) tokens; training with micro-batch 2, offloaded
+  checkpoints and chunked log-probs (Unsloth-style); +10% fragmentation and 0.45 GiB CUDA context. A
+  pessimistic plain-TRL variant is reported too. Sanity check: the same activation model applied to bf16
+  inference predicts 4.02 GiB for the phase-3 baseline, which measured 3.76 GiB.
+- **Budget:** your "about 6.5 GB" is taken as 6.5 decimal GB (6.05 GiB) for our process. That matches what is
+  actually free on this card (8 GiB minus ~1.9 GiB used by the Windows display).

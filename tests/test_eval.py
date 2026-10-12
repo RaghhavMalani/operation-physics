@@ -216,3 +216,44 @@ def test_frozen_eval_sets_match_the_generator():
             assert "skipped" in manifest["splits"][name]
             continue
         assert (root / f"{name}.jsonl").read_text() == serialize(problems), name
+
+
+def test_hf_backend_backs_off_on_oom():
+    """A batch that runs out of memory is split (prompts first, then samples) and retried; nothing is lost."""
+    import torch
+
+    from physcal.eval.run_eval import HFBackend
+
+    class Enc(dict):
+        def to(self, _device):
+            return self
+
+    class Tok:
+        pad_token_id = 0
+
+        def __call__(self, prompts, return_tensors, padding):
+            return Enc(input_ids=torch.ones(len(prompts), 3, dtype=torch.long))
+
+        def decode(self, row, skip_special_tokens):
+            return f"len{len(row)}"
+
+    class Model:
+        calls = []
+
+        def generate(self, input_ids, num_return_sequences, **_):
+            n = input_ids.shape[0] * num_return_sequences
+            self.calls.append(n)
+            if n > 2:
+                raise torch.OutOfMemoryError("CUDA out of memory. Tried to allocate 1 GiB")
+            new = torch.tensor([[5, 6, 9]] * n)  # 9 = eos -> 3 tokens each
+            return torch.cat([input_ids.repeat_interleave(num_return_sequences, 0), new], dim=1)
+
+    backend = object.__new__(HFBackend)
+    backend.torch, backend.tok, backend.model = torch, Tok(), Model()
+    backend.gen_cfg = {"num_samples": 4, "batch_size": 8, "max_new_tokens": 3, "repetition_penalty": 1.0,
+                       "do_sample": True, "temperature": 1.0, "top_p": 1.0, "top_k": 0, "seed": 0}
+    backend.eos_ids, backend.pad_id, backend.oom_backoffs, backend.chat_template_kwargs = {9}, 0, 0, {}
+    out = backend._generate(["a", "b"], 4)
+    assert [len(x) for x in out] == [4, 4]
+    assert all(g.n_tokens == 3 and not g.truncated for x in out for g in x)
+    assert backend.oom_backoffs >= 2 and max(c for c in Model.calls if c <= 2) == 2

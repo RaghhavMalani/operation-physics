@@ -88,61 +88,100 @@ class GpuMemoryPoller:
 
 
 class HFBackend:
-    """Plain transformers inference: bf16, left padding, batched greedy decoding."""
+    """Plain transformers inference: bf16, left padding, batched decoding with explicit parameters.
+
+    Model config keys: id, revision (exact commit; pinned), dtype, chat_template_kwargs (e.g.
+    {enable_thinking: false}), model_class ("causal_lm" or "image_text_to_text" for VL checkpoints).
+    """
 
     def __init__(self, model_id: str, model_cfg: dict, gen_cfg: dict):
         os.environ.setdefault("HF_HOME", str(REPO_ROOT / ".cache" / "huggingface"))
         import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        import transformers
 
         if model_cfg.get("lora"):
             raise NotImplementedError("LoRA evaluation arrives with phase 4 (merge adapter before eval)")
         self.torch = torch
         self.gen_cfg = gen_cfg
+        self.chat_template_kwargs = model_cfg.get("chat_template_kwargs") or {}
+        self.oom_backoffs = 0
+        revision = model_cfg.get("revision") if model_id == model_cfg.get("id") else None
         torch.cuda.reset_peak_memory_stats()
-        self.tok = AutoTokenizer.from_pretrained(model_id)
+        self.tok = transformers.AutoTokenizer.from_pretrained(model_id, revision=revision)
         self.tok.padding_side = "left"
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_id, dtype=getattr(torch, model_cfg["dtype"]), device_map="cuda"
+        model_class = {
+            "causal_lm": transformers.AutoModelForCausalLM,
+            "image_text_to_text": transformers.AutoModelForImageTextToText,
+        }[model_cfg.get("model_class", "causal_lm")]
+        self.model = model_class.from_pretrained(
+            model_id, revision=revision, dtype=getattr(torch, model_cfg["dtype"]), device_map="cuda"
         ).eval()
+        self.revision = getattr(self.model.config, "_commit_hash", None) or revision
+        if revision and self.revision != revision:
+            raise RuntimeError(f"{model_id}: loaded revision {self.revision}, expected {revision}")
         eos = self.model.generation_config.eos_token_id
         self.eos_ids = set(eos if isinstance(eos, list) else [eos])
+        self.pad_id = self.tok.pad_token_id if self.tok.pad_token_id is not None else next(iter(self.eos_ids))
 
     def __call__(self, conversations: list[list[dict]]) -> list[Generation]:
         """`num_samples` completions per conversation, flattened conversation-major."""
         torch = self.torch
         g = self.gen_cfg
         k = g["num_samples"]
-        # Every decoding parameter is explicit: the model's generation_config.json would otherwise
-        # silently add its own defaults (Qwen2.5 ships repetition_penalty=1.1).
-        decoding = {"do_sample": True, "temperature": g["temperature"], "top_p": g["top_p"], "top_k": g["top_k"]} \
-            if g["do_sample"] else {"do_sample": False, "temperature": None, "top_p": None, "top_k": None}
         torch.manual_seed(g["seed"])
-        prompts = [self.tok.apply_chat_template(c, tokenize=False, add_generation_prompt=True) for c in conversations]
+        prompts = [
+            self.tok.apply_chat_template(c, tokenize=False, add_generation_prompt=True, **self.chat_template_kwargs)
+            for c in conversations
+        ]
         order = sorted(range(len(prompts)), key=lambda i: -len(prompts[i]))  # largest batch first: OOM early
         results: list[list[Generation]] = [[] for _ in prompts]
         per_batch = max(1, g["batch_size"] // k)
         t0 = time.time()
         for start in range(0, len(order), per_batch):
             idx = order[start:start + per_batch]
-            enc = self.tok([prompts[i] for i in idx], return_tensors="pt", padding=True).to("cuda")
+            for i, gens in zip(idx, self._generate([prompts[i] for i in idx], k)):
+                results[i] = gens
+            done = min(start + per_batch, len(order))
+            print(f"  generated {done * k}/{len(order) * k}  ({time.time() - t0:.0f}s)", flush=True)
+        return [gen for per_prompt in results for gen in per_prompt]
+
+    def _generate(self, prompts: list[str], k: int) -> list[list[Generation]]:
+        """k completions per prompt. On CUDA OOM, split the prompts (then the samples) in half and retry.
+        A retried batch draws different random numbers, so sampled runs that back off are not bit-reproducible."""
+        torch, g = self.torch, self.gen_cfg
+        # Every decoding parameter is explicit: the model's generation_config.json would otherwise
+        # silently add its own defaults (Qwen2.5 ships repetition_penalty=1.1).
+        decoding = {"do_sample": True, "temperature": g["temperature"], "top_p": g["top_p"], "top_k": g["top_k"]} \
+            if g["do_sample"] else {"do_sample": False, "temperature": None, "top_p": None, "top_k": None}
+        try:
+            enc = self.tok(prompts, return_tensors="pt", padding=True).to("cuda")
             with torch.inference_mode():
                 out = self.model.generate(
                     **enc,
                     max_new_tokens=g["max_new_tokens"],
                     repetition_penalty=g["repetition_penalty"],
                     num_return_sequences=k,
-                    pad_token_id=self.tok.pad_token_id,
+                    pad_token_id=self.pad_id,
                     **decoding,
                 )
-            rows = out[:, enc["input_ids"].shape[1]:].tolist()
-            for j, row in enumerate(rows):  # prompt-major: k consecutive rows per prompt
-                end = next((p for p, t in enumerate(row) if t in self.eos_ids), None)
-                n = len(row) if end is None else end + 1
-                results[idx[j // k]].append(Generation(self.tok.decode(row[:n], skip_special_tokens=True), n, end is None))
-            done = min(start + per_batch, len(order))
-            print(f"  generated {done * k}/{len(order) * k}  ({time.time() - t0:.0f}s)", flush=True)
-        return [gen for per_prompt in results for gen in per_prompt]
+        except Exception as exc:
+            if not _is_oom(exc) or (len(prompts) == 1 and k == 1):
+                raise
+            self.oom_backoffs += 1
+            torch.cuda.empty_cache()
+            if len(prompts) > 1:
+                half = len(prompts) // 2
+                return self._generate(prompts[:half], k) + self._generate(prompts[half:], k)
+            first = self._generate(prompts, k // 2)[0]
+            return [first + self._generate(prompts, k - k // 2)[0]]
+        rows = out[:, enc["input_ids"].shape[1]:].tolist()
+        del out, enc
+        results: list[list[Generation]] = [[] for _ in prompts]
+        for j, row in enumerate(rows):  # prompt-major: k consecutive rows per prompt
+            end = next((p for p, t in enumerate(row) if t in self.eos_ids), None)
+            n = len(row) if end is None else end + 1
+            results[j // k].append(Generation(self.tok.decode(row[:n], skip_special_tokens=True), n, end is None))
+        return results
 
     def memory_stats(self) -> dict[str, float]:
         torch = self.torch
@@ -200,6 +239,8 @@ def run(
         except Exception as exc:
             if not _is_oom(exc):
                 raise
+            if not eval_cfg["model"].get("fallback_id"):
+                raise
             oom_fallback, oom_error = True, f"{type(exc).__name__}: {str(exc)[:300]}"
             print(f"CUDA OOM with {model_id}; falling back to {eval_cfg['model']['fallback_id']}", flush=True)
             if hasattr(backend, "close"):
@@ -211,11 +252,14 @@ def run(
     if len(generations) != len(items) * k:
         raise RuntimeError(f"backend returned {len(generations)} completions, expected {len(items) * k}")
     memory = backend.memory_stats() if hasattr(backend, "memory_stats") else {}
+    model_revision = getattr(backend, "revision", None)
+    oom_backoffs = getattr(backend, "oom_backoffs", 0)
     if poller.peak_mib:
         memory["nvidia_smi_peak_used_gib_device_wide"] = poller.peak_mib / 1024
 
     meta = {
         "model_id": model_id,
+        "model_revision": model_revision,
         "oom_fallback": oom_fallback,
         "oom_error": oom_error,
         "generation": eval_cfg["generation"],
@@ -244,6 +288,8 @@ def run(
     metrics: dict[str, Any] = {
         "run_id": eval_cfg["run_id"],
         "model_id": model_id,
+        "model_revision": model_revision,
+        "oom_backoffs": oom_backoffs,
         "oom_fallback": oom_fallback,
         "oom_error": oom_error,
         "generation_seconds": gen_seconds,
@@ -290,7 +336,7 @@ def render_summary(m: dict) -> str:
     lines = [
         f"# Eval summary: {m['run_id']}",
         "",
-        f"- model: `{m['model_id']}`" + (" (**OOM fallback**)" if m["oom_fallback"] else ""),
+        f"- model: `{m['model_id']}` @ `{m.get('model_revision')}`" + (" (**OOM fallback**)" if m["oom_fallback"] else ""),
         f"- generator: `{m['generator_version']}`, reward rule: `{m['reward_rule']}`, prompt: `{m.get('prompt_id', 'v1')}`",
         f"- generation time: {m['generation_seconds']:.0f} s",
     ]
