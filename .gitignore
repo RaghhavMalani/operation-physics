@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache/
 .hypothesis/
 *.egg-info/
+results/train/*/checkpoints/
+results/train/*/final_adapter/
+results/train/*/merged/

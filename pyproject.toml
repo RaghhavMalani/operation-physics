@@ -6,14 +6,18 @@ readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dependencies = [
     "accelerate>=1.15.0",
+    "bitsandbytes>=0.50.2",
     "matplotlib>=3.11.2",
     "numpy>=2.4.6",
+    "peft>=0.21.2",
     "pint>=0.25.3",
     "pyyaml>=6.0.3",
     "scipy>=1.17.1",
     "sympy>=1.14.0",
     "torch>=2.14.1",
-    "transformers>=5.19.0",
+    "transformers==5.17.0",
+    "trl>=1.13.0",
+    "unsloth==2026.10.3",
 ]
 
 [build-system]

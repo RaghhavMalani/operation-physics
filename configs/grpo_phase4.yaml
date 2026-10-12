@@ -1,18 +1,18 @@
 # Phase 4: first GRPO run (Unsloth QLoRA + TRL GRPOTrainer). The model block is filled in from the
 # phase-3.5 selection (results/model_probe/summary.json).
-run_id: phase4-grpo
+run_id: phase4-grpo-qwen3.5-2b-crps_log
 output_dir: results/train
 seed: 0
 prompt: v4_worked_example
-reward_rule: binary            # spec; switched to crps_log when the model's probe binary zero-variance > 50% (your rule)
+reward_rule: crps_log          # spec says binary; Qwen3.5-2B's probe binary zero-variance was 72.9% > 50% -> crps_log (your rule)
 train_seed_offset: 0           # training seeds 0.. (eval seeds start at 1e9)
 
 model:
-  id: null
-  revision: null
+  id: Qwen/Qwen3.5-2B          # phase-3.5 selection (results/model_probe/summary.json)
+  revision: 15852e8c16360a2fea060d615a32b45270f8a8fc
   max_seq_length: 2304         # longest v4 prompt is 1115-1156 tokens + 1024 completion tokens
-  chat_template_kwargs: {}
-  text_only: false             # true for VL checkpoints (e.g. Qwen3.5): load the language model only
+  chat_template_kwargs: {enable_thinking: false}
+  text_only: true             # true for VL checkpoints (e.g. Qwen3.5): load the language model only
 
 lora:
   r: 16

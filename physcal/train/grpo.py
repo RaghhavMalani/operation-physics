@@ -230,8 +230,11 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
                                             cfg["guards"]["pause_seconds"], cfg["guards"]["check_every_steps"],
                                             out / "events.jsonl"))
 
+    from physcal.eval.run_eval import GpuMemoryPoller
+
     t0 = time.time()
-    result = trainer.train()
+    with GpuMemoryPoller(interval_s=2.0) as poller:
+        result = trainer.train()
     seconds = time.time() - t0
     trainer.save_model(str(out / "final_adapter"))
     tape.close()
@@ -245,7 +248,8 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
         "train_seconds": seconds,
         "seconds_per_step": seconds / max(1, trainer.state.global_step),
         "peak_vram": {"torch_max_allocated_gib": torch.cuda.max_memory_allocated() / gib,
-                      "torch_max_reserved_gib": torch.cuda.max_memory_reserved() / gib},
+                      "torch_max_reserved_gib": torch.cuda.max_memory_reserved() / gib,
+                      "nvidia_smi_peak_used_gib_device_wide": poller.peak_mib / 1024},
         "grpo_config_dropped_keys": dropped,
         "grpo_config_resolved": {k: getattr(args, k) for k in ("loss_type", "scale_rewards", "beta",
                                                                "per_device_train_batch_size",
