@@ -58,3 +58,14 @@ def test_replay_detects_tampering(tmp_path):
     assert not report.ok
     assert report.reward_mismatches == [3]
     assert report.problem_mismatches == [5]
+
+
+def test_phase3_tapes_still_replay_under_generator_1_0_0():
+    """Tapes logged before the 1.1.0 bump carry their env config in meta.json, so they replay exactly."""
+    from physcal.config import REPO_ROOT
+
+    path = REPO_ROOT / "results" / "baseline" / "rollouts.jsonl"
+    first = next(read_tape(path))
+    assert first["generator_version"] == "1.0.0+afcc2019"
+    report = replay(path)
+    assert report.ok and report.n == 400

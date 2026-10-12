@@ -181,8 +181,11 @@ def test_unit_round_trip(value, family, data):
 
 def test_zero_intermediate_after_rounding_is_rejected_not_crashed():
     """Regression: for this eval seed a subtraction step (t3 = t_tot - t1 - t2) came out exactly 0 after
-    rounding, and the next step divided by it (ZeroDivisionError inside pint)."""
-    p = generate_problem("kinematics", 5, 1001000087, split="eval")
+    rounding, and the next step divided by it (ZeroDivisionError inside pint). Pinned to generator 1.0.0,
+    where the seed triggers the bug (every version draws different problems)."""
+    cfg = env_config()
+    cfg["generator"]["version"] = "1.0.0"
+    p = generate_problem("kinematics", 5, 1001000087, split="eval", cfg=cfg)
     assert p.target_value_si > 0 and all(v > 0 for v in p.intermediates.values())
 
 
@@ -203,3 +206,22 @@ def test_condition_number_is_infinite_outside_valid_domain():
     givens = {g: 10.0 for g in chain.givens}
     givens.update(t_tot=30.0, t1=10.0, t2=20.0)
     assert fam.condition_number(chain, givens, 1e-6) == math.inf
+
+
+def _cfg_for(version: str) -> dict:
+    cfg = env_config()
+    cfg["generator"]["version"] = version
+    return cfg
+
+
+def test_depth1_wording_is_keyed_by_generator_version():
+    from physcal.env.render import NO_STEPS_TEMPLATES
+
+    old = generate_problem("energy", 1, 5, split="eval", cfg=_cfg_for("1.0.0"))
+    new = generate_problem("energy", 1, 5, split="eval")
+    assert NO_STEPS_TEMPLATES["1.0.0"] in old.text and NO_STEPS_TEMPLATES["1.1.0"] not in old.text
+    assert NO_STEPS_TEMPLATES["1.1.0"] in new.text and NO_STEPS_TEMPLATES["1.0.0"] not in new.text
+    assert old.generator_version == "1.0.0+afcc2019"  # the version every phase-3 tape was logged with
+    assert new.generator_version.startswith("1.1.0+")
+    with pytest.raises(ValueError):
+        generate_problem("energy", 1, 5, split="eval", cfg=_cfg_for("9.9.9"))

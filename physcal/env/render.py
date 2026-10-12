@@ -35,7 +35,18 @@ STEPS_TEMPLATES = (
     "Your <steps> must include the intermediate values {syms}.",
 )
 
-NO_STEPS_TEMPLATE = "No intermediate values need to be reported, so <steps> may be empty."
+# Depth-1 sentence, keyed by generator version so that old tapes stay replayable. The 1.0.0 wording made the
+# model skip its calculation entirely (96% answer-only at depth 1 vs 0% at depths 2-5, PROGRESS phase 3).
+NO_STEPS_TEMPLATES = {
+    "1.0.0": "No intermediate values need to be reported, so <steps> may be empty.",
+    "1.1.0": "Show your calculation first; no intermediate values need to be listed in <steps>.",
+}
+
+
+def no_steps_template(version: str) -> str:
+    if version not in NO_STEPS_TEMPLATES:
+        raise ValueError(f"generator version {version!r} has no depth-1 wording; known: {sorted(NO_STEPS_TEMPLATES)}")
+    return NO_STEPS_TEMPLATES[version]
 
 CONSTANT_TEMPLATE = "Use {sym} = {val}."
 
@@ -102,6 +113,7 @@ def render_text(
     intermediates: tuple[str, ...],
     rng: np.random.Generator,
     display_cfg: dict,
+    no_steps_text: str,
 ) -> str:
     """Assemble intro, givens (in random order), constants, question and the steps instruction."""
     intro = _pick(rng, family.intros)
@@ -121,7 +133,7 @@ def render_text(
     if intermediates:
         steps = _pick(rng, STEPS_TEMPLATES).format(syms=", ".join(intermediates))
     else:
-        steps = NO_STEPS_TEMPLATE
+        steps = no_steps_text
 
     if rng.integers(2):
         givens = _pick(rng, GIVEN_HEADERS) + "\n" + "\n".join(f"- {line}" for line in lines)

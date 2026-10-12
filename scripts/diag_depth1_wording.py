@@ -1,8 +1,9 @@
 """Diagnostic (phase 3, inference only): does the depth-1 sentence "<steps> may be empty" make the model skip
 its calculation?
 
-Takes the 50 depth-1 problems of the baseline ID split, replaces only that sentence, and reruns greedy
-decoding with prompt v1. The rollouts are logged to results/diagnostics/depth1_wording/. They are not
+Takes the 50 depth-1 problems of the baseline ID split under generator 1.0.0 (the version this diagnostic
+was run with), replaces only that sentence, and reruns greedy decoding with prompt v1. Generator 1.1.0 adopted
+the replacement wording (D30). The rollouts are logged to results/diagnostics/depth1_wording/. They are not
 replayable with `replay()`, because the problem text was edited after generation.
 
     uv run python scripts/diag_depth1_wording.py
@@ -16,16 +17,18 @@ from pathlib import Path
 
 from physcal.config import REPO_ROOT, load_config
 from physcal.env.generator import env_config
-from physcal.env.render import NO_STEPS_TEMPLATE
+from physcal.env.render import NO_STEPS_TEMPLATES
 from physcal.eval.run_eval import HFBackend, build_split
 from physcal.prompt import build_messages
 from physcal.verify.reward import reward, reward_config
 
-REPLACEMENT = "Show your calculation first; no intermediate values need to be listed in <steps>."
+NO_STEPS_TEMPLATE = NO_STEPS_TEMPLATES["1.0.0"]
+REPLACEMENT = NO_STEPS_TEMPLATES["1.1.0"]
 
 
 def main() -> None:
     eval_cfg, env_cfg, rw_cfg = load_config("eval"), env_config(), reward_config()
+    env_cfg["generator"]["version"] = "1.0.0"  # reproduce the problems this diagnostic was run on
     problems = [p for p in build_split(0, eval_cfg["splits"]["id"], eval_cfg, env_cfg) if p.depth == 1]
     texts = [p.text.replace(NO_STEPS_TEMPLATE, REPLACEMENT) for p in problems]
     assert all(NO_STEPS_TEMPLATE not in t for t in texts)

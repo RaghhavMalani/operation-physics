@@ -1,0 +1,46 @@
+{
+  "generator_version": "1.1.0+c735a0d4",
+  "splits": {
+    "id": {
+      "n": 200,
+      "sha256": "970d71a7761cb0883e201d26717504e2abc4e2c8a6f92144ca419f577cd3da47",
+      "seeds": [
+        1000000000,
+        1000000199
+      ],
+      "cells": [
+        "dynamics/1",
+        "dynamics/2",
+        "dynamics/3",
+        "dynamics/4",
+        "energy/1",
+        "energy/2",
+        "energy/3",
+        "energy/4",
+        "kinematics/1",
+        "kinematics/2",
+        "kinematics/3",
+        "kinematics/4"
+      ]
+    },
+    "depth_extrapolation": {
+      "n": 200,
+      "sha256": "0e7f34ed11437133eb456928f1634bfc8d84d4b80fd2e73018568511cf7fc0a0",
+      "seeds": [
+        1001000000,
+        1001000199
+      ],
+      "cells": [
+        "dynamics/5",
+        "energy/5",
+        "kinematics/5"
+      ]
+    },
+    "heldout_family": {
+      "skipped": "no implemented families for 'heldout'"
+    },
+    "simulators": {
+      "skipped": "no implemented families for 'simulators'"
+    }
+  }
+}

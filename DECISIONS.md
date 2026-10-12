@@ -258,3 +258,21 @@ worth a second look.
 - **Consequence:** tapes logged before this change carry `reward_config.scoring.rule = crps` in their
   meta.json, and `replay()` re-scores them with that logged config, so they still reproduce exactly. New runs
   report `mean_reward` under `crps_log`. Every breakdown still contains the scores under every rule.
+
+### D30. Generator 1.1.0: depth-1 wording asks for the calculation; the wording is keyed by version (final)
+- **Decision (yours):** depth-1 problems now end with "Show your calculation first; no intermediate values
+  need to be listed in <steps>." (the wording tested in `scripts/diag_depth1_wording.py`) instead of "No
+  intermediate values need to be reported, so <steps> may be empty." `configs/env.yaml` version → `1.1.0`, giving
+  generator version `1.1.0+c735a0d4`.
+- **How old tapes stay replayable:** `render.NO_STEPS_TEMPLATES` maps version → wording. Every tape's
+  meta.json carries its env config, so `replay()` regenerates with `1.0.0` and gets the old wording and the old
+  version hash (`1.0.0+afcc2019`). All 6 phase-3 tapes (2,368 rollouts) still replay exactly, and a test pins
+  this. An unknown version raises instead of silently using some wording.
+- **Side effect (by design, D8):** the version string seeds each problem's RNG, so the bump re-draws *every*
+  problem, not just the depth-1 text. 1.1.0 eval sets have the same distribution as 1.0.0 but different
+  numbers. 1.0.0 and 1.1.0 numbers are therefore compared on different (identically distributed) problem
+  sets.
+- **Frozen eval sets:** `uv run python -m physcal.eval.export_sets` writes
+  `data/eval_sets/<generator_version>/{id,depth_extrapolation}.jsonl` + `manifest.json` (SHA-256 per split). A
+  test regenerates them and requires byte equality, so any change in generator output without a version bump
+  now fails CI.

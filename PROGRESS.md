@@ -367,3 +367,21 @@ I didn't change the generator (it would need a version bump); see D28.
 writes a placeholder-like round number ("1.0 s", "0.500 kg", "10000 cm/s^2"). It often does this right after
 writing the correct formula (e.g. `t2 = t_tot - t1 - t3`, truth 14.1 s, answer 1.0 s). It almost never carries
 out the arithmetic unless shown a worked example.
+
+## Phase 3.5 — Fix the starting point (2026-10-12)
+
+Plan (from your instructions; no training):
+1. Apply the final decisions: `crps_log` becomes the default rule (D29); keep the −5 failure floor (D13);
+   fix the depth-1 wording → generator 1.1.0, regenerate and freeze the eval sets, and keep old tapes
+   replayable (D30); write FINDINGS.md #1.
+2. Model probe (inference only) on Qwen2.5-1.5B-Instruct, Qwen2.5-Math-1.5B-Instruct and the strongest current
+   ≤ 2B instruct model I can verify on Hugging Face (exact revisions pinned): a greedy baseline with a
+   worked-example prompt without a σ hint, max_new_tokens 1024, plus the k = 8, T = 1.0 group probe. Report
+   accuracy at 1/2/5/10%, truncation, zero-variance fractions (binary and crps_log) and peak VRAM.
+3. Estimate each model's GRPO footprint (4-bit + LoRA, group 8, 1024 tokens) against ~6.5 GB, and apply the
+   selection rule. If every model is > 80% binary zero-variance: write a Phase 3.6 SFT warm-up plan and stop.
+
+Progress:
+- [x] D29 `crps_log` default (commit 50bd351). The −5 floor for failures was already in place.
+- [x] D30 generator 1.1.0 (`1.1.0+c735a0d4`), frozen eval sets in `data/eval_sets/1.1.0+c735a0d4/`, all phase-3
+  tapes still replay exactly. 214 tests pass.

@@ -93,6 +93,7 @@ def generate_problem(family: str, depth: int, seed: int, split: str = "train", c
     check_split(family, depth, split, cfg)
     gen = cfg["generator"]
     version = generator_version(cfg)
+    no_steps_text = render.no_steps_template(gen["version"])
     fam = get_family(family)
     rng = problem_rng(version, family, depth, seed)
 
@@ -116,7 +117,7 @@ def generate_problem(family: str, depth: int, seed: int, split: str = "train", c
     target_si = outputs[chain.target]
     target_unit = render.choose_unit(target_q, target_si, rng, tuple(gen["display"]["magnitude_range"]))
     text = render.render_text(
-        fam, target_q, target_unit, shown + distractors, chain.intermediates, rng, gen["display"]
+        fam, target_q, target_unit, shown + distractors, chain.intermediates, rng, gen["display"], no_steps_text
     )
     return Problem(
         text=text,

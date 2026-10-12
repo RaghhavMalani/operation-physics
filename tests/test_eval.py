@@ -179,3 +179,21 @@ def test_greedy_with_several_samples_is_rejected(tmp_path):
     cfg["generation"].update(do_sample=False, num_samples=4)
     with pytest.raises(ValueError):
         run(cfg, backend_factory=lambda _: (lambda convs: []), limit=1, output_dir=tmp_path)
+
+
+def test_frozen_eval_sets_match_the_generator():
+    """data/eval_sets/<version>/ must equal a fresh regeneration. If this fails, the generator's output changed:
+    bump `generator.version` in configs/env.yaml and run `uv run python -m physcal.eval.export_sets`."""
+    from physcal.env.generator import generator_version
+    from physcal.eval.export_sets import EVAL_SETS_DIR, serialize
+
+    env_cfg, eval_cfg = env_config(), load_config("eval")
+    root = EVAL_SETS_DIR / generator_version(env_cfg)
+    assert root.is_dir(), f"no frozen eval sets for {generator_version(env_cfg)}; run physcal.eval.export_sets"
+    manifest = json.loads((root / "manifest.json").read_text())
+    for index, (name, scfg) in enumerate(eval_cfg["splits"].items()):
+        problems = build_split(index, scfg, eval_cfg, env_cfg)
+        if not problems:
+            assert "skipped" in manifest["splits"][name]
+            continue
+        assert (root / f"{name}.jsonl").read_text() == serialize(problems), name
