@@ -406,3 +406,12 @@ Progress:
 - [x] 4e. Eval of the final adapter on the probe's eval sets (finished 15:22 IST, before the 15:45 GPU cutoff):
   ID σ-free accuracy 13.5% → 14.0%, strict 7% → 9%, parse failures 82% → 78%; depth-5 reward −4.69 → −4.48.
   None significant (paired McNemar/Wilcoxon, smallest p = 0.056). See MORNING.md §4.
+
+## Phase 3.6 — SFT warm-up A/B + overnight GRPO (2026-10-13, unattended)
+
+- [x] SFT data builder (σ masked, training seeds 1e7..), SFT trainer, merge tool, EMA curriculum, 3-way compare
+  (D35, D36). 30-min SFT on Qwen3.5-2B (2,096 examples) and Qwen2.5-Math-1.5B (2,600 examples).
+- [x] Group probe on both SFT'd models → **winner Qwen2.5-Math-1.5B + SFT** (binary zero-var 56.2% vs 60.4%;
+  FINDINGS #4). Truncation at 512 tokens = 0% → **budget 512**.
+- [ ] Overnight GRPO on Math-SFT (crps_log, 4 × 8, EMA curriculum from depths 1–2, stop 06:30 IST).
+- [ ] Final 3-way eval (base / SFT-only / SFT+RL) with paired tests; MORNING.md.

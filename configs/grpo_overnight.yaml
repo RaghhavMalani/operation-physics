@@ -1,7 +1,7 @@
 # Phase 3.6 overnight GRPO on the SFT A/B winner (approved brief): crps_log, 4 prompts x 8 completions per step,
 # EMA curriculum starting at depths 1-2, hard stop 06:30 IST, checkpoint every 50 steps, keep the last 3.
 # The model block, token budget and run id are filled in from the A/B result (results/model_probe_sft/).
-run_id: null
+run_id: overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512
 output_dir: results/train
 seed: 0
 prompt: v4_worked_example
@@ -9,7 +9,7 @@ reward_rule: crps_log
 train_seed_offset: 0           # GRPO seeds 0.. per cell block (SFT used 1e7..; eval >= 1e9)
 
 model:
-  id: null                     # merged SFT model directory of the winner
+  id: results/sft/qwen2.5-math-1.5b-instruct/merged   # SFT A/B winner (results/model_probe_sft/ab_selection.json)
   revision: null
   max_seq_length: 2048         # longest v4 prompt 1156 tokens + up to 768 completion tokens
   chat_template_kwargs: {}
@@ -38,7 +38,7 @@ grpo:
   num_generations: 8
   per_device_train_batch_size: 4
   gradient_accumulation_steps: 8   # 4 x 8 = 32 completions = 4 prompts x 8 per optimizer step
-  max_completion_length: null      # 512 or 768 from the A/B truncation rule
+  max_completion_length: 512   # winner truncates 0% at 512
   max_prompt_length: 1280
   temperature: 1.0
   top_p: 1.0

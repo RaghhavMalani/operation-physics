@@ -1,0 +1,23 @@
+{
+  "candidates": [
+    {
+      "label": "qwen3.5-2b-sft",
+      "id": "results/sft/qwen3.5-2b/merged",
+      "revision": null,
+      "missing": true
+    },
+    {
+      "label": "qwen2.5-math-1.5b-instruct-sft",
+      "id": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+      "revision": null,
+      "missing": true
+    }
+  ],
+  "selection": {
+    "decision": "incomplete",
+    "missing": [
+      "qwen3.5-2b-sft",
+      "qwen2.5-math-1.5b-instruct-sft"
+    ]
+  }
+}

@@ -104,3 +104,42 @@ the budget, not the reward's density. Every gradient flows through the few compl
   The adapter is local only (gitignored), `lora_hash 5efe8a51708c3eca`.
 - Eval: `eval_greedy/` (400 rollouts, replays exactly), `before_after.json`, `before_after_significance.json`
   (`scripts/paired_tests.py`). "Before" = `results/model_probe/qwen3.5-2b/greedy/`.
+
+---
+
+## #4. 30 minutes of σ-masked SFT on generator solutions fixes format and length; the A/B is close, and Math-SFT wins by rule (2026-10-13)
+
+**Claim.** A 30-minute LoRA SFT on short, generator-written solutions (training seeds only; σ number masked
+from the loss) turns both models into usable GRPO starting points. Parse failures drop from 88–100% to 0.3%,
+completions shrink from ~700–900 to ~200 tokens, and crps_log zero-variance drops to 0%. On the unchanged
+k = 8 group probe (48 ID problems, T = 1.0, prompt v4, 1024 tokens):
+
+| model | binary zero-var | crps_log zero-var | pass@8 | mean pass rate | parse fail | truncated | mean tokens | sampled acc ≤1% / ≤10% | 1σ cov | median rel. σ |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Qwen3.5-2B base | 72.9% | 56.2% | 27.1% | 7.0% | 87.8% | 76.3% | 885 | 7.0 / 7.6% | 27.9% | 0.2% |
+| **Qwen3.5-2B + SFT** | 60.4% | 0.0% | 60.4% | 35.7% | 0.3% | 0.3% | 205 | 35.7 / 60.7% | 30.5% | 0.5% |
+| Qwen2.5-Math-1.5B base | 97.9% | 95.8% | 2.1% | 0.3% | 99.5% | 17.2% | 708 | 0.3 / 0.3% | – | – |
+| **Qwen2.5-Math-1.5B + SFT** | **56.2%** | 0.0% | 58.3% | 36.2% | 0.3% | 0.0% | 197 | 36.2 / 56.8% | 20.2% | 0.1% |
+
+**A/B decision (your rule: lower binary zero-variance): Qwen2.5-Math-1.5B + SFT, 56.2% vs 60.4%.** This is
+27 vs 29 zero-variance groups out of 48: a 2-group difference, well within sampling noise, so the two SFT'd
+models are effectively tied on this metric. Math-SFT never truncates at 512 tokens, so the GRPO budget is
+**512** (rule: < 20% truncation at 512). Two things favour Math-SFT beyond the rule: it trains faster per
+example and is smaller. Against it, it is more over-confident (median stated σ 0.1% of the value, 1σ
+coverage 20%, vs 0.5% and 31% for Qwen3.5-SFT). σ was never trained (it was masked), so this reflects each
+base model's prior, and it is exactly what RL with crps_log has to fix.
+
+**Why binary zero-variance stays ~60%:** with a ~36% pass rate the per-problem outcome is bimodal. Groups are
+mostly all-right or all-wrong, so there is a mix at each depth: Math-SFT 42% / 67% / 67% / 50% zero-variance
+at depths 1–4. crps_log, by contrast, has variance in every group, because the error magnitude and σ still
+differ even when all 8 answers are right or all wrong.
+
+### Provenance
+- SFT: `configs/sft.yaml`, `physcal/train/{sft_data,sft,merge}.py` (commits `0e5c97c`–`eee48d5`). Data:
+  3,000 training-seed problems (seeds 10,000,000–10,002,999, 12 training cells, generator `1.1.0+c735a0d4`;
+  manifests in `results/sft/<model>/data_manifest.json`). Qwen3.5-2B: 262 steps / 2,096 examples, loss 0.59 → 0.05.
+  Qwen2.5-Math: 325 steps / 2,600 examples, loss 0.64 → 0.06. Adapters merged into the bf16 bases (CPU, peft).
+  Merged models are local only.
+- Probe: `configs/model_probe_sft.yaml` → `results/model_probe_sft/<label>/group/` (tapes replayable);
+  decision `results/model_probe_sft/ab_selection.json` (`scripts/ab_select.py`). Base rows:
+  `results/model_probe/<label>/group/`.

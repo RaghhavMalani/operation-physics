@@ -1,0 +1,65 @@
+{
+  "candidates": [
+    {
+      "label": "qwen3.5-2b-sft",
+      "id": "results/sft/qwen3.5-2b/merged",
+      "binary_zero_variance": 0.6041666666666666,
+      "crps_log_zero_variance": 0.0,
+      "pass_at_8": 0.6041666666666666,
+      "mean_pass_rate": 0.3567708333333333,
+      "binary_zero_variance_by_depth": {
+        "1": 0.5833333333333334,
+        "2": 0.6666666666666666,
+        "3": 0.5,
+        "4": 0.6666666666666666
+      },
+      "parse_fail_rate": 0.0026041666666666665,
+      "mean_completion_tokens": 205.3046875,
+      "truncation_at": {
+        "512": 0.005208333333333333,
+        "768": 0.0026041666666666665,
+        "1024": 0.0026041666666666665
+      },
+      "accuracy_sigma_free": {
+        "0.01": 0.3567708333333333,
+        "0.02": 0.4140625,
+        "0.05": 0.5390625,
+        "0.1": 0.6067708333333334
+      },
+      "coverage_1sigma": 0.30548302872062666,
+      "median_rel_sigma": 0.005190498905908097
+    },
+    {
+      "label": "qwen2.5-math-1.5b-instruct-sft",
+      "id": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+      "binary_zero_variance": 0.5625,
+      "crps_log_zero_variance": 0.0,
+      "pass_at_8": 0.5833333333333334,
+      "mean_pass_rate": 0.3619791666666667,
+      "binary_zero_variance_by_depth": {
+        "1": 0.4166666666666667,
+        "2": 0.6666666666666666,
+        "3": 0.6666666666666666,
+        "4": 0.5
+      },
+      "parse_fail_rate": 0.0026041666666666665,
+      "mean_completion_tokens": 196.9140625,
+      "truncation_at": {
+        "512": 0.0,
+        "768": 0.0,
+        "1024": 0.0
+      },
+      "accuracy_sigma_free": {
+        "0.01": 0.3619791666666667,
+        "0.02": 0.4270833333333333,
+        "0.05": 0.5130208333333334,
+        "0.1": 0.5677083333333334
+      },
+      "coverage_1sigma": 0.2020997375328084,
+      "median_rel_sigma": 0.0008043581630614199
+    }
+  ],
+  "winner": "qwen2.5-math-1.5b-instruct-sft",
+  "budget": 512,
+  "rule": "lower binary zero-variance; budget 512 if truncation@512 < 20% else 768"
+}
