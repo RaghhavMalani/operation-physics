@@ -191,8 +191,11 @@ def main() -> None:
     ap.add_argument("--part", choices=["greedy", "group", "both"], default="both")
     ap.add_argument("--summarize", action="store_true", help="only rebuild the summary from existing results")
     ap.add_argument("--limit", type=int, default=None, help="max problems per split (smoke tests)")
+    ap.add_argument("--output-dir", default=None, help="override output_dir (e.g. for smoke tests)")
     args = ap.parse_args()
     probe_cfg = load_config(args.config)
+    if args.output_dir:
+        probe_cfg["output_dir"] = args.output_dir
     out_root = REPO_ROOT / probe_cfg["output_dir"]
     if not args.summarize:
         parts = ["greedy", "group"] if args.part == "both" else [args.part]

@@ -119,8 +119,12 @@ class HFBackend:
         self.revision = getattr(self.model.config, "_commit_hash", None) or revision
         if revision and self.revision != revision:
             raise RuntimeError(f"{model_id}: loaded revision {self.revision}, expected {revision}")
+        # Stop on the model's EOS ids *and* the tokenizer's end-of-turn token. Qwen3.5-2B ships no
+        # generation_config.json, and its config.json names <|endoftext|> while chat turns end with <|im_end|>.
         eos = self.model.generation_config.eos_token_id
-        self.eos_ids = set(eos if isinstance(eos, list) else [eos])
+        self.eos_ids = {e for e in (eos if isinstance(eos, list) else [eos]) if e is not None}
+        if self.tok.eos_token_id is not None:
+            self.eos_ids.add(self.tok.eos_token_id)
         self.pad_id = self.tok.pad_token_id if self.tok.pad_token_id is not None else next(iter(self.eos_ids))
 
     def __call__(self, conversations: list[list[dict]]) -> list[Generation]:
@@ -161,6 +165,7 @@ class HFBackend:
                     max_new_tokens=g["max_new_tokens"],
                     repetition_penalty=g["repetition_penalty"],
                     num_return_sequences=k,
+                    eos_token_id=sorted(self.eos_ids),
                     pad_token_id=self.pad_id,
                     **decoding,
                 )
