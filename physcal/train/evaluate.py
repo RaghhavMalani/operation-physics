@@ -40,6 +40,8 @@ def main() -> None:
     ap.add_argument("--run", required=True)
     ap.add_argument("--label", required=True)
     ap.add_argument("--adapter", default="final_adapter")
+    ap.add_argument("--model-class", default=None,
+                    help="override the probe's model class, e.g. causal_lm when the adapter was trained text-only")
     args = ap.parse_args()
     probe = load_config("model_probe")
     cand = next(c for c in probe["candidates"] if c["label"] == args.label)
@@ -48,6 +50,8 @@ def main() -> None:
     cfg["output_dir"] = str(run_dir / "eval_greedy")
     cfg["run_id"] = f"{run_dir.name}-eval-greedy"
     cfg["model"]["lora"] = str(run_dir / args.adapter)
+    if args.model_class:
+        cfg["model"]["model_class"] = args.model_class
     after = run(cfg)
     before = json.loads((REPO_ROOT / probe["output_dir"] / args.label / "greedy" / "metrics.json").read_text())
     (run_dir / "before_after.json").write_text(json.dumps(compare(before, after), indent=2))
