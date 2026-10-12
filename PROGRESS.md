@@ -403,4 +403,6 @@ Progress:
 - [x] 4c. 10-step smoke test: 78 s/step (first step 167 s compile), peak 3.30 GiB torch / 4.17 GiB device.
 - [x] 4d. GRPO run, crps_log (D34): 49 steps (hard deadline), 69.4 s/step, peak 3.29 / 4.45 GiB. No
   improvement: 10-step mean reward −4.68 → −4.90, truncation 82–94%, zero-variance 40–80% of steps.
-- [ ] 4e. Eval of the final adapter on the probe's eval sets (running, ends ≈ 15:31 IST).
+- [x] 4e. Eval of the final adapter on the probe's eval sets (finished 15:22 IST, before the 15:45 GPU cutoff):
+  ID σ-free accuracy 13.5% → 14.0%, strict 7% → 9%, parse failures 82% → 78%; depth-5 reward −4.69 → −4.48.
+  None significant (paired McNemar/Wilcoxon, smallest p = 0.056). See MORNING.md §4.

@@ -83,3 +83,24 @@ depth: 25% / 75% / 100% / 92% at depths 1–4.
   `results/model_probe/qwen2.5-math-1.5b-instruct/{greedy,group}/diag_boxed_answers.json`. Not the verifier.
 - Group probe: 48 ID problems (4 per family × depth cell, seeds 1000000000–1000000047), k = 8, T = 1.0,
   top_p 1, top_k off, repetition penalty 1.0, seed 0. Qwen3.5 ran at batch 8 (D33).
+
+---
+
+## #3. First GRPO run: 49 steps of crps_log on Qwen3.5-2B change nothing measurable (2026-10-12)
+
+**Claim.** Qwen3.5-2B, 4-bit + LoRA r = 16, reward crps_log + 0.2·steps, 1 prompt × 8 completions per step,
+1024 completion tokens, 49 steps (57 min on the RTX 4060, 69 s/step, 4.45 GiB peak). On the same 400 eval
+problems, before vs after: ID accuracy ≤1% 13.5% → 14.0% (σ-free), 7% → 9% (strict); depth-5 reward
+−4.69 → −4.48. Paired McNemar / Wilcoxon on identical problems: **no significant change** (p ≥ 0.056). During
+training, 82–94% of completions per 10-step window were truncated at 1024 tokens and scored the floor, and
+40–80% of steps had zero reward variance.
+
+**Interpretation.** The limiting factor is that the policy rarely produces a finished, parseable answer within
+the budget, not the reward's density. Every gradient flows through the few completions that finish.
+
+### Provenance
+- Config `configs/grpo_phase4.yaml` (commit `0f88620`); run dir `results/train/phase4-grpo-qwen3.5-2b-crps_log/`
+  (train_metrics.jsonl; rollouts.jsonl, 392 rollouts, replays exactly; training_curve.png; summary.json).
+  The adapter is local only (gitignored), `lora_hash 5efe8a51708c3eca`.
+- Eval: `eval_greedy/` (400 rollouts, replays exactly), `before_after.json`, `before_after_significance.json`
+  (`scripts/paired_tests.py`). "Before" = `results/model_probe/qwen3.5-2b/greedy/`.

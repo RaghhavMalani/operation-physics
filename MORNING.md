@@ -3,7 +3,9 @@
 **Short version.** All four Phase 3.5 decisions are applied. The model probe ran on all three candidates,
 and the selection rule picked **Qwen3.5-2B**. A first GRPO run (crps_log, per your > 50% rule) ran
 **49 steps** before the hard deadline. It fit easily in memory (4.45 GiB device peak) but **did not learn**:
-82–94% of completions hit the 1024-token cap and scored the floor. The final eval is in §4.
+82–94% of completions hit the 1024-token cap and scored the floor. On the same 400 eval problems,
+before → after is ID accuracy 13.5% → 14.0% (σ-free) and 7% → 9% (strict), with **no statistically
+significant change** (paired McNemar/Wilcoxon, smallest p = 0.056).
 **What you need to decide next is how to solve completion length / format before more RL** (§6).
 Everything is committed and pushed (`origin/main`), 226 tests pass, nothing is BLOCKED, and all GPU work
 ended before 15:45 IST.
@@ -80,7 +82,30 @@ rollouts that replay exactly, summary.json, training_curve.png). The adapter and
 
 ## 4. Before / after eval (4e)
 
-EVAL_TABLE_PLACEHOLDER
+Same eval sets and settings as the "before" probe: 200 ID + 200 depth-5 problems (generator 1.1.0), prompt v4,
+greedy, 1024 tokens, transformers 5.19.0. The adapter (`lora_hash 5efe8a51708c3eca`) is merged into the bf16
+base. The eval tape replays exactly. Eval peak 6.30 GiB torch / 7.67 GiB device; finished 15:22 IST.
+
+| split | metric | before (Qwen3.5-2B base) | after (49 GRPO steps) | paired test |
+|---|---|---|---|---|
+| ID | accuracy ≤1% / ≤2% / ≤5% / ≤10% (σ-free) | 13.5 / 13.5 / 13.5 / 14.0% | 14.0 / 14.0 / 14.0 / 14.5% | McNemar p = 1.00 (≤1%) |
+| ID | accuracy ≤1%, strict (± required, crps_log) | 7.0% (14) | 9.0% (18) | p = 0.48 |
+| ID | parse failures / of which truncated at 1024 | 82.0% / 69.5% | 78.0% / 66.5% | p = 0.20 / 0.39 |
+| ID | unit mismatch / missing ± | 2.5% / 11.5% | 4.5% / 10.5% | |
+| ID | 1σ / 2σ coverage (n with σ: 31 → 35) | 29.0% / 35.5% | 37.1% / 37.1% | |
+| ID | median stated relative σ | 0.014% | 0.07% | |
+| ID | mean reward (crps_log) | −4.41 | −4.29 | Wilcoxon p = 0.47 |
+| depth 5 | accuracy ≤1% / ≤10% (σ-free) | 2.5% / 2.5% | 2.5% / 4.5% | p = 1.00 (≤1%) |
+| depth 5 | parse failures / truncated | 90.0% / 87.5% | 85.5% / 84.5% | p = 0.09 / 0.33 |
+| depth 5 | 1σ / 2σ coverage | 6.2% / 12.5% | 19.2% / 23.1% | |
+| depth 5 | mean reward (crps_log) | −4.69 | −4.48 | Wilcoxon p = 0.056 |
+
+**Reading: no statistically significant change.** Every metric moved slightly in the right direction
+(a few more finished answers, slightly higher reward), but the paired tests on the same problems put all of
+it within noise (smallest p = 0.056). 49 steps × 8 completions at lr 5e-6 barely moves a LoRA. Coverage is
+computed on only 16–35 answers per split and stays far below the 68% / 95% targets: stated σ is still
+~100× too small. Files: `results/train/phase4-grpo-qwen3.5-2b-crps_log/{eval_greedy/,before_after.json,
+before_after_significance.json}`; the test is `scripts/paired_tests.py`.
 
 ## 5. Decisions to review (new since your last read)
 
