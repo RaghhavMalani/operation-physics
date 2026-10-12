@@ -113,7 +113,7 @@ worth a second look.
 
 ## Phase 2 — Verifier
 
-### D13. Failures score the rule's floor, not a literal 0 **[REVIEW]**
+### D13. Failures score the rule's floor, not a literal 0 **[FINAL 2026-10-12: accepted]**
 - **Decision:** a parse failure scores `score_final = floor` and `score_steps = 0`, so the total is
   w_final·floor. A unit mismatch scores `score_final = floor`, and its steps are still credited. The floor is
   −5 for CRPS (the clip), −10 for log_score, −5 for abs_rel_error and 0 for binary. For the binary reward this
@@ -130,7 +130,7 @@ worth a second look.
   words: a perfect final answer with no steps must beat a failed final answer with every step correct. The
   defaults pass with a large margin (0.2 vs 5).
 
-### D15. The spec's relative CRPS is only approximately proper; `crps_log` was added as an option **[REVIEW]**
+### D15. The spec's relative CRPS is only approximately proper; `crps_log` was added as an option **[FINAL 2026-10-12: crps_log is the default]**
 - **Finding:** dividing by the *truth* |y| weights each outcome by 1/|y|. So the score is proper for the
   re-weighted belief p(y)/|y|, not for p(y). By Monte Carlo, the optimal μ is biased by −0.24% at 5% relative
   spread, −1.0% at 10%, −4.4% at 20% and −11% at 30%. The optimal σ is inflated by up to 7%. The same issue
@@ -248,3 +248,13 @@ worth a second look.
   reported, so <steps> may be empty." makes the model skip its calculation (96% answer-only at depth 1, 0% at
   depths 2–5). Replacing it (diagnostic, `scripts/diag_depth1_wording.py`) cut answer-only to 34%, but
   accuracy stayed 0%. Changing it would bump the generator version, so I left it for you to decide.
+
+## Phase 3.5 — Fixing the starting point (2026-10-12)
+
+### D29. `crps_log` is the default scoring rule; the spec's relative CRPS is an ablation flag (final)
+- **Decision (yours):** `configs/reward.yaml` → `scoring.rule: crps_log`. `crps` (relative, as in the spec),
+  `binary`, `log_score` and `abs_rel_error` remain selectable. Failures keep the rule's floor: −5 for
+  `crps_log` and `crps`, 0 for `binary` (D13, accepted).
+- **Consequence:** tapes logged before this change carry `reward_config.scoring.rule = crps` in their
+  meta.json, and `replay()` re-scores them with that logged config, so they still reproduce exactly. New runs
+  report `mean_reward` under `crps_log`. Every breakdown still contains the scores under every rule.

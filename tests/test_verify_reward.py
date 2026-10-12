@@ -185,3 +185,17 @@ def test_truthful_completion_on_generated_problems(family, depth, seed):
     wrong = "kg" if p.target_si_unit != "kg" else "s"
     _, bd = reward(p, completion(f"{p.target_value:.6g} ± {sigma:.3g} {wrong}"))
     assert bd["reason"] == "unit_mismatch"
+
+
+def test_default_rule_is_crps_log_with_relative_crps_as_ablation():
+    assert SC["rule"] == "crps_log"
+    cfg = copy.deepcopy(CFG)
+    cfg["scoring"]["rule"] = "crps"
+    validate_reward_config(cfg)
+    r_log, bd_log = reward(PROBLEM, completion("13.0 ± 0.5 m/s"))
+    r_rel, bd_rel = reward(PROBLEM, completion("13.0 ± 0.5 m/s"), cfg)
+    assert bd_log["rule"] == "crps_log" and bd_rel["rule"] == "crps"
+    assert bd_log["scores"]["crps"] == bd_rel["score_final"]
+    assert bd_rel["scores"]["crps_log"] == bd_log["score_final"]
+    # failure floors (D13): -5 for both CRPS variants, 0 for binary
+    assert floor("crps_log", SC) == floor("crps", SC) == -5.0 and floor("binary", SC) == 0.0

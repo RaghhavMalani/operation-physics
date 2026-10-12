@@ -1,8 +1,9 @@
 # Verifier and reward settings.
 scoring:
-  rule: crps                # main rule; ablations: binary | log_score | abs_rel_error | crps_log (proper, log space)
+  rule: crps_log            # main rule (D15, final): CRPS of ln y vs N(ln mu, (sigma/mu)^2), strictly proper
+                            # ablations: crps (spec's relative CRPS) | binary | log_score | abs_rel_error
   sigma_floor: 1.0e-3       # minimum relative sigma s = max(sigma/|y|, sigma_floor)
-  crps_clip: 5.0            # score_final = max(-CRPS, -crps_clip); also used by crps_log
+  crps_clip: 5.0            # score_final = max(-CRPS, -crps_clip) for crps_log and crps; failures get -5 (D13)
   log_score_clip: 10.0      # score_final = max(-NLL, -log_score_clip)
   abs_rel_error_clip: 5.0   # score_final = max(-|e|, -abs_rel_error_clip)
   binary_tolerance: 0.01    # "correct" = within 1% relative; also the eval accuracy definition

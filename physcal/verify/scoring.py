@@ -8,10 +8,10 @@ Notation (all SI): truth y, prediction mu ± sigma.
 Only affine transforms of these scores are allowed downstream: a non-linear map such as exp(-CRPS)
 breaks propriety, and then honest sigma is no longer optimal.
 
-Caveat (see DECISIONS.md): dividing by the *truth* |y| weights outcomes by 1/|y|, so `crps` and `log_score`
-are only approximately proper. The bias is negligible for relative spreads of a few percent and grows to
-about -11% in the optimal mu at 30% spread. `crps_log` scores ln(y) against N(ln mu, (sigma/mu)^2) instead.
-That is strictly proper for beliefs that are Gaussian in log space, and it is still scale-free.
+Default rule: `crps_log` (D15). It scores ln(y) against N(ln mu, (sigma/mu)^2): strictly proper for beliefs
+that are Gaussian in log space, and still scale-free. The spec's relative `crps` (and `log_score`) divide by
+the *truth* |y|, which weights outcomes by 1/|y|, so they are only approximately proper: the optimal mu is
+biased by about -1% at 10% relative spread and -11% at 30%. They remain available as ablation flags.
 """
 
 from __future__ import annotations
