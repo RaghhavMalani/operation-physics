@@ -51,6 +51,8 @@ class VerifierReward:
         self.model_id = model_id
         self.trainer = None  # set once the trainer exists; its .state is replaced when train() starts
         self.history: list[dict] = []
+        self.curriculum = None  # an env.sampler.Sampler, fed with each group's sigma-free binary results
+        self.curriculum_path: Path | None = None
 
     @property
     def step(self) -> int:
@@ -71,6 +73,15 @@ class VerifierReward:
                               {"split": "train", "n_tokens": n_tokens, "truncated": truncated, "by_rule": by_rule})
         stats = step_stats(rows, rewards, self.group_size)
         stats["step"] = self.step
+        groups = [rows[i:i + self.group_size] for i in range(0, len(rows), self.group_size)]
+        cells = [(g[0]["problem"].family, g[0]["problem"].depth) for g in groups]
+        stats["cells"] = [f"{f}/{d}" for f, d in cells]
+        if self.curriculum is not None:
+            self.curriculum.observe(
+                [(c, [r["by_rule"]["binary"]["score_final"] == 1.0 for r in g]) for c, g in zip(cells, groups)])
+            if self.curriculum_path is not None:
+                with self.curriculum_path.open("a") as fh:
+                    fh.write(json.dumps({"step": self.step, "cells": stats["cells"], **self.curriculum.state()}) + "\n")
         stats["time"] = time.time()
         self.history.append(stats)
         if self.metrics_path is not None:
@@ -107,6 +118,48 @@ def step_stats(rows: list[dict], rewards: list[float], group_size: int) -> dict[
     }
 
 
+# ------------------------------------------------------------------------------------------- curriculum
+class CurriculumRepeatSampler:
+    """TRL RepeatSampler's iteration pattern, but each chunk's prompts are chosen by a curriculum sampler at the
+    moment the chunk is requested: for chunk: for repeat_count: for prompt in chunk: yield it mini_repeat times."""
+
+    def __init__(self, cell_indices: dict, curriculum, mini_repeat_count: int, batch_size: int,
+                 repeat_count: int, total_chunks: int):
+        self.cell_indices = cell_indices
+        self.curriculum = curriculum
+        self.mini_repeat_count = mini_repeat_count
+        self.batch_size = batch_size
+        self.repeat_count = repeat_count
+        self.total_chunks = total_chunks
+        self.cursor = {c: 0 for c in cell_indices}
+
+    def __iter__(self):
+        for _ in range(self.total_chunks):
+            chunk = []
+            for cell in self.curriculum.next_batch(self.batch_size):
+                idx = self.cell_indices[cell]
+                chunk.append(idx[self.cursor[cell] % len(idx)])
+                self.cursor[cell] += 1
+            for _ in range(self.repeat_count):
+                for i in chunk:
+                    for _ in range(self.mini_repeat_count):
+                        yield i
+
+    def __len__(self) -> int:
+        return self.total_chunks * self.batch_size * self.mini_repeat_count * self.repeat_count
+
+
+def curriculum_pool(per_cell: int, seed_offset: int, env_cfg: dict) -> tuple[list[Problem], dict]:
+    """`per_cell` training problems for every training cell, cell-major; returns (problems, cell -> indices)."""
+    problems, cell_indices = [], {}
+    for k, cell in enumerate(train_cells(env_cfg)):
+        start = len(problems)
+        problems += [generate_problem(*cell, seed_offset + k * per_cell + i, split="train", cfg=env_cfg)
+                     for i in range(per_cell)]
+        cell_indices[cell] = list(range(start, len(problems)))
+    return problems, cell_indices
+
+
 # ------------------------------------------------------------------------------------------- guards
 def gpu_temperature() -> int | None:
     try:
@@ -118,7 +171,7 @@ def gpu_temperature() -> int | None:
 
 
 def parse_deadline(stop_at: str | None) -> float | None:
-    """'15:45 Asia/Kolkata' (today) or an ISO timestamp -> epoch seconds."""
+    """'06:30 Asia/Kolkata' (the next occurrence of that wall-clock time) or an ISO timestamp -> epoch seconds."""
     if not stop_at:
         return None
     try:
@@ -130,7 +183,10 @@ def parse_deadline(stop_at: str | None) -> float | None:
     hhmm, tz = stop_at.split()
     h, m = map(int, hhmm.split(":"))
     now = dt.datetime.now(ZoneInfo(tz))
-    return now.replace(hour=h, minute=m, second=0, microsecond=0).timestamp()
+    target = now.replace(hour=h, minute=m, second=0, microsecond=0)
+    if target <= now:  # e.g. a 06:30 stop set before midnight means tomorrow
+        target += dt.timedelta(days=1)
+    return target.timestamp()
 
 
 def make_stop_callback(wall_limit_s: float, deadline: float | None, temp_limit: int, pause_s: float,
@@ -197,8 +253,12 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
-    n_prompts = steps * g["prompts_per_step"] + g["extra_prompts"]
-    problems = training_problems(n_prompts, cfg["train_seed_offset"], env_cfg)
+    cur_cfg = cfg.get("curriculum")
+    if cur_cfg:
+        problems, cell_indices = curriculum_pool(cur_cfg["pool_per_cell"], cfg["train_seed_offset"], env_cfg)
+    else:
+        n_prompts = steps * g["prompts_per_step"] + g["extra_prompts"]
+        problems = training_problems(n_prompts, cfg["train_seed_offset"], env_cfg)
     prompts = [tok.apply_chat_template(build_messages(p.text, cfg["prompt"]), tokenize=False,
                                        add_generation_prompt=True, **m.get("chat_template_kwargs", {}))
                for p in problems]
@@ -224,7 +284,22 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     fields = set(GRPOConfig.__dataclass_fields__)
     dropped = sorted(k for k in wanted if k not in fields)
     args = GRPOConfig(**{k: v for k, v in wanted.items() if k in fields and v is not None})
-    trainer = GRPOTrainer(model=model, processing_class=tok, reward_funcs=[reward_fn], args=args, train_dataset=ds)
+    trainer_cls = GRPOTrainer
+    if cur_cfg:
+        from physcal.env.sampler import EMASampler
+
+        curriculum = EMASampler(list(cell_indices), cur_cfg, cfg["seed"])
+        reward_fn.curriculum, reward_fn.curriculum_path = curriculum, out / "curriculum.jsonl"
+
+        class CurriculumGRPOTrainer(GRPOTrainer):
+            def _get_train_sampler(self, dataset=None):
+                return CurriculumRepeatSampler(
+                    cell_indices, curriculum, mini_repeat_count=self.num_generations,
+                    batch_size=self.args.generation_batch_size // self.num_generations,
+                    repeat_count=self.num_iterations * self.args.steps_per_generation, total_chunks=steps + 16)
+
+        trainer_cls = CurriculumGRPOTrainer
+    trainer = trainer_cls(model=model, processing_class=tok, reward_funcs=[reward_fn], args=args, train_dataset=ds)
     reward_fn.trainer = trainer
     trainer.add_callback(make_stop_callback(g["wall_clock_limit_minutes"] * 60, deadline, cfg["guards"]["max_gpu_temp_c"],
                                             cfg["guards"]["pause_seconds"], cfg["guards"]["check_every_steps"],

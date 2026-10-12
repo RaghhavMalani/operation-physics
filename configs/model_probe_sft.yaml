@@ -1,0 +1,23 @@
+# Phase 3.6: the existing group probe (k = 8, T = 1.0, 48 ID problems, prompt v4, 1024 tokens) re-run on the
+# two SFT'd models (adapters merged into their bf16 bases). Pick the lower binary zero-variance fraction.
+output_dir: results/model_probe_sft
+greedy_config: eval_probe_greedy
+group_config: eval_probe_group
+footprint_config: footprint
+
+selection:
+  max_binary_zero_variance: 0.80        # reported for continuity; the A/B winner is simply the lower value
+
+candidates:
+  - label: qwen3.5-2b-sft
+    id: results/sft/qwen3.5-2b/merged       # local merged model (base 15852e8c + SFT adapter)
+    revision: null
+    batch_size: 16
+    group_batch_size: 8
+    model_class: causal_lm                  # merged text-only model
+    chat_template_kwargs: {enable_thinking: false}
+  - label: qwen2.5-math-1.5b-instruct-sft
+    id: results/sft/qwen2.5-math-1.5b-instruct/merged   # base aafeb0fc + SFT adapter
+    revision: null
+    batch_size: 16
+    model_class: causal_lm

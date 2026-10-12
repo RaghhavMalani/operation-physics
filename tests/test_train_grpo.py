@@ -60,9 +60,13 @@ def test_parse_deadline():
 
     iso = dt.datetime(2026, 10, 12, 10, 15, tzinfo=dt.timezone.utc)
     assert parse_deadline(iso.isoformat()) == iso.timestamp()
-    local = parse_deadline("15:45 Asia/Kolkata")
-    when = dt.datetime.fromtimestamp(local, ZoneInfo("Asia/Kolkata"))
-    assert (when.hour, when.minute) == (15, 45) and when.date() == dt.datetime.now(ZoneInfo("Asia/Kolkata")).date()
+    import time
+
+    for hhmm in ("06:30", "15:45", "23:59"):
+        local = parse_deadline(f"{hhmm} Asia/Kolkata")
+        when = dt.datetime.fromtimestamp(local, ZoneInfo("Asia/Kolkata"))
+        assert f"{when.hour:02d}:{when.minute:02d}" == hhmm
+        assert 0 < local - time.time() <= 24 * 3600  # always the next occurrence, never in the past
 
 
 def test_config_caps_match_the_brief():
@@ -71,3 +75,21 @@ def test_config_caps_match_the_brief():
     assert g["save_steps"] == 50 and g["save_total_limit"] == 2
     assert g["per_device_train_batch_size"] * g["gradient_accumulation_steps"] == g["num_generations"] == 8
     assert g["max_completion_length"] == 1024 and CFG["guards"]["max_gpu_temp_c"] == 87
+
+
+def test_curriculum_sampler_matches_trl_repeat_pattern_and_feedback():
+    from physcal.env.sampler import EMASampler
+    from physcal.train.grpo import CurriculumRepeatSampler, curriculum_pool
+
+    probs, cell_indices = curriculum_pool(3, 0, env_config())
+    assert len(probs) == 36 and all(p.seed < env_config()["splits"]["eval_seed_offset"] for p in probs)
+    cur = EMASampler(list(cell_indices), {"alpha": 0.2, "weight_floor": 0.02, "prior_pass_rate": 0.5,
+                                         "start_depths": [1, 2], "unlock_pass_rate": 0.5, "min_observations": 2},
+                     seed=0)
+    s = CurriculumRepeatSampler(cell_indices, cur, mini_repeat_count=8, batch_size=4, repeat_count=8, total_chunks=3)
+    out = list(s)
+    assert len(out) == len(s) == 3 * 4 * 8 * 8
+    chunk = out[:256]
+    assert chunk[:32] == chunk[32:64]  # whole chunk repeated repeat_count times
+    assert all(len(set(chunk[i:i + 8])) == 1 for i in range(0, 32, 8))  # each prompt mini-repeated 8 times
+    assert all(probs[i].depth in (1, 2) for i in out)

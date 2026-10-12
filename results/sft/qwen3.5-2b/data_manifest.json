@@ -1,0 +1,28 @@
+{
+  "n_examples": 3000,
+  "seed_range": [
+    10000000,
+    10002999
+  ],
+  "eval_seed_offset": 1000000000,
+  "split": "train",
+  "cells": [
+    "dynamics/1",
+    "dynamics/2",
+    "dynamics/3",
+    "dynamics/4",
+    "energy/1",
+    "energy/2",
+    "energy/3",
+    "energy/4",
+    "kinematics/1",
+    "kinematics/2",
+    "kinematics/3",
+    "kinematics/4"
+  ],
+  "generator_version": "1.1.0+c735a0d4",
+  "prompt": "v4_worked_example",
+  "completion_tokens_mean": 194.42466666666667,
+  "sequence_tokens_max": 1486,
+  "sigma_tokens_masked_mean": 4.2396666666666665
+}

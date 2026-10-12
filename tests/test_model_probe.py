@@ -83,3 +83,28 @@ def test_candidate_config_overrides():
 def test_every_candidate_is_pinned_to_a_full_revision():
     for cand in PROBE["candidates"]:
         assert len(cand["revision"]) == 40 and int(cand["revision"], 16) >= 0
+
+
+def test_footprint_reads_local_model_directories(tmp_path):
+    import json as _json
+
+    import torch
+    from safetensors.torch import save_file
+
+    (tmp_path / "config.json").write_text(_json.dumps(CFG))
+    save_file({k: torch.zeros(v) for k, v in TENSORS.items()}, str(tmp_path / "model.safetensors"))
+    assert footprint.model_shape(str(tmp_path), None) == footprint.shape_from(CFG, TENSORS)
+
+
+def test_compare_configs_differ_only_in_the_model():
+    from physcal.train.compare import eval_config
+
+    run_dir, sft = Path("/tmp/run"), Path("/tmp/sft")
+    cfgs = {p: eval_config(p, "qwen3.5-2b", 512, run_dir, sft) for p in ("base", "sft", "rl")}
+    for c in cfgs.values():
+        assert c["generation"]["max_new_tokens"] == 512 and c["prompt"] == "v4_worked_example"
+        assert c["model"]["model_class"] == "causal_lm" and c["generation"]["do_sample"] is False
+    assert cfgs["base"]["model"]["revision"] == "15852e8c16360a2fea060d615a32b45270f8a8fc"
+    assert cfgs["sft"]["model"]["id"] == cfgs["rl"]["model"]["id"] == str(sft)
+    assert cfgs["rl"]["model"]["lora"] == str(run_dir / "final_adapter") and cfgs["sft"]["model"]["lora"] is None
+    assert cfgs["base"]["splits"] == cfgs["sft"]["splits"] == cfgs["rl"]["splits"]

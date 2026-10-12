@@ -12,6 +12,7 @@ import copy
 import json
 import os
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 from physcal.config import REPO_ROOT
@@ -46,7 +47,18 @@ def _numel(shape: list[int]) -> int:
     return n
 
 
-def model_shape(model_id: str, revision: str) -> ModelShape:
+def model_shape(model_id: str, revision: str | None) -> ModelShape:
+    """Shapes from a Hub checkpoint (headers only) or from a local model directory (e.g. a merged SFT model)."""
+    local = Path(model_id)
+    if local.is_dir():
+        from safetensors import safe_open
+
+        cfg = json.loads((local / "config.json").read_text())
+        tensors = {}
+        for f in sorted(local.glob("*.safetensors")):
+            with safe_open(str(f), "pt") as fh:
+                tensors.update({k: list(fh.get_slice(k).get_shape()) for k in fh.keys()})
+        return shape_from(cfg, tensors)
     os.environ.setdefault("HF_HOME", str(REPO_ROOT / ".cache" / "huggingface"))
     from huggingface_hub import get_safetensors_metadata, hf_hub_download
 
