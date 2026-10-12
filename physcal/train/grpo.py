@@ -49,12 +49,12 @@ class VerifierReward:
         self.group_size = group_size
         self.max_completion_tokens = max_completion_tokens
         self.model_id = model_id
-        self.state = None  # set to trainer.state once the trainer exists
+        self.trainer = None  # set once the trainer exists; its .state is replaced when train() starts
         self.history: list[dict] = []
 
     @property
     def step(self) -> int:
-        return (self.state.global_step + 1) if self.state is not None else 0
+        return (self.trainer.state.global_step + 1) if self.trainer is not None else 0
 
     def __call__(self, prompts, completions, problem_json, completion_ids=None, **_) -> list[float]:
         rewards, rows = [], []
@@ -213,7 +213,7 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     wanted = dict(
         output_dir=str(out / "checkpoints"), run_name=run_id, seed=cfg["seed"], report_to="none",
         max_steps=steps, logging_steps=1, save_steps=g["save_steps"], save_total_limit=g["save_total_limit"],
-        learning_rate=g["learning_rate"], lr_scheduler_type=g["lr_scheduler_type"], warmup_ratio=g["warmup_ratio"],
+        learning_rate=g["learning_rate"], lr_scheduler_type=g["lr_scheduler_type"], warmup_steps=g["warmup_steps"],
         optim=g["optim"], weight_decay=g["weight_decay"], max_grad_norm=g["max_grad_norm"], bf16=True,
         per_device_train_batch_size=g["per_device_train_batch_size"],
         gradient_accumulation_steps=g["gradient_accumulation_steps"],
@@ -225,7 +225,7 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     dropped = sorted(k for k in wanted if k not in fields)
     args = GRPOConfig(**{k: v for k, v in wanted.items() if k in fields and v is not None})
     trainer = GRPOTrainer(model=model, processing_class=tok, reward_funcs=[reward_fn], args=args, train_dataset=ds)
-    reward_fn.state = trainer.state
+    reward_fn.trainer = trainer
     trainer.add_callback(make_stop_callback(g["wall_clock_limit_minutes"] * 60, deadline, cfg["guards"]["max_gpu_temp_c"],
                                             cfg["guards"]["pause_seconds"], cfg["guards"]["check_every_steps"],
                                             out / "events.jsonl"))

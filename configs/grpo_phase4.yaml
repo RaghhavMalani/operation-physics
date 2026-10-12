@@ -37,7 +37,7 @@ grpo:
   beta: 0.0                    # no KL penalty (TRL default); no reference model needed
   learning_rate: 5.0e-6
   lr_scheduler_type: constant_with_warmup
-  warmup_ratio: 0.05
+  warmup_steps: 3
   optim: adamw_8bit
   weight_decay: 0.0
   max_grad_norm: 0.1
