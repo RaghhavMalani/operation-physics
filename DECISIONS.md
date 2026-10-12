@@ -385,3 +385,32 @@ worth a second look.
 - **After SFT:** the adapter is merged into the bf16 base (`physcal/train/merge.py`, peft, CPU) to give an
   "SFT-only" model directory. GRPO then trains a *fresh* LoRA on top of that merged model, so the RL adapter
   isolates what RL added.
+
+### D36. SFT A/B protocol and the overnight GRPO design **[REVIEW]**
+- **A/B fairness:** equal wall clock (30 min each, your brief), not equal examples. On the 4060, Qwen3.5-2B's
+  hybrid layers train at ~6.7 s per 8 examples, so it sees fewer examples than Qwen2.5-Math in the same time.
+  Both use identical data (the same 3,000 training-seed problems, shuffled with the same seed), the same LoRA
+  and the same lr. The selection is your rule: lower binary (σ-free) zero-variance in the unchanged k = 8
+  group probe (`configs/model_probe_sft.yaml`), with ties broken by the higher pass rate
+  (`scripts/ab_select.py`).
+- **Token budget rule applied off the 1024-token probe:** "truncated at 512" = no end-of-turn within the first
+  512 generated tokens. Sampling is identical up to that point whatever the cap, so no extra run is needed.
+- **Curriculum (EMA, your brief; the HMM sampler is not built):** `physcal/env/sampler.py` follows spec §5:
+  per-cell EMA of the σ-free binary pass rate (α = 0.1, prior 0.5), weight p(1−p) + 0.02, and only
+  unlocked cells are sampled. It starts at depths 1–2 for every family; depth d+1 of a family unlocks once
+  depth d's EMA pass rate is ≥ 0.5 after ≥ 8 groups. The 0.5 threshold is my choice, the peak of p(1−p):
+  the cell has become informative-but-easy. A pool of 400 training problems per cell (seeds 0.., cell-major)
+  is cycled in order.
+- **TRL integration:** `CurriculumGRPOTrainer._get_train_sampler` returns a sampler that reproduces TRL's
+  `RepeatSampler` pattern exactly (chunk of 4 prompts, each × 8 generations, chunk × steps_per_generation),
+  but asks the EMA sampler for the 4 cells at the moment each chunk is requested. The reward function feeds
+  each group's results back, so step k's outcomes inform step k+1's cells. Every step's cells and the full
+  EMA state are logged to `curriculum.jsonl`.
+- **Step shape:** 4 prompts × 8 completions = 32 per optimizer step (micro-batch 4 × 8 accumulation), lr 5e-6,
+  DAPO loss (TRL default), no KL, LoRA r = 16 on top of the *merged* SFT model. Hard stop 06:30 IST
+  (next-occurrence parsing), checkpoints every 50 steps keeping 3.
+- **Final comparison (`physcal/train/compare.py`):** raw base, SFT-only and SFT + RL are all evaluated with
+  identical settings: the frozen eval sets, prompt v4, greedy, max_new_tokens = the training budget, text-only
+  loading, transformers 5.17 (the current env, for all three). Paired McNemar / Wilcoxon for rl-vs-sft (what RL
+  added), rl-vs-base and sft-vs-base. The raw-base numbers here are not the phase-3.5 probe numbers, which
+  used 1024 tokens.
