@@ -1,0 +1,49 @@
+# Phase 4: first GRPO run (Unsloth QLoRA + TRL GRPOTrainer). The model block is filled in from the
+# phase-3.5 selection (results/model_probe/summary.json).
+run_id: phase4-grpo
+output_dir: results/train
+seed: 0
+prompt: v4_worked_example
+reward_rule: binary            # spec; switched to crps_log when the model's probe binary zero-variance > 50% (your rule)
+train_seed_offset: 0           # training seeds 0.. (eval seeds start at 1e9)
+
+model:
+  id: null
+  revision: null
+  max_seq_length: 2304         # longest v4 prompt is 1115-1156 tokens + 1024 completion tokens
+  chat_template_kwargs: {}
+
+lora:
+  r: 16
+  alpha: 16
+  dropout: 0.0
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+grpo:
+  max_steps: 300               # hard cap (your rule); the wall-clock cap usually binds first on the 4060
+  wall_clock_limit_minutes: 120
+  prompts_per_step: 1          # 1 prompt x 8 generations per optimizer step
+  extra_prompts: 16
+  num_generations: 8           # group size
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4   # 2 x 4 = 8 completions = one group per step
+  max_completion_length: 1024
+  max_prompt_length: 1280
+  temperature: 1.0
+  top_p: 1.0
+  top_k: 0
+  repetition_penalty: 1.0
+  beta: 0.0                    # no KL penalty (TRL default); no reference model needed
+  learning_rate: 5.0e-6
+  lr_scheduler_type: constant_with_warmup
+  warmup_ratio: 0.05
+  optim: adamw_8bit
+  weight_decay: 0.0
+  max_grad_norm: 0.1
+  save_steps: 50
+  save_total_limit: 2          # keep only the last two checkpoints
+
+guards:
+  max_gpu_temp_c: 87           # pause if the GPU is hotter than this
+  pause_seconds: 600
+  check_every_steps: 5

@@ -99,8 +99,6 @@ class HFBackend:
         import torch
         import transformers
 
-        if model_cfg.get("lora"):
-            raise NotImplementedError("LoRA evaluation arrives with phase 4 (merge adapter before eval)")
         self.torch = torch
         self.gen_cfg = gen_cfg
         self.chat_template_kwargs = model_cfg.get("chat_template_kwargs") or {}
@@ -119,6 +117,16 @@ class HFBackend:
         self.revision = getattr(self.model.config, "_commit_hash", None) or revision
         if revision and self.revision != revision:
             raise RuntimeError(f"{model_id}: loaded revision {self.revision}, expected {revision}")
+        self.lora_hash = None
+        if model_cfg.get("lora"):  # trained adapter: merge into the bf16 base before eval
+            import hashlib
+
+            from peft import PeftModel
+
+            lora_dir = Path(model_cfg["lora"])
+            weights = sorted(lora_dir.glob("adapter_model*.safetensors"))
+            self.lora_hash = hashlib.sha256(b"".join(w.read_bytes() for w in weights)).hexdigest()[:16]
+            self.model = PeftModel.from_pretrained(self.model, str(lora_dir)).merge_and_unload().eval()
         # Stop on the model's EOS ids *and* the tokenizer's end-of-turn token. Qwen3.5-2B ships no
         # generation_config.json, and its config.json names <|endoftext|> while chat turns end with <|im_end|>.
         eos = self.model.generation_config.eos_token_id
@@ -259,6 +267,7 @@ def run(
     memory = backend.memory_stats() if hasattr(backend, "memory_stats") else {}
     model_revision = getattr(backend, "revision", None)
     oom_backoffs = getattr(backend, "oom_backoffs", 0)
+    lora_hash = getattr(backend, "lora_hash", None)
     if poller.peak_mib:
         memory["nvidia_smi_peak_used_gib_device_wide"] = poller.peak_mib / 1024
 
@@ -286,7 +295,7 @@ def run(
             r, bd = reward(problem, gen.text, rw_cfg)
             extra = {"split": name, "sample": n % k, "n_tokens": gen.n_tokens, "truncated": gen.truncated,
                      "by_rule": rule_outcomes(problem, gen.text, per_rule_cfgs)}
-            tape.log(0, problem, gen.text, r, bd, model_id, None, extra)
+            tape.log(0, problem, gen.text, r, bd, model_id, lora_hash, extra)
             records[name].append({"problem": problem.to_dict(), "breakdown": bd, **extra})
 
     cal = eval_cfg["calibration"]
@@ -294,6 +303,8 @@ def run(
         "run_id": eval_cfg["run_id"],
         "model_id": model_id,
         "model_revision": model_revision,
+        "lora": eval_cfg["model"].get("lora"),
+        "lora_hash": lora_hash,
         "oom_backoffs": oom_backoffs,
         "oom_fallback": oom_fallback,
         "oom_error": oom_error,
