@@ -12,6 +12,7 @@ model:
   revision: null
   max_seq_length: 2304         # longest v4 prompt is 1115-1156 tokens + 1024 completion tokens
   chat_template_kwargs: {}
+  text_only: false             # true for VL checkpoints (e.g. Qwen3.5): load the language model only
 
 lora:
   r: 16

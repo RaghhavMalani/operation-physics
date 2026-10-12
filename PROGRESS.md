@@ -390,3 +390,8 @@ Progress:
   Re-scored with a true σ-free binary rule, the figure is unchanged (100%). Every completion is now scored under
   every rule (`physcal/eval/signals.py`). Group stats and accuracy at 1/2/5/10% tolerance are reported per rule,
   in `run_eval` and in `rescore`.
+- [x] Model probe, all three candidates (`results/model_probe/summary.md`). Binary zero-variance in the k = 8 group
+  probe: **Qwen3.5-2B 72.9%**, Qwen2.5-1.5B-Instruct 91.7%, Qwen2.5-Math-1.5B 97.9% (format failure, D32).
+  Estimated GRPO footprints: 4.27 / 3.67 / 3.67 GB (budget 6.5 GB). **Selection rule → train Qwen3.5-2B.**
+  Its binary zero-variance is > 50%, so phase 4 uses `crps_log` (your rule).
+  The Qwen3.5 group probe was re-run at batch 8 after an OOM-retry slowdown at batch 16 (D33).

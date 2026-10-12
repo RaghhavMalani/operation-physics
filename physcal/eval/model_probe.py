@@ -31,7 +31,7 @@ def candidate_eval_config(base: dict, cand: dict, part: str, out_root: Path) -> 
     cfg["model"].update(id=cand["id"], revision=cand["revision"], fallback_id=None,
                         model_class=cand.get("model_class", "causal_lm"),
                         chat_template_kwargs=cand.get("chat_template_kwargs", {}))
-    cfg["generation"]["batch_size"] = cand.get("batch_size", cfg["generation"]["batch_size"])
+    cfg["generation"]["batch_size"] = cand.get(f"{part}_batch_size", cand.get("batch_size", cfg["generation"]["batch_size"]))
     return cfg
 
 

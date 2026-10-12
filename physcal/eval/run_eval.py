@@ -181,6 +181,8 @@ class HFBackend:
             if not _is_oom(exc) or (len(prompts) == 1 and k == 1):
                 raise
             self.oom_backoffs += 1
+            print(f"  CUDA OOM on {len(prompts)} prompt(s) x {k} sample(s); splitting and retrying "
+                  f"(backoff #{self.oom_backoffs})", flush=True)
             torch.cuda.empty_cache()
             if len(prompts) > 1:
                 half = len(prompts) // 2

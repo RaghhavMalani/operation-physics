@@ -188,7 +188,7 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     torch.cuda.reset_peak_memory_stats()
     model, tok = FastLanguageModel.from_pretrained(
         model_name=m["id"], revision=m["revision"], max_seq_length=m["max_seq_length"],
-        load_in_4bit=True, fast_inference=False, dtype=None,
+        load_in_4bit=True, fast_inference=False, dtype=None, text_only=m.get("text_only", False),
     )
     model = FastLanguageModel.get_peft_model(
         model, r=lora["r"], lora_alpha=lora["alpha"], lora_dropout=lora["dropout"],

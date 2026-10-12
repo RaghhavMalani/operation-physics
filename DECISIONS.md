@@ -308,3 +308,24 @@ worth a second look.
   inference predicts 4.02 GiB for the phase-3 baseline, which measured 3.76 GiB.
 - **Budget:** your "about 6.5 GB" is taken as 6.5 decimal GB (6.05 GiB) for our process. That matches what is
   actually free on this card (8 GiB minus ~1.9 GiB used by the Windows display).
+
+### D32. Qwen2.5-Math-1.5B fails on format, not physics; scored as-is (verifier unchanged)
+- **Finding:** it answers in its native `\boxed{}` style and never writes `<answer>`, despite the system prompt
+  and worked example. Verifier result: 100% parse failure (greedy) and 99.5% (sampled). As an
+  out-of-band diagnostic (`scripts/diag_boxed_answers.py`, not used for selection), reading its last
+  `\boxed{}` number in the requested unit gives **35% ID / 8.5% depth-5 within 1%** (greedy), the best
+  physics of the three candidates.
+- **Decision:** the selection rule uses the verifier as-is (your instruction: don't modify the verifier),
+  so it is ranked on its real 97.9% binary zero-variance. The diagnostic goes into the recommendation:
+  a format-only warm-up could unlock this model.
+
+### D33. Qwen3.5-2B group probe re-run at batch size 8
+- **What happened:** at batch 16 (2 prompts × 8 samples) the sampled run took ~660 s per batch, against
+  ~85 s for greedy batches of 16. That points to out-of-memory retries late in decoding: the device sat at
+  7.7/8 GB, and greedy at 16 already peaked at 6.9 GiB allocated. At that pace it would have finished
+  after your 15:45 GPU cutoff.
+- **Decision:** I killed it after 64/384 completions, discarded the partial output, and re-ran the group
+  part only with `group_batch_size: 8` (1 prompt × 8 samples). It ran at ~40 s per batch. Batch size
+  doesn't change what the probe measures (same 48 problems, k = 8, T = 1.0, seed 0), but the random stream
+  differs from a batch-16 run. The OOM backoff now prints a line whenever it triggers, so this is visible
+  next time. Greedy results (batch 16, no backoffs) are unchanged.
