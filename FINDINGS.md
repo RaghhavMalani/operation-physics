@@ -143,3 +143,45 @@ differ even when all 8 answers are right or all wrong.
 - Probe: `configs/model_probe_sft.yaml` → `results/model_probe_sft/<label>/group/` (tapes replayable);
   decision `results/model_probe_sft/ab_selection.json` (`scripts/ab_select.py`). Base rows:
   `results/model_probe/<label>/group/`.
+
+---
+
+## #5. Overnight GRPO on the SFT'd model: SFT did the heavy lifting; RL added a small, non-significant ID gain and no calibration (2026-10-13)
+
+**Setup.** Qwen2.5-Math-1.5B + SFT (FINDINGS #4), fresh LoRA r = 16, crps_log + 0.2·steps, 4 prompts × 8
+completions per step, 512 tokens, EMA curriculum from depths 1–2, lr 5e-6, DAPO loss, no KL. **287 steps**
+(9,184 rollouts) in 4 h 42 min, stopped at the 06:30 IST hard deadline.
+
+**Final eval** (frozen generator-1.1.0 eval sets, 200 ID + 200 depth-5, prompt v4, greedy, 512 tokens, all three
+models loaded text-only):
+
+| split | model | acc ≤1% (σ-free) | ≤10% | parse fail | 1σ / 2σ coverage | median stated rel. σ | mean crps_log reward |
+|---|---|---|---|---|---|---|---|
+| ID | raw base | 0.0% | 0.0% | 100% | – | – | −5.00 |
+| ID | SFT only | 38.0% | 67.5% | 0% | 15.0% / 20.5% | 0.050% | −0.224 |
+| ID | SFT + RL | **40.0%** | **71.0%** | 0% | 15.5% / 20.0% | 0.042% | **−0.177** |
+| depth 5 | raw base | 0.0% | 0.0% | 100% | – | – | −5.00 |
+| depth 5 | SFT only | 31.0% | 60.0% | 0% | 11.5% / 16.0% | 0.081% | −0.215 |
+| depth 5 | SFT + RL | 31.0% | 59.5% | 0% | 10.0% / 15.0% | 0.064% | −0.220 |
+
+**What RL added (RL vs SFT-only, paired on identical problems):** ID strict accuracy 76 → 80 (4 problems flipped
+to correct, 0 flipped to wrong; McNemar p = 0.125). Mean reward +0.046 (Wilcoxon p = 0.018: nominal only, not
+significant after correcting for the 8 RL-vs-SFT tests). Depth 5: 62 → 62, reward −0.005 (p = 0.37). The
+small ID gain sits mostly at depth 4 (22% → 28%). Calibration did not move: stated σ is still ~0.05% of the
+value, and 1σ coverage is ~15% against a 68% target.
+
+**SFT vs raw base:** 0 → 76 (ID) and 0 → 62 (depth 5) correct, p < 1e-18. The raw base fails the format 100% of
+the time.
+
+**Likely reasons RL did so little** (hypotheses, not tested): (1) the 0.1% relative σ floor makes crps_log flat in
+σ for a policy whose σ sits below it (D37), so σ gets almost no gradient; (2) a small update budget (287
+steps at lr 5e-6); (3) the curriculum spent many steps on cells with low pass rates; energy never unlocked
+depth 3 (energy/2 EMA pass rate 0.16), and energy remains the weak family (14–16% ID, 1.5–3% depth 5).
+
+### Provenance
+- Config `configs/grpo_overnight.yaml` (filled by `scripts/ab_select.py`, commit `a2d8bb2`); run dir
+  `results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/`: `train_metrics.jsonl`,
+  `curriculum.jsonl`, `rollouts.jsonl` (9,184 rollouts, replays exactly), `training_curve.png`, `report.md`,
+  `summary.json`. The adapter (`lora_hash 8b4b2376bf92206f`) and checkpoints 200/250/287 are local only.
+- Eval: `compare/{base,sft,rl}/` (400 rollouts each, all replay exactly), `compare/paired_tests.json`
+  (`physcal/train/compare.py`, `scripts/paired_tests.py`).

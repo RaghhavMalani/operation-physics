@@ -33,6 +33,8 @@ def plot_run(run_dir: Path) -> Path:
     import matplotlib.pyplot as plt
 
     rows = [json.loads(l) for l in (run_dir / "train_metrics.jsonl").read_text().splitlines() if l.strip()]
+    meta = run_dir / "rollouts.meta.json"
+    budget = json.loads(meta.read_text())["train_config"]["grpo"]["max_completion_length"] if meta.exists() else "?"
     steps = [r["step"] for r in rows]
     if len(set(steps)) < len(steps):  # older logs without a working step counter: fall back to row order
         steps = list(range(1, len(rows) + 1))
@@ -45,7 +47,7 @@ def plot_run(run_dir: Path) -> Path:
                                ("coverage_2sigma", SERIES[1], "2σ (target 95%)")], (0, 1)),
         ("Accuracy and format", [("accuracy_binary", SERIES[0], "correct ≤1% (σ-free)"),
                                  ("parse_fail_rate", SERIES[1], "parse failure")], (0, 1)),
-        ("Truncation at 1024 tokens", [("truncation_rate", SERIES[0], "truncated")], (0, 1)),
+        (f"Truncation at {budget} tokens", [("truncation_rate", SERIES[0], "truncated")], (0, 1)),
     ]
     fig, axes = plt.subplots(3, 2, figsize=(11, 9.5), facecolor=SURFACE, sharex=True)
     for ax, (title, series, ylim) in zip(axes.flat, panels):

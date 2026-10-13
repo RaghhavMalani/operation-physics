@@ -1,0 +1,374 @@
+{
+  "run_id": "overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512-compare-base",
+  "model_id": "Qwen/Qwen2.5-Math-1.5B-Instruct",
+  "model_revision": "aafeb0fc6f22cbf0eaeed126eff8be45b0360a35",
+  "lora": null,
+  "lora_hash": null,
+  "oom_backoffs": 0,
+  "oom_fallback": false,
+  "oom_error": null,
+  "generation_seconds": 885.360734462738,
+  "memory": {
+    "torch_max_allocated_gib": 4.484647274017334,
+    "torch_max_reserved_gib": 4.759765625,
+    "device_total_gib": 7.99560546875,
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "nvidia_smi_peak_used_gib_device_wide": 5.6650390625
+  },
+  "generator_version": "1.1.0+c735a0d4",
+  "reward_rule": "crps_log",
+  "prompt_id": "v4_worked_example",
+  "skipped_splits": {},
+  "splits": {
+    "id": {
+      "n": 200,
+      "n_answered": 0,
+      "n_with_sigma": 0,
+      "accuracy": 0.0,
+      "accuracy_among_answered": null,
+      "median_rel_error": null,
+      "parse_fail_rate": 1.0,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.0,
+      "coverage_1sigma": null,
+      "coverage_2sigma": null,
+      "mean_rel_sigma": null,
+      "median_rel_sigma": null,
+      "mean_reward": -5.0,
+      "mean_score_by_rule": {
+        "crps": -5.0,
+        "binary": 0.0,
+        "log_score": -10.0,
+        "abs_rel_error": -5.0,
+        "crps_log": -5.0
+      },
+      "mean_step_score": 0.0,
+      "copied_given_rate": null,
+      "steps_block_rate": 0.0,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.2,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.3,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.4,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.5,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.6,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.7,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.8,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.9,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.95,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.99,
+          "observed": null,
+          "n": 0
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 0
+      },
+      "truncation_rate": 0.765,
+      "mean_completion_tokens": 484.295,
+      "by_depth": {
+        "1": {
+          "n": 50,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        },
+        "2": {
+          "n": 50,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        },
+        "3": {
+          "n": 50,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        },
+        "4": {
+          "n": 50,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 68,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        },
+        "energy": {
+          "n": 64,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        },
+        "kinematics": {
+          "n": 68,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.0,
+          "0.02": 0.0,
+          "0.05": 0.0,
+          "0.1": 0.0
+        },
+        "sigma_free": {
+          "0.01": 0.0,
+          "0.02": 0.0,
+          "0.05": 0.0,
+          "0.1": 0.0
+        }
+      }
+    },
+    "depth_extrapolation": {
+      "n": 200,
+      "n_answered": 0,
+      "n_with_sigma": 0,
+      "accuracy": 0.0,
+      "accuracy_among_answered": null,
+      "median_rel_error": null,
+      "parse_fail_rate": 1.0,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.0,
+      "coverage_1sigma": null,
+      "coverage_2sigma": null,
+      "mean_rel_sigma": null,
+      "median_rel_sigma": null,
+      "mean_reward": -5.0,
+      "mean_score_by_rule": {
+        "crps": -5.0,
+        "binary": 0.0,
+        "log_score": -10.0,
+        "abs_rel_error": -5.0,
+        "crps_log": -5.0
+      },
+      "mean_step_score": 0.0,
+      "copied_given_rate": null,
+      "steps_block_rate": 0.0,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.2,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.3,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.4,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.5,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.6,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.7,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.8,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.9,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.95,
+          "observed": null,
+          "n": 0
+        },
+        {
+          "nominal": 0.99,
+          "observed": null,
+          "n": 0
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 0
+      },
+      "truncation_rate": 0.98,
+      "mean_completion_tokens": 510.8,
+      "by_depth": {
+        "5": {
+          "n": 200,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 67,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        },
+        "energy": {
+          "n": 66,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        },
+        "kinematics": {
+          "n": 67,
+          "accuracy": 0.0,
+          "median_rel_error": null,
+          "parse_fail_rate": 1.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": null
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.0,
+          "0.02": 0.0,
+          "0.05": 0.0,
+          "0.1": 0.0
+        },
+        "sigma_free": {
+          "0.01": 0.0,
+          "0.02": 0.0,
+          "0.05": 0.0,
+          "0.1": 0.0
+        }
+      }
+    }
+  }
+}

@@ -24,7 +24,20 @@
 
 | split | model | acc ≤1% (σ-free) | ≤2% | ≤5% | ≤10% | strict ≤1% | parse fail | 1σ cov | 2σ cov | median rel. σ | mean reward (crps_log) | tokens |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| id | raw base | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 100.0% | – | – | – | -5.000 | 484 |
+| id | SFT only | 38.0% | 44.5% | 60.5% | 67.5% | 38.0% | 0.0% | 15.0% | 20.5% | 0.050% | -0.224 | 196 |
+| id | SFT + RL | 40.0% | 46.5% | 60.5% | 71.0% | 40.0% | 0.0% | 15.5% | 20.0% | 0.042% | -0.177 | 195 |
+| depth_extrapolation | raw base | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 100.0% | – | – | – | -5.000 | 511 |
+| depth_extrapolation | SFT only | 31.0% | 40.0% | 51.0% | 60.0% | 31.0% | 0.0% | 11.5% | 16.0% | 0.081% | -0.215 | 317 |
+| depth_extrapolation | SFT + RL | 31.0% | 39.5% | 51.0% | 59.5% | 31.0% | 0.0% | 10.0% | 15.0% | 0.064% | -0.220 | 316 |
 
 ## Paired tests (same problems, greedy)
 
-(paired tests missing)
+| comparison | split | strict ≤1%: before → after (only-after / only-before), McNemar p | σ-free ≤1%, McNemar p | parsed, McNemar p | reward Δ, Wilcoxon p |
+|---|---|---|---|---|---|
+| rl vs sft | depth_extrapolation | 62 → 62 (4/4), p = 1 | 62 → 62, p = 1 | 200 → 200, p = 1 | -0.005, p = 0.373 |
+| rl vs sft | id | 76 → 80 (4/0), p = 0.125 | 76 → 80, p = 0.125 | 200 → 200, p = 1 | +0.046, p = 0.0175 |
+| rl vs base | depth_extrapolation | 0 → 62 (62/0), p = 4.34e-19 | 0 → 62, p = 4.34e-19 | 0 → 200, p = 1.24e-60 | +4.780, p = 2.09e-34 |
+| rl vs base | id | 0 → 80 (80/0), p = 1.65e-24 | 0 → 80, p = 1.65e-24 | 0 → 200, p = 1.24e-60 | +4.823, p = 2.09e-34 |
+| sft vs base | depth_extrapolation | 0 → 62 (62/0), p = 4.34e-19 | 0 → 62, p = 4.34e-19 | 0 → 200, p = 1.24e-60 | +4.785, p = 1.44e-34 |
+| sft vs base | id | 0 → 76 (76/0), p = 2.65e-23 | 0 → 76, p = 2.65e-23 | 0 → 200, p = 1.24e-60 | +4.776, p = 2.09e-34 |

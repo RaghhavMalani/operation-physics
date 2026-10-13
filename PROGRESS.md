@@ -413,5 +413,8 @@ Progress:
   (D35, D36). 30-min SFT on Qwen3.5-2B (2,096 examples) and Qwen2.5-Math-1.5B (2,600 examples).
 - [x] Group probe on both SFT'd models → **winner Qwen2.5-Math-1.5B + SFT** (binary zero-var 56.2% vs 60.4%;
   FINDINGS #4). Truncation at 512 tokens = 0% → **budget 512**.
-- [ ] Overnight GRPO on Math-SFT (crps_log, 4 × 8, EMA curriculum from depths 1–2, stop 06:30 IST).
-- [ ] Final 3-way eval (base / SFT-only / SFT+RL) with paired tests; MORNING.md.
+- [x] Overnight GRPO on Math-SFT: 287 steps (stopped at 06:30 IST), 58.9 s/step, 9,184 rollouts (replay exact);
+  the curriculum unlocked dynamics/3–4 and kinematics/3–4; energy stayed at depths 1–2.
+- [x] Final 3-way eval + paired tests (FINDINGS #5): ID acc ≤1% raw base 0% → SFT 38.0% → SFT+RL 40.0%;
+  depth 5 0% → 31.0% → 31.0%. RL vs SFT: +4/−0 problems on ID (p = 0.125), reward +0.046 (p = 0.018 nominal),
+  depth 5 unchanged, calibration unchanged (1σ coverage ~15%). 238 tests pass. GPU work ended 07:07 IST.
