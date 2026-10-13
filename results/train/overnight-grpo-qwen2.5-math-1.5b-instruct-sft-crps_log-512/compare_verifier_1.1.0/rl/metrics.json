@@ -1,0 +1,376 @@
+{
+  "run_id": "overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512-compare-rl",
+  "model_id": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+  "model_revision": null,
+  "lora": "/home/flash2404/operation-physics/results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/final_adapter",
+  "lora_hash": "8b4b2376bf92206f",
+  "oom_backoffs": 0,
+  "oom_fallback": false,
+  "oom_error": null,
+  "generation_seconds": 635.7528302669525,
+  "memory": {
+    "torch_max_allocated_gib": 4.48492956161499,
+    "torch_max_reserved_gib": 4.763671875,
+    "device_total_gib": 7.99560546875,
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "nvidia_smi_peak_used_gib_device_wide": 5.5322265625
+  },
+  "generator_version": "1.1.0+c735a0d4",
+  "reward_rule": "crps_log",
+  "prompt_id": "v4_worked_example",
+  "skipped_splits": {},
+  "splits": {
+    "id": {
+      "n": 200,
+      "n_answered": 200,
+      "n_with_sigma": 200,
+      "accuracy": 0.4,
+      "accuracy_among_answered": 0.4,
+      "median_rel_error": 0.02538032129713729,
+      "parse_fail_rate": 0.0,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.0,
+      "coverage_1sigma": 0.155,
+      "coverage_2sigma": 0.2,
+      "mean_rel_sigma": 0.0020241448622961467,
+      "median_rel_sigma": 0.0004155290704527185,
+      "mean_reward": -0.17783689109194944,
+      "mean_score_by_rule": {
+        "crps": -0.3308563678363167,
+        "binary": 0.4,
+        "log_score": -4.918810880430209,
+        "abs_rel_error": -0.33142721238964157,
+        "crps_log": -0.2750035577586161
+      },
+      "mean_step_score": 0.6477777777777777,
+      "copied_given_rate": 0.005,
+      "steps_block_rate": 1.0,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": 0.075,
+          "n": 200
+        },
+        {
+          "nominal": 0.2,
+          "observed": 0.095,
+          "n": 200
+        },
+        {
+          "nominal": 0.3,
+          "observed": 0.095,
+          "n": 200
+        },
+        {
+          "nominal": 0.4,
+          "observed": 0.115,
+          "n": 200
+        },
+        {
+          "nominal": 0.5,
+          "observed": 0.13,
+          "n": 200
+        },
+        {
+          "nominal": 0.6,
+          "observed": 0.145,
+          "n": 200
+        },
+        {
+          "nominal": 0.7,
+          "observed": 0.16,
+          "n": 200
+        },
+        {
+          "nominal": 0.8,
+          "observed": 0.18,
+          "n": 200
+        },
+        {
+          "nominal": 0.9,
+          "observed": 0.19,
+          "n": 200
+        },
+        {
+          "nominal": 0.95,
+          "observed": 0.2,
+          "n": 200
+        },
+        {
+          "nominal": 0.99,
+          "observed": 0.205,
+          "n": 200
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          80,
+          2,
+          3,
+          1,
+          2,
+          17,
+          3,
+          3,
+          5,
+          84
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 200
+      },
+      "truncation_rate": 0.0,
+      "mean_completion_tokens": 195.005,
+      "by_depth": {
+        "1": {
+          "n": 50,
+          "accuracy": 0.7,
+          "median_rel_error": 0.0016582639714625958,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.34
+        },
+        "2": {
+          "n": 50,
+          "accuracy": 0.32,
+          "median_rel_error": 0.029261821396959133,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.06
+        },
+        "3": {
+          "n": 50,
+          "accuracy": 0.3,
+          "median_rel_error": 0.05689474049487229,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.1
+        },
+        "4": {
+          "n": 50,
+          "accuracy": 0.28,
+          "median_rel_error": 0.061264442752728646,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.12
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 68,
+          "accuracy": 0.6176470588235294,
+          "median_rel_error": 0.002720035931177308,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.2647058823529412
+        },
+        "energy": {
+          "n": 64,
+          "accuracy": 0.15625,
+          "median_rel_error": 0.07434258618414444,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.046875
+        },
+        "kinematics": {
+          "n": 68,
+          "accuracy": 0.4117647058823529,
+          "median_rel_error": 0.023970894724493125,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.14705882352941177
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.4,
+          "0.02": 0.465,
+          "0.05": 0.605,
+          "0.1": 0.71
+        },
+        "sigma_free": {
+          "0.01": 0.4,
+          "0.02": 0.465,
+          "0.05": 0.605,
+          "0.1": 0.71
+        }
+      }
+    },
+    "depth_extrapolation": {
+      "n": 200,
+      "n_answered": 200,
+      "n_with_sigma": 200,
+      "accuracy": 0.31,
+      "accuracy_among_answered": 0.31,
+      "median_rel_error": 0.041976460270449885,
+      "parse_fail_rate": 0.0,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.0,
+      "coverage_1sigma": 0.1,
+      "coverage_2sigma": 0.15,
+      "mean_rel_sigma": 0.002280426964466994,
+      "median_rel_sigma": 0.0006419562186276257,
+      "mean_reward": -0.2205126528009305,
+      "mean_score_by_rule": {
+        "crps": -0.40880017023105764,
+        "binary": 0.31,
+        "log_score": -6.108487368481594,
+        "abs_rel_error": -0.40986121448057555,
+        "crps_log": -0.3605126528009305
+      },
+      "mean_step_score": 0.7,
+      "copied_given_rate": 0.005,
+      "steps_block_rate": 1.0,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": 0.02,
+          "n": 200
+        },
+        {
+          "nominal": 0.2,
+          "observed": 0.04,
+          "n": 200
+        },
+        {
+          "nominal": 0.3,
+          "observed": 0.055,
+          "n": 200
+        },
+        {
+          "nominal": 0.4,
+          "observed": 0.06,
+          "n": 200
+        },
+        {
+          "nominal": 0.5,
+          "observed": 0.065,
+          "n": 200
+        },
+        {
+          "nominal": 0.6,
+          "observed": 0.08,
+          "n": 200
+        },
+        {
+          "nominal": 0.7,
+          "observed": 0.1,
+          "n": 200
+        },
+        {
+          "nominal": 0.8,
+          "observed": 0.11,
+          "n": 200
+        },
+        {
+          "nominal": 0.9,
+          "observed": 0.14,
+          "n": 200
+        },
+        {
+          "nominal": 0.95,
+          "observed": 0.15,
+          "n": 200
+        },
+        {
+          "nominal": 0.99,
+          "observed": 0.185,
+          "n": 200
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          94,
+          3,
+          2,
+          0,
+          5,
+          3,
+          4,
+          2,
+          3,
+          84
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 200
+      },
+      "truncation_rate": 0.0,
+      "mean_completion_tokens": 316.495,
+      "by_depth": {
+        "5": {
+          "n": 200,
+          "accuracy": 0.31,
+          "median_rel_error": 0.041976460270449885,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.1
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 67,
+          "accuracy": 0.44776119402985076,
+          "median_rel_error": 0.012477341217320713,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.14925373134328357
+        },
+        "energy": {
+          "n": 66,
+          "accuracy": 0.015151515151515152,
+          "median_rel_error": 0.23818193439663898,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.0
+        },
+        "kinematics": {
+          "n": 67,
+          "accuracy": 0.4626865671641791,
+          "median_rel_error": 0.014768895163965014,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.14925373134328357
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.31,
+          "0.02": 0.395,
+          "0.05": 0.51,
+          "0.1": 0.595
+        },
+        "sigma_free": {
+          "0.01": 0.31,
+          "0.02": 0.395,
+          "0.05": 0.51,
+          "0.1": 0.595
+        }
+      }
+    }
+  },
+  "verifier_version": "1.1.0",
+  "rescored_from": "results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare/rl/rollouts.jsonl"
+}

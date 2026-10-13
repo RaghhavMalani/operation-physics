@@ -1,0 +1,376 @@
+{
+  "run_id": "overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512-compare-sft",
+  "model_id": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+  "model_revision": null,
+  "lora": null,
+  "lora_hash": null,
+  "oom_backoffs": 0,
+  "oom_fallback": false,
+  "oom_error": null,
+  "generation_seconds": 621.8085615634918,
+  "memory": {
+    "torch_max_allocated_gib": 4.484647274017334,
+    "torch_max_reserved_gib": 4.759765625,
+    "device_total_gib": 7.99560546875,
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "nvidia_smi_peak_used_gib_device_wide": 5.453125
+  },
+  "generator_version": "1.1.0+c735a0d4",
+  "reward_rule": "crps_log",
+  "prompt_id": "v4_worked_example",
+  "skipped_splits": {},
+  "splits": {
+    "id": {
+      "n": 200,
+      "n_answered": 200,
+      "n_with_sigma": 200,
+      "accuracy": 0.38,
+      "accuracy_among_answered": 0.38,
+      "median_rel_error": 0.028243918159255137,
+      "parse_fail_rate": 0.0,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.0,
+      "coverage_1sigma": 0.15,
+      "coverage_2sigma": 0.205,
+      "mean_rel_sigma": 0.002461591367474123,
+      "median_rel_sigma": 0.0005002486914710042,
+      "mean_reward": -0.22419293333413853,
+      "mean_score_by_rule": {
+        "crps": -0.3999826635221686,
+        "binary": 0.38,
+        "log_score": -4.915995045095348,
+        "abs_rel_error": -0.4005761374482894,
+        "crps_log": -0.31985960000080527
+      },
+      "mean_step_score": 0.6377777777777777,
+      "copied_given_rate": 0.005,
+      "steps_block_rate": 1.0,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": 0.075,
+          "n": 200
+        },
+        {
+          "nominal": 0.2,
+          "observed": 0.095,
+          "n": 200
+        },
+        {
+          "nominal": 0.3,
+          "observed": 0.1,
+          "n": 200
+        },
+        {
+          "nominal": 0.4,
+          "observed": 0.12,
+          "n": 200
+        },
+        {
+          "nominal": 0.5,
+          "observed": 0.12,
+          "n": 200
+        },
+        {
+          "nominal": 0.6,
+          "observed": 0.14,
+          "n": 200
+        },
+        {
+          "nominal": 0.7,
+          "observed": 0.155,
+          "n": 200
+        },
+        {
+          "nominal": 0.8,
+          "observed": 0.175,
+          "n": 200
+        },
+        {
+          "nominal": 0.9,
+          "observed": 0.195,
+          "n": 200
+        },
+        {
+          "nominal": 0.95,
+          "observed": 0.205,
+          "n": 200
+        },
+        {
+          "nominal": 0.99,
+          "observed": 0.21,
+          "n": 200
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          82,
+          2,
+          1,
+          2,
+          2,
+          17,
+          3,
+          3,
+          5,
+          83
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 200
+      },
+      "truncation_rate": 0.0,
+      "mean_completion_tokens": 195.52,
+      "by_depth": {
+        "1": {
+          "n": 50,
+          "accuracy": 0.68,
+          "median_rel_error": 0.0019525263157895254,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.3
+        },
+        "2": {
+          "n": 50,
+          "accuracy": 0.32,
+          "median_rel_error": 0.0325495134192009,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.08
+        },
+        "3": {
+          "n": 50,
+          "accuracy": 0.3,
+          "median_rel_error": 0.0585454325258286,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.1
+        },
+        "4": {
+          "n": 50,
+          "accuracy": 0.22,
+          "median_rel_error": 0.06444783040823913,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.12
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 68,
+          "accuracy": 0.6029411764705882,
+          "median_rel_error": 0.0032207879948744555,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.23529411764705882
+        },
+        "energy": {
+          "n": 64,
+          "accuracy": 0.140625,
+          "median_rel_error": 0.0843863091471505,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.0625
+        },
+        "kinematics": {
+          "n": 68,
+          "accuracy": 0.38235294117647056,
+          "median_rel_error": 0.02547552639360952,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.14705882352941177
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.38,
+          "0.02": 0.445,
+          "0.05": 0.605,
+          "0.1": 0.675
+        },
+        "sigma_free": {
+          "0.01": 0.38,
+          "0.02": 0.445,
+          "0.05": 0.605,
+          "0.1": 0.675
+        }
+      }
+    },
+    "depth_extrapolation": {
+      "n": 200,
+      "n_answered": 200,
+      "n_with_sigma": 200,
+      "accuracy": 0.31,
+      "accuracy_among_answered": 0.31,
+      "median_rel_error": 0.04074704238097032,
+      "parse_fail_rate": 0.0,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.0,
+      "coverage_1sigma": 0.115,
+      "coverage_2sigma": 0.16,
+      "mean_rel_sigma": 0.002853768111313132,
+      "median_rel_sigma": 0.0008066209578837837,
+      "mean_reward": -0.21527889636705871,
+      "mean_score_by_rule": {
+        "crps": -0.4235168657375826,
+        "binary": 0.31,
+        "log_score": -5.97401224609554,
+        "abs_rel_error": -0.42453910018670243,
+        "crps_log": -0.3572788963670587
+      },
+      "mean_step_score": 0.71,
+      "copied_given_rate": 0.005,
+      "steps_block_rate": 1.0,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": 0.015,
+          "n": 200
+        },
+        {
+          "nominal": 0.2,
+          "observed": 0.03,
+          "n": 200
+        },
+        {
+          "nominal": 0.3,
+          "observed": 0.05,
+          "n": 200
+        },
+        {
+          "nominal": 0.4,
+          "observed": 0.065,
+          "n": 200
+        },
+        {
+          "nominal": 0.5,
+          "observed": 0.07,
+          "n": 200
+        },
+        {
+          "nominal": 0.6,
+          "observed": 0.09,
+          "n": 200
+        },
+        {
+          "nominal": 0.7,
+          "observed": 0.115,
+          "n": 200
+        },
+        {
+          "nominal": 0.8,
+          "observed": 0.125,
+          "n": 200
+        },
+        {
+          "nominal": 0.9,
+          "observed": 0.145,
+          "n": 200
+        },
+        {
+          "nominal": 0.95,
+          "observed": 0.16,
+          "n": 200
+        },
+        {
+          "nominal": 0.99,
+          "observed": 0.205,
+          "n": 200
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          94,
+          4,
+          2,
+          1,
+          2,
+          4,
+          6,
+          3,
+          3,
+          81
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 200
+      },
+      "truncation_rate": 0.0,
+      "mean_completion_tokens": 317.12,
+      "by_depth": {
+        "5": {
+          "n": 200,
+          "accuracy": 0.31,
+          "median_rel_error": 0.04074704238097032,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.115
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 67,
+          "accuracy": 0.43283582089552236,
+          "median_rel_error": 0.012477341217320713,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.14925373134328357
+        },
+        "energy": {
+          "n": 66,
+          "accuracy": 0.030303030303030304,
+          "median_rel_error": 0.2213727755599499,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.0
+        },
+        "kinematics": {
+          "n": 67,
+          "accuracy": 0.4626865671641791,
+          "median_rel_error": 0.013978494837484541,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.19402985074626866
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.31,
+          "0.02": 0.4,
+          "0.05": 0.51,
+          "0.1": 0.6
+        },
+        "sigma_free": {
+          "0.01": 0.31,
+          "0.02": 0.4,
+          "0.05": 0.51,
+          "0.1": 0.6
+        }
+      }
+    }
+  },
+  "verifier_version": "1.1.0",
+  "rescored_from": "results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare/sft/rollouts.jsonl"
+}

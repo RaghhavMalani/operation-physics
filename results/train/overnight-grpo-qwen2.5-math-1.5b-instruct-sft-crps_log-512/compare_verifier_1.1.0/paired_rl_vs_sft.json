@@ -1,0 +1,116 @@
+{
+  "depth_extrapolation": {
+    "n": 200,
+    "correct_strict": {
+      "before": 62,
+      "after": 62,
+      "only_after": 4,
+      "only_before": 4,
+      "mcnemar_p": 1.0
+    },
+    "correct_sigma_free": {
+      "before": 62,
+      "after": 62,
+      "only_after": 4,
+      "only_before": 4,
+      "mcnemar_p": 1.0
+    },
+    "parsed": {
+      "before": 200,
+      "after": 200,
+      "only_after": 0,
+      "only_before": 0,
+      "mcnemar_p": 1.0
+    },
+    "truncated": {
+      "before": 0,
+      "after": 0,
+      "only_after": 0,
+      "only_before": 0,
+      "mcnemar_p": 1.0
+    },
+    "covered_1sigma": {
+      "before": 23,
+      "after": 20,
+      "only_after": 0,
+      "only_before": 3,
+      "mcnemar_p": 0.25
+    },
+    "covered_2sigma": {
+      "before": 32,
+      "after": 30,
+      "only_after": 1,
+      "only_before": 3,
+      "mcnemar_p": 0.625
+    },
+    "reward": {
+      "mean_diff": -0.005233756433871771,
+      "nonzero": 95,
+      "wilcoxon_p": 0.3534258023198973
+    },
+    "crps_log": {
+      "before_mean": -0.35727889636705873,
+      "after_mean": -0.3605126528009305,
+      "mean_diff": -0.0032337564338717714,
+      "nonzero": 92,
+      "wilcoxon_p": 0.49559828641278625
+    }
+  },
+  "id": {
+    "n": 200,
+    "correct_strict": {
+      "before": 76,
+      "after": 80,
+      "only_after": 4,
+      "only_before": 0,
+      "mcnemar_p": 0.125
+    },
+    "correct_sigma_free": {
+      "before": 76,
+      "after": 80,
+      "only_after": 4,
+      "only_before": 0,
+      "mcnemar_p": 0.125
+    },
+    "parsed": {
+      "before": 200,
+      "after": 200,
+      "only_after": 0,
+      "only_before": 0,
+      "mcnemar_p": 1.0
+    },
+    "truncated": {
+      "before": 0,
+      "after": 0,
+      "only_after": 0,
+      "only_before": 0,
+      "mcnemar_p": 1.0
+    },
+    "covered_1sigma": {
+      "before": 30,
+      "after": 31,
+      "only_after": 3,
+      "only_before": 2,
+      "mcnemar_p": 1.0
+    },
+    "covered_2sigma": {
+      "before": 41,
+      "after": 40,
+      "only_after": 3,
+      "only_before": 4,
+      "mcnemar_p": 1.0
+    },
+    "reward": {
+      "mean_diff": 0.04635604224218909,
+      "nonzero": 84,
+      "wilcoxon_p": 0.026656643923802865
+    },
+    "crps_log": {
+      "before_mean": -0.3198596000008052,
+      "after_mean": -0.2750035577586161,
+      "mean_diff": 0.04485604224218909,
+      "nonzero": 82,
+      "wilcoxon_p": 0.06021410524668453
+    }
+  }
+}

@@ -47,13 +47,22 @@ def split_families(kind: str, env_cfg: dict) -> list[str]:
 
 
 def build_split(index: int, split_cfg: dict, eval_cfg: dict, env_cfg: dict, limit: int | None = None) -> list[Problem]:
-    """Stratified over (family, depth) cells, round-robin; seeds from this split's own block."""
+    """Stratified over (family, depth) cells, round-robin; seeds from this split's own block.
+
+    A split with `train_seed_offset` is built from *training* seeds instead (e.g. a post-hoc calibration set):
+    the generator's train split (which refuses held-out cells), seeds train_seed_offset + i, all below the eval
+    offset."""
     cells = [(f, d) for f in split_families(split_cfg["families"], env_cfg) for d in split_cfg.get("depths", [])]
     if not cells:
         return []
     n = split_cfg["n"] if limit is None else min(limit, split_cfg["n"])
-    base = env_cfg["splits"]["eval_seed_offset"] + index * eval_cfg["seed_block"]
-    return [generate_problem(*cells[i % len(cells)], base + i, split="eval", cfg=env_cfg) for i in range(n)]
+    if "train_seed_offset" in split_cfg:
+        base, gen_split = split_cfg["train_seed_offset"], "train"
+        if base + n > env_cfg["splits"]["eval_seed_offset"]:
+            raise ValueError(f"training-seed split reaches the eval seed range ({base} + {n})")
+    else:
+        base, gen_split = env_cfg["splits"]["eval_seed_offset"] + index * eval_cfg["seed_block"], "eval"
+    return [generate_problem(*cells[i % len(cells)], base + i, split=gen_split, cfg=env_cfg) for i in range(n)]
 
 
 # ------------------------------------------------------------------------------------------- backend
@@ -318,6 +327,13 @@ def run(
         "skipped_splits": skipped,
         "splits": {},
     }
+    write_metrics(metrics, records, rw_cfg, cal, k, out)
+    print(f"eval done in {gen_seconds:.0f}s; results in {out}", flush=True)
+    return metrics
+
+
+def write_metrics(metrics: dict, records: dict[str, list[dict]], rw_cfg: dict, cal: dict, k: int, out: Path) -> None:
+    """Per-split summaries into `metrics["splits"]`, plus plots, metrics.json and summary.md in `out`."""
     for name, recs in records.items():
         summary = calibration.summarize([r["breakdown"] for r in recs], rw_cfg["scoring"],
                                         cal["reliability_levels"], cal["pit_bins"])
@@ -333,8 +349,6 @@ def run(
     calibration.plot_reliability_all(metrics["splits"], out / "reliability_all_splits.png")
     (out / "metrics.json").write_text(json.dumps(metrics, indent=2, allow_nan=False))
     (out / "summary.md").write_text(render_summary(metrics))
-    print(f"eval done in {gen_seconds:.0f}s; results in {out}", flush=True)
-    return metrics
 
 
 def _git_commit() -> str | None:

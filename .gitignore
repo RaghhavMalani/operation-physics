@@ -12,3 +12,4 @@ results/sft/*/adapter/
 results/sft/*/merged/
 results/sft/*/checkpoints/
 results/train/*/merged/
+results/train/*/permanent_checkpoints/

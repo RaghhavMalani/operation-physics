@@ -2,7 +2,9 @@
 
     uv run python scripts/paired_tests.py BEFORE_TAPE AFTER_TAPE OUT_JSON
 
-McNemar exact test (binomial on discordant pairs) for binary outcomes; Wilcoxon signed-rank for reward.
+McNemar exact test (binomial on discordant pairs) for binary outcomes; Wilcoxon signed-rank for reward and for
+the crps_log score alone. Coverage (phase 3.7): a problem counts as covered at 1σ / 2σ only if it was answered with
+a σ and the truth lies inside the interval, so failures count as not covered (denominator = all problems).
 """
 
 import json
@@ -11,7 +13,8 @@ import sys
 
 from scipy.stats import binomtest, wilcoxon
 
-METRICS = ("correct_strict", "correct_sigma_free", "parsed", "truncated")
+METRICS = ("correct_strict", "correct_sigma_free", "parsed", "truncated", "covered_1sigma", "covered_2sigma")
+CRPS_LOG_FLOOR = -5.0  # failures score the rule's floor (D13)
 
 
 def load(path):
@@ -24,7 +27,10 @@ def load(path):
             "correct_sigma_free": r.get("by_rule", {}).get("binary", {}).get("score_final") == 1.0,
             "parsed": b["reason"] != "parse_fail",
             "truncated": bool(r["truncated"]),
+            "covered_1sigma": b["reason"] == "ok" and bool(b.get("within_1sigma")),
+            "covered_2sigma": b["reason"] == "ok" and bool(b.get("within_2sigma")),
             "reward": r["reward"],
+            "crps_log": (b.get("scores") or {}).get("crps_log") if b["reason"] == "ok" else CRPS_LOG_FLOOR,
         }
     return out
 
@@ -46,6 +52,11 @@ def main(before_path, after_path, out_path):
         diffs = [after[k]["reward"] - before[k]["reward"] for k in keys]
         res["reward"] = {"mean_diff": st.mean(diffs), "nonzero": sum(d != 0 for d in diffs),
                          "wilcoxon_p": wilcoxon(diffs).pvalue if any(diffs) else 1.0}
+        diffs = [after[k]["crps_log"] - before[k]["crps_log"] for k in keys]
+        res["crps_log"] = {"before_mean": st.mean(before[k]["crps_log"] for k in keys),
+                           "after_mean": st.mean(after[k]["crps_log"] for k in keys),
+                           "mean_diff": st.mean(diffs), "nonzero": sum(d != 0 for d in diffs),
+                           "wilcoxon_p": wilcoxon(diffs).pvalue if any(diffs) else 1.0}
         result[split] = res
     with open(out_path, "w") as fh:
         json.dump(result, fh, indent=2)
