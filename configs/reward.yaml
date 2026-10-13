@@ -1,8 +1,14 @@
 # Verifier and reward settings.
+# version: bump on any change that alters a score. Tapes store the full reward config in meta.json, so replay
+# re-scores old tapes with their own settings; configs without `version` are verifier 1.0.0.
+version: "1.1.0"            # 1.1.0: crps_log no longer floors relative sigma at 0.1% (D37 approved, D38)
+
 scoring:
   rule: crps_log            # main rule (D15, final): CRPS of ln y vs N(ln mu, (sigma/mu)^2), strictly proper
                             # ablations: crps (spec's relative CRPS) | binary | log_score | abs_rel_error
-  sigma_floor: 1.0e-3       # minimum relative sigma s = max(sigma/|y|, sigma_floor)
+  sigma_floor: 1.0e-3       # minimum relative sigma s = max(sigma/|y|, sigma_floor) for crps and log_score
+  crps_log_sigma_floor: 1.0e-6  # crps_log only (since 1.1.0): CRPS stays finite as sigma -> 0, so this is only a
+                            # numerical guard; 1e-3 made the reward flat in sigma below 0.1% (D37)
   crps_clip: 5.0            # score_final = max(-CRPS, -crps_clip) for crps_log and crps; failures get -5 (D13)
   log_score_clip: 10.0      # score_final = max(-NLL, -log_score_clip)
   abs_rel_error_clip: 5.0   # score_final = max(-|e|, -abs_rel_error_clip)

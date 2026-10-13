@@ -130,3 +130,23 @@ def test_crps_log_is_proper_for_lognormal_beliefs():
     mu_grid = np.linspace(0.9, 1.1, 21)
     best_mu = mu_grid[int(np.argmax([_mean_score("crps_log", ys, m, s0 * m) for m in mu_grid]))]
     assert abs(best_mu - 1.0) <= mu_grid[1] - mu_grid[0]
+
+
+def test_crps_log_is_proper_below_the_old_floor():
+    """Belief ln(y) ~ N(0, s0^2) with s0 = 0.03%, below the old 0.1% floor: the best reported sigma is s0. Under
+    verifier 1.0.0 every sigma below 0.1% scored the same, so nothing pulled sigma toward s0 (D37, D38)."""
+    from physcal.verify.scoring import sigma_floor
+
+    rng = np.random.default_rng(5)
+    s0 = 3e-4
+    ys = np.exp(rng.normal(0.0, s0, 20_000))
+    grid = np.linspace(1e-4, 6e-4, 26)
+
+    def mean_score(cfg, sig):
+        return np.mean([score("crps_log", (1.0 - y) / y, max(sig / y, sigma_floor("crps_log", cfg)), cfg) for y in ys])
+
+    new = [mean_score(SC, c) for c in grid]
+    assert abs(grid[int(np.argmax(new))] - s0) <= grid[1] - grid[0]
+    assert new[0] < max(new) and new[-1] < max(new)
+    legacy = {k: v for k, v in SC.items() if k != "crps_log_sigma_floor"}
+    assert len({mean_score(legacy, c) for c in grid}) == 1

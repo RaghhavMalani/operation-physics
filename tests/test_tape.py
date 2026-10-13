@@ -69,3 +69,18 @@ def test_phase3_tapes_still_replay_under_generator_1_0_0():
     assert first["generator_version"] == "1.0.0+afcc2019"
     report = replay(path)
     assert report.ok and report.n == 400
+
+
+def test_verifier_1_0_0_tapes_still_replay_with_their_logged_floor():
+    """Phase 3.6 eval tapes were scored by verifier 1.0.0 (crps_log floored at 0.1%). Their meta.json carries
+    that reward config, so they still replay exactly after the 1.1.0 floor change (D38)."""
+    from physcal.config import REPO_ROOT
+    from physcal.tape.tape import read_meta
+    from physcal.verify.reward import verifier_version
+
+    run = REPO_ROOT / "results" / "train" / "overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512" / "compare"
+    for part in ("sft", "rl"):
+        path = run / part / "rollouts.jsonl"
+        assert verifier_version(read_meta(path)["reward_config"]) == "1.0.0"
+        report = replay(path)
+        assert report.ok and report.n == 400, (part, report)

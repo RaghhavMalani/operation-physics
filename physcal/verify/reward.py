@@ -20,18 +20,27 @@ from physcal.verify.scoring import (
     norm_cdf,
     relative_terms,
     score,
+    sigma_floor,
 )
 from physcal.verify.units import UnitMismatch, to_si_checked
 
 OK, PARSE_FAIL, UNIT_MISMATCH = "ok", "parse_fail", "unit_mismatch"
+LEGACY_VERIFIER_VERSION = "1.0.0"  # reward configs logged before the version key existed
 
 
 def reward_config() -> dict:
     return load_config("reward")
 
 
+def verifier_version(cfg: dict) -> str:
+    return cfg.get("version", LEGACY_VERIFIER_VERSION)
+
+
 def validate_reward_config(cfg: dict) -> None:
     sc, w = cfg["scoring"], cfg["weights"]
+    # 1.0.0 floored crps_log at sigma_floor; later versions must say which floor crps_log uses.
+    if (verifier_version(cfg) != LEGACY_VERIFIER_VERSION) != ("crps_log_sigma_floor" in sc):
+        raise ValueError(f"verifier {verifier_version(cfg)}: crps_log_sigma_floor must be set iff version > 1.0.0")
     if sc["rule"] not in RULES:
         raise ValueError(f"unknown scoring rule {sc['rule']!r}; expected one of {RULES}")
     if w["final"] <= 0 or w["steps"] < 0:
@@ -112,8 +121,10 @@ def _calibration_stats(mu: float, sigma: float | None, y: float, sc: dict) -> di
     }
     if sigma is not None:
         stats["pit"] = norm_cdf((y - mu) / sigma) if sigma > 0 else (0.5 if y == mu else float(y > mu))
+    # z / rel_sigma_floored above use the shared sigma_floor; each rule scores with its own floor.
     stats["scores"] = {
-        r: (None if (s is None and r in RULES_NEEDING_SIGMA) else score(r, e, s, sc)) for r in RULES
+        r: (None if (s is None and r in RULES_NEEDING_SIGMA)
+            else score(r, e, relative_terms(mu, sigma, y, sigma_floor(r, sc))[1], sc)) for r in RULES
     }
     return stats
 
@@ -127,6 +138,7 @@ def reward(problem: Any, completion: str, cfg: dict | None = None) -> tuple[floa
     worst = floor(rule, sc)
     bd: dict[str, Any] = {
         "rule": rule,
+        "verifier_version": verifier_version(cfg),
         "reason": OK,
         "detail": "",
         "truth_si": p["target_value_si"],

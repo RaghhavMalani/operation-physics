@@ -199,3 +199,55 @@ def test_default_rule_is_crps_log_with_relative_crps_as_ablation():
     assert bd_rel["scores"]["crps_log"] == bd_log["score_final"]
     # failure floors (D13): -5 for both CRPS variants, 0 for binary
     assert floor("crps_log", SC) == floor("crps", SC) == -5.0 and floor("binary", SC) == 0.0
+
+
+# ---------------------------------------------------------------------------------------- verifier 1.1.0 (D38)
+def _legacy_cfg() -> dict:
+    """The verifier 1.0.0 reward config: crps_log shares the 0.1% sigma floor."""
+    cfg = copy.deepcopy(CFG)
+    cfg.pop("version")
+    cfg["scoring"].pop("crps_log_sigma_floor")
+    return cfg
+
+
+def test_verifier_version_is_bumped_and_logged():
+    assert CFG["version"] == "1.1.0" and SC["crps_log_sigma_floor"] <= 1e-5
+    _, bd = reward(PROBLEM, completion("12.5 ± 0.1 m/s"))
+    assert bd["verifier_version"] == "1.1.0"
+    _, bd = reward(PROBLEM, completion("12.5 ± 0.1 m/s"), _legacy_cfg())
+    assert bd["verifier_version"] == "1.0.0"
+    half = copy.deepcopy(CFG)
+    half["scoring"].pop("crps_log_sigma_floor")  # 1.1.0 without its floor is ambiguous
+    with pytest.raises(ValueError):
+        validate_reward_config(half)
+
+
+@pytest.mark.parametrize("rel_error", [0.001, 0.0015, 0.003, 0.01, 0.05, -0.001, -0.004, -0.02])
+def test_crps_log_reward_strictly_increases_as_sigma_rises_toward_error(rel_error):
+    """D37 approval condition: with sigma between 0.01% and 0.1% of the value (all <= |error|), widening sigma
+    toward |error| strictly raises the reward. Under verifier 1.0.0 the same answers all scored identically."""
+    mu = PROBLEM["target_value_si"] * (1.0 + rel_error)
+    rel_sigmas = [1e-4 * 10 ** (k / 10) for k in range(11)]  # 0.01% ... 0.1%, log-spaced
+    assert rel_sigmas[-1] <= abs(rel_error) * (1 + 1e-12)
+    texts = [completion(f"{mu!r} ± {rs * mu!r} m/s") for rs in rel_sigmas]
+    new = [reward(PROBLEM, t)[0] for t in texts]
+    assert all(b > a for a, b in zip(new, new[1:])), new
+    old = [reward(PROBLEM, t, _legacy_cfg())[0] for t in texts]
+    assert len(set(old)) == 1  # the flat region the floor created
+
+
+def test_other_rules_keep_the_spec_floor():
+    """Only crps_log changed: crps and log_score still floor relative sigma at 0.1%."""
+    a = reward(PROBLEM, completion("12.5 ± 0.0005 m/s"))[1]["scores"]
+    b = reward(PROBLEM, completion("12.5 ± 0.005 m/s"))[1]["scores"]
+    assert a["crps"] == b["crps"] and a["log_score"] == b["log_score"]
+    assert a["crps_log"] < b["crps_log"]
+    legacy = reward(PROBLEM, completion("12.5 ± 0.0005 m/s"), _legacy_cfg())[1]["scores"]
+    assert {r: legacy[r] for r in ("crps", "log_score", "binary", "abs_rel_error")} == \
+        {r: a[r] for r in ("crps", "log_score", "binary", "abs_rel_error")}
+
+
+def test_zero_sigma_crps_log_tends_to_abs_log_error():
+    """CRPS -> |ln(mu/y)| as sigma -> 0, so sigma = 0 is finite and scores slightly below a tiny positive sigma."""
+    _, bd = reward(PROBLEM, completion("12.5 ± 0 m/s"))
+    assert math.isclose(-bd["scores"]["crps_log"], abs(math.log(12.5 / 12.4)), rel_tol=1e-4)

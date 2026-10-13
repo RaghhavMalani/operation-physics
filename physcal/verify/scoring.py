@@ -12,6 +12,11 @@ Default rule: `crps_log` (D15). It scores ln(y) against N(ln mu, (sigma/mu)^2): 
 that are Gaussian in log space, and still scale-free. The spec's relative `crps` (and `log_score`) divide by
 the *truth* |y|, which weights outcomes by 1/|y|, so they are only approximately proper: the optimal mu is
 biased by about -1% at 10% relative spread and -11% at 30%. They remain available as ablation flags.
+
+Sigma floors: `crps` and `log_score` floor the relative sigma at `sigma_floor` (0.1%, the spec's value; the log
+score diverges as sigma -> 0). Since verifier 1.1.0, `crps_log` uses its own `crps_log_sigma_floor` (1e-6): CRPS
+stays finite as sigma -> 0, and the 0.1% floor made the reward flat in sigma for a policy stating sigma below
+0.1% of the value (D37). Configs without that key (verifier 1.0.0 tapes) keep the old shared floor.
 """
 
 from __future__ import annotations
@@ -43,6 +48,13 @@ def crps_gaussian(mu: float, sigma: float, y: float) -> float:
     return sigma * crps_standard((y - mu) / sigma)
 
 
+def sigma_floor(rule: str, cfg: dict) -> float:
+    """Minimum relative sigma used by `rule` (`cfg` = the scoring block)."""
+    if rule == "crps_log" and "crps_log_sigma_floor" in cfg:
+        return cfg["crps_log_sigma_floor"]
+    return cfg["sigma_floor"]
+
+
 def relative_terms(mu: float, sigma: float | None, y: float, sigma_floor: float) -> tuple[float, float | None]:
     e = (mu - y) / abs(y)
     s = None if sigma is None else max(sigma / abs(y), sigma_floor)
@@ -64,7 +76,7 @@ def score(rule: str, e: float, s: float | None, cfg: dict) -> float:
         ratio = 1.0 + e  # mu / y, truths are positive
         if ratio <= 0:
             return -cfg["crps_clip"]
-        s_log = max(s / ratio, cfg["sigma_floor"])  # sigma / mu
+        s_log = max(s / ratio, sigma_floor("crps_log", cfg))  # sigma / mu
         return max(-s_log * crps_standard(math.log(ratio) / s_log), -cfg["crps_clip"])
     raise ValueError(f"unknown scoring rule {rule!r}")
 

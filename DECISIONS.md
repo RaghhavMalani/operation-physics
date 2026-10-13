@@ -426,3 +426,25 @@ worth a second look.
 - **Not changed tonight** (your rule: no verifier changes). **Recommendation:** for the CRPS rules, lower the
   floor to ~1e-6 or apply it only to `log_score`. Bump the reward-config version and re-score old tapes with
   `rescore` (cheap) before the next RL run.
+
+## Phase 3.7 — σ floor removed, matched-step GRPO rerun (2026-10-13/14, unattended)
+
+### D38. Verifier 1.1.0: crps_log gets its own σ floor (1e-6); everything else unchanged (D37 approved)
+- **Decision:** `configs/reward.yaml` gains `version: "1.1.0"` and `scoring.crps_log_sigma_floor: 1.0e-6`.
+  `scoring.sigma_floor` stays at 1e-3 and still applies to `crps` (the spec's own `max(σ/|y|, 1e-3)`) and
+  `log_score` (which diverges as σ → 0). `crps_log` applies its floor in both places it used the shared one (the
+  relative σ and σ/μ). Every breakdown now logs `verifier_version`.
+- **Old tapes:** a reward config without `version` is verifier 1.0.0, and `crps_log` then falls back to the shared
+  floor, so every logged tape still replays exactly under its own meta.json config. `validate_reward_config`
+  rejects a config that has a version > 1.0.0 without `crps_log_sigma_floor` (or the reverse), so the fallback
+  can't be hit by accident.
+- **Unchanged on purpose:** the logged `z` and `rel_sigma_floored` fields still use the shared 1e-3 floor (they
+  are descriptive, not part of any reward), and so do `crps`, `log_score`, the clips and the failure floors.
+- **Alternatives:** lower the shared `sigma_floor` (would also change the spec's `crps` and blow up `log_score`);
+  key the floor on the version string (hides a threshold in code).
+- **Tests added (13):** the approval condition (for |error| from 0.1% to 5%, rewards strictly increase as σ rises
+  from 0.01% to 0.1% of the value, through the full `reward()` pipeline, and were exactly flat under 1.0.0);
+  Monte Carlo propriety at a belief spread of 0.03% (below the old floor: best σ = the true spread, and the
+  legacy floor gives a flat curve); `crps`/`log_score` unchanged; σ = 0 scores |ln(μ/y)|; version validation;
+  exact replay of last night's SFT-only and SFT+RL eval tapes under their logged 1.0.0 config. All existing
+  propriety / MC tests pass unchanged. 251 tests pass.
