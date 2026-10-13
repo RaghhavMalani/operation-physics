@@ -414,3 +414,15 @@ worth a second look.
   loading, transformers 5.17 (the current env, for all three). Paired McNemar / Wilcoxon for rl-vs-sft (what RL
   added), rl-vs-base and sft-vs-base. The raw-base numbers here are not the phase-3.5 probe numbers, which
   used 1024 tokens.
+
+### D37. Observation: the 0.1% σ floor makes the crps_log reward flat in σ for this policy **[REVIEW]** (not changed)
+- **What I saw overnight:** the SFT'd policy states σ ≈ 0.06–0.08% of the value (median), and that did not move
+  across 250+ GRPO steps (1σ coverage stayed at 15–23%). The scoring rule floors the relative σ at 0.1%
+  (`scoring.sigma_floor: 1e-3`), so *every* σ below 0.1% scores identically. The reward is locally flat in
+  σ, and only sampled jumps of σ above the floor carry any σ signal.
+- **Why it matters:** CRPS (unlike the log score) stays finite as σ → 0 (it tends to |error|), so the floor isn't
+  needed for numerical stability under `crps_log` / `crps`. The floor is only there to stop the log score
+  blowing up. Under crps_log it removes the gradient exactly where an over-confident model needs it.
+- **Not changed tonight** (your rule: no verifier changes). **Recommendation:** for the CRPS rules, lower the
+  floor to ~1e-6 or apply it only to `log_score`. Bump the reward-config version and re-score old tapes with
+  `rescore` (cheap) before the next RL run.
