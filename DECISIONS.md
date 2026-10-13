@@ -504,3 +504,13 @@ worth a second look.
 - **Smoke test result (5 steps, `results/train/smoke-overnight2-mb2/`):** 44 s/step, torch peak reserved
   **6.46 GiB** (allocated 4.45 GiB), 0 allocator retries, 0 OOMs, 32 completions per step, and the curriculum
   drew exactly the same cells as last night's first five steps. The overnight run started at 23:57 IST.
+
+### D42. Tonight's training tape is committed gzipped
+- **Issue:** the training tape passed 50 MB at step 400 (GitHub warns at 50 MB and rejects files over 100 MB), and
+  a full night will roughly double it. Progress commits up to step 400 included the raw tape (several versions
+  are now in history; I did not rewrite history).
+- **Decision:** from step 400 on, progress commits leave `rollouts.jsonl` out. The final commit untracks it, adds
+  it to `.gitignore`, and commits `rollouts.jsonl.gz` (gzip -9) next to `rollouts.meta.json`. To replay:
+  `gunzip -k rollouts.jsonl.gz`, then `replay()` as usual (the raw file stays on disk locally).
+- **Alternatives:** Git LFS (not set up on this repo, and it's an account-level choice); splitting the tape
+  (breaks `replay(path)`).
