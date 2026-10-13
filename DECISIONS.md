@@ -448,3 +448,56 @@ worth a second look.
   legacy floor gives a flat curve); `crps`/`log_score` unchanged; σ = 0 scores |ln(μ/y)|; version validation;
   exact replay of last night's SFT-only and SFT+RL eval tapes under their logged 1.0.0 config. All existing
   propriety / MC tests pass unchanged. 251 tests pass.
+
+### D39. Memory fix: micro-batch 2 × 16 accumulation and a 7.5 GiB allocator cap; nothing else changes
+- **Cause of last night's spill:** on WSL, Unsloth strips `expandable_segments` from the allocator config (it is
+  unsupported there), so fragmentation let torch's *reserved* memory reach 8.96 GiB while only 4.58 GiB was ever
+  allocated.
+- **Decision:** `configs/grpo_overnight2.yaml` = last night's config with `per_device_train_batch_size: 2`,
+  `gradient_accumulation_steps: 16` (was 4 × 8), plus `guards.max_reserved_gib: 7.5`, which calls
+  `torch.cuda.set_per_process_memory_fraction` so the caching allocator frees cached blocks and retries before
+  it grows past 7.5 GiB. Unsloth's gradient checkpointing (`"unsloth"`) was already on. Per-step peak
+  reserved/allocated memory, allocator retries and OOMs go to `memory.jsonl`; the summary reports them too.
+- **Why this keeps the optimization identical:** the generation batch is still 32 completions (= 2 × 16 =
+  4 prompts × 8), so the same prompts, group-normalized advantages and samples per step. TRL/Unsloth's DAPO loss
+  divides the summed token losses by the token count of the *whole* generation batch, so splitting it into 16
+  micro-batches instead of 8 gives the same gradient up to float summation order. lr, warmup, optimizer,
+  clipping, β, LoRA, seeds, curriculum and token budget are unchanged; a test checks that the two YAML files
+  differ only in these keys and the run id.
+- **Alternatives:** the cap alone at micro-batch 4 (more allocator retries; riskier); `torch.cuda.empty_cache()`
+  every step (doesn't bound the within-step peak); micro-batch 1 (slower, kept as the fallback if the smoke test
+  failed).
+- **Risk accepted:** with a hard cap, a step that truly needs > 7.5 GiB live would raise OOM instead of
+  spilling. The live peak last night was 4.58 GiB, so the margin is large; the smoke test checks it.
+
+### D40. Post-hoc calibration control: one σ scale fitted on training-seed SFT-only completions
+- **Calibration set:** 400 problems from the generator's *train* split, seeds 20,000,000–20,000,399, round-robin
+  over the 12 training cells (depths 1–4). These are disjoint from the GRPO pool (0–4,799), the SFT data
+  (10,000,000–10,002,999) and every eval seed (≥ 1e9). `build_split` gained a `train_seed_offset` option that uses
+  the train split (so held-out cells are refused) and refuses to reach the eval range; `posthoc.fit` re-checks
+  that no calibration seed is an eval seed.
+- **Generation:** the SFT-only merged model, exactly the eval's settings (prompt v4, greedy, 512 tokens,
+  text-only, batch 16), so the fitted scale is applied to completions of the same kind. Scored by verifier 1.1.0.
+- **Fit (primary):** the single c that maximizes mean crps_log of σ' = c·σ on the calibration set: the same
+  objective RL optimizes, so it is the like-for-like "what could a free post-hoc fix do" baseline. Mean crps_log
+  is convex in c (CRPS is the perspective of a convex function in σ), so grid + golden-section search finds the
+  optimum. Failures keep the floor (−5) and are unaffected by c.
+- **Sensitivity variant:** the c that makes 1σ coverage exactly 68.27% on the calibration set (the 68.27th
+  percentile of |μ − y|/σ). This is the strongest possible post-hoc baseline *for the primary metric*
+  (1σ coverage), so both are reported, with crps-fit as the headline.
+- **Not done:** a per-depth or per-family scale (more parameters than "a single multiplicative scale"), and
+  depth-5 problems in the fit (training seeds can't produce depth 5; the scale is transferred to depth 5
+  unchanged, which is itself a test).
+- **Paired comparisons against the control** use a derived JSONL (`sft_eval_scaled_<variant>.jsonl`) with σ, the
+  coverage flags, crps_log and reward recomputed under σ' = c·σ. It is not a replayable tape; the replayable source
+  is the re-scored SFT-only eval tape.
+
+### D41. Comparison protocol for tonight (matched step 287)
+- **Primary:** the new run's permanent step-287 adapter, evaluated first, against (a) SFT-only, (b) last night's
+  RL (its final adapter is step 287), (c) the post-hoc control. **Secondary ("longer training"):** the final
+  adapter vs step 287. All tapes are on verifier 1.1.0: last night's SFT-only / RL eval tapes were re-scored
+  (stage 1), and the new evals are scored live.
+- **Tests:** the same paired tests as before (McNemar on strict ≤ 1% correctness, Wilcoxon on reward), plus
+  McNemar on 1σ and 2σ coverage (primary metric) and Wilcoxon on the crps_log score alone. For paired coverage a
+  failed answer counts as not covered (denominator = all 200 problems per split); the headline coverage numbers
+  are over answers with a σ, as in every earlier table. With 0% parse failures the two coincide.

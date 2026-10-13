@@ -1,0 +1,30 @@
+eval: 400 problems x 1 samples in splits ['calibration']; skipped []
+W1013 18:13:23.750000 4910 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1013 18:13:23.809000 4910 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<01:28,  3.82it/s]Loading weights:   8%|▊         | 27/338 [00:00<00:03, 93.75it/s]Loading weights:  15%|█▌        | 51/338 [00:00<00:02, 140.90it/s]Loading weights:  23%|██▎       | 77/338 [00:00<00:01, 177.07it/s]Loading weights:  33%|███▎      | 111/338 [00:00<00:01, 217.50it/s]Loading weights:  42%|████▏     | 142/338 [00:00<00:00, 244.63it/s]Loading weights:  51%|█████     | 172/338 [00:00<00:00, 245.39it/s]Loading weights:  61%|██████    | 207/338 [00:01<00:00, 271.01it/s]Loading weights:  70%|██████▉   | 236/338 [00:01<00:00, 264.76it/s]Loading weights:  79%|███████▉  | 268/338 [00:01<00:00, 273.50it/s]Loading weights:  88%|████████▊ | 299/338 [00:01<00:00, 282.31it/s]Loading weights:  97%|█████████▋| 328/338 [00:01<00:00, 275.38it/s]Loading weights: 100%|██████████| 338/338 [00:01<00:00, 229.66it/s]
+  generated 16/400  (28s)
+  generated 32/400  (52s)
+  generated 48/400  (75s)
+  generated 64/400  (102s)
+  generated 80/400  (124s)
+  generated 96/400  (145s)
+  generated 112/400  (170s)
+  generated 128/400  (193s)
+  generated 144/400  (216s)
+  generated 160/400  (239s)
+  generated 176/400  (262s)
+  generated 192/400  (283s)
+  generated 208/400  (307s)
+  generated 224/400  (329s)
+  generated 240/400  (351s)
+  generated 256/400  (377s)
+  generated 272/400  (404s)
+  generated 288/400  (424s)
+  generated 304/400  (446s)
+  generated 320/400  (471s)
+  generated 336/400  (493s)
+  generated 352/400  (512s)
+  generated 368/400  (528s)
+  generated 384/400  (544s)
+  generated 400/400  (555s)
+eval done in 562s; results in /home/flash2404/operation-physics/results/posthoc_calibration/sft_calibration_set

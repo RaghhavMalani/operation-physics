@@ -1,0 +1,16 @@
+# Phase 3.7 post-hoc calibration control: one multiplicative sigma scale, fitted on SFT-only completions for
+# training-seed problems, then applied unchanged to the SFT-only eval. The baseline RL must beat on calibration.
+label: qwen2.5-math-1.5b-instruct     # SFT A/B winner; the model is results/sft/<label>/merged
+budget: 512                           # max_new_tokens, same as the GRPO budget and the eval
+output_dir: results/posthoc_calibration
+
+calibration_split:                    # greedy, prompt v4, like the eval
+  families: train
+  depths: [1, 2, 3, 4]                # training cells only (depth 5 is held out from training seeds)
+  n: 400                              # round-robin over the 12 cells, ~33 each
+  train_seed_offset: 20000000         # disjoint from GRPO pool seeds (0..4799), SFT seeds (1e7..1e7+2999), eval (>= 1e9)
+
+fit:
+  log10_scale_bounds: [-2.0, 6.0]     # search range for the scale c (sigma' = c * sigma)
+  grid_points: 1601                   # log-spaced grid, then golden-section refinement around the best point
+  coverage_target: 0.6827             # secondary variant: c that gives this 1-sigma coverage on the calibration set
