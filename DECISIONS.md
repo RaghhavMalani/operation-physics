@@ -501,3 +501,6 @@ worth a second look.
   McNemar on 1σ and 2σ coverage (primary metric) and Wilcoxon on the crps_log score alone. For paired coverage a
   failed answer counts as not covered (denominator = all 200 problems per split); the headline coverage numbers
   are over answers with a σ, as in every earlier table. With 0% parse failures the two coincide.
+- **Smoke test result (5 steps, `results/train/smoke-overnight2-mb2/`):** 44 s/step, torch peak reserved
+  **6.46 GiB** (allocated 4.45 GiB), 0 allocator retries, 0 OOMs, 32 completions per step, and the curriculum
+  drew exactly the same cells as last night's first five steps. The overnight run started at 23:57 IST.

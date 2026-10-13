@@ -2,6 +2,7 @@
 
     uv run python -m physcal.train.compare --part base|sft|rl --run results/train/<run_id> --label <label> --budget 512
     uv run python -m physcal.train.compare --part tests --run results/train/<run_id>
+    uv run python -m physcal.train.compare --part rl --adapter permanent_checkpoints/checkpoint-287 --out-name rl287 ...
 
 Every part uses `eval_probe_greedy` (200 ID + 200 depth-5 problems of generator 1.1.0, prompt v4, greedy) with
 max_new_tokens = the training budget, and loads the model text-only (`causal_lm`). `tests` runs the paired
@@ -23,14 +24,16 @@ from physcal.eval.run_eval import run
 PAIRS = (("rl", "sft"), ("rl", "base"), ("sft", "base"))
 
 
-def eval_config(part: str, label: str, budget: int, run_dir: Path, sft_dir: Path) -> dict:
+def eval_config(part: str, label: str, budget: int, run_dir: Path, sft_dir: Path, adapter: str = "final_adapter",
+                out_name: str | None = None) -> dict:
     probe = load_config("model_probe")
     base = next(c for c in probe["candidates"] if c["label"] == label)
     cfg = copy.deepcopy(load_config(probe["greedy_config"]))
     cfg["generation"]["max_new_tokens"] = budget
     cfg["generation"]["batch_size"] = base.get("batch_size", cfg["generation"]["batch_size"])
-    cfg["output_dir"] = str(run_dir / "compare" / part)
-    cfg["run_id"] = f"{run_dir.name}-compare-{part}"
+    out_name = out_name or part
+    cfg["output_dir"] = str(run_dir / "compare" / out_name)
+    cfg["run_id"] = f"{run_dir.name}-compare-{out_name}"
     cfg["model"].update(model_class="causal_lm", fallback_id=None,
                         chat_template_kwargs=base.get("chat_template_kwargs", {}))
     if part == "base":
@@ -38,7 +41,7 @@ def eval_config(part: str, label: str, budget: int, run_dir: Path, sft_dir: Path
     elif part == "sft":
         cfg["model"].update(id=str(sft_dir), revision=None, lora=None)
     else:
-        cfg["model"].update(id=str(sft_dir), revision=None, lora=str(run_dir / "final_adapter"))
+        cfg["model"].update(id=str(sft_dir), revision=None, lora=str(run_dir / adapter))
     return cfg
 
 
@@ -65,13 +68,15 @@ def main() -> None:
     ap.add_argument("--label", default=None)
     ap.add_argument("--sft-dir", default=None)
     ap.add_argument("--budget", type=int, default=None)
+    ap.add_argument("--adapter", default="final_adapter", help="rl part: adapter dir relative to the run dir")
+    ap.add_argument("--out-name", default=None, help="output subdir of <run>/compare (default: the part name)")
     args = ap.parse_args()
     run_dir = Path(args.run) if Path(args.run).is_absolute() else REPO_ROOT / args.run
     if args.part == "tests":
         print(json.dumps(paired_tests(run_dir), indent=2)[:3000])
         return
     sft_dir = Path(args.sft_dir) if args.sft_dir else REPO_ROOT / "results" / "sft" / args.label / "merged"
-    run(eval_config(args.part, args.label, args.budget, run_dir, sft_dir))
+    run(eval_config(args.part, args.label, args.budget, run_dir, sft_dir, args.adapter, args.out_name))
 
 
 if __name__ == "__main__":

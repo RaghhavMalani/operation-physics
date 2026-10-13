@@ -4,7 +4,9 @@
 
 Every rollout is logged to a tape; per-step metrics (reward, zero-variance fraction, mean predicted σ,
 coverage, ...) go to train_metrics.jsonl. Training stops at max_steps, at the wall-clock cap, or at the hard
-deadline (`stop_at`), whichever comes first; checkpoints every `save_steps`, keeping the last two.
+deadline (`stop_at`), whichever comes first; checkpoints every `save_steps`, keeping `save_total_limit`, plus
+permanent adapter checkpoints at `permanent_save_steps` (never rotated). Torch memory is logged every step to
+memory.jsonl; `guards.max_reserved_gib` caps the caching allocator.
 """
 
 from __future__ import annotations
@@ -223,6 +225,42 @@ def make_stop_callback(wall_limit_s: float, deadline: float | None, temp_limit: 
     return StopAndThermalGuard()
 
 
+def make_keep_and_memory_callback(permanent_steps: list[int], permanent_dir: Path, memory_path: Path | None,
+                                  max_reserved_gib: float | None):
+    """Saves the adapter at each step in `permanent_steps` to `permanent_dir/checkpoint-<step>` (outside the
+    rotating checkpoints dir, so save_total_limit never deletes it), and logs torch memory after every step."""
+    from transformers import TrainerCallback
+
+    gib = 1024**3
+
+    class KeepAndMemoryLog(TrainerCallback):
+        def on_step_end(self, args, state, control, model=None, processing_class=None, **kw):
+            step = state.global_step
+            if step in permanent_steps and model is not None:
+                target = permanent_dir / f"checkpoint-{step}"
+                model.save_pretrained(str(target))
+                if processing_class is not None:
+                    processing_class.save_pretrained(str(target))
+                state.save_to_json(str(target / "trainer_state.json"))
+                print(f"permanent checkpoint saved: {target}", flush=True)
+            if memory_path is not None:
+                import torch
+
+                ms = torch.cuda.memory_stats()
+                row = {"step": step, "time": time.time(),
+                       "max_reserved_gib": torch.cuda.max_memory_reserved() / gib,
+                       "max_allocated_gib": torch.cuda.max_memory_allocated() / gib,
+                       "reserved_gib": torch.cuda.memory_reserved() / gib,
+                       "num_alloc_retries": ms.get("num_alloc_retries", 0), "num_ooms": ms.get("num_ooms", 0)}
+                if max_reserved_gib is not None and row["max_reserved_gib"] > max_reserved_gib:
+                    row["over_cap"] = True
+                with memory_path.open("a") as fh:
+                    fh.write(json.dumps(row) + "\n")
+            return control
+
+    return KeepAndMemoryLog()
+
+
 # ------------------------------------------------------------------------------------------- main
 def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float | None = None) -> dict:
     out = REPO_ROOT / cfg["output_dir"] / run_id
@@ -241,6 +279,12 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     rw_cfg["scoring"]["rule"] = cfg["reward_rule"]
     steps = max_steps or g["max_steps"]
 
+    max_reserved_gib = cfg["guards"].get("max_reserved_gib")
+    if max_reserved_gib is not None:
+        # Hard cap on the caching allocator: past it, torch frees cached blocks and retries before growing (WSL has
+        # no expandable_segments, so fragmentation otherwise grows reserved memory into shared system memory).
+        total = torch.cuda.get_device_properties(0).total_memory
+        torch.cuda.set_per_process_memory_fraction(min(1.0, max_reserved_gib * 1024**3 / total))
     torch.cuda.reset_peak_memory_stats()
     model, tok = FastLanguageModel.from_pretrained(
         model_name=m["id"], revision=m["revision"], max_seq_length=m["max_seq_length"],
@@ -304,6 +348,9 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     trainer.add_callback(make_stop_callback(g["wall_clock_limit_minutes"] * 60, deadline, cfg["guards"]["max_gpu_temp_c"],
                                             cfg["guards"]["pause_seconds"], cfg["guards"]["check_every_steps"],
                                             out / "events.jsonl"))
+    permanent_steps = list(g.get("permanent_save_steps", []))
+    trainer.add_callback(make_keep_and_memory_callback(permanent_steps, out / "permanent_checkpoints",
+                                                       out / "memory.jsonl", max_reserved_gib))
 
     from physcal.eval.run_eval import GpuMemoryPoller
 
@@ -324,7 +371,12 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
         "seconds_per_step": seconds / max(1, trainer.state.global_step),
         "peak_vram": {"torch_max_allocated_gib": torch.cuda.max_memory_allocated() / gib,
                       "torch_max_reserved_gib": torch.cuda.max_memory_reserved() / gib,
-                      "nvidia_smi_peak_used_gib_device_wide": poller.peak_mib / 1024},
+                      "nvidia_smi_peak_used_gib_device_wide": poller.peak_mib / 1024,
+                      "max_reserved_cap_gib": max_reserved_gib,
+                      "num_alloc_retries": torch.cuda.memory_stats().get("num_alloc_retries", 0),
+                      "num_ooms": torch.cuda.memory_stats().get("num_ooms", 0)},
+        "permanent_checkpoints": [str(out / "permanent_checkpoints" / f"checkpoint-{s}") for s in permanent_steps
+                                  if (out / "permanent_checkpoints" / f"checkpoint-{s}").exists()],
         "grpo_config_dropped_keys": dropped,
         "grpo_config_resolved": {k: getattr(args, k) for k in ("loss_type", "scale_rewards", "beta",
                                                                "per_device_train_batch_size",

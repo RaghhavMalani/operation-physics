@@ -93,3 +93,58 @@ def test_curriculum_sampler_matches_trl_repeat_pattern_and_feedback():
     assert chunk[:32] == chunk[32:64]  # whole chunk repeated repeat_count times
     assert all(len(set(chunk[i:i + 8])) == 1 for i in range(0, 32, 8))  # each prompt mini-repeated 8 times
     assert all(probs[i].depth in (1, 2) for i in out)
+
+
+def test_overnight2_config_is_identical_to_the_control_except_allowed_keys():
+    """Phase 3.7 brief: identical to last night's run except the verifier, the memory-only micro-batch split (same
+    effective batch), the permanent step-287 checkpoint, the memory cap and the run id (D39)."""
+    old, new = load_config("grpo_overnight"), load_config("grpo_overnight2")
+    allowed = {("run_id",), ("grpo", "per_device_train_batch_size"), ("grpo", "gradient_accumulation_steps"),
+               ("grpo", "permanent_save_steps"), ("guards", "max_reserved_gib")}
+
+    def flat(d, prefix=()):
+        for k, v in d.items():
+            yield from (flat(v, prefix + (k,)) if isinstance(v, dict) else [(prefix + (k,), v)])
+
+    a, b = dict(flat(old)), dict(flat(new))
+    assert {k for k in a.keys() | b.keys() if a.get(k) != b.get(k)} <= allowed
+    eff = lambda c: c["grpo"]["per_device_train_batch_size"] * c["grpo"]["gradient_accumulation_steps"]
+    assert eff(old) == eff(new) == 4 * 8 == new["grpo"]["prompts_per_step"] * new["grpo"]["num_generations"]
+    assert new["grpo"]["permanent_save_steps"] == [287] and new["grpo"]["save_total_limit"] == 3
+    assert new["guards"]["max_reserved_gib"] == 7.5
+
+
+def test_control_run_used_the_same_reward_config_except_the_floor():
+    """Last night's logged reward config differs from verifier 1.1.0 only in the version and crps_log floor."""
+    from physcal.config import REPO_ROOT
+    from physcal.tape.tape import read_meta
+
+    run = REPO_ROOT / "results" / "train" / "overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512"
+    logged = read_meta(run / "rollouts.jsonl")["reward_config"]
+    now = reward_config()
+    assert now.pop("version") == "1.1.0" and "version" not in logged
+    assert now["scoring"].pop("crps_log_sigma_floor") == 1e-6
+    assert logged == now
+
+
+def test_permanent_checkpoint_callback_saves_only_at_listed_steps(tmp_path):
+    from types import SimpleNamespace
+
+    from physcal.train.grpo import make_keep_and_memory_callback
+
+    saved = []
+
+    class FakeModel:
+        def save_pretrained(self, path):
+            saved.append(path)
+            __import__("pathlib").Path(path).mkdir(parents=True)
+
+    class FakeState(SimpleNamespace):
+        def save_to_json(self, path):
+            __import__("pathlib").Path(path).write_text("{}")
+
+    cb = make_keep_and_memory_callback([287], tmp_path / "permanent", None, None)
+    for step in (286, 287, 288):
+        cb.on_step_end(None, FakeState(global_step=step), SimpleNamespace(), model=FakeModel())
+    assert saved == [str(tmp_path / "permanent" / "checkpoint-287")]
+    assert (tmp_path / "permanent" / "checkpoint-287" / "trainer_state.json").exists()
