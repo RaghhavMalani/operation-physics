@@ -1,0 +1,28 @@
+{
+  "oracle_z": 0.8326,
+  "oracle_crps_per_abs_log_error": 0.5949040342649689,
+  "tapes": {
+    "sft": {
+      "depth_extrapolation": {
+        "stated_sigma": -0.3572788963670587,
+        "oracle_sigma": -0.21865915299505967,
+        "global_scale_crps_fit": -0.3535339577525798
+      },
+      "id": {
+        "stated_sigma": -0.31985960000080527,
+        "oracle_sigma": -0.20069819810187173,
+        "global_scale_crps_fit": -0.3187063277789516
+      }
+    },
+    "rl_lastnight": {
+      "depth_extrapolation": {
+        "stated_sigma": -0.3605126528009305,
+        "oracle_sigma": -0.22509029640399036
+      },
+      "id": {
+        "stated_sigma": -0.27500355775861607,
+        "oracle_sigma": -0.17398507130917365
+      }
+    }
+  }
+}
