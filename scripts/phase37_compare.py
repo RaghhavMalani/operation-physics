@@ -14,6 +14,8 @@ import statistics as st
 import sys
 from pathlib import Path
 
+from scipy.stats import spearmanr
+
 ROOT = Path(__file__).resolve().parents[1]
 OLD = ROOT / "results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare_verifier_1.1.0"
 NEW = ROOT / "results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare"
@@ -58,6 +60,10 @@ def headline(path: Path) -> dict:
             "mean_crps_log": st.mean(b["scores"]["crps_log"] if b["reason"] == "ok" else -5.0 for b in bds),
             "mean_reward": st.mean(r["reward"] for r in recs),
             "parse_fail": sum(b["reason"] == "parse_fail" for b in bds) / n,
+            "sigma_zero_rate": sum(b["sigma_si"] == 0 for b in ok) / len(ok) if ok else None,
+            # does stated σ track the actual error? (Spearman over answers with σ; 0 = no information)
+            "spearman_sigma_vs_error": float(spearmanr([b["rel_sigma"] for b in ok],
+                                                       [b["abs_rel_error"] for b in ok]).statistic) if ok else None,
         }
     return out
 
@@ -78,14 +84,16 @@ def main() -> None:
     (NEW / "phase37_paired.json").write_text(json.dumps(result, indent=2))
 
     pct = lambda x: "–" if x is None else f"{100 * x:.1f}%"
-    lines = ["| split | model | acc ≤1% | 1σ cov | 2σ cov | median rel. σ | mean crps_log | mean reward |",
-             "|---|---|---|---|---|---|---|---|"]
+    pct3 = lambda x: "–" if x is None else f"{100 * x:.3f}%"
+    lines = ["| split | model | acc ≤1% | 1σ cov | 2σ cov | median rel. σ | σ = 0 | ρ(σ, err) | mean crps_log | "
+             "mean reward |", "|---|---|---|---|---|---|---|---|---|---|"]
     for split in ("id", "depth_extrapolation"):
         for k, h in result["headline"].items():
             s = h.get(split)
             if s:
                 lines.append(f"| {split} | {k} | {pct(s['acc_1pct'])} | {pct(s['coverage_1sigma'])} | "
-                             f"{pct(s['coverage_2sigma'])} | {pct(s['median_rel_sigma'])} | "
+                             f"{pct(s['coverage_2sigma'])} | {pct3(s['median_rel_sigma'])} | "
+                             f"{pct(s['sigma_zero_rate'])} | {s['spearman_sigma_vs_error']:.2f} | "
                              f"{s['mean_crps_log']:.4f} | {s['mean_reward']:.4f} |")
     lines += ["", "| group | comparison | split | 1σ covered: before → after (only after / only before) | McNemar p | "
                   "2σ covered | McNemar p | strict ≤1% | McNemar p | crps_log Δ | Wilcoxon p |",
