@@ -1,3 +1,24 @@
+# Update 2, 2026-10-14 night: gate passed, A6 built
+
+- **D57**, recorded before the rerun: A3's cell-share rule is replaced by a miss-count test (reject if
+  P(Binomial(n_cells, 0.01) ≥ misses) < 0.01, which allows 1 miss of 15). D57 calls the old rule a design error,
+  found before the first rerun and confirmed by #11. FINDINGS #9 and #11 stand. The next rerun was declared final.
+- **FINAL gate (FINDINGS #12): PASSED all 7 criteria.** Fresh seeds, {1, 2, 5}%, 10,005 problems:
+  - pooled coverage 68.32% / 95.71% (p = 0.92 / 0.20);
+  - no Holm rejection, and 0 cells outside at either level;
+  - PIT KS p = 0.98;
+  - all 500 noise-0 problems exact.
+- **A6 built (D58):** matched pairs share the template, phrasing, units, distractors, noise level and measurement
+  errors; only the world differs, chosen so that σ\* differs by ≥ 2× (delta method).
+  - **Frozen set:** 510 pairs / 1,020 problems; median MC σ\* ratio 2.2–3.6× per cell.
+  - **Analysis:** the D50 slope test (Δ ln stated σ on Δ ln σ\*, computation-correct pairs).
+  - 332 tests pass.
+- **Next for A6:** an eval path that runs a model on a frozen problem file (needed once a noise-trained model
+  exists, Phase 12).
+- **Tonight's queue is unchanged** (1.1.0 runs).
+
+---
+
 # Update, 2026-10-14 evening (after your decisions)
 
 - **D54:** the main experiments use noise {0, 1, 2, 5}%; 10% is a "heavy-tail" regime scored only by crps_log

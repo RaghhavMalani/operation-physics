@@ -491,3 +491,8 @@ Progress:
   A6 not built; Phase 10+ stopped again pending your decision.
 - [x] D57 (miss-count rule; next rerun final) recorded before the rerun. FINAL gate (FINDINGS #12): **PASSED** all
   7 criteria, 0 cells outside at both levels, PIT p = 0.98. Phase 10+ resumes: A6 next.
+- [x] A6 built (D58): `physcal/env/pairs.py`, `physcal/eval/a6_pairs.py`. Frozen pair set
+  `data/eval_sets/2.0.0+bdbb2279/a6_pairs.jsonl`: 510 pairs (all 15 cells × 34), 1,020 problems. Median MC σ\* ratio
+  2.2–3.6× per cell; 0–13 seeds per cell without a pair. Analysis = the D50 slope test (synthetic checks: honest ≈ 1,
+  lookup ≈ 0). 332 tests pass. Not yet built: an eval path that runs a model on a frozen problem file
+  (needed at Phase 12).
