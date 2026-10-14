@@ -14,3 +14,33 @@ fit:
   log10_scale_bounds: [-2.0, 6.0]     # search range for the scale c (sigma' = c * sigma)
   grid_points: 1601                   # log-spaced grid, then golden-section refinement around the best point
   coverage_target: 0.6827             # secondary variant: c that gives this 1-sigma coverage on the calibration set
+
+# D49 (amendment 2026-10-14): conditional post-hoc baselines, physcal/eval/posthoc_cond.py.
+# (a) text-feature post-hoc: sigma' = c(x) * sigma_eff, log c(x) = b + w . bag_of_words(problem, completion),
+#     fitted on the calibration split only (max mean crps_log - l2/2 |w|^2). RL calibration claims are judged
+#     against this one. sigma_eff = max(sigma, crps_log sigma floor * |mu|).
+text_feature:
+  fit_tapes:                          # SFT-only greedy completions, training seeds 20,000,000-20,001,999
+    - results/posthoc_calibration/sft_calibration_set/rollouts.jsonl
+    - results/probe_sft/sft_calibration_ext/rollouts.jsonl
+  model_file: results/posthoc_calibration/text_posthoc.json
+  token_pattern: "\\S+"               # whitespace tokens, as in the FINDINGS #7 exploratory bag of words
+  ngram_range: [1, 2]
+  min_df: 5                           # a token/bigram must occur in >= 5 calibration documents
+  l2_grid: [1.0e-5, 3.0e-5, 1.0e-4, 3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2, 3.0e-2, 1.0e-1, 3.0e-1, 1.0, 3.0, 10.0]
+                                      # penalty on w, chosen by CV (first grid 1e-6..1e-1 put the optimum at
+                                      # its edge, so it was widened; selection still uses calibration data only)
+  forms:                              # what c(x) multiplies
+    scale: stated_sigma               # (a) sigma' = c(x) * sigma_eff: the control (D49)
+    direct: answer                    # (a') sigma' = c(x) * |mu|: ignores the stated sigma; sensitivity only
+  primary: scale
+  cv_folds: 5
+  seed: 0
+  max_iter: 5000                      # L-BFGS iterations per fit (the direct form needs ~1,400 at the CV optimum)
+  lbfgs_gtol: 1.0e-10                 # gradients are small (they scale with the relative sigma), so the
+  lbfgs_ftol: 1.0e-12                 # scipy defaults (1e-5 / 2.2e-9) would stop L-BFGS at the start point
+# (b) oracle per-cell post-hoc: per (family, depth), the crps_log-optimal scale on sigma_eff, fitted in-sample on
+#     the evaluated completions themselves (uses eval truths). An upper bound only; never tested.
+oracle_cell:
+  log10_scale_bounds: [-6.0, 6.0]     # wider than fit.log10_scale_bounds: an oracle should not be clipped (energy/1
+                                      # hit the -2 bound: its stated sigma is far above its errors)

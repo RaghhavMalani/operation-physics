@@ -270,3 +270,15 @@ def test_eval_report_includes_sigma_zero_rate_and_standing_posthoc_baseline(tmp_
     assert pb["available"] and pb["scale"] > 1 and pb["baseline_comparable"]
     assert pb["splits"]["id"]["sft_only_scaled"]["coverage_1sigma"] == pytest.approx(0.35)
     assert "Standing calibration baseline" in (tmp_path / "summary.md").read_text()
+
+
+def test_eval_report_includes_the_conditional_posthoc_baselines(tmp_path):
+    """D49: every eval report carries this model × (a), (a') and (b), and the SFT-only rows on the same frozen split."""
+    m = run(load_config("eval_probe_greedy"), backend_factory=_oracle_backend, limit=4, output_dir=tmp_path)
+    cond = m["posthoc_baseline"]["conditional"]
+    assert cond["text_forms"] == ["direct", "scale"] and cond["primary"] == "scale" and cond["baseline_comparable"]
+    for name, e in cond["splits"].items():
+        for k in ("text_scale", "text_direct", "oracle_cell"):
+            assert e[f"this_model_{k}"]["n"] == m["splits"][name]["n"]
+            assert f"sft_only_{k}" in e
+    assert "Conditional post-hoc baselines (D49)" in (tmp_path / "summary.md").read_text()

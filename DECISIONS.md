@@ -606,3 +606,78 @@ worth a second look.
   in 94–100% of completions (2–5 tokens each; the rest are parse failures), 0 offset mismatches, no group with
   zero r_sigma variance, curriculum cells identical to the uniform-credit run for all 10 steps. Tape replays
   exactly. The long run was not started (your instruction).
+
+## Amendment, 2026-10-14 (laptop day): conditional post-hoc baselines
+
+### D49. Two more post-hoc baselines for every calibration comparison; RL calibration claims are judged against the text-feature one
+- **Status:** an amendment to the analysis plan, dated 2026-10-14 and committed **before any split-credit result
+  exists** (the split-credit long run has not started; only its 10-step smoke test exists, and that was never
+  evaluated). PREREGISTRATION.md is not edited: family S and family H run exactly as pre-registered, and
+  everything below is reported *next to* them.
+- **Why:** FINDINGS #7. A bag-of-words reader of the completion predicts correctness at AUROC 0.906, and the
+  standing control (one global σ × 18.1) cannot use any of that. If RL only learns what a text classifier
+  fitted after the fact already gets, that is not a calibration result. So the bar is raised to a post-hoc
+  method that sees the same text.
+- **(a) Text-feature post-hoc ("text post-hoc"), the new control:**
+  - **Form:** σ' = c(x)·σ_eff with log c(x) = b + w·φ(x). This is a σ *scale*, so the global scale is the
+    intercept-only special case.
+  - **σ = 0 handling:** σ_eff = max(σ, f·|μ|), where f is the verifier's crps_log σ floor (1e-6 relative).
+    crps_log already scores a stated σ = 0 exactly as this floor, and it matches PREREGISTRATION.md's σ = 0
+    convention. Without it, the 23.5% of SFT-only answers that state σ = 0 could never be rescaled.
+  - **Features φ(x):** binary bag of words (presence; whitespace tokens; unigrams and bigrams; minimum document
+    frequency in `configs/posthoc.yaml`), with separate vocabularies for the problem text and the completion.
+  - **Fit:** maximize mean crps_log (the RL objective, as for × 18.1) minus an L2 penalty on w (not on b).
+    L-BFGS, started from the global fit.
+  - **Fit data:** the calibration split only, i.e. the 2,000 existing SFT-only completions on training seeds
+    20,000,000–20,001,999 (the 400-problem post-hoc set plus the 1,600-problem probe fit set). The penalty is
+    chosen by 5-fold CV on that split (held-out mean crps_log), with the vocabularies refit inside each fold.
+    Eval sets are never used for fitting.
+  - **Application:** applied unchanged to any model's completions (SFT-only or RL).
+- **(b) Oracle per-cell post-hoc, an upper bound only:**
+  - **Form:** for each (family, depth) cell, the scale c on σ_eff that maximizes mean crps_log.
+  - **Fit data:** fitted **in-sample on the evaluated completions themselves**, so it uses the eval truths.
+    That is what makes it an oracle. Calibration-split data could not cover it anyway: there is no depth-5
+    calibration data.
+  - **Use:** it is the best mean crps_log any per-cell scale can reach on those exact problems. It is never
+    a competitor and never tested.
+- **Reporting:** every eval report (`metrics.json` → `posthoc_baseline`, and the `summary.md` table) adds four
+  rows: this model × (a), this model × (b), and on the same frozen split SFT-only × (a) and SFT-only × (b).
+  The × 18.1 rows stay.
+- **Judgement rule:** a claim that RL improved calibration is judged against **SFT-only + (a)**. Three added
+  comparisons are run on the pooled frozen eval sets (n = 400). Each uses a paired bootstrap over problems
+  (B = 10,000, seed 0), is one-sided, and is Holm-corrected within this amendment family A:
+  - **A1:** |1σ coverage − 68.27%| of the RL model's stated σ < that of SFT-only + (a). The denominator is all
+    problems, and failures count as not covered, as in family S.
+  - **A2:** Spearman ρ(relative σ, |relative error|) of the RL model > that of SFT-only + (a).
+  - **A3:** mean crps_log of the RL model > that of SFT-only + (a). This also moves with accuracy, so it is read
+    together with A1 and A2.
+  - "RL calibration beats post-hoc" requires A1 **and** A2 to be supported.
+  - With 3 seeds, the same per-seed and seed-mean rule as family S applies.
+  - For family H (phases 10–14), wherever "post-hoc" appears (H2b, H4a, H4b), the pre-registered test runs as
+    written, and the same test against (a) runs next to it. (a) is refit on that phase's calibration split.
+- **Alternatives considered:**
+  - A text model that predicts σ directly and ignores the stated σ. Rejected: the brief asks for a scale, and a
+    scale nests the global baseline.
+  - TF-IDF features as in the FINDINGS #7 exploratory model. Rejected: its l2 row normalization shrinks a
+    single decisive token such as "± 0" in long completions.
+  - An oracle per cell fitted on the calibration split. That would be a legitimate baseline, not an oracle,
+    and it cannot cover depth 5.
+- **Implementation notes (same day, before the commit; still before any split-credit result):**
+  - **λ grid widened.** The first λ grid (1e-6 … 1e-1) put the CV optimum at its edge, so it now runs from 1e-5
+    to 10 in half-decades. Selection still uses calibration-split CV only. Result: λ = 0.03 for (a), 0.003 for (a′).
+  - **(a′) "text direct" added, as a reported sensitivity row only.** It is the same model with σ' = c(x)·|μ|, so it
+    ignores the stated σ.
+    - **Why:** calibration-split CV showed that the stated σ carries *less* than no information. A single
+      constant relative σ (CV mean crps_log −0.2322) beats the global scale on the stated σ (−0.2359). The scale
+      form (a) only reaches −0.2331, while (a′) reaches −0.2248.
+    - **Status:** it was added after these CV numbers and the SFT-only eval numbers were seen. **The control
+      named in the judgement rule stays (a)**, as the brief specifies. The family-A tests are also run against
+      (a′) and reported as sensitivity. Promoting (a′) to the control is your call, and it should be made before
+      any split-credit result is read.
+  - **Oracle (b) search range.** It searches log10 c ∈ [−6, 6], not the global fit's [−2, 6]. energy/1 hit the −2
+    bound because its stated σ sits far above its errors.
+  - **Not a universal upper bound.** (b) bounds what any *per-cell scale of the stated σ* can reach. It does not
+    bound (a′): on the SFT-only eval sets, (a′) already beats (b) on mean crps_log.
+  - **L-BFGS settings.** max_iter is 5,000 (the direct form needs ~1,400 iterations at its CV optimum; the
+    objective agreed to 6 digits with a 1,000 cap). gtol = 1e-10 and ftol = 1e-12: the gradients scale with the
+    relative σ, and scipy's default tolerances would stop at the starting point.

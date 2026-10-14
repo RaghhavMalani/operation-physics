@@ -461,3 +461,11 @@ Progress:
   "token" in the LLM sense. Informational only: committed tapes/logs contain the local path
   `/home/flash2404/...` (in `model_id` fields), and commits are authored as `Raghhav <you@example.com>`.
   No history rewrite. `.gitignore` now also excludes `.env`, `.env.*`, `*.pem`, `.netrc`.
+- [x] D49 amendment (DECISIONS.md, dated 2026-10-14, committed before any split-credit result): conditional post-hoc
+  baselines in `physcal/eval/posthoc_cond.py`, fitted on the 2,000 SFT-only calibration completions (CPU).
+  (a) text-feature σ scale (the control RL calibration claims are judged against), (a′) text direct (sensitivity),
+  (b) oracle per (family, depth), in-sample (upper bound for per-cell scaling only). SFT-only on the frozen eval
+  sets, 1σ coverage / mean crps_log, ID: × 18.1 35.0% / −0.319; (a) 42.5% / −0.314; (a′) 79.5% / −0.292;
+  (b) 31.0% / −0.306. Every eval report now has a "Conditional post-hoc baselines (D49)" table; the four existing
+  verifier-1.1.0 reports were refreshed (only the baseline block changed). `scripts/phase95_compare.py` runs family A
+  (A1 coverage error, A2 ρ, A3 crps_log; Holm) against (a), and against (a′) as sensitivity. 296 tests pass.

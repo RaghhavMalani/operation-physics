@@ -307,7 +307,7 @@ def run(
             extra = {"split": name, "sample": n % k, "n_tokens": gen.n_tokens, "truncated": gen.truncated,
                      "by_rule": rule_outcomes(problem, gen.text, per_rule_cfgs)}
             tape.log(0, problem, gen.text, r, bd, model_id, lora_hash, extra)
-            records[name].append({"problem": problem.to_dict(), "breakdown": bd, **extra})
+            records[name].append({"problem": problem.to_dict(), "completion": gen.text, "breakdown": bd, **extra})
 
     cal = eval_cfg["calibration"]
     metrics: dict[str, Any] = {
@@ -408,6 +408,26 @@ def render_summary(m: dict) -> str:
                 lines.append(f"| {name} | {label} | {_fmt(sz, True) if label == 'this model' else ''} "
                              f"| {_fmt(r['coverage_1sigma'], True)} | {_fmt(r['coverage_2sigma'], True)} "
                              f"| {_fmt(r['mean_crps_log'])} |")
+    cond = pb.get("conditional") or {}
+    if cond.get("splits"):
+        lines += ["", "## Conditional post-hoc baselines (D49)", "",
+                  "(a) text-feature scale on σ_eff = max(σ, crps_log floor·|μ|), fitted on the calibration split: the "
+                  "control RL calibration claims are judged against. (a') the same text model with σ' = c(x)·|μ| "
+                  "(ignores the stated σ): sensitivity. (b) oracle per-(family, depth) scale on σ_eff, fitted in-sample "
+                  "on the evaluated completions: an upper bound only."
+                  + ("" if cond["baseline_comparable"] else " SFT-only rows omitted (not comparable here)."), "",
+                  "| split | rows | 1σ cov | 2σ cov | mean crps_log |", "|---|---|---|---|---|"]
+        labels = (("this_model_text_scale", "this model × (a) text scale"),
+                  ("this_model_text_direct", "this model × (a') text direct"),
+                  ("this_model_oracle_cell", "this model × (b) oracle per cell (upper bound)"),
+                  ("sft_only_text_scale", "SFT-only × (a) text scale (**control**)"),
+                  ("sft_only_text_direct", "SFT-only × (a') text direct"),
+                  ("sft_only_oracle_cell", "SFT-only × (b) oracle per cell (upper bound)"))
+        for name, e in cond["splits"].items():
+            for k, label in labels:
+                if k in e:
+                    lines.append(f"| {name} | {label} | {_fmt(e[k]['coverage_1sigma'], True)} "
+                                 f"| {_fmt(e[k]['coverage_2sigma'], True)} | {_fmt(e[k]['mean_crps_log'])} |")
     for name, s in m["splits"].items():
         lines += ["", f"## {name}: by depth", "", "| depth | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |",
                   "|---|---|---|---|---|---|---|"]

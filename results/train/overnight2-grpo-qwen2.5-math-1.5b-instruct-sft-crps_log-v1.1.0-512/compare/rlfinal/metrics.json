@@ -370,5 +370,177 @@
         }
       }
     }
+  },
+  "posthoc_baseline": {
+    "available": true,
+    "scale_name": "crps_fit",
+    "scale": 18.14254203214066,
+    "fit_file": "results/posthoc_calibration/posthoc_fit.json",
+    "baseline_comparable": true,
+    "splits": {
+      "id": {
+        "this_model_unscaled": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.115,
+          "coverage_2sigma": 0.16,
+          "mean_crps_log": -0.2389927937150283
+        },
+        "this_model_scaled": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.245,
+          "coverage_2sigma": 0.295,
+          "mean_crps_log": -0.23797911826878312
+        },
+        "sft_only_unscaled": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.15,
+          "coverage_2sigma": 0.205,
+          "mean_crps_log": -0.31985960000080527
+        },
+        "sft_only_scaled": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.35,
+          "coverage_2sigma": 0.405,
+          "mean_crps_log": -0.3187063277789516
+        }
+      },
+      "depth_extrapolation": {
+        "this_model_unscaled": {
+          "n": 200,
+          "n_with_sigma": 198,
+          "coverage_1sigma": 0.08080808080808081,
+          "coverage_2sigma": 0.13131313131313133,
+          "mean_crps_log": -0.3435777947026066
+        },
+        "this_model_scaled": {
+          "n": 200,
+          "n_with_sigma": 198,
+          "coverage_1sigma": 0.25757575757575757,
+          "coverage_2sigma": 0.3282828282828283,
+          "mean_crps_log": -0.341559533277531
+        },
+        "sft_only_unscaled": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.115,
+          "coverage_2sigma": 0.16,
+          "mean_crps_log": -0.3572788963670587
+        },
+        "sft_only_scaled": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.335,
+          "coverage_2sigma": 0.38,
+          "mean_crps_log": -0.3535339577525798
+        }
+      }
+    },
+    "conditional": {
+      "text_forms": [
+        "direct",
+        "scale"
+      ],
+      "splits": {
+        "depth_extrapolation": {
+          "this_model_oracle_cell": {
+            "n": 200,
+            "n_with_sigma": 198,
+            "coverage_1sigma": 0.25757575757575757,
+            "coverage_2sigma": 0.30808080808080807,
+            "mean_crps_log": -0.3338302732223153
+          },
+          "this_model_text_scale": {
+            "n": 200,
+            "n_with_sigma": 198,
+            "coverage_1sigma": 0.36363636363636365,
+            "coverage_2sigma": 0.41919191919191917,
+            "mean_crps_log": -0.3370035046000558
+          },
+          "this_model_text_direct": {
+            "n": 200,
+            "n_with_sigma": 198,
+            "coverage_1sigma": 0.7929292929292929,
+            "coverage_2sigma": 0.8838383838383839,
+            "mean_crps_log": -0.3400008674197628
+          },
+          "sft_only_oracle_cell": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.345,
+            "coverage_2sigma": 0.42,
+            "mean_crps_log": -0.34024687317608854
+          },
+          "sft_only_text_scale": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.455,
+            "coverage_2sigma": 0.525,
+            "mean_crps_log": -0.34084837950746644
+          },
+          "sft_only_text_direct": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.77,
+            "coverage_2sigma": 0.86,
+            "mean_crps_log": -0.33200206928963616
+          }
+        },
+        "id": {
+          "this_model_oracle_cell": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.26,
+            "coverage_2sigma": 0.32,
+            "mean_crps_log": -0.2262181113658251
+          },
+          "this_model_text_scale": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.305,
+            "coverage_2sigma": 0.37,
+            "mean_crps_log": -0.23502328492705296
+          },
+          "this_model_text_direct": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.825,
+            "coverage_2sigma": 0.915,
+            "mean_crps_log": -0.21499581369993145
+          },
+          "sft_only_oracle_cell": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.31,
+            "coverage_2sigma": 0.395,
+            "mean_crps_log": -0.3064635293560877
+          },
+          "sft_only_text_scale": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.425,
+            "coverage_2sigma": 0.535,
+            "mean_crps_log": -0.31432962665128533
+          },
+          "sft_only_text_direct": {
+            "n": 200,
+            "n_with_sigma": 200,
+            "coverage_1sigma": 0.795,
+            "coverage_2sigma": 0.885,
+            "mean_crps_log": -0.292507865469672
+          }
+        }
+      },
+      "model_file": "results/posthoc_calibration/text_posthoc.json",
+      "primary": "scale",
+      "lam": {
+        "scale": 0.03,
+        "direct": 0.003
+      },
+      "baseline_comparable": true
+    }
   }
 }

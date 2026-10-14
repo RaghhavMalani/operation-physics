@@ -78,7 +78,8 @@ def rescore_to_current(tape_path: str | Path, out_dir: str | Path) -> dict:
             extra = {k: rec[k] for k in keep if k in rec}
             extra["by_rule"] = rule_outcomes(problem, rec["completion"], per_rule_cfgs)
             tape.log(rec["step"], problem, rec["completion"], r, bd, rec["model_id"], rec["lora_hash"], extra)
-            records[rec.get("split", "all")].append({"problem": rec["problem"], "breakdown": bd, **extra})
+            records[rec.get("split", "all")].append({"problem": rec["problem"], "completion": rec["completion"],
+                                                     "breakdown": bd, **extra})
     old = json.loads((tape_path.parent / "metrics.json").read_text())
     metrics = {**{k: v for k, v in old.items() if k != "splits"}, "splits": {},
                "verifier_version": verifier_version(cfg), "rescored_from": str(tape_path)}

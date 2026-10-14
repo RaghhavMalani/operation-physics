@@ -10,6 +10,15 @@ Written before any split-credit result exists. Pooled frozen eval sets (200 ID +
   of resamples with difference ≤ −5 points).
 Holm over {S1a, S1b, S2, S3} at α = 0.05. Also reported (not tested): 2σ coverage, σ = 0 share, crps_log vs the
 post-hoc control (Wilcoxon, two-sided), and the final checkpoint as "longer training".
+
+Amendment family A (DECISIONS.md D49, committed before any split-credit result): RL calibration claims are judged
+against SFT-only + (a), the text-feature σ scale fitted on the calibration split. Paired bootstrap, one-sided,
+Holm over {A1, A2, A3}:
+- A1: |1σ coverage − 68.27%| of split-credit < that of SFT-only + (a) (failures count as not covered).
+- A2: Spearman ρ(relative σ, |relative error|) of split-credit > that of SFT-only + (a).
+- A3: mean crps_log of split-credit > that of SFT-only + (a).
+"RL calibration beats post-hoc" = A1 and A2 supported. The same three tests against (a') (text direct, σ' = c(x)·|μ|)
+are reported as a sensitivity analysis; (b) (oracle per cell, in-sample) is a headline row only, never tested.
 Writes <run>/compare/phase95_family_S.json and .md.
 """
 
@@ -25,7 +34,11 @@ ROOT = Path(__file__).resolve().parents[1]
 OLD = ROOT / "results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare_verifier_1.1.0"
 UNIFORM = ROOT / "results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare"
 POSTHOC = ROOT / "results/posthoc_calibration/sft_eval_scaled_crps_fit.jsonl"
+COND = {"text_scale": ROOT / "results/posthoc_calibration/sft_eval_text_scale.jsonl",    # (a), the D49 control
+        "text_direct": ROOT / "results/posthoc_calibration/sft_eval_text_direct.jsonl",  # (a'), sensitivity
+        "oracle_cell": ROOT / "results/posthoc_calibration/sft_eval_oracle_cell.jsonl"}  # (b), upper bound only
 N_BOOT, SEED, ALPHA, MARGIN = 10_000, 0, 0.05, 0.05
+COVERAGE_TARGET = 0.6827
 
 
 def load(path: Path) -> dict:
@@ -73,6 +86,20 @@ def holm(p: dict) -> dict:
     return out
 
 
+def family_a(rl: dict, ctrl: dict, keys: list) -> dict:
+    """D49 amendment tests of `rl` against a post-hoc control on the pooled eval sets."""
+    cov_err = lambda d, ks: abs(float(np.mean([d[k]["cov1"] for k in ks])) - COVERAGE_TARGET)
+    crps = lambda d, ks: float(np.mean([d[k]["crps_log"] for k in ks]))
+    t = {}
+    for name, stat, better_low in (("A1_cov1_error", cov_err, True), ("A2_rho", rho, False), ("A3_crps_log", crps, False)):
+        d = bootstrap(rl, ctrl, keys, stat)
+        t[name] = {"rl": stat(rl, keys), "control": stat(ctrl, keys), "diff_ci": np.percentile(d, [2.5, 97.5]).tolist(),
+                   "p_one_sided": float(np.mean(d >= 0) if better_low else np.mean(d <= 0))}
+    t["holm"] = holm({k.split("_")[0]: v["p_one_sided"] for k, v in t.items()})
+    t["rl_calibration_beats_posthoc"] = t["holm"]["A1"]["supported"] and t["holm"]["A2"]["supported"]
+    return t
+
+
 def headline(d: dict, keys: list) -> dict:
     sig = [d[k] for k in keys if d[k]["rel_sigma"] is not None]
     return {"n": len(keys), "acc": st.mean(d[k]["correct"] for k in keys), "cov1": st.mean(d[k]["cov1"] for k in keys),
@@ -100,13 +127,18 @@ def main(run: Path) -> None:
                       "S2": t["S2_rho_vs_uniform"]["p_one_sided"], "S3": t["S3_accuracy_noninferiority"]["p_one_sided"]})
     diffs = [split[k]["crps_log"] - post[k]["crps_log"] for k in keys]
     reported = {"crps_log_vs_posthoc": {"mean_diff": st.mean(diffs), "wilcoxon_p_two_sided": float(wilcoxon(diffs).pvalue)}}
-    rows = {"sft": sft, "posthoc": post, "uniform_rl287": uni, "split_rl287": split}
+    cond = {name: load(path) for name, path in COND.items()}
+    assert all(set(keys) == set(c) for c in cond.values()), "different eval problems (conditional post-hoc)"
+    amendment = {"A_vs_text_scale": family_a(split, cond["text_scale"], keys),
+                 "sensitivity_A_vs_text_direct": family_a(split, cond["text_direct"], keys)}
+    rows = {"sft": sft, "posthoc": post, **{f"sft_{k}": v for k, v in cond.items()}, "uniform_rl287": uni,
+            "split_rl287": split}
     final = run / "compare/rlfinal/rollouts.jsonl"
     if final.exists():
         rows["split_final"] = load(final)
     head = {name: {s: headline(d, [k for k in keys if k[0] == s]) for s in ("id", "depth_extrapolation")} | {"pooled": headline(d, keys)}
             for name, d in rows.items()}
-    out = {"tests": t, "reported": reported, "headline": head}
+    out = {"tests": t, "amendment_D49": amendment, "reported": reported, "headline": head}
     (run / "compare/phase95_family_S.json").write_text(json.dumps(out, indent=2, default=float))
     lines = ["| model | split | acc ≤1% | 1σ cov | 2σ cov | σ = 0 | median rel. σ | ρ(σ, err) | mean crps_log |",
              "|---|---|---|---|---|---|---|---|---|"]
@@ -116,6 +148,16 @@ def main(run: Path) -> None:
                          f"{v['median_rel_sigma']:.4%} | {v['rho_sigma_err']:.2f} | {v['mean_crps_log']:.4f} |")
     lines += ["", "| hypothesis | p (one-sided) | Holm threshold | supported |", "|---|---|---|---|"]
     lines += [f"| {k} | {v['p']:.3g} | {v['holm_threshold']:.3g} | {v['supported']} |" for k, v in t["holm"].items()]
+    for name, a in amendment.items():
+        lines += ["", f"D49 {name} (split-credit RL@287 vs SFT-only + post-hoc; RL calibration beats post-hoc: "
+                  f"{a['rl_calibration_beats_posthoc']})", "",
+                  "| test | RL | control | 95% CI of RL − control | p (one-sided) | Holm threshold | supported |",
+                  "|---|---|---|---|---|---|---|"]
+        for k, v in a.items():
+            if k.startswith("A"):
+                h = a["holm"][k.split("_")[0]]
+                lines.append(f"| {k} | {v['rl']:.4f} | {v['control']:.4f} | [{v['diff_ci'][0]:.4f}, {v['diff_ci'][1]:.4f}] "
+                             f"| {h['p']:.3g} | {h['holm_threshold']:.3g} | {h['supported']} |")
     (run / "compare/phase95_family_S.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
 

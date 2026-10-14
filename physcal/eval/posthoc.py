@@ -64,14 +64,15 @@ def _records(tape: Path) -> list[dict]:
     return out
 
 
-def scaled_outcomes(records: list[dict], c: float, sc: dict) -> list[dict]:
-    """Per completion: crps_log score and 1σ/2σ coverage after σ' = c·σ (failures: floor, not covered)."""
+def scaled_outcomes(records: list[dict], c, sc: dict) -> list[dict]:
+    """Per completion: crps_log score and 1σ/2σ coverage after σ' = c·σ (failures: floor, not covered).
+    `c` is one scale or one per record (the conditional baselines, D49)."""
     out = []
-    for r in records:
+    for r, ci in zip(records, np.broadcast_to(np.asarray(c, dtype=float), (len(records),))):
         if r["mu"] is None:
             out.append({"score": floor(RULE, sc), "within_1sigma": False, "within_2sigma": False, "answered": False})
             continue
-        sig = c * r["sigma"]
+        sig = float(ci) * r["sigma"]
         e, s = relative_terms(r["mu"], sig, r["truth"], sigma_floor(RULE, sc))
         err = abs(r["mu"] - r["truth"])
         out.append({"score": score(RULE, e, s, sc), "within_1sigma": err <= sig, "within_2sigma": err <= 2 * sig,
@@ -79,7 +80,7 @@ def scaled_outcomes(records: list[dict], c: float, sc: dict) -> list[dict]:
     return out
 
 
-def summary(records: list[dict], c: float, sc: dict) -> dict:
+def summary(records: list[dict], c, sc: dict) -> dict:
     o = scaled_outcomes(records, c, sc)
     ans = [x for x in o if x["answered"]]
     return {"n": len(o), "n_with_sigma": len(ans),
@@ -163,17 +164,21 @@ def baseline_report(records_by_split: dict[str, list[dict]], scoring_cfg: dict, 
     """The standing calibration baseline for an eval report (configs/monitor.yaml, Phase 9.5 step 1).
 
     Per split: this model's σ times the standing scale, and, when the eval is on the same frozen sets (same
-    generator version and split name) and the same verifier, the SFT-only baseline itself (unscaled and scaled)."""
+    generator version and split name) and the same verifier, the SFT-only baseline itself (unscaled and scaled).
+    `conditional` holds the D49 rows: the text-feature scale (a) and the oracle per-cell scale (b)."""
+    from physcal.eval import posthoc_cond
+
+    conditional = posthoc_cond.baseline_rows(records_by_split, scoring_cfg, generator_version, verifier)
     path = REPO_ROOT / load_config("monitor")["posthoc_baseline"]
     if not path.exists():
-        return {"available": False, "reason": f"{path} not found"}
+        return {"available": False, "reason": f"{path} not found", "conditional": conditional}
     fit = json.loads(path.read_text())
     name = fit["primary"]
     c = fit["scales"][name]
     ref_meta = read_meta(REPO_ROOT / fit["eval_tape"])
     comparable = ref_meta["generator_version"] == generator_version and fit["verifier_version"] == verifier
     out = {"available": True, "scale_name": name, "scale": c, "fit_file": str(path.relative_to(REPO_ROOT)),
-           "baseline_comparable": comparable, "splits": {}}
+           "baseline_comparable": comparable, "splits": {}, "conditional": conditional}
     for split, recs in records_by_split.items():
         own = [{"mu": b["mu_si"], "sigma": b["sigma_si"], "truth": b["truth_si"]}
                if b["reason"] == "ok" and b.get("sigma_si") is not None else
@@ -186,23 +191,28 @@ def baseline_report(records_by_split: dict[str, list[dict]], scoring_cfg: dict, 
     return out
 
 
-def scaled_tape(eval_tape: Path, c: float, out_path: Path) -> None:
+def scaled_tape(eval_tape: Path, c, out_path: Path, rel_floor: float = 0.0, anchor: str = "stated_sigma") -> None:
     """A derived JSONL (not a replayable tape): the eval records with σ scaled by c and the coverage / crps_log
-    fields and the reward recomputed, so scripts/paired_tests.py can compare it with another model's tape."""
+    fields and the reward recomputed, so scripts/paired_tests.py can compare it with another model's tape.
+    `c` is one scale or one per tape record. D49: σ is first raised to `rel_floor`·|μ| (σ_eff; 0 = unchanged), or
+    with anchor "answer" replaced by |μ| (σ' = c·|μ|, the text-direct form)."""
     sc = read_meta(eval_tape)["reward_config"]["scoring"]
+    recs = list(read_tape(eval_tape))
+    cs = np.broadcast_to(np.asarray(c, dtype=float), (len(recs),))
     with out_path.open("w") as fh:
-        for r in read_tape(eval_tape):
-            r = copy.deepcopy(r)
+        for r, ci in zip(recs, cs):
+            r, ci = copy.deepcopy(r), float(ci)
             b = r["breakdown"]
             if b["reason"] == "ok" and b.get("sigma_si") is not None:
-                o = scaled_outcomes([{"mu": b["mu_si"], "sigma": b["sigma_si"], "truth": b["truth_si"]}], c, sc)[0]
-                b["sigma_si"] = c * b["sigma_si"]
-                b["rel_sigma"] = c * b["rel_sigma"]
+                sig = abs(b["mu_si"]) if anchor == "answer" else max(b["sigma_si"], rel_floor * abs(b["mu_si"]))
+                o = scaled_outcomes([{"mu": b["mu_si"], "sigma": sig, "truth": b["truth_si"]}], ci, sc)[0]
+                b["sigma_si"] = ci * sig
+                b["rel_sigma"] = ci * sig / abs(b["truth_si"])
                 b["within_1sigma"], b["within_2sigma"] = o["within_1sigma"], o["within_2sigma"]
                 r["reward"] = r["reward"] - b["w_final"] * b["score_final"] + b["w_final"] * o["score"]
                 b["scores"][RULE] = b["score_final"] = o["score"]
                 b["reward"] = r["reward"]
-            r["posthoc_sigma_scale"] = c
+            r["posthoc_sigma_scale"] = ci
             fh.write(json.dumps(r) + "\n")
 
 

@@ -14,6 +14,40 @@
 | id | 200 | 41.0% | 0.0284 | 0.0% | 0.0% | 0.0% | 11.5% | 16.0% | 0 | -0.141 | 0.0% |
 | depth_extrapolation | 200 | 31.0% | 0.0342 | 1.0% | 0.0% | 0.5% | 8.1% | 13.1% | 0.000261 | -0.203 | 0.5% |
 
+## Standing calibration baseline: σ × 18.1 (crps_fit, `results/posthoc_calibration/posthoc_fit.json`)
+
+SFT-only rows are on the same frozen split.
+
+| split | rows | σ = 0 | 1σ cov | 2σ cov | mean crps_log |
+|---|---|---|---|---|---|
+| id | this model | – | 11.5% | 16.0% | -0.239 |
+| id | this model, σ × 18.1 |  | 24.5% | 29.5% | -0.238 |
+| id | SFT-only |  | 15.0% | 20.5% | -0.32 |
+| id | SFT-only, σ × 18.1 (baseline) |  | 35.0% | 40.5% | -0.319 |
+| depth_extrapolation | this model | – | 8.1% | 13.1% | -0.344 |
+| depth_extrapolation | this model, σ × 18.1 |  | 25.8% | 32.8% | -0.342 |
+| depth_extrapolation | SFT-only |  | 11.5% | 16.0% | -0.357 |
+| depth_extrapolation | SFT-only, σ × 18.1 (baseline) |  | 33.5% | 38.0% | -0.354 |
+
+## Conditional post-hoc baselines (D49)
+
+(a) text-feature scale on σ_eff = max(σ, crps_log floor·|μ|), fitted on the calibration split: the control RL calibration claims are judged against. (a') the same text model with σ' = c(x)·|μ| (ignores the stated σ): sensitivity. (b) oracle per-(family, depth) scale on σ_eff, fitted in-sample on the evaluated completions: an upper bound only.
+
+| split | rows | 1σ cov | 2σ cov | mean crps_log |
+|---|---|---|---|---|
+| depth_extrapolation | this model × (a) text scale | 36.4% | 41.9% | -0.337 |
+| depth_extrapolation | this model × (a') text direct | 79.3% | 88.4% | -0.34 |
+| depth_extrapolation | this model × (b) oracle per cell (upper bound) | 25.8% | 30.8% | -0.334 |
+| depth_extrapolation | SFT-only × (a) text scale (**control**) | 45.5% | 52.5% | -0.341 |
+| depth_extrapolation | SFT-only × (a') text direct | 77.0% | 86.0% | -0.332 |
+| depth_extrapolation | SFT-only × (b) oracle per cell (upper bound) | 34.5% | 42.0% | -0.34 |
+| id | this model × (a) text scale | 30.5% | 37.0% | -0.235 |
+| id | this model × (a') text direct | 82.5% | 91.5% | -0.215 |
+| id | this model × (b) oracle per cell (upper bound) | 26.0% | 32.0% | -0.226 |
+| id | SFT-only × (a) text scale (**control**) | 42.5% | 53.5% | -0.314 |
+| id | SFT-only × (a') text direct | 79.5% | 88.5% | -0.293 |
+| id | SFT-only × (b) oracle per cell (upper bound) | 31.0% | 39.5% | -0.306 |
+
 ## id: by depth
 
 | depth | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |
