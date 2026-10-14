@@ -681,3 +681,119 @@ worth a second look.
   - **L-BFGS settings.** max_iter is 5,000 (the direct form needs ~1,400 iterations at its CV optimum; the
     objective agreed to 6 digits with a 1,000 cap). gtol = 1e-10 and ftol = 1e-12: the gradients scale with the
     relative σ, and scipy's default tolerances would stop at the starting point.
+
+## Amendment, 2026-10-14 (afternoon): external reviews, A1–A8
+
+### D50. Amendments A1–A8 from REVIEW_SYNTHESIS_2026-10-14.md (commit `f8b24c4`)
+- **Status:** recorded and pushed before any Phase 10+ result and before any result of a new experiment.
+  PREREGISTRATION.md is not edited. Where A1–A8 change a pre-registered test, the pre-registered version is still
+  computed and reported next to the amended one, and the write-up says the amendment came after the
+  pre-registration.
+- **Results that already existed today when this was written:**
+  1. **D49** baselines (a), (a′), (b), with SFT-only numbers on the frozen eval sets (commit `6eeef4b`). A5
+     supersedes D49's judgement rule, and this amendment came after those numbers were seen. The D49 rows stay
+     in every report and the D49 tests stay in the compare script, labelled "superseded".
+  2. **Dry run of the D49 compare script** (not committed): uniform-credit RL@287 stood in for the split-credit
+     run, and it failed both D49 controls. This is not a split-credit result.
+  3. **The Phase 10 self-consistency gate has not run** under any rule (it was paused at your request before
+     it ran). It runs once, under A3. The superseded rule ("Kupiec p > 0.05 in every cell") is evaluated on the
+     same run and reported, but A3 decides.
+  4. **No split-credit result exists.**
+
+**A1. Two estimands.**
+- **Epistemic:** P(answer correct within tolerance), stated as a confidence p and scored by Brier.
+- **Aleatoric:** σ\* under the measurement model.
+- **Proper scores** (crps_log, log score) against the realized truth stay valid on all problems.
+- **Computation-correct subset:** every comparison of stated σ with σ\* (H1, H3, the calibration surface) is
+  computed only on answers with |ln μ − ln f(x_meas)| ≤ τ. Here τ = 0.1% relative (in config), and
+  f(x_meas) is the chain evaluated on the displayed noisy givens, stored per problem by the generator. It is
+  not the clean truth. All-problem versions, including the pre-registered "all noise > 0 problems" version of
+  H1, are reported as secondary.
+- **Regimes:** noise-free and noisy problems are reported as separate regimes.
+
+**A2. σ\* definition.**
+- σ\* comes from the Monte Carlo predictive distribution of the clean truth given the displayed givens, in log
+  space. Each noisy given is drawn as x = x_meas/(1 + e′), e′ ~ N(0, s²); exact givens and constants are fixed;
+  the draws are pushed through the chain.
+- **Primary target σ\*:** the CRPS-optimal Gaussian log-scale for that distribution, centred at
+  ln f(x_meas).
+- **Also stored:** the SD of the log draws (σ\*_sd, the original spec's definition) and the delta-method value.
+- **Distribution check:** the PIT of the clean truth under the MC distribution should be close to uniform (KS
+  test).
+
+**A3. Generator self-consistency gate** (replaces "Kupiec p > 0.05 in every cell").
+- **Run:** 10,000 problems, cells = depth (1–5) × noise level (1, 2, 5, 10%), 500 per cell, families round-robin.
+- **Intervals:** ln f(x_meas) ± k·σ\* with k = 1 and 2, at nominal 68.27% and 95.45%.
+- **The gate passes iff all four hold:**
+  1. Pooled Kupiec at both levels: p > 0.05.
+  2. Per-cell Kupiec, Holm-corrected across the 20 cells (separately per level): no rejection.
+  3. At each level, ≥ 95% of cells have coverage inside the central 99% binomial interval around nominal.
+  4. Pooled PIT KS over all 10,000 problems: p > 0.05.
+- **Noise-0 problems:** checked separately for exactness (truth = f(x_meas)), with no coverage test.
+- **If it fails:** stop and report, and do no further Phase 10+ work (your brief).
+
+**A4. Statistics.**
+- Cross-cell coverage homogeneity is a Pearson chi-square test (CMH when stratified), never called
+  Christoffersen. This renames and redefines H2's pre-registered "Christoffersen-style" description.
+- Paired bootstrap and permutation tests are primary. Diebold–Mariano (pre-registered in Phase 13) becomes a
+  robustness check.
+- **Mincer–Zarnowitz:** ln|error| = α + β·ln σ (ideal α = 0, β = 1; R² reported). On computation-correct answers
+  regressed on σ\*, it is the formal vol beta for H1. On all answers, it measures total-uncertainty calibration.
+- **Also added:** interval score / WIS decomposition, PIT histograms, and coverage stratified by the chain's
+  condition number.
+
+**A5. Nested baselines** (supersede D49's judgement rule; D49 rows stay as reported context).
+- **Feature sets, fitted on the calibration split:**
+  1. metadata only (family, depth);
+  2. problem text;
+  3. problem text + the generated `<answer>` block;
+  4. problem text + answer + reasoning (all completion text before `<answer>`, including `<steps>`).
+- **Features:** binary bag of words / TF-IDF over whitespace tokens. No verifier-derived features: no parsed μ,
+  σ, units, correctness or step credit. The parsed μ is used only to centre a forecast and to turn a relative σ̂
+  into absolute units.
+- **Models** (each feature set × {linear, small GBT}):
+  - p̂ = P(correct within 1%): logistic regression / GBT classifier.
+  - σ̂: ridge / GBT regression of ln max(|ln(μ/y)|, 1e-6), then σ̂_rel = c·exp(ŷ), with c fitted for mean
+    crps_log on out-of-fold predictions.
+  - Failures are excluded from fitting; they score the floor regardless.
+- **Model selection:** the same budget for every baseline: a fixed grid per model type, and 5-fold CV grouped
+  by chain template (family | target | set of givens), so templates are held out within the calibration split.
+  The depth-5 eval split has unseen templates by construction.
+- **"Strongest":** the best CV mean crps_log for σ (best CV Brier for p) on the calibration split, chosen before
+  the baselines are applied to any eval set or RL completion.
+- **Judgement:** RL (and E1) uncertainty claims are judged against the strongest baseline **applied to the same
+  completions**. μ is then identical, so only σ differs, which answers the reviewers' confound. The baseline is
+  fitted on SFT-only calibration completions (the only ones that exist) and refit when an RL model's
+  calibration completions exist. Tests: paired bootstrap over problems, one-sided:
+  - N1: |1σ coverage − 68.27%| is smaller.
+  - N2: Spearman ρ(σ, |error|) is higher.
+  - N3: mean crps_log is higher.
+  - Holm-corrected over {N1, N2, N3}. "Beats the baseline" = N2 and N3 supported; N1 is reported.
+- **Hidden-state probes** are reported as a separate source only if they beat baseline 4 (FINDINGS #7 already
+  suggests they will not).
+
+**A6. Counterfactual sensitivity pairs** (propagation vs lookup).
+- **Construction:** matched pairs with the same chain template, depth, phrasing and stated noise levels, where
+  the numbers differ so that σ\* differs.
+  - For one chain, draw K candidate worlds and compute each world's delta-method σ\*.
+  - Keep the lowest- and highest-σ\* worlds if their ratio is ≥ r_min. K and r_min are in config.
+  - σ\* is then computed by MC (A2).
+  - The κ ≤ 5 filter still applies, so pairs come from templates whose sensitivity varies with the numbers
+    (sums, differences, quadratics). Pure power-law chains cannot form pairs.
+- **Primary analysis:** on pairs where both answers are computation-correct (A1): the within-pair OLS slope of
+  Δln(stated σ) on Δln σ\*, one-sided paired bootstrap for slope > 0. A surface-feature lookup predicts ≈ 0.
+
+**A7. Cuts.**
+- H4b (Kelly growth) is dropped and replaced by the log-score difference against a fixed-width benchmark.
+- The market-scoring-rule idea is dropped.
+- The Basel traffic light is limited to at most one summary table.
+- The stress suite is reduced to the A6 pairs plus unit swaps (H5 reduced accordingly).
+- The LoRA ensemble becomes a free appendix from the 3 seeds.
+- Phase 13 core: stated σ, the strongest A5 baseline, and k = 8 sampling spread. The probe is included only if
+  it beats baseline 4.
+
+**A8. Headline question:** *Can a small language model learn to distinguish uncertainty inherited from the world
+(noisy inputs) from uncertainty introduced by its own reasoning, and communicate both in a way that improves
+decisions?* The contribution is a controlled testbed that separates the two, plus an analysis of when and why RL
+fails or succeeds; a clear mechanistic negative result counts. Where CLAUDE.md's phase text conflicts with A1–A8,
+A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
