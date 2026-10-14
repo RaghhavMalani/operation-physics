@@ -824,3 +824,65 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   the net effect.
 - **Cross-check (step 3):** for s ≤ 2%, MC SD vs delta method and CRPS-optimal vs SD agree within 6% on 45 problems
   per level (test).
+
+### D52. Pre-registration of E1, the fixed-μ σ-only pilot (written before any E1 data or result exists)
+- **Question:** if μ is held fixed, so that the advantage compares σ values only (the reviewers' clean credit
+  assignment), can GRPO teach the SFT model a σ that beats (i) its own stated σ, and (ii) the strongest A5
+  surface-feature baseline on the same completions?
+- **Model:** the SFT-only merged model (the start of every RL run), with a fresh LoRA (r = 16, α = 16, the same
+  target modules), Unsloth 4-bit, generator 1.1.0, verifier 1.1.0.
+- **Training prefixes:**
+  - The 2,000 existing SFT-only greedy completions on the calibration split (training seeds 20,000,000–20,001,999:
+    `results/posthoc_calibration/sft_calibration_set` and `results/probe_sft/sft_calibration_ext`).
+  - Each is truncated right after the first "±" (or +/-, +-, \pm) inside its single `<answer>` block, keeping that
+    marker.
+  - Completions without a parsable answer or without the marker are excluded; the count is reported.
+  - Prompt = the exact chat-template prompt (v4) + the truncated completion as the start of the assistant turn.
+- **Generation:** 8 samples per prefix, T = 1.0, top_p 1, top_k off, repetition penalty 1, max 24 new tokens. That
+  is the review's "about 12" plus margin for long σ strings and units; a truncated suffix is a parse failure.
+- **Reward:**
+  - **E1a:** the unchanged verifier reward (crps_log + 0.2·steps) on prefix + generated suffix. Steps and μ sit in
+    the prefix, so within a group only σ varies. Exception: a suffix whose unit changes μ in SI; this is logged
+    as `mu_changed` (at eval it counts as a failure).
+  - **E1b:** the same, except that the stated relative σ (σ/|μ|) is first mapped to the nearest of nine bins
+    {0.1, 0.2, 0.5, 1, 2, 5, 10, 30, 100%} in log space (σ = 0 maps to 0.1%). This is the review's "verifier
+    mapping" option; constrained decoding was not used. The tape logs the unchanged verifier reward (replay stays
+    exact), and the mapped training reward is logged next to it.
+- **Optimization:** identical to the split-credit run wherever it applies:
+  - 4 prefixes × 8 samples per step, micro-batch 2 × 16;
+  - lr 5e-6 constant after 5 warmup steps, AdamW-8bit, grad-norm clip 0.1, β = 0, DAPO loss, 7.5 GiB allocator cap.
+  - **Budget:** 300 steps (1,200 prefixes, sampled without replacement in a fixed shuffled order, seed 0), plus a
+    permanent checkpoint at step 150 and the hard deadline in tonight's script.
+  - **Why lr is not raised:** the DAPO loss averages over completion tokens, and a ~12-token suffix already
+    gives each σ token a much larger share of the gradient than in the full-completion runs.
+- **Evaluation:**
+  - **Data:** the SFT-only greedy completions on the frozen 1.1.0 eval sets (verifier-1.1.0 tape, 200 ID +
+    200 depth 5), truncated the same way.
+  - **Decoding:** the E1 model writes the σ suffix greedily (24 tokens). The full text is scored by the verifier;
+    E1b is scored with its bin mapping.
+  - **Comparators** (on the same completions, so μ is identical): SFT-only's own stated σ (raw), and the
+    strongest A5 σ baseline. The A5 baseline is selected on the calibration split before E1 is evaluated.
+  - **Exclusions and failures:** problems whose SFT completion has no ± are excluded from all arms (count
+    reported). E1 outputs that fail to parse, mismatch units, or change μ count as failures (crps_log floor −5,
+    not covered).
+- **Hypotheses (family E):** one-sided paired bootstrap over problems, B = 10,000, seed 0, Holm over the four
+  tests:
+  - **E1a-P:** mean crps_log of E1a's σ > that of the SFT stated σ.
+  - **E1b-P:** the same for E1b.
+  - **E1a-N:** mean crps_log of E1a's σ > that of the strongest A5 σ baseline.
+  - **E1b-N:** the same for E1b.
+- **Reported, not tested:**
+  - Spearman ρ(σ, |error|), for E1, SFT and the A5 baseline;
+  - σ-bin entropy over the 9 bins (free-form σ mapped to the nearest bin for E1a and SFT);
+  - 1σ coverage (target 68%), sharpness (median relative σ) and the σ = 0 share;
+  - parse-fail, unit-mismatch and μ-changed rates;
+  - per-step training reward and bin entropy;
+  - SFT's σ mapped to bins (descriptive);
+  - E1a vs E1b at matched steps (300, or 150 if either stops early).
+- **Interpretation rule:**
+  - E1x-N supported → the LM's own σ adds information beyond surface features.
+  - E1x-P supported without E1x-N → σ is learnable with fixed μ, but not beyond surface features. That is the
+    clean negative result the review describes.
+  - Neither supported → the σ channel did not learn in 300 steps.
+- **Pipeline sanity (not a result):** if more than 10% of step-1 suffixes fail to parse, or the run OOMs, the
+  run is reported as a pipeline failure.
