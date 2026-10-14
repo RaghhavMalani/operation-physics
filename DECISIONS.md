@@ -594,3 +594,15 @@ worth a second look.
   error for the current problems and explains the "exactly right" error spike.
 - **Units:** every display unit in the three families is a pure scale of its SI unit, so a relative half-ulp error
   in the display unit equals the same relative error in SI (no offset units such as °C yet).
+- **Found by the smoke test (first attempt crashed, log kept as `results/smoke_split_credit_attempt1_crash.log`):**
+  Unsloth's fused loss left-packs each micro-batch (every pad token moves right) and scores the last L + M
+  columns, M = the largest prompt left-padding in the micro-batch, so row i's completion token j sits at column
+  M − leftpad_i + j. 1-D advantages broadcast over that; 2-D ones did not match (163 vs 181 columns). Fix:
+  the subclass overrides `compute_loss` and re-lays the advantages into that layout (`pack_like_unsloth`) before
+  calling Unsloth. A test builds a batch with mixed padding and checks, with Unsloth's own `left_pack_padding` and
+  `create_completion_attention_mask`, that every completion token's advantage lands on that token.
+- **Smoke test (10 steps, `results/train/smoke-split-credit/`):** 40.0 s/step (40.1 over steps 2–10 vs 43.0 for the
+  uniform-credit run's same steps), peak torch reserved 6.46 GiB, 0 allocator retries, 0 OOMs. σ tokens found
+  in 94–100% of completions (2–5 tokens each; the rest are parse failures), 0 offset mismatches, no group with
+  zero r_sigma variance, curriculum cells identical to the uniform-credit run for all 10 steps. Tape replays
+  exactly. The long run was not started (your instruction).

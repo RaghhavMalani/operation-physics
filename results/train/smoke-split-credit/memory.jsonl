@@ -1,0 +1,10 @@
+{"step": 1, "time": 1791955040.5982695, "max_reserved_gib": 4.388671875, "max_allocated_gib": 4.24183464050293, "reserved_gib": 1.591796875, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 2, "time": 1791955081.2976387, "max_reserved_gib": 4.720703125, "max_allocated_gib": 4.36935567855835, "reserved_gib": 4.720703125, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 3, "time": 1791955129.8966236, "max_reserved_gib": 4.72265625, "max_allocated_gib": 4.36935567855835, "reserved_gib": 4.72265625, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 4, "time": 1791955166.5599785, "max_reserved_gib": 4.72265625, "max_allocated_gib": 4.386614799499512, "reserved_gib": 4.72265625, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 5, "time": 1791955206.2980957, "max_reserved_gib": 6.45703125, "max_allocated_gib": 4.447550296783447, "reserved_gib": 6.45703125, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 6, "time": 1791955239.8149793, "max_reserved_gib": 6.45703125, "max_allocated_gib": 4.447550296783447, "reserved_gib": 6.45703125, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 7, "time": 1791955279.8674927, "max_reserved_gib": 6.45703125, "max_allocated_gib": 4.4504499435424805, "reserved_gib": 6.45703125, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 8, "time": 1791955320.8983002, "max_reserved_gib": 6.45703125, "max_allocated_gib": 4.4504499435424805, "reserved_gib": 6.45703125, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 9, "time": 1791955357.4755607, "max_reserved_gib": 6.45703125, "max_allocated_gib": 4.462732315063477, "reserved_gib": 6.45703125, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 10, "time": 1791955393.0457182, "max_reserved_gib": 6.45703125, "max_allocated_gib": 4.462732315063477, "reserved_gib": 6.45703125, "num_alloc_retries": 0, "num_ooms": 0}

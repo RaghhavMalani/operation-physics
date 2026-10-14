@@ -1,0 +1,66 @@
+# Phase 9.5 step 3 (PREREGISTRATION.md family S): IDENTICAL to grpo_overnight2.yaml (the 2026-10-13 run, verifier
+# 1.1.0, uniform credit) except split credit: sigma tokens get the group-normalized advantage of
+#   r_sigma = crps_log(mu, sigma) - crps_log(mu, sigma_ref), sigma_ref = sigma_ref_rel * mu,
+# every other completion token that of r_answer = crps_log(mu, sigma_ref) + 0.2 * steps (D45).
+# tests/test_split_credit.py checks that nothing else differs. Seed 0 first; seeds 1 and 2 later.
+run_id: split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0
+output_dir: results/train
+seed: 0
+prompt: v4_worked_example
+reward_rule: crps_log
+split_credit:
+  sigma_ref_rel: 0.01           # reference sigma = 1% of the stated value (PREREGISTRATION.md, family S)
+train_seed_offset: 0           # GRPO seeds 0.. per cell block (SFT used 1e7..; eval >= 1e9)
+
+model:
+  id: results/sft/qwen2.5-math-1.5b-instruct/merged   # SFT A/B winner (results/model_probe_sft/ab_selection.json)
+  revision: null
+  max_seq_length: 2048         # longest v4 prompt 1156 tokens + up to 768 completion tokens
+  chat_template_kwargs: {}
+  text_only: false
+
+lora:
+  r: 16
+  alpha: 16
+  dropout: 0.0
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+curriculum:
+  pool_per_cell: 400           # pre-generated training problems per (family, depth) cell
+  alpha: 0.1                   # EMA rate per observed group
+  weight_floor: 0.02           # spec: w = p(1-p) + 0.02
+  prior_pass_rate: 0.5
+  start_depths: [1, 2]
+  unlock_pass_rate: 0.5        # open depth d+1 of a family once depth d's EMA pass rate reaches this...
+  min_observations: 8          # ...after at least this many groups at depth d
+
+grpo:
+  max_steps: 5000              # effectively unbounded; the 07:30 IST hard stop binds
+  wall_clock_limit_minutes: 600
+  prompts_per_step: 4
+  extra_prompts: 0
+  num_generations: 8
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 16  # 2 x 16 = 32 completions = 4 prompts x 8 per optimizer step (last night: 4 x 8)
+  max_completion_length: 512   # winner truncates 0% at 512
+  max_prompt_length: 1280
+  temperature: 1.0
+  top_p: 1.0
+  top_k: 0
+  repetition_penalty: 1.0
+  beta: 0.0
+  learning_rate: 5.0e-6
+  lr_scheduler_type: constant_with_warmup
+  warmup_steps: 5
+  optim: adamw_8bit
+  weight_decay: 0.0
+  max_grad_norm: 0.1
+  save_steps: 50
+  save_total_limit: 3          # keep the last three checkpoints
+  permanent_save_steps: [287]  # adapter saved to permanent_checkpoints/, exempt from rotation
+
+guards:
+  max_gpu_temp_c: 87
+  pause_seconds: 600
+  check_every_steps: 2
+  max_reserved_gib: 7.5        # torch caching-allocator cap (set_per_process_memory_fraction)

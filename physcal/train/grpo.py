@@ -57,6 +57,7 @@ class VerifierReward:
         self.curriculum_path: Path | None = None
         self.sigma_zero_monitor = SigmaZeroMonitor(**load_config("monitor")["sigma_zero_alert"])
         self.events_path: Path | None = None
+        self.split_credit = None  # a train.split_credit.SplitCredit when split credit is on (phase 9.5)
 
     @property
     def step(self) -> int:
@@ -67,6 +68,8 @@ class VerifierReward:
         for i, (text, pj) in enumerate(zip(completions, problem_json)):
             problem = problem_from_dict(json.loads(pj))
             r, bd = reward(problem, text, self.cfg)
+            if self.split_credit is not None:
+                self.split_credit.add(r, bd, text, self.cfg)
             n_tokens = len(completion_ids[i]) if completion_ids is not None else None
             truncated = n_tokens is not None and n_tokens >= self.max_completion_tokens
             by_rule = rule_outcomes(problem, text, self.per_rule)
@@ -379,6 +382,12 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
                     repeat_count=self.num_iterations * self.args.steps_per_generation, total_chunks=steps + 16)
 
         trainer_cls = CurriculumGRPOTrainer
+    sc_cfg = cfg.get("split_credit")
+    if sc_cfg:  # phase 9.5: σ tokens get the advantage of r_sigma, all other tokens that of r_answer
+        from physcal.train.split_credit import SplitCredit, make_split_credit_trainer
+
+        reward_fn.split_credit = SplitCredit(sc_cfg["sigma_ref_rel"], out / "split_credit.jsonl")
+        trainer_cls = make_split_credit_trainer(trainer_cls, reward_fn.split_credit)
     trainer = trainer_cls(model=model, processing_class=tok, reward_funcs=[reward_fn], args=args, train_dataset=ds)
     reward_fn.trainer = trainer
     trainer.add_callback(make_stop_callback(g["wall_clock_limit_minutes"] * 60, deadline, cfg["guards"]["max_gpu_temp_c"],
@@ -402,6 +411,7 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
         "model_id": m["id"],
         "model_revision": m["revision"],
         "reward_rule": cfg["reward_rule"],
+        "split_credit": cfg.get("split_credit"),
         "steps_completed": trainer.state.global_step,
         "train_seconds": seconds,
         "seconds_per_step": seconds / max(1, trainer.state.global_step),

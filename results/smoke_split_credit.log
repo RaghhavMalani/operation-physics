@@ -1,0 +1,80 @@
+W1014 05:15:56.194000 144592 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1014 05:15:56.238000 144592 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<00:54,  6.19it/s]Loading weights:   9%|▉         | 31/338 [00:00<00:02, 143.40it/s]Loading weights:  30%|██▉       | 100/338 [00:00<00:00, 356.26it/s]Loading weights:  48%|████▊     | 161/338 [00:00<00:00, 446.05it/s]Loading weights:  68%|██████▊   | 230/338 [00:00<00:00, 527.81it/s]Loading weights:  86%|████████▋ | 292/338 [00:00<00:00, 555.67it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 461.94it/s]
+Unsloth 2026.10.3 patched 28 layers with 28 QKV layers, 28 O layers and 28 MLP layers.
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None}.
+==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
+   \\   /|    Num examples = 4,800 | Num Epochs = 1 | Total steps = 10
+O^O/ \_/ \    Batch size per device = 2 | Gradient accumulation steps = 16
+\        /    Data Parallel GPUs = 1 | Total batch size (2 x 16 x 1) = 32
+ "-____-"     Trainable parameters = 18,464,768 of 1,562,179,072 (1.18% trained)
+  0%|          | 0/10 [00:00<?, ?it/s]Passing `generation_config` together with generation-related arguments=({'cache_implementation', 'pad_token_id'}) is deprecated and will be removed in future versions. Please pass either a `generation_config` object OR all generation parameters explicitly, but not both.
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 10%|█         | 1/10 [00:42<06:19, 42.13s/it]                                               10%|█         | 1/10 [00:42<06:19, 42.13s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 20%|██        | 2/10 [01:22<05:30, 41.27s/it]                                               20%|██        | 2/10 [01:22<05:30, 41.27s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 30%|███       | 3/10 [02:11<05:12, 44.63s/it]                                               30%|███       | 3/10 [02:11<05:12, 44.63s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 40%|████      | 4/10 [02:48<04:08, 41.47s/it]                                               40%|████      | 4/10 [02:48<04:08, 41.47s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 50%|█████     | 5/10 [03:27<03:24, 40.86s/it]                                               50%|█████     | 5/10 [03:27<03:24, 40.86s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 60%|██████    | 6/10 [04:01<02:33, 38.35s/it]                                               60%|██████    | 6/10 [04:01<02:33, 38.35s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 70%|███████   | 7/10 [04:41<01:56, 38.92s/it]                                               70%|███████   | 7/10 [04:41<01:56, 38.92s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 80%|████████  | 8/10 [05:22<01:19, 39.58s/it]                                               80%|████████  | 8/10 [05:22<01:19, 39.58s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 90%|█████████ | 9/10 [05:59<00:38, 38.65s/it]                                               90%|█████████ | 9/10 [05:59<00:38, 38.65s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+100%|██████████| 10/10 [06:34<00:00, 37.69s/it]                                               100%|██████████| 10/10 [06:34<00:00, 37.69s/it]Unsloth: Restored added_tokens_decoder metadata in /home/flash2404/operation-physics/results/train/smoke-split-credit/checkpoints/checkpoint-10/tokenizer_config.json.
+                                               100%|██████████| 10/10 [06:34<00:00, 37.69s/it]100%|██████████| 10/10 [06:34<00:00, 39.50s/it]
+Unsloth: Restored added_tokens_decoder metadata in /home/flash2404/operation-physics/results/train/smoke-split-credit/final_adapter/tokenizer_config.json.
+Unsloth: Will smartly offload gradients to save VRAM!
+Unsloth: Double buffering enabled (parallel H2D + compute) for backward pass.
+{'loss': '0.00426', 'grad_norm': '0.04466', 'learning_rate': '0', 'num_tokens': '3.635e+04', 'completions/mean_length': '133.7', 'completions/min_length': '99', 'completions/max_length': '163', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '133.7', 'completions/min_terminated_length': '99', 'completions/max_terminated_length': '163', 'rewards/verifier_reward/mean': '-0.2093', 'rewards/verifier_reward/std': '0.8911', 'reward': '-0.2093', 'reward_std': '0.8911', 'frac_reward_zero_std': '0', 'completion_length': '133.7', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '38.31', 'epoch': '0.03846'}
+{'loss': '-0.01265', 'grad_norm': '0.03685', 'learning_rate': '1e-06', 'num_tokens': '7.46e+04', 'completions/mean_length': '173.1', 'completions/min_length': '116', 'completions/max_length': '211', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '173.1', 'completions/min_terminated_length': '116', 'completions/max_terminated_length': '211', 'rewards/verifier_reward/mean': '-0.2743', 'rewards/verifier_reward/std': '0.4255', 'reward': '-0.2743', 'reward_std': '0.4255', 'frac_reward_zero_std': '0', 'completion_length': '173.1', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '36.94', 'epoch': '0.07692'}
+{'loss': '0.1281', 'grad_norm': '0.04696', 'learning_rate': '2e-06', 'num_tokens': '1.113e+05', 'completions/mean_length': '150.6', 'completions/min_length': '93', 'completions/max_length': '340', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '150.6', 'completions/min_terminated_length': '93', 'completions/max_terminated_length': '340', 'rewards/verifier_reward/mean': '-0.2533', 'rewards/verifier_reward/std': '1.121', 'reward': '-0.2533', 'reward_std': '1.121', 'frac_reward_zero_std': '0', 'completion_length': '150.6', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '44.87', 'epoch': '0.1154'}
+{'loss': '0.002752', 'grad_norm': '0.03921', 'learning_rate': '3e-06', 'num_tokens': '1.477e+05', 'completions/mean_length': '121.5', 'completions/min_length': '80', 'completions/max_length': '171', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '121.5', 'completions/min_terminated_length': '80', 'completions/max_terminated_length': '171', 'rewards/verifier_reward/mean': '-0.01896', 'rewards/verifier_reward/std': '0.111', 'reward': '-0.01896', 'reward_std': '0.111', 'frac_reward_zero_std': '0', 'completion_length': '121.5', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '32.91', 'epoch': '0.1538'}
+{'loss': '0.005969', 'grad_norm': '0.04761', 'learning_rate': '4e-06', 'num_tokens': '1.85e+05', 'completions/mean_length': '153.8', 'completions/min_length': '93', 'completions/max_length': '212', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '153.8', 'completions/min_terminated_length': '93', 'completions/max_terminated_length': '212', 'rewards/verifier_reward/mean': '0.04294', 'rewards/verifier_reward/std': '0.19', 'reward': '0.04294', 'reward_std': '0.19', 'frac_reward_zero_std': '0', 'completion_length': '153.8', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '36.02', 'epoch': '0.1923'}
+{'loss': '-0.003341', 'grad_norm': '0.02308', 'learning_rate': '5e-06', 'num_tokens': '2.203e+05', 'completions/mean_length': '99.47', 'completions/min_length': '75', 'completions/max_length': '134', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '99.47', 'completions/min_terminated_length': '75', 'completions/max_terminated_length': '134', 'rewards/verifier_reward/mean': '0.04717', 'rewards/verifier_reward/std': '0.08889', 'reward': '0.04717', 'reward_std': '0.08889', 'frac_reward_zero_std': '0', 'completion_length': '99.47', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '29.78', 'epoch': '0.2308'}
+{'loss': '0.01396', 'grad_norm': '0.02524', 'learning_rate': '5e-06', 'num_tokens': '2.584e+05', 'completions/mean_length': '166.7', 'completions/min_length': '95', 'completions/max_length': '211', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '166.7', 'completions/min_terminated_length': '95', 'completions/max_terminated_length': '211', 'rewards/verifier_reward/mean': '-0.2317', 'rewards/verifier_reward/std': '0.9167', 'reward': '-0.2317', 'reward_std': '0.9167', 'frac_reward_zero_std': '0', 'completion_length': '166.7', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '36.33', 'epoch': '0.2692'}
+{'loss': '-0.0003572', 'grad_norm': '0.04428', 'learning_rate': '5e-06', 'num_tokens': '2.944e+05', 'completions/mean_length': '112', 'completions/min_length': '54', 'completions/max_length': '191', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '112', 'completions/min_terminated_length': '54', 'completions/max_terminated_length': '191', 'rewards/verifier_reward/mean': '-0.001132', 'rewards/verifier_reward/std': '0.06667', 'reward': '-0.001132', 'reward_std': '0.06667', 'frac_reward_zero_std': '0', 'completion_length': '112', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '33.69', 'epoch': '0.3077'}
+{'loss': '0.00636', 'grad_norm': '0.03902', 'learning_rate': '5e-06', 'num_tokens': '3.31e+05', 'completions/mean_length': '126.9', 'completions/min_length': '85', 'completions/max_length': '169', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '126.9', 'completions/min_terminated_length': '85', 'completions/max_terminated_length': '169', 'rewards/verifier_reward/mean': '-0.003027', 'rewards/verifier_reward/std': '0.2544', 'reward': '-0.003027', 'reward_std': '0.2544', 'frac_reward_zero_std': '0', 'completion_length': '126.9', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '32.87', 'epoch': '0.3462'}
+{'loss': '0.01494', 'grad_norm': '0.04484', 'learning_rate': '5e-06', 'num_tokens': '3.675e+05', 'completions/mean_length': '139.9', 'completions/min_length': '86', 'completions/max_length': '196', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '139.9', 'completions/min_terminated_length': '86', 'completions/max_terminated_length': '196', 'rewards/verifier_reward/mean': '-0.3594', 'rewards/verifier_reward/std': '1.234', 'reward': '-0.3594', 'reward_std': '1.234', 'frac_reward_zero_std': '0', 'completion_length': '139.9', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '31.83', 'epoch': '0.3846'}
+{'train_runtime': '395', 'train_samples_per_second': '0.81', 'train_steps_per_second': '0.025', 'train_loss': '0.016', 'epoch': '0.3846'}
+{
+  "run_id": "smoke-split-credit",
+  "model_id": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+  "model_revision": null,
+  "reward_rule": "crps_log",
+  "split_credit": {
+    "sigma_ref_rel": 0.01
+  },
+  "steps_completed": 10,
+  "train_seconds": 399.8422427177429,
+  "seconds_per_step": 39.984224271774295,
+  "peak_vram": {
+    "torch_max_allocated_gib": 4.462732315063477,
+    "torch_max_reserved_gib": 6.45703125,
+    "nvidia_smi_peak_used_gib_device_wide": 6.8017578125,
+    "max_reserved_cap_gib": 7.5,
+    "num_alloc_retries": 0,
+    "num_ooms": 0
+  },
+  "permanent_checkpoints": [],
+  "grpo_config_dropped_keys": [
+    "max_prompt_length"
+  ],
+  "grpo_config_resolved": {
+    "loss_type": "dapo",
+    "scale_rewards": "group",
+    "beta": 0.0,
+    "per_device_train_batch_size": 2,
+    "gradient_accumulation_steps": 16,
+    "num_generations": 8,
+    "max_completion_length": 512
+  },
+  "train_loss": 0.016001456882804632,
+  "final_adapter": "/home/flash2404/operation-physics/results/train/smoke-split-credit/final_adapter"
+}

@@ -1,0 +1,106 @@
+W1014 05:12:19.562000 141789 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1014 05:12:19.605000 141789 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<00:37,  9.02it/s]Loading weights:   5%|▌         | 17/338 [00:00<00:03, 93.62it/s]Loading weights:  19%|█▉        | 64/338 [00:00<00:01, 253.49it/s]Loading weights:  33%|███▎      | 112/338 [00:00<00:00, 338.29it/s]Loading weights:  44%|████▍     | 149/338 [00:00<00:00, 344.77it/s]Loading weights:  58%|█████▊    | 197/338 [00:00<00:00, 384.41it/s]Loading weights:  72%|███████▏  | 243/338 [00:00<00:00, 403.61it/s]Loading weights:  84%|████████▍ | 284/338 [00:00<00:00, 397.71it/s]Loading weights:  97%|█████████▋| 327/338 [00:00<00:00, 403.70it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 350.49it/s]
+Unsloth 2026.10.3 patched 28 layers with 28 QKV layers, 28 O layers and 28 MLP layers.
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None}.
+==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
+   \\   /|    Num examples = 4,800 | Num Epochs = 1 | Total steps = 10
+O^O/ \_/ \    Batch size per device = 2 | Gradient accumulation steps = 16
+\        /    Data Parallel GPUs = 1 | Total batch size (2 x 16 x 1) = 32
+ "-____-"     Trainable parameters = 18,464,768 of 1,562,179,072 (1.18% trained)
+  0%|          | 0/10 [00:00<?, ?it/s]Passing `generation_config` together with generation-related arguments=({'cache_implementation', 'pad_token_id'}) is deprecated and will be removed in future versions. Please pass either a `generation_config` object OR all generation parameters explicitly, but not both.
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+torch._dynamo.exc.ObservedRuntimeError: raised exception RuntimeError("Dynamo failed to run FX node with fake tensors: call_function <built-in function mul>(*(GradTrackingTensor(lvl=1, value=\n    FakeTensor(..., device='cuda:0', size=(s51, s88))\n), GradTrackingTensor(lvl=1, value=\n    FakeTensor(..., device='cuda:0', size=(s51, s84))\n)), **{}): got RuntimeError('The size of tensor a (s88: hint = 181) must match the size of tensor b (s84: hint = 163) at non-singleton dimension 1)')")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/flash2404/operation-physics/physcal/train/grpo.py", line 452, in <module>
+    main()
+  File "/home/flash2404/operation-physics/physcal/train/grpo.py", line 447, in main
+    summary = train(cfg, run_id, args.max_steps, parse_deadline(args.stop_at))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/physcal/train/grpo.py", line 404, in train
+    result = trainer.train()
+             ^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/unsloth_compiled_cache/UnslothGRPOTrainer.py", line 121, in wrapper
+    output = f(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/unsloth/models/rl.py", line 149, in _unsloth_train_with_resume_guard
+    return original_train(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/transformers/trainer.py", line 1520, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 84, in _fast_inner_training_loop
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/transformers/trainer.py", line 1842, in _run_epoch
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/unsloth/models/rl.py", line 1991, in training_step
+    loss = original_training_step(self, model, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/unsloth_compiled_cache/UnslothGRPOTrainer.py", line 5224, in training_step
+    output = super().training_step(model, inputs, num_items_in_batch)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/unsloth/models/_utils.py", line 5151, in _unsloth_training_step_settling_fallbacks
+    return _training_step_before_settle(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 40, in _unsloth_training_step
+  File "/home/flash2404/operation-physics/unsloth_compiled_cache/UnslothGRPOTrainer.py", line 7002, in compute_loss
+    ) = grpo_accumulated_loss(
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/unsloth_compiled_cache/UnslothGRPOTrainer.py", line 2160, in grpo_accumulated_loss
+    loss, completion_length, mean_kl, delta, flat_is_ratio, coef_1 = UnslothEfficientGRPO.apply(
+                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/unsloth_compiled_cache/UnslothGRPOTrainer.py", line 1253, in forward
+    accumulate_chunk(
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/unsloth_zoo/temporary_patches/utils.py", line 2162, in dispatch
+    return compiled(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/unsloth_zoo/temporary_patches/utils.py", line 1938, in wrapper
+    result = compiled_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/torch/_dynamo/eval_frame.py", line 1272, in compile_wrapper
+    raise e.with_traceback(
+torch._dynamo.exc.Unsupported: Observed exception
+  Explanation: Dynamo found no exception handler at the top-level compiled function when encountering an exception. Exception will propagate outside the compiled region.
+  Hint: Your code may result in an error when running in eager. Please double check that your code doesn't contain a similar error when actually running eager/uncompiled. You can do this by removing the `torch.compile` call, or by using `torch.compiler.set_stance("force_eager")`. 
+  Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.
+
+  Developer debug context: raised exception RuntimeError("Dynamo failed to run FX node with fake tensors: call_function <built-in function mul>(*(GradTrackingTensor(lvl=1, value=\n    FakeTensor(..., device='cuda:0', size=(s51, s88))\n), GradTrackingTensor(lvl=1, value=\n    FakeTensor(..., device='cuda:0', size=(s51, s84))\n)), **{}): got RuntimeError('The size of tensor a (s88: hint = 181) must match the size of tensor b (s84: hint = 163) at non-singleton dimension 1)')")
+
+ For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0088.html
+
+from user code:
+   File "/home/flash2404/operation-physics/unsloth_compiled_cache/UnslothGRPOTrainer.py", line 1199, in accumulate_chunk
+    (chunk_grad_input,), (chunk_loss, (unscaled_loss, chunk_completion_length, chunk_mean_kl, chunk_delta, chunk_flat_is_ratio, chunk_coef_1)) = torch.func.grad_and_value(
+                                                                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/torch/_functorch/apis.py", line 503, in wrapper
+    return eager_transforms.grad_and_value_impl(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/torch/_functorch/vmap.py", line 56, in fn
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/torch/_functorch/eager_transforms.py", line 1492, in grad_and_value_impl
+    output = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/unsloth_compiled_cache/UnslothGRPOTrainer.py", line 1162, in compute_loss
+    loss, completion_length, mean_kl, delta, flat_is_ratio, coef_1, _mask  = grpo_compute_loss(
+                                                                             ^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/unsloth_compiled_cache/UnslothGRPOTrainer.py", line 1058, in grpo_compute_loss
+    loss_1 = coef_1 * advantages
+             ^^^^^^^^^^^^^^^^^^^
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+Unsloth: Will smartly offload gradients to save VRAM!
