@@ -1,184 +1,182 @@
-# Report: 2026-10-14 (Phase 9.5 steps 1–3 + Phase 10 step 2), and what tonight's run should be
+# Report: 2026-10-14 laptop day (CPU only), and tonight's queue
 
-**Short version.** All five items are done, in order, each committed and pushed. **286 tests pass. Nothing is
-BLOCKED.** GPU work ended at 10:53 IST. The split-credit long run was not started, per your brief; it is ready to
-launch tonight with two commands (§6).
+**Short version.** No GPU was used, and every step is committed and pushed. **325 tests pass.**
 
-1. **CLAUDE.md** now has phases 9.5–15 (the old Phase 10 README is Phase 15). **PREREGISTRATION.md** was committed at
-   `f601bb7`, before any new result. It pre-registers families P (probe), S (split credit) and H (H1–H5), with Holm
-   correction within each family.
-2. **Monitoring (9.5.1):** training now logs the σ = 0 share every step and raises an alert when the 25-step rolling
-   share exceeds 50% (alert only, never acts). Every eval report now carries the standing post-hoc baseline.
-3. **Probe (9.5.2, FINDINGS #7): honest negative.** A linear probe on the SFT-only model's pre-answer hidden state
-   predicts correctness at AUROC **0.917**, while stated σ is at chance (**0.50**). But the pre-registered random-init
-   control does just as well (**0.914**, p = 0.40), so by the pre-registered rule P1–P3 are **uninterpretable**.
-   Exploratory follow-ups show why:
-   - A bag-of-words model on the completion text gets **0.906**.
-   - Chain-template identity alone gets **0.88** (ID split).
-
-   The information is in what the model wrote (which chain and formulas), not demonstrably in learned knowledge
-   of its own error.
-4. **Rounding audit (10.2, FINDINGS #8):**
-   - Ground truth already uses exactly the displayed givens (difference 0.0 on all 400 eval problems), so σ\* = 0
-     as defined.
-   - Counterfactually, if the 3-s.f. givens were measurements, σ\* would be **0.26%** (median), a quarter of the 1%
-     band.
-   - A perfect 4-s.f. solver errs by **0.014%**. That matches the observed "exactly right" error spike.
-5. **Split-credit trainer (9.5.3):**
-   - Built and tested; tests check every property you specified.
-   - **Smoke test, 10 steps:** 40.0 s/step (40.1 vs 43.0 for the uniform-credit run's same steps), peak torch
-     reserved **6.46 GiB**, 0 OOMs, tape replays exactly.
-   - One real bug was found and fixed: Unsloth repacks the padding in each micro-batch (D46).
+1. **Security:** the repo is clean. Nothing secret was found in 624 blobs across 77 commits or in the working
+   tree. History was not rewritten.
+2. **Review amendments A1–A8:** recorded as D50 and pushed *before* any further result.
+3. **Baselines:**
+   - This morning's text-feature amendment (D49) was built first. A5's nested baselines now supersede it.
+   - **A5 (FINDINGS #10):** the SFT model's own text predicts its error far better than its stated σ: 67% 1σ
+     coverage and ρ 0.70, against 13% and ρ ≈ 0.
+4. **Phase 10 noise mode:** generator 2.0.0 is built, and σ\* matches the delta method.
+5. **The A3 gate FAILED (FINDINGS #9), on one criterion:** at depth 3 / 10% noise, the ±2σ\* interval covers
+   91.8% (Holm-rejected). Per your rule, **Phase 10+ work stopped here, and A6 was not built.** You need to decide
+   what to do with the gate (§4).
+6. **E1 is ready:** pre-registered (D52), with data, configs, trainer, eval and tests all in place. Its training
+   step has had **no GPU smoke test** (no GPU today).
+7. **Tonight's queue is ready and not launched** (§6).
 
 ---
 
-## 1. What ran (IST)
+## 1. What ran (IST, all CPU, `nice`, ≤ 4 threads)
 
-| time | step | commit |
+| step | result | commit |
 |---|---|---|
-| 09:18–09:20 | CLAUDE.md merge (D43) | `6078e06` |
-| 09:20–09:21 | PREREGISTRATION.md, before any result | `f601bb7` |
-| 09:21–09:26 | 9.5.1 monitoring (D44) | `03c2c7d` |
-| 09:22–10:01 | GPU: 1,600 more SFT-only completions on calibration-split seeds (probe fit set) | (data, in `b662ab6`) |
-| 10:15–10:25 | GPU: hidden states, every layer, SFT-only + random-init model | (local, gitignored) |
-| 10:26–10:39 | CPU: probes, controls, bootstrap; exploratory baselines | `7397f31`, `b662ab6` |
-| 09:27–09:32 | CPU: rounding audit (computed while the GPU was busy; committed at 10:42, after #7) | `f58eb20` |
-| 10:42–10:53 | GPU: split-credit smoke test (attempt 1 crashed at step 1, fixed, attempt 2 passed) | `4b07591` |
-| 10:53–11:00 | Tonight-run tooling (written before any split-credit result), PROGRESS, this report | `f1926b0`, `439f1c4`, … |
+| Security scan: full history + working tree | clean | `604fe41` |
+| D49 conditional post-hoc baselines (your morning brief) | built; later superseded by A5 | `6eeef4b` |
+| Review synthesis committed | – | `f8b24c4` |
+| **D50: A1–A8 recorded, before any further result** | – | `5f2a846` |
+| Generator 2.0.0 noise mode + A3 gate code (committed before it ran) | – | `162c573`, `a56eea5` |
+| Gate run once, under A3 | **FAILED**, 1 of 7 criteria | `71ca64d`, `0dbc20f` |
+| D52: E1 pre-registered (before any E1 data) | – | `fbb29a7` |
+| A5 nested baselines; E1 data, configs, trainer, eval, compare | – | `e5d1b6f` |
+| Tonight's queue script (not launched) | – | `5ca3347` |
 
-## 2. Monitoring (Phase 9.5.1, D44)
+## 2. Security check
 
-- **Training:** `train_metrics.jsonl` gains `sigma_zero_share`, the rolling share and `sigma_zero_alert`.
-  - Crossing 50% over 25 steps prints an `ALERT` line to the console and `events.jsonl`.
-  - Settings are in `configs/monitor.yaml`.
-  - Replayed on the Oct-13 run, the alert fires at step 474 (rolling share 51%) and never clears.
-- **Eval:** every `metrics.json` / `summary.md` gains `sigma_zero_rate` and a "Standing calibration baseline" table.
-  It shows this model's σ, this model's σ × 18.1, and, on the same frozen split, SFT-only and SFT-only × 18.1 (the
-  baseline).
-  - Example, step-287 uniform-credit RL, ID split: 1σ coverage 14.0% → 32.0% after × 18.1, against the baseline's
-    35.0%.
+- **Scope:** a regex sweep over all 624 blobs in all 77 commits, plus tracked, untracked and ignored-but-present
+  files. It looked for tokens (HF, GitHub, OpenAI, Anthropic, AWS, Google, Slack), private keys, `.env` and
+  credential files, and passwords embedded in URLs. A positive control confirmed the patterns match.
+- **Result: nothing found.** All 329 keyword hits are "token" in the LLM sense.
+- **Informational only:**
+  - Committed tapes and logs contain your local path `/home/flash2404/…` (in `model_id` fields).
+  - Commits are authored as `Raghhav <you@example.com>`.
+- **Changes:** `.gitignore` now also excludes `.env*`, `*.pem` and `.netrc`. History was not rewritten.
 
-## 3. Probe (Phase 9.5.2, FINDINGS #7)
+## 3. Baselines: D49, then A5
 
-Fit set: 1,996 SFT-only completions on training seeds. Test set: the 400 frozen eval completions. Layer and
-regularization are chosen by 5-fold CV on the fit set only.
+**D49 (this morning, before the reviews).** All numbers are SFT-only on the frozen eval sets, fitted on the 2,000
+calibration completions only.
 
-| predictor | correct ≤1%: AUROC | log\|error\|: Spearman ρ |
-|---|---|---|
-| stated σ | 0.50 | 0.02 |
-| family + depth | 0.76 | 0.49 |
-| **linear probe, SFT-only model** | **0.917** | **0.733** |
-| linear probe, **random-init model** (control) | 0.914 | 0.689 |
-| shuffled labels (control) | 0.48 | −0.13 |
-| *exploratory:* bag-of-words on the completion | 0.906 | – |
-| *exploratory:* chain template only (ID) | 0.88 | – |
+| SFT-only σ | ID 1σ cov | ID crps_log | depth-5 1σ cov | depth-5 crps_log |
+|---|---|---|---|---|
+| stated | 15.0% | −0.320 | 11.5% | −0.357 |
+| × 18.1 (standing) | 35.0% | −0.319 | 33.5% | −0.354 |
+| (a) text-feature σ scale | 42.5% | −0.314 | 45.5% | −0.341 |
+| (a′) text direct (ignores the stated σ) | 79.5% | −0.292 | 77.0% | −0.332 |
+| (b) oracle per cell, in-sample | 31.0% | −0.306 | 34.5% | −0.340 |
 
-- **Pre-registered verdict:** P1–P3 each pass Holm (p < 1e-4), but the sanity check "real model beats random-init"
-  fails, so they are reported as **uninterpretable**. That is exactly what the pre-registered rule says.
-- **What we still learn:**
-  - **The information for an informative σ is present at answer time** (a linear reader of the context gets ~0.9
-    AUROC), and the stated σ ignores it entirely. So the bottleneck is learning the mapping, not access, which
-    supports trying split credit.
-  - **"Knowing" here means recognizing the chain and formulas used**, which a random network or a bag of words does
-    equally well.
-  - The only trained-model edge is a small exploratory one on error magnitude: ρ +0.044 over random-init (p = 0.01,
-    uncorrected).
-- **For Phase 13:** every probe result needs the random-init and bag-of-words controls next to it. A text- or
-  template-conditional post-hoc σ (e.g. conformal per template) is likely a much stronger baseline than the global
-  × 18.1.
+- **The stated σ is worse than no σ.** On calibration CV, one constant relative σ beats any scale of the stated σ.
+- **A5 supersedes D49's judgement rule (D50).** The D49 rows stay in reports, labelled "superseded".
 
-![probe by layer](results/probe_sft/probe_by_layer.png)
+**A5 (FINDINGS #10).**
+- **Setup:** four nested feature sets × {linear, GBT}, with 5-fold CV grouped by template on the calibration
+  split. The strongest σ was chosen before any eval use: **problem + answer + reasoning, GBT**.
+- **On the SFT-only eval (pooled, 399 answered):**
 
-## 4. Rounding audit (Phase 10.2, FINDINGS #8)
+| σ source | mean crps_log | 1σ cov | ρ(σ, err) |
+|---|---|---|---|
+| stated σ | −0.327 | 13.3% | −0.02 |
+| metadata only | −0.303 | 63.2% | 0.49 |
+| + problem text | −0.296 | 68.4% | 0.65 |
+| **+ answer + reasoning, GBT (strongest)** | **−0.293** | **66.9%** | **0.70** |
 
-- **Truth from the displayed givens:** verified exactly (D4). Your "if so" branch does not apply.
-- **Counterfactual σ\*, if the 3-s.f. givens were measurements:**
-  - Median 0.26% (10th–90th percentile 0.10–0.63%), rising with depth from 0.14% to 0.30%.
-  - 2σ\* exceeds 1% on 18% of problems (26% at depth 5).
-  - **Implication for the Phase 10 noise mode:** display noisy givens with ≥ 5 s.f., or rounding adds ~0.26% in
-    quadrature to the injected noise.
-- **Perfect solver rounding intermediates to k s.f.:**
-  - At 4 s.f.: 0.014% median, 0.11% at the 99th percentile.
-  - At 3 s.f.: 2–3.5% of depth-4/5 problems fall outside the 1% band.
-  - So an honest σ for a correct 4-s.f. chain is ~0.01–0.04%. The SFT model's 0.05% is about right *for correct
-    answers*. What it lacks is a larger σ for the wrong ones.
+- **p channel:** Brier 0.111, AUROC 0.913.
+- **Where it shows up:** every eval report now has an A5 table, and the four existing verifier-1.1.0 reports were
+  refreshed (only their baseline block changed).
+- **How tonight's run is judged (family N):** `scripts/phase95_compare.py` compares the split-credit model's σ
+  with the strongest A5 baseline **applied to the split-credit model's own completions**. μ is identical, so
+  only σ differs.
+  - N1: coverage error; N2: ρ; N3: crps_log. Holm-corrected.
+  - "Beats the baseline" = N2 and N3 supported.
+- **Context from a dry run:** with uniform-credit RL@287 standing in, the stated σ loses on all three
+  (ρ −0.02 vs 0.66, crps_log −0.359 vs −0.327).
 
-## 5. Split-credit trainer (Phase 9.5.3, D46)
+## 4. Phase 10: noise mode built, gate FAILED
 
-- **How it works:** a subclass of the curriculum GRPO trainer.
-  - After TRL scores a batch, it splits each verifier reward into r_answer = crps_log(μ, 1% of μ) + 0.2·steps and
-    r_sigma = crps_log(μ, σ) − crps_log(μ, 1% of μ). The two add back to the verifier's reward, which is unchanged
-    and still logged.
-  - It group-normalizes each part with TRL's exact formula.
-  - The tokens of the stated σ number get A_sigma; every other completion token gets A_answer.
-- **Tests:**
-  - σ-token gradients depend only on r_sigma, and answer-token gradients only on r_answer.
-  - With σ_ref = σ, the method reduces to the original loss on answer tokens.
-  - Unsloth's real loss function, fed per-token advantages, matches a reference DAPO loss in value and gradient.
-  - Per-token advantages land on the right tokens after Unsloth's left-packing, checked with Unsloth's own helpers.
-  - The config differs from the Oct-13 run only in `split_credit` and the run id.
-- **Smoke test, 10 steps (`results/train/smoke-split-credit/`):**
-  - Speed: 40.0 s/step.
-  - Memory: peak reserved 6.46 GiB (identical to the uniform-credit smoke test), 0 retries, 0 OOMs.
-  - σ tokens were found in 94–100% of completions (the rest are parse failures), with 0 offset mismatches.
-  - No group had zero r_sigma variance. Typical |r_sigma| was ~0.002–0.006 (the cap is the σ ≈ 0 penalty on a wrong
-    answer); after normalization |A_sigma| ≈ 0.5–0.8 on σ tokens.
-  - The curriculum drew the same cells as the uniform-credit run for all 10 steps.
-- **The bug the smoke test caught:** Unsloth's fused loss left-packs each micro-batch, which shifts each row's
-  completion by its prompt padding. 2-D advantages must be moved the same way; `pack_like_unsloth` does this, and
-  it is tested against Unsloth's helpers.
+- **Noise mode (D51):**
+  - **Config:** generator 2.0.0 lives in `configs/env_v2.yaml`. `configs/env.yaml` stays at 1.1.0, so tonight's
+    runs and the frozen sets are untouched (1.1.0 output is byte-identical).
+  - **Display:** noisy givens show 5 s.f. and "± p%", plus a sentence explaining what ± p% means.
+  - **Truth:** the clean chain output.
+  - **σ\* (A2):** the CRPS-optimal log-scale, centred at ln f(x_meas), from 4,000 MC draws.
+  - **Pairing:** problems are paired across noise levels by construction.
+  - **Cross-check:** MC agrees with the delta method within 6% at 1–2% noise.
+- **Gate (A3), one run of 10,000 problems:**
 
-## 6. What tonight's run should be
+| criterion | result |
+|---|---|
+| pooled Kupiec 68% / 95% | 67.97% (p 0.52) / 95.22% (p 0.27), pass |
+| per-cell Kupiec + Holm, ±1σ\* | pass |
+| per-cell Kupiec + Holm, ±2σ\* | **d3 / 10%: 91.8%, p = 0.0004: FAIL** |
+| ≥ 95% of cells inside the 99% binomial interval | 100% / 95% (19 of 20), pass |
+| pooled PIT KS | p = 0.57, pass |
+| noise 0 exact | 500 of 500 |
 
-**Run split-credit seed 0, identical to the Oct-13 run except split credit, through the night, with the permanent
-step-287 checkpoint.** This tests PREREGISTRATION family S at matched step 287. Running past 287 also shows whether
-split credit prevents the σ = 0 collapse that uniform credit hit after step ~450 (FINDINGS #6).
+- **The superseded every-cell rule fails too** (5 cell tests have p < 0.05). It was never used; A3 decides.
+- **Diagnosis (post hoc, same run):** the MC predictive distribution itself is fine (the PIT in that cell is
+  uniform, p = 0.64). The Gaussian summary is too thin-tailed at 10% noise:
+  - Standardized deviations have excess kurtosis 1.06.
+  - The MC's own 95.45% interval covers 93.6% in that cell, and 95.44% pooled over all 10%-noise problems.
+
+**Decision needed** (FINDINGS #9 lists the options):
+1. Keep the gate as is: the noise dial is invalid at 10%.
+2. Cap the dial at 5%. This is a choice made after seeing the run, so it needs a fresh gate run.
+3. Grade against the MC quantiles instead of a Gaussian σ\*. This changes A2 and also needs a fresh gate run.
+
+Until you decide, A6 and all other Phase 10+ work stay stopped.
+
+## 5. E1 (pre-registered D52, prepared)
+
+- **Data:** 1,996 training prefixes (calibration split; 4 excluded) and 400 eval prefixes. Each is the SFT
+  completion cut right after "±".
+- **Configs:** `grpo_e1a.yaml` (free σ) and `grpo_e1b.yaml` (σ mapped to nine bins). Both use the split-credit run's
+  hyperparameters: 4 × 8 per step, lr 5e-6, ≤ 300 steps, permanent checkpoint at 150, 24-token suffix.
+- **Tests:** family E = E1a/E1b vs the SFT stated σ (P) and vs the strongest A5 σ on the same completions (N),
+  Holm over four.
+- **CPU checks:**
+  - The prefix plus the SFT's own suffix reproduces the logged SFT reward exactly on all 400 eval problems.
+  - E1 tapes replay exactly.
+  - An echo model run through eval and compare gives Δ = 0.
+- **Risk:** the Unsloth training step for E1 has never run (no GPU today). If it fails, the queue logs it and
+  moves on.
+
+## 6. Tonight: launch the queue
 
 ```bash
-uv run python -m physcal.train.grpo --config grpo_split_credit --stop-at "07:30 Asia/Kolkata"
+nohup scripts/queue_split_e1.sh > results/queue_split_e1/nohup.log 2>&1 &
 ```
 
-When it is running, start the morning chain with the training process's PID. The chain evaluates step 287 first,
-then the final adapter (08:30 cutoff), then runs the pre-registered family-S tests:
-
-```bash
-scripts/phase95_morning.sh <python PID> results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0
-```
-
-- **Expected:** ~36–40 s/step, so step 287 lands around 3 h in and the final step is ~700 by 07:30. Peak reserved
-  ~7 GiB (cap 7.5).
-- **Watch:** the `ALERT` lines in `events.jsonl` (σ = 0 collapse), and `split_credit.jsonl`: `share_with_sigma_tokens`
-  should stay > 0.9 and `unmatched_offsets` should stay 0.
+- **Order:**
+  1. Split-credit seed 0 to step 287 (permanent checkpoint, ~3.2 h at the smoke test's 40 s/step).
+  2. Its eval, then `sanity.json` (no OOM, parse failure < 5%), then `phase95_compare.py` (family S as
+     pre-registered + family N).
+  3. E1a, then E1b, splitting the remaining time up to 08:30 IST equally. Each gets its eval at the final step
+     and at step 150.
+  4. `e1 compare` (family E).
+- **E1 runs regardless of the sanity verdict:** your brief replaced "seed 1 only if sane" with E1. The verdict is
+  still recorded.
+- **Options:** `GPU_DEADLINE=07:30` changes the cutoff, and `DRY_RUN=1` prints the plan.
+- **Watching (PIDs only):**
+  - `results/queue_split_e1/queue.pid` (the chain) and `<stage>.pid` (the current child), via
+    `kill -0 $(cat …)`.
+  - The chain log: `results/queue_split_e1/chain.log`.
+  - In the split-credit run: the `ALERT` lines in `events.jsonl` and `split_credit.jsonl`.
+  - In the E1 runs: `train_metrics.jsonl` (`parse_ok_rate`, `mu_changed_rate`, `bin_entropy_bits`).
 - **Morning outputs:**
-  - `compare/rl287/`, `compare/rlfinal/` (each eval's summary includes the standing post-hoc baseline).
-  - `compare/phase95_family_S.{json,md}`: S1a/S1b (coverage vs SFT-only and vs uniform-credit RL@287), S2 (σ–error
-    rank correlation), S3 (accuracy non-inferiority), Holm-corrected.
-- **Seeds 1 and 2:** set `seed: 1` / `seed: 2` and a new `run_id` once seed 0 looks sane. To step 287 only, each
-  takes ~3 h, so both fit in one night. The pre-registration requires the seed-mean comparison for a "supported"
-  verdict.
-
-**My honest prior:** FINDINGS #7 says the right signal is in the context, which is the precondition for split
-credit to work. But it is a weak per-token signal (|r_sigma| ~0.005) amplified by group normalization. Coverage
-could move, or σ could just get noisier. S2 (does σ start tracking error?) is the one to look at first.
+  - `<split run>/compare/phase95_family_S.md` (S1a–S3, N1–N3, the superseded D49 tests) and `sanity.json`.
+  - `results/e1/family_E.md`.
+- **Tape size:** E1 tapes store full prefixes and may pass 50 MB; gzip them before committing (D42).
 
 ## 7. Decisions to review
 
-1. **D43:** the FINDINGS numbering conflict in PHASES_10-15.md (I used your brief: probe = #7, audit = #8). The
-   CLAUDE.md ordering exception for 9.5 is written down.
-2. **D45:** the probe fit set was extended to 2,000 training-seed completions (400 alone is too few for 1,536-dim
-   probes). Hidden states come from the backbone at the last token before `<answer>`.
-3. **D47:** after the sanity check failed, I added exploratory baselines, clearly labelled. P1–P3 stay
-   "uninterpretable", not "supported".
-4. **D46:** split-credit design. σ tokens are the σ number only; the ± sign and units count as answer tokens.
-   σ_ref = 1% of μ. The trainer raises on any reward/completion misalignment rather than continue silently.
-5. **D44:** the eval baseline table also applies × 18.1 to the evaluated model's own σ. That separates "RL changed
-   σ's level" from "RL changed σ's ranking".
+1. **Gate (FINDINGS #9):** keep it, cap the dial at 5%, or grade against MC quantiles. This blocks Phase 10+ and A6.
+2. **D49 (a′) vs (a):** moot now that A5 decides. Note that A5's strongest baseline also beats (a′).
+3. **D51 [REVIEW]:** step credit in noisy problems uses intermediates computed from the *displayed* values; the
+   clean ones are stored. Distractors are noisy too.
+4. **D51:** 2.0.0 is a separate config file rather than a bump of `env.yaml`, to keep tonight's runs and the
+   frozen sets on 1.1.0.
+5. **D52 (E1 choices):**
+   - lr stays at 5e-6 (the DAPO token averaging already magnifies σ tokens).
+   - E1b uses verifier mapping, not constrained decoding.
+   - A suffix that changes the unit (and so μ) counts as a failure at eval.
+6. **D50/A3 wording:** the per-cell Holm runs separately per level (20 tests each), and the "95% of cells" share
+   is also counted per level.
 
 ## 8. BLOCKED / housekeeping
 
-- **BLOCKED:** nothing.
-- `PHASES_10-15.md` is still in the working tree, untracked and unchanged. Its content is now in CLAUDE.md, so you
-  can delete it.
-- **Local-only (gitignored):** probe hidden states `results/probe_sft/hidden/` (409 MB) and the smoke-test checkpoint.
-- **New dependency:** scikit-learn 1.9.1 (`uv add`). Unsloth regenerated one file in its tracked compile cache in
-  response; that is committed.
+- **BLOCKED:** Phase 10+ (including A6) is waiting on your gate decision.
+- **No GPU smoke test** of the E1 trainer.
+- **Untracked:** `PHASES_10-15.md` is still there, and its content is in CLAUDE.md.
+- **Not done:** CLAUDE.md is not yet updated with the A8 framing (noted in D50).
