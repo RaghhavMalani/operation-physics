@@ -463,7 +463,7 @@ summary is too thin in the tails at 10% noise:
   SD 1.12 and excess kurtosis 1.06.
 - The MC distribution's own central 95.45% interval covers **93.6%** there (vs 91.8% for ±2σ\*). Pooled over all
   10%-noise problems, MC quantile intervals cover 95.44%, against 94.72% for ±2σ\*.
-- At 1–5% noise, pooled ±2σ\* coverage is 95.1–96.2%.
+- At 1–5% noise, pooled ±2σ\* coverage is 94.9–96.2%.
 - First-order propagation is fine in the median (SD/delta 1.001–1.020), but individual problems deviate by up
   to 74%.
 - The misses are spread across families (17 / 13 / 11) and are only mildly more ill-conditioned (median κ 2.0 vs 1.74).
