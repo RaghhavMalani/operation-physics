@@ -152,9 +152,185 @@ Metrics per split:
 7. **Ablations:** binary vs abs_rel_error vs CRPS; ± step credit; ± curriculum. Same seeds, same step budget.
 8. **HMM curriculum.** Knowledge tracing sampler + tests, then the ablation: uniform vs EMA vs HMM at an equal step budget. Metric: steps to reach a target accuracy, plus final calibration. Optional run-level monitor.
 9. **Layer probes.** Hidden-state extraction, probes A and B, controls, base vs RL figure.
-10. **README** with results tables, calibration plots, the probe figure, and an honest limits section.
+9.5. **σ credit assignment and representation** (runs FIRST, ahead of the open phase 5–9 items; approved
+   2026-10-14). See "Research extension" below.
+10. **σ\* audit and measurement-noise mode** (generator 2.0.0).
+11. **Rigor upgrades:** 3 seeds, held-out optics family, 1,000-problem frozen eval splits, calibration split.
+12. **Train the stated-σ model** (curriculum over depth and noise, 3 seeds).
+13. **Five-way uncertainty comparison** (stated σ, rollout spread, hidden-state probe, LoRA ensemble, post-hoc).
+14. **Decision value and stress tests.**
+15. **Write-up** (former phase 10: README with results tables, calibration plots, the probe figure, and an honest
+    limits section; now expanded, see below).
 
-Do not start phase 8 or 9 until phase 7 has produced numbers.
+Do not start phase 8 or 9 until phase 7 has produced numbers. (Phase 9.5 is the approved exception: its probe
+step borrows from phases 9/13 early.)
+
+## Research extension: Quoting Volatility (phases 9.5–15)
+
+Working title: *Quoting Volatility: Training Language Models to Price Their Own Uncertainty*. Merged from
+PHASES_10-15.md on 2026-10-14. Do not start Phase 10 until FINDINGS #6 (the σ-floor run) exists (it does).
+
+### Phase 9.5: σ credit assignment and representation (runs FIRST)
+
+Context, FINDINGS #6: removing the σ floor did not move calibration. Stated σ has ~zero rank correlation with
+error; post-hoc needs ×585 to reach 68% coverage (bimodal errors: exactly right or far off); with longer training
+the policy collapsed to "± 0" even though σ = 1% scored better on those answers. Diagnosis: (a) σ rides on the
+answer's advantage (sequence-level credit); (b) one Gaussian σ is the wrong shape for spike-and-slab errors.
+
+1. **Monitoring (approved):** alert and log when the σ = 0 share exceeds 50%; report the post-hoc scale as the
+   standing calibration baseline in every eval.
+2. **Hidden-state probe, early (from Phase 13):** on the SFT-only model, extract the pre-answer hidden state per
+   layer on the calibration split and train a linear/MLP probe to predict (i) correct within 1% and
+   (ii) log|error|. Controls: shuffled labels, random-init model. Question: does the model "know" its error even
+   though its stated σ does not? Record as FINDINGS #7.
+3. **Split credit (verifier unchanged):** decompose the reward r = r_answer + r_sigma, where
+   r_answer = crps_log(μ, σ_ref) with a fixed reference σ_ref (configurable, e.g. 1% relative) and
+   r_sigma = crps_log(μ, σ) − crps_log(μ, σ_ref). Reasoning/answer tokens get the group-normalized advantage of
+   r_answer; σ tokens (located by parsing) get the group-normalized advantage of r_sigma. Implement as a
+   GRPOTrainer subclass with a custom loss. Tests: on synthetic batches, σ-token gradients depend only on
+   r_sigma; answer-token gradients only on r_answer; with σ_ref = σ the method reduces to the original loss on
+   answer tokens. Run: identical to the Oct-13 run except split credit; matched-step comparison at step 287;
+   3 seeds once the single-seed run looks sane.
+4. **Two-channel format (needs a short re-SFT; next):** the model states `value ± sigma unit, confidence p`.
+   Score with the CRPS (log space) of the mixture p·N(log μ, s²) + (1 − p)·N(log μ, S²), with S fixed
+   (configurable, e.g. 1.0 in log space) and s from σ. Proper for the stated distribution. p captures epistemic
+   uncertainty (am I right?), σ captures aleatoric spread, which the Phase 10 noise mode tests directly. Verify
+   propriety by Monte Carlo before training. Split credit applies to p and σ tokens.
+
+Pre-register 9.5's hypotheses in PREREGISTRATION.md together with Phase 10's. The "± 0" collapse (FINDINGS #6)
+is reported as a finding in the write-up: with sequence-level credit, a proper scoring rule did not prevent
+uncertainty collapse.
+
+### Research framing
+
+Question: **where should an LLM's numeric uncertainty come from, and can RL teach a single stated σ that tracks
+the true uncertainty problem by problem?**
+
+What makes this project different from prior work: our generator can produce problems whose **correct
+uncertainty σ\* is known exactly, per problem**, and can dial that uncertainty independently of difficulty
+(chain depth). Real datasets cannot do this.
+
+Prior work to cite (re-verify every reference before publishing):
+- RLCR, Damani et al., ICLR 2026 (arXiv 2507.16806): binary correctness + Brier reward for verbalized
+  confidence. Closest in spirit; confidence is a probability of being correct, not a distribution over a
+  continuous answer.
+- DAR, Park et al. 2026 (arXiv 2605.20740): CRPS over K rollouts with leave-one-out credit for LLM regression.
+  CRPS as an RL reward is NOT new; their uncertainty is rollout spread, not a stated σ.
+- CARE-PPO, Dhaliwal et al. 2026: numeric prediction with the PPO critic as confidence.
+- Rewarding Doubt (arXiv 2503.02623): log-score RL for verbalized confidence.
+- FermiEval (arXiv 2510.26995): LLM intervals are overconfident; conformal adjustment.
+- QuantSightBench (arXiv 2604.15859): evaluates LLM prediction intervals (eval only).
+- Overconfidence is Key (arXiv 2405.02917): verbalized mean/std poorly calibrated.
+- Pitfalls of verbalized confidence priors (arXiv 2609.32470): post-RL confidence barely tracks difficulty.
+  This is the failure our conditional-calibration claim targets.
+- Grouping loss / epistemic UQ (ICLR 2026): calibration metrics miss within-bin error heterogeneity.
+- BeamPERL (arXiv 2603.04124): RLVR on beam mechanics induces templates, not equations. Be careful with any
+  extrapolation claim.
+- GRPO/Dr.GRPO/DAPO group-std identity (arXiv 2607.00152) and DAPO (arXiv 2503.14476): silent groups are known.
+  FINDINGS #1 is motivation, not a contribution.
+- Turtel et al. (arXiv 2505.17989): RL forecasting with Brier reward; betting payoff metric.
+
+Claims, pre-registered in PREREGISTRATION.md before any results:
+- **H1, propagation:** on problems with noise > 0, the slope of log(stated σ) on log(σ\*), the "vol beta", is
+  higher for the RL model than for the SFT-only model, and closer to 1.
+- **H2, conditional calibration:** a single post-hoc scale factor and split-conformal correction pass the pooled
+  (unconditional) coverage test but fail coverage homogeneity across depth × noise cells. RL-stated σ has lower
+  worst-cell coverage error than both.
+- **H3, uncertainty sources:** exploratory ranking of the five sources by median |log(σ / σ\*)|. No directional
+  claim.
+- **H4, decision value:** RL-stated σ beats post-hoc on abstention (AURC) and on Kelly log-growth versus a
+  fixed-width quote.
+- **H5, stress:** under stress perturbations, stated σ rises in proportion to the rise in actual error.
+
+### Phase 10: σ\* audit and measurement-noise mode (generator 2.0.0)
+
+1. Write PREREGISTRATION.md: H1–H5 as above, primary metrics, thresholds, tests and multiple-comparison
+   correction (Holm). Commit it BEFORE any Phase 10+ results exist.
+2. **Rounding audit:** check whether ground truth uses unrounded world values while the problem text shows
+   rounded givens. If so, compute the implied σ\* from significant figures (rounding error uniform within half a
+   unit in the last place, propagated through the chain) for the existing eval sets. Report its size relative to
+   the 1% accuracy band. Record as FINDINGS #8 (renumbered from #7 on 2026-10-14: the Phase 9.5 probe is #7).
+3. **Noise mode:** noise level in {0, 1%, 2%, 5%, 10%} relative, per given.
+   - True world values generate the target (truth = noise-free chain output).
+   - Displayed given = true value × (1 + e), e ~ N(0, s²), shown with its stated uncertainty ("2.40 kg ± 2%"),
+     with enough significant figures that rounding is negligible against s.
+   - σ\*: Monte Carlo (N ≥ 2000) over the true-input posterior given the measurement
+     (x_true ~ x_meas / (1 + e'), e' ~ N(0, s²)), pushed through the chain. Store σ\* in SI and in log space
+     (crps_log uses log space).
+   - Cross-check against first-order (delta-method) propagation for s ≤ 2%.
+   - Noise level is an independent dial from depth. Mixed per-given noise levels are allowed.
+4. **Generator self-consistency test (critical):** on 10,000 problems, intervals centred on the point estimate
+   computed from the displayed givens, f(x_meas), with half-width σ\* (and 2σ\*) must cover the noise-free truth
+   at nominal rates (68% / 95%; Kupiec test p > 0.05 in every depth × noise cell). If the generator's own σ\*
+   fails this, nothing downstream is valid.
+5. With noise > 0, "within 1%" is no longer a valid accuracy metric. Primary metrics for those problems:
+   crps_log, σ / σ\*, coverage. Keep 1% accuracy for noise = 0.
+6. Bump the generator to 2.0.0. Old tapes remain replayable under 1.1.0.
+
+### Phase 11: rigor upgrades
+- **Seeds:** every RL condition from here on runs with 3 seeds. Report mean and spread.
+- **Held-out family:** build optics (thin lens, mirror, refraction, magnification) in the formula graph. It is
+  NEVER sampled for SFT or RL training.
+- **Eval sets:** 1,000 problems per split, stratified by depth × noise, frozen with checksums. Splits: ID,
+  depth-5, held-out family, noise-dial grid.
+- **Calibration split:** a separate set from training seeds only, used to fit every post-hoc method. Never use
+  eval sets for fitting.
+
+### Phase 12: train the stated-σ model
+- Start from the SFT-only checkpoint (re-run SFT if needed so SFT data includes noisy problems in the output
+  format; σ tokens stay masked from the SFT loss).
+- GRPO with crps_log (floor fixed per D37), curriculum over depth AND noise level.
+- 3 seeds. Control: SFT-only (same eval).
+- One variable changes per comparison. Log every run's config hash in the tape.
+
+### Phase 13: five-way uncertainty comparison
+Sources, all evaluated on identical frozen eval sets:
+1. **Stated σ** from the RL model (one sample).
+2. **Rollout spread:** std of k = 8 samples' point answers (DAR-style, evaluation only), from both the SFT-only
+   and RL models.
+3. **Hidden-state probe:** a small MLP on frozen hidden states at the pre-answer token, trained on the
+   calibration split to predict log|error| (and, separately, log σ\*). CPU training. Controls: random-init
+   model, shuffled labels.
+4. **LoRA ensemble:** disagreement across the 3 RL seeds.
+5. **Post-hoc:** (a) one global scale factor on stated σ; (b) split-conformal intervals. Both fitted on the
+   calibration split only.
+
+Metrics (finance toolkit):
+- **Vol beta:** slope of log(σ) on log(σ\*), noise > 0 problems.
+- **Implied vs realized:** median σ / |error| over training and per cell (the model's "volatility risk premium",
+  i.e. systematic overconfidence).
+- **Calibration surface:** heatmap of median σ / σ\* over depth × noise. This is the headline figure.
+- **Kupiec test** (pooled coverage at 68% and 95%).
+- **Conditional coverage:** chi-square test of coverage homogeneity across depth × noise cells (the
+  cross-sectional analogue of Christoffersen; state this adaptation explicitly in the write-up), plus worst-cell
+  coverage error.
+- **Basel-style traffic light** per source: green / yellow / red by exception count at 95%, as a one-glance
+  summary.
+- **Diebold–Mariano tests** on paired crps_log between sources, Holm-corrected.
+- **Sharpness:** median relative interval width, reported next to calibration always.
+- Spearman correlation between σ and |error|.
+
+### Phase 14: decision value and stress tests
+- **Abstention:** answer only when σ is below a threshold; risk–coverage curve and AURC per source.
+- **Kelly log-growth:** log-wealth growth from betting the model's distribution against a naive fixed-width
+  quote (median relative error from the calibration split). Report per source with bootstrap CIs.
+- **Stress suite** (new generator flags, eval only): unit swaps, extreme magnitudes, extra distractors,
+  paraphrased wording. Report change in σ vs change in error.
+- **Optional, label as exploratory:** market-scoring-rule consensus. Treat the k = 8 samples as traders; build
+  the leave-one-out mixture forecast; compare the consensus forecast's calibration against individual samples.
+  Evaluation only; do not change the training reward.
+
+### Phase 15: write-up (former Phase 10)
+- README with: framing, prior work and exactly what is new, the calibration surface, the five-way table,
+  backtests, decision-value results, stress results, honest limits (scale, synthetic domain, single model
+  family), and every pre-registered hypothesis marked supported / not supported.
+- FINDINGS.md summary in the same order as PREREGISTRATION.md.
+
+### Working rules for these phases
+- PREREGISTRATION.md is written before results and never edited afterwards; deviations go in DECISIONS.md with
+  reasons.
+- Every comparison has a control and changes one variable.
+- Negative results are reported with the same prominence as positive ones.
 
 ## Working rules for Claude Code
 - Write tests alongside each module; don't move phases with failing tests.

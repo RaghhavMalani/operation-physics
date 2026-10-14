@@ -514,3 +514,15 @@ worth a second look.
   `gunzip -k rollouts.jsonl.gz`, then `replay()` as usual (the raw file stays on disk locally).
 - **Alternatives:** Git LFS (not set up on this repo, and it's an account-level choice); splitting the tape
   (breaks `replay(path)`).
+
+## Phase 9.5 / 10 setup (2026-10-14, unattended)
+
+### D43. Merging PHASES_10-15.md into CLAUDE.md; FINDINGS numbering
+- **Decision:** CLAUDE.md's phase list now runs 1–9, 9.5, 10–15; the old Phase 10 (README) is Phase 15, and the full
+  text of phases 9.5–15 (framing, prior work, H1–H5, working rules) is a new "Research extension" section.
+  PHASES_10-15.md itself is left untracked and unchanged (its content now lives in CLAUDE.md).
+- **Numbering conflict:** PHASES_10-15.md assigns FINDINGS #7 both to the Phase 9.5 probe and to the Phase 10
+  rounding audit. Your brief for today says probe = #7, rounding audit = #8, so CLAUDE.md records the audit as #8
+  with a note.
+- **Ordering:** CLAUDE.md says "do not start phase 8 or 9 until phase 7 has produced numbers". Phase 9.5 borrows the
+  probe from phases 9/13 early; your brief approves that, and CLAUDE.md now states the exception explicitly.
