@@ -19,11 +19,11 @@ from typing import Any, Callable
 from physcal.config import REPO_ROOT, load_config
 from physcal.env.formulas import FAMILY_NAMES
 from physcal.env.generator import Problem, env_config, generate_problem, generator_version
-from physcal.eval import calibration
+from physcal.eval import calibration, posthoc
 from physcal.eval.signals import rule_configs, rule_outcomes
 from physcal.prompt import SYSTEM_PROMPTS, build_messages
 from physcal.tape.tape import TapeWriter
-from physcal.verify.reward import reward, reward_config
+from physcal.verify.reward import reward, reward_config, verifier_version
 
 
 @dataclass
@@ -347,6 +347,8 @@ def write_metrics(metrics: dict, records: dict[str, list[dict]], rw_cfg: dict, c
         metrics["splits"][name] = summary
         calibration.plot_split(name, summary, out / f"calibration_{name}.png")
     calibration.plot_reliability_all(metrics["splits"], out / "reliability_all_splits.png")
+    metrics["posthoc_baseline"] = posthoc.baseline_report(records, rw_cfg["scoring"], metrics["generator_version"],
+                                                          verifier_version(rw_cfg))
     (out / "metrics.json").write_text(json.dumps(metrics, indent=2, allow_nan=False))
     (out / "summary.md").write_text(render_summary(metrics))
 
@@ -390,6 +392,22 @@ def render_summary(m: dict) -> str:
             f"| {_fmt(s['coverage_2sigma'], True)} | {_fmt(s['median_rel_sigma'])} | {_fmt(s['mean_reward'])} "
             f"| {_fmt(s['truncation_rate'], True)} |"
         )
+    pb = m.get("posthoc_baseline") or {}
+    if pb.get("available"):
+        lines += ["", f"## Standing calibration baseline: σ × {pb['scale']:.3g} ({pb['scale_name']}, `{pb['fit_file']}`)",
+                  "", "SFT-only rows are on the same frozen split" + ("" if pb["baseline_comparable"] else
+                  " (**not comparable here**: different generator or verifier version, so omitted)") + ".", "",
+                  "| split | rows | σ = 0 | 1σ cov | 2σ cov | mean crps_log |", "|---|---|---|---|---|---|"]
+        for name, e in pb["splits"].items():
+            sz = m["splits"][name].get("sigma_zero_rate")
+            rows = [("this model", e["this_model_unscaled"]), (f"this model, σ × {pb['scale']:.3g}", e["this_model_scaled"])]
+            rows += [(label, e[k]) for k, label in (("sft_only_unscaled", "SFT-only"),
+                                                    ("sft_only_scaled", f"SFT-only, σ × {pb['scale']:.3g} (baseline)"))
+                     if k in e]
+            for label, r in rows:
+                lines.append(f"| {name} | {label} | {_fmt(sz, True) if label == 'this model' else ''} "
+                             f"| {_fmt(r['coverage_1sigma'], True)} | {_fmt(r['coverage_2sigma'], True)} "
+                             f"| {_fmt(r['mean_crps_log'])} |")
     for name, s in m["splits"].items():
         lines += ["", f"## {name}: by depth", "", "| depth | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |",
                   "|---|---|---|---|---|---|---|"]

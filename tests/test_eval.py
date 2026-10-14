@@ -257,3 +257,16 @@ def test_hf_backend_backs_off_on_oom():
     assert [len(x) for x in out] == [4, 4]
     assert all(g.n_tokens == 3 and not g.truncated for x in out for g in x)
     assert backend.oom_backoffs >= 2 and max(c for c in Model.calls if c <= 2) == 2
+
+
+def test_eval_report_includes_sigma_zero_rate_and_standing_posthoc_baseline(tmp_path):
+    """Phase 9.5 step 1: every eval report carries the σ = 0 share and the standing post-hoc baseline."""
+    m = run(load_config("eval_probe_greedy"), backend_factory=_oracle_backend, limit=4, output_dir=tmp_path)
+    for name, s in m["splits"].items():
+        assert s["sigma_zero_rate"] == 0.0  # the oracle states σ = 1%
+        e = m["posthoc_baseline"]["splits"][name]
+        assert e["this_model_scaled"]["coverage_1sigma"] >= e["this_model_unscaled"]["coverage_1sigma"]
+    pb = m["posthoc_baseline"]
+    assert pb["available"] and pb["scale"] > 1 and pb["baseline_comparable"]
+    assert pb["splits"]["id"]["sft_only_scaled"]["coverage_1sigma"] == pytest.approx(0.35)
+    assert "Standing calibration baseline" in (tmp_path / "summary.md").read_text()

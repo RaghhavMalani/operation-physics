@@ -78,6 +78,7 @@ def summarize(breakdowns: list[dict], scoring_cfg: dict, levels: list[float], pi
         "coverage_2sigma": _mean(b["within_2sigma"] for b in with_sigma),
         "mean_rel_sigma": _mean(b["rel_sigma"] for b in with_sigma),
         "median_rel_sigma": _median(b["rel_sigma"] for b in with_sigma),
+        "sigma_zero_rate": _mean(b["sigma_si"] == 0 for b in with_sigma),
         "mean_reward": _mean(b["reward"] for b in breakdowns),
         "mean_score_by_rule": {r: rule_mean(r) for r in RULES},
         "mean_step_score": _mean(b["score_steps"] for b in stepped),

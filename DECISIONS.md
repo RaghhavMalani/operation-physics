@@ -526,3 +526,16 @@ worth a second look.
   with a note.
 - **Ordering:** CLAUDE.md says "do not start phase 8 or 9 until phase 7 has produced numbers". Phase 9.5 borrows the
   probe from phases 9/13 early; your brief approves that, and CLAUDE.md now states the exception explicitly.
+
+### D44. Phase 9.5 step 1: σ = 0 alert and the standing post-hoc baseline (monitoring only)
+- **Training:** every step logs `n_sigma_zero`, `sigma_zero_share`, the pooled rolling share over
+  `window_steps` (25) and `sigma_zero_alert`. When the rolling share crosses `threshold` (0.5), a line goes to the
+  console and `events.jsonl` (and again when it clears). It never changes the reward, sampling or stopping.
+  Settings are in the new `configs/monitor.yaml`, shared by training and eval.
+- **Eval reports:** `metrics.json` gets `sigma_zero_rate` per split and a `posthoc_baseline` block; `summary.md` gets a
+  "Standing calibration baseline" table with (a) this model's stated σ, (b) this model's σ × 18.1, and (c) when
+  the eval is on the same frozen split, generator and verifier as the fit, SFT-only unscaled and × 18.1 (the
+  baseline RL must beat). `rescore --current-verifier` writes the same block.
+- **Why show (b):** it tells apart "RL changed σ's level" (fixable by a scale) from "RL changed σ's ranking"
+  (not fixable by a scale). Pooled windows (counts, not a mean of per-step shares) avoid over-weighting steps with
+  few parsed answers.

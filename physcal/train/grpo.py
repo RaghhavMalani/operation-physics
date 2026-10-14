@@ -55,6 +55,8 @@ class VerifierReward:
         self.history: list[dict] = []
         self.curriculum = None  # an env.sampler.Sampler, fed with each group's sigma-free binary results
         self.curriculum_path: Path | None = None
+        self.sigma_zero_monitor = SigmaZeroMonitor(**load_config("monitor")["sigma_zero_alert"])
+        self.events_path: Path | None = None
 
     @property
     def step(self) -> int:
@@ -84,12 +86,42 @@ class VerifierReward:
             if self.curriculum_path is not None:
                 with self.curriculum_path.open("a") as fh:
                     fh.write(json.dumps({"step": self.step, "cells": stats["cells"], **self.curriculum.state()}) + "\n")
+        alert = self.sigma_zero_monitor.update(stats["n_with_sigma"], stats["n_sigma_zero"])
+        stats.update(sigma_zero_share_rolling=alert["rolling"], sigma_zero_alert=alert["active"])
+        if alert["changed"]:  # alert only: logged, never acted on
+            msg = (f"ALERT sigma=0 share {alert['rolling']:.2f} > {self.sigma_zero_monitor.threshold} over the last "
+                   f"{self.sigma_zero_monitor.window} steps (step {self.step})" if alert["active"] else
+                   f"sigma=0 alert cleared at step {self.step} (rolling share {alert['rolling']:.2f})")
+            print(msg, flush=True)
+            if self.events_path is not None:
+                with self.events_path.open("a") as fh:
+                    fh.write(json.dumps({"time": time.time(), "step": self.step, "event": msg}) + "\n")
         stats["time"] = time.time()
         self.history.append(stats)
         if self.metrics_path is not None:
             with self.metrics_path.open("a") as fh:
                 fh.write(json.dumps(stats, allow_nan=False) + "\n")
         return rewards
+
+
+class SigmaZeroMonitor:
+    """Rolling share of answers stating σ = 0 over the last `window_steps` steps (pooled counts); `active` once it
+    exceeds `threshold`. `changed` marks the steps where the alert switches on or off."""
+
+    def __init__(self, threshold: float, window_steps: int):
+        from collections import deque
+
+        self.threshold, self.window = threshold, window_steps
+        self.counts: "deque[tuple[int, int]]" = deque(maxlen=window_steps)
+        self.active = False
+
+    def update(self, n_with_sigma: int, n_sigma_zero: int) -> dict[str, Any]:
+        self.counts.append((n_with_sigma, n_sigma_zero))
+        n = sum(c[0] for c in self.counts)
+        rolling = sum(c[1] for c in self.counts) / n if n else 0.0
+        active = rolling > self.threshold
+        changed, self.active = active != self.active, active
+        return {"rolling": rolling, "active": active, "changed": changed}
 
 
 def step_stats(rows: list[dict], rewards: list[float], group_size: int) -> dict[str, Any]:
@@ -112,6 +144,9 @@ def step_stats(rows: list[dict], rewards: list[float], group_size: int) -> dict[
         "unit_mismatch_rate": mean([r["bd"]["reason"] == "unit_mismatch" for r in rows]),
         "mean_rel_sigma": mean([b["rel_sigma"] for b in with_sigma]),
         "median_rel_sigma": (sorted(b["rel_sigma"] for b in with_sigma)[len(with_sigma) // 2] if with_sigma else None),
+        "n_with_sigma": len(with_sigma),
+        "n_sigma_zero": sum(b["sigma_si"] == 0 for b in with_sigma),
+        "sigma_zero_share": mean([b["sigma_si"] == 0 for b in with_sigma]),
         "coverage_1sigma": mean([bool(b["within_1sigma"]) for b in with_sigma]),
         "coverage_2sigma": mean([bool(b["within_2sigma"]) for b in with_sigma]),
         "mean_step_score": mean([r["bd"].get("score_steps", 0.0) for r in rows]),
@@ -313,6 +348,7 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     tape = TapeWriter(out / "rollouts.jsonl", run_id, meta)
     reward_fn = VerifierReward(rw_cfg, tape, out / "train_metrics.jsonl", g["num_generations"],
                                g["max_completion_length"], m["id"])
+    reward_fn.events_path = out / "events.jsonl"
 
     wanted = dict(
         output_dir=str(out / "checkpoints"), run_name=run_id, seed=cfg["seed"], report_to="none",

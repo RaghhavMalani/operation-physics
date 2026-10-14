@@ -32,18 +32,24 @@ def _config() -> dict:
     return load_config("posthoc")
 
 
-def generate() -> dict:
+def generate_sft_completions(label: str, budget: int, split_cfg: dict, out: Path, run_id: str) -> dict:
+    """SFT-only greedy completions (eval settings: prompt v4, `budget` tokens, text-only) on one split."""
     from physcal.eval.run_eval import run
     from physcal.train.compare import eval_config
 
-    cfg_ph = _config()
-    out = REPO_ROOT / cfg_ph["output_dir"] / "sft_calibration_set"
-    sft_dir = REPO_ROOT / "results" / "sft" / cfg_ph["label"] / "merged"
-    cfg = eval_config("sft", cfg_ph["label"], cfg_ph["budget"], out, sft_dir)
+    sft_dir = REPO_ROOT / "results" / "sft" / label / "merged"
+    cfg = eval_config("sft", label, budget, out, sft_dir)
     cfg["output_dir"] = str(out)
-    cfg["run_id"] = "posthoc-sft-calibration-set"
-    cfg["splits"] = {"calibration": copy.deepcopy(cfg_ph["calibration_split"])}
+    cfg["run_id"] = run_id
+    cfg["splits"] = {"calibration": copy.deepcopy(split_cfg)}
     return run(cfg)
+
+
+def generate() -> dict:
+    cfg_ph = _config()
+    return generate_sft_completions(cfg_ph["label"], cfg_ph["budget"], cfg_ph["calibration_split"],
+                                    REPO_ROOT / cfg_ph["output_dir"] / "sft_calibration_set",
+                                    "posthoc-sft-calibration-set")
 
 
 def _records(tape: Path) -> list[dict]:
@@ -150,6 +156,34 @@ def fit(eval_tape: Path) -> dict:
         result["eval"][split] = {name: summary(recs, c, sc) for name, c in {"unscaled": 1.0, **scales}.items()}
     (out_dir / "posthoc_fit.json").write_text(json.dumps(result, indent=2))
     return result
+
+
+def baseline_report(records_by_split: dict[str, list[dict]], scoring_cfg: dict, generator_version: str,
+                    verifier: str) -> dict:
+    """The standing calibration baseline for an eval report (configs/monitor.yaml, Phase 9.5 step 1).
+
+    Per split: this model's σ times the standing scale, and, when the eval is on the same frozen sets (same
+    generator version and split name) and the same verifier, the SFT-only baseline itself (unscaled and scaled)."""
+    path = REPO_ROOT / load_config("monitor")["posthoc_baseline"]
+    if not path.exists():
+        return {"available": False, "reason": f"{path} not found"}
+    fit = json.loads(path.read_text())
+    name = fit["primary"]
+    c = fit["scales"][name]
+    ref_meta = read_meta(REPO_ROOT / fit["eval_tape"])
+    comparable = ref_meta["generator_version"] == generator_version and fit["verifier_version"] == verifier
+    out = {"available": True, "scale_name": name, "scale": c, "fit_file": str(path.relative_to(REPO_ROOT)),
+           "baseline_comparable": comparable, "splits": {}}
+    for split, recs in records_by_split.items():
+        own = [{"mu": b["mu_si"], "sigma": b["sigma_si"], "truth": b["truth_si"]}
+               if b["reason"] == "ok" and b.get("sigma_si") is not None else
+               {"mu": None, "sigma": None, "truth": b["truth_si"]} for b in (r["breakdown"] for r in recs)]
+        entry = {"this_model_unscaled": summary(own, 1.0, scoring_cfg), "this_model_scaled": summary(own, c, scoring_cfg)}
+        if comparable and split in fit["eval"]:
+            entry["sft_only_unscaled"] = fit["eval"][split]["unscaled"]
+            entry["sft_only_scaled"] = fit["eval"][split][name]
+        out["splits"][split] = entry
+    return out
 
 
 def scaled_tape(eval_tape: Path, c: float, out_path: Path) -> None:

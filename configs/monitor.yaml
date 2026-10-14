@@ -1,0 +1,10 @@
+# Phase 9.5 step 1 (approved monitoring): alert-only signals shared by training and eval. Nothing here changes
+# the reward or the sampling.
+sigma_zero_alert:
+  threshold: 0.5              # alert when the share of answers stating sigma = 0 exceeds this...
+  window_steps: 25            # ...over a rolling window of this many GRPO steps (training rollouts)
+
+# Standing calibration baseline (FINDINGS #6): SFT-only with one sigma scale fitted on training-seed problems.
+# Every eval report shows (a) that baseline on the same split, when the eval tape is on the same generator
+# version and split, and (b) the evaluated model's own sigma times the same scale.
+posthoc_baseline: results/posthoc_calibration/posthoc_fit.json

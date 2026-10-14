@@ -148,3 +148,26 @@ def test_permanent_checkpoint_callback_saves_only_at_listed_steps(tmp_path):
         cb.on_step_end(None, FakeState(global_step=step), SimpleNamespace(), model=FakeModel())
     assert saved == [str(tmp_path / "permanent" / "checkpoint-287")]
     assert (tmp_path / "permanent" / "checkpoint-287" / "trainer_state.json").exists()
+
+
+def test_sigma_zero_monitor_alerts_on_rolling_share():
+    from physcal.train.grpo import SigmaZeroMonitor
+
+    mon = SigmaZeroMonitor(threshold=0.5, window_steps=3)
+    out = [mon.update(n, z) for n, z in [(10, 2), (10, 9), (10, 9), (10, 9), (10, 0), (10, 0), (10, 0)]]
+    assert [o["active"] for o in out] == [False, True, True, True, True, False, False]
+    assert [o["changed"] for o in out] == [False, True, False, False, False, True, False]
+    assert out[1]["rolling"] == pytest.approx(11 / 20)
+
+
+def test_verifier_reward_logs_sigma_zero_share_and_alert(tmp_path):
+    probs = training_problems(1, 100, env_config())
+    p = probs[0]
+    fn = VerifierReward(reward_config(), None, tmp_path / "m.jsonl", group_size=4, max_completion_tokens=999,
+                        model_id="fake")
+    fn.events_path = tmp_path / "events.jsonl"
+    zero = f"<answer>{p.target_value:.6g} ± 0 {p.target_unit}</answer>"
+    fn(prompts=["p"] * 4, completions=[zero] * 3 + [_oracle(p)], problem_json=[json.dumps(p.to_dict())] * 4)
+    stats = json.loads((tmp_path / "m.jsonl").read_text().splitlines()[0])
+    assert stats["sigma_zero_share"] == pytest.approx(0.75) and stats["sigma_zero_alert"] is True
+    assert "ALERT" in (tmp_path / "events.jsonl").read_text()
