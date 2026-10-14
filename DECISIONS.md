@@ -944,3 +944,9 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     20 cells of the first run.
   - The rule is applied as written. If the rerun fails only on it, that is reported as a failure. The number of
     cells outside is reported either way.
+
+### D55. Step credit on noisy problems uses displayed-value intermediates: approved (closes D51's [REVIEW])
+- **Your decision (2026-10-14):** the D51 choice stands. On noisy problems, `intermediates` (what the verifier
+  credits within 2%) are the chain evaluated on the *displayed* givens, i.e. what a correct solver computes. The
+  clean intermediates stay in `noise.intermediates_true_si` for analysis only.
+- **No change:** neither code nor the generator version changes.
