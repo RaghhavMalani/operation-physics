@@ -253,6 +253,7 @@ def test_hf_backend_backs_off_on_oom():
     backend.gen_cfg = {"num_samples": 4, "batch_size": 8, "max_new_tokens": 3, "repetition_penalty": 1.0,
                        "do_sample": True, "temperature": 1.0, "top_p": 1.0, "top_k": 0, "seed": 0}
     backend.eos_ids, backend.pad_id, backend.oom_backoffs, backend.chat_template_kwargs = {9}, 0, 0, {}
+    backend.device = "cpu"
     out = backend._generate(["a", "b"], 4)
     assert [len(x) for x in out] == [4, 4]
     assert all(g.n_tokens == 3 and not g.truncated for x in out for g in x)

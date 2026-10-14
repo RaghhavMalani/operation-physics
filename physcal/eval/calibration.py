@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 from collections import Counter, defaultdict
 from pathlib import Path
 from statistics import median
@@ -105,6 +107,33 @@ def breakdown_by(records: list[dict], key: str) -> dict[str, dict]:
             "parse_fail_rate": sum(b["reason"] == "parse_fail" for b in bds) / len(bds),
             "unit_mismatch_rate": sum(b["reason"] == "unit_mismatch" for b in bds) / len(bds),
             "coverage_1sigma": _mean(b["within_1sigma"] for b in ok if b.get("within_1sigma") is not None),
+        }
+    return out
+
+
+def noise_summary(records: list[dict], tau: float) -> dict[str, dict]:
+    """Generator >= 2.0.0 (Phase 10; D50/A1): per noise level, the computation-correct rate (|ln μ − ln f(x_meas)| ≤
+    tau), coverage of the clean truth, and on computation-correct answers the stated σ against σ* (log10 ratio of the
+    relative σ to σ*, crps_log's scale) and coverage. Empty when no problem carries noise information."""
+    groups: dict[float, list[dict]] = defaultdict(list)
+    for r in records:
+        n = r["problem"].get("noise")
+        if n is not None:
+            groups[n["level"]].append(r)
+    out = {}
+    for level in sorted(groups):
+        rs = groups[level]
+        ans = [r for r in rs if r["breakdown"]["reason"] == "ok" and r["breakdown"].get("sigma_si") is not None
+               and r["breakdown"]["mu_si"] > 0]
+        cc = [r for r in ans if abs(math.log(r["breakdown"]["mu_si"] / r["problem"]["noise"]["point_estimate_si"])) <= tau]
+        ratio = [math.log10(max(r["breakdown"]["sigma_si"], 1e-300) / r["breakdown"]["mu_si"]
+                            / r["problem"]["noise"]["sigma_star_log"])
+                 for r in cc if r["problem"]["noise"]["sigma_star_log"] > 0]
+        out[f"{level:g}"] = {
+            "n": len(rs), "n_answered": len(ans), "computation_correct_rate": len(cc) / len(rs),
+            "coverage_1sigma_answered": _mean(r["breakdown"]["within_1sigma"] for r in ans),
+            "coverage_1sigma_computation_correct": _mean(r["breakdown"]["within_1sigma"] for r in cc),
+            "median_log10_sigma_over_sigma_star": _median(ratio),
         }
     return out
 

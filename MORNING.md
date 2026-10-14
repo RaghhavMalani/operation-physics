@@ -1,3 +1,23 @@
+# Update 3, 2026-10-14 night: A6b and the frozen-file eval path (CPU only)
+
+- **D59, A6b pre-registered before it was built:**
+  - **Pairs:** invariance pairs from power-law templates, where the relative σ\* cannot depend on the values.
+  - **Test:** the slope of Δ ln stated σ on Δ ln target, with TOST margin ±0.3. Expected ≈ 0; a fixed absolute
+    σ gives ≈ −1.
+  - **Joint verdict with A6:** "propagates" / "magnitude-driven" / "no propagation (lookup-like)".
+- **A6b frozen:** 510 pairs / 1,020 problems, every cell full. The MC check passed on every pair (max
+  |ln σ\*_hi/σ\*_lo| = 3.3e-8). Depths 3–5 come from dynamics and energy only (kinematics has no power-law
+  templates there).
+  - Confound noted in D59: A6 and A6b use disjoint template classes.
+- **Eval path for frozen files (D60):**
+  - `run_eval` can run a model on a frozen JSONL, with version, checksum and regeneration checks.
+  - `configs/eval_frozen_sets.yaml` covers A6 + A6b, and the reports gain a per-noise-level A1 table.
+  - It was tested on CPU with a tiny random model only.
+  - The Phase 11 noise eval sets are not frozen yet; they will be plugged in as `file:` splits.
+- 340 tests pass. Tonight's queue is unchanged.
+
+---
+
 # Update 2, 2026-10-14 night: gate passed, A6 built
 
 - **D57**, recorded before the rerun: A3's cell-share rule is replaced by a miss-count test (reject if

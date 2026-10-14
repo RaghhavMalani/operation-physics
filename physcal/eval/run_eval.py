@@ -2,11 +2,17 @@
 
 Usage:
     uv run python -m physcal.eval.run_eval [--config configs/eval.yaml] [--limit N] [--output-dir DIR]
+
+A split is either built from the generator (families / depths / n) or read from a frozen problem file
+(`file: data/eval_sets/<version>/<name>.jsonl`; e.g. the A6 / A6b pair sets and the generator-2.0.0 noise sets). A
+frozen file must match the eval's generator version (`env_config`, default configs/env.yaml); `sha256` (or the
+file's manifest) and `verify_regenerate` (how many problems to regenerate and compare; -1 = all) check it.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -18,7 +24,8 @@ from typing import Any, Callable
 
 from physcal.config import REPO_ROOT, load_config
 from physcal.env.formulas import FAMILY_NAMES
-from physcal.env.generator import Problem, env_config, generate_problem, generator_version
+from physcal.env.generator import (Problem, env_config, generate_problem, generator_version, problem_from_dict,
+                                   regenerate)
 from physcal.eval import calibration, posthoc
 from physcal.eval.signals import rule_configs, rule_outcomes
 from physcal.prompt import SYSTEM_PROMPTS, build_messages
@@ -65,7 +72,45 @@ def build_split(index: int, split_cfg: dict, eval_cfg: dict, env_cfg: dict, limi
     return [generate_problem(*cells[i % len(cells)], base + i, split=gen_split, cfg=env_cfg) for i in range(n)]
 
 
+def load_frozen_split(split_cfg: dict, env_cfg: dict, limit: int | None = None) -> list[Problem]:
+    """Problems from a frozen JSONL file (one problem dict per line, in order). Pair sets keep lo/hi adjacent, so use
+    an even `limit` to keep pairs whole. Raises on a generator-version mismatch, a wrong checksum, or a problem that
+    no longer regenerates identically."""
+    path = REPO_ROOT / split_cfg["file"]
+    blob = path.read_text()
+    expected = split_cfg.get("sha256")
+    manifest = path.with_name(path.stem + "_manifest.json")
+    if expected is None and manifest.exists():
+        expected = json.loads(manifest.read_text()).get("sha256")
+    if expected is not None and hashlib.sha256(blob.encode()).hexdigest() != expected:
+        raise ValueError(f"{path}: checksum mismatch")
+    dicts = [json.loads(line) for line in blob.splitlines() if line.strip()]
+    if limit is not None:
+        dicts = dicts[:limit]
+    version = generator_version(env_cfg)
+    wrong = {d["generator_version"] for d in dicts} - {version}
+    if wrong:
+        raise ValueError(f"{path}: generator versions {sorted(wrong)} != eval config {version}")
+    n_check = split_cfg.get("verify_regenerate", 0)
+    for d in dicts if n_check < 0 else dicts[:n_check]:
+        if regenerate(d, env_cfg).to_dict() != d:
+            raise ValueError(f"{path}: problem {d['family']}/{d['depth']}/{d['seed']} does not regenerate")
+    return [problem_from_dict(d) for d in dicts]
+
+
 # ------------------------------------------------------------------------------------------- backend
+class NoPoller:
+    """Stands in for GpuMemoryPoller on CPU runs: never calls nvidia-smi."""
+
+    peak_mib = 0
+
+    def __enter__(self) -> "NoPoller":
+        return self
+
+    def __exit__(self, *exc) -> None:
+        return None
+
+
 class GpuMemoryPoller:
     """Polls nvidia-smi for device-wide memory use (includes other processes, e.g. the display)."""
 
@@ -113,7 +158,9 @@ class HFBackend:
         self.chat_template_kwargs = model_cfg.get("chat_template_kwargs") or {}
         self.oom_backoffs = 0
         revision = model_cfg.get("revision") if model_id == model_cfg.get("id") else None
-        torch.cuda.reset_peak_memory_stats()
+        self.device = model_cfg.get("device", "cuda")  # "cpu" for CPU-only checks (tiny models)
+        if self.device == "cuda":
+            torch.cuda.reset_peak_memory_stats()
         self.tok = transformers.AutoTokenizer.from_pretrained(model_id, revision=revision)
         self.tok.padding_side = "left"
         model_class = {
@@ -121,7 +168,7 @@ class HFBackend:
             "image_text_to_text": transformers.AutoModelForImageTextToText,
         }[model_cfg.get("model_class", "causal_lm")]
         self.model = model_class.from_pretrained(
-            model_id, revision=revision, dtype=getattr(torch, model_cfg["dtype"]), device_map="cuda"
+            model_id, revision=revision, dtype=getattr(torch, model_cfg["dtype"]), device_map=self.device
         ).eval()
         self.revision = getattr(self.model.config, "_commit_hash", None) or revision
         if revision and self.revision != revision:
@@ -175,7 +222,7 @@ class HFBackend:
         decoding = {"do_sample": True, "temperature": g["temperature"], "top_p": g["top_p"], "top_k": g["top_k"]} \
             if g["do_sample"] else {"do_sample": False, "temperature": None, "top_p": None, "top_k": None}
         try:
-            enc = self.tok(prompts, return_tensors="pt", padding=True).to("cuda")
+            enc = self.tok(prompts, return_tensors="pt", padding=True).to(self.device)
             with torch.inference_mode():
                 out = self.model.generate(
                     **enc,
@@ -209,6 +256,8 @@ class HFBackend:
 
     def memory_stats(self) -> dict[str, float]:
         torch = self.torch
+        if self.device != "cuda":
+            return {"device": self.device}
         gib = 1024**3
         return {
             "torch_max_allocated_gib": torch.cuda.max_memory_allocated() / gib,
@@ -219,7 +268,8 @@ class HFBackend:
 
     def close(self) -> None:
         del self.model
-        self.torch.cuda.empty_cache()
+        if self.device == "cuda":
+            self.torch.cuda.empty_cache()
 
 
 def _is_oom(exc: BaseException) -> bool:
@@ -233,7 +283,8 @@ def run(
     limit: int | None = None,
     output_dir: str | Path | None = None,
 ) -> dict[str, Any]:
-    env_cfg, rw_cfg = env_config(), reward_config()
+    env_cfg = load_config(eval_cfg["env_config"]) if eval_cfg.get("env_config") else env_config()
+    rw_cfg = reward_config()
     out = Path(output_dir or REPO_ROOT / eval_cfg["output_dir"])
     out.mkdir(parents=True, exist_ok=True)
     factory = backend_factory or (lambda mid: HFBackend(mid, eval_cfg["model"], eval_cfg["generation"]))
@@ -241,11 +292,14 @@ def run(
     splits: dict[str, list[Problem]] = {}
     skipped: dict[str, str] = {}
     for index, (name, split_cfg) in enumerate(eval_cfg["splits"].items()):
-        problems = build_split(index, split_cfg, eval_cfg, env_cfg, limit)
+        if "file" in split_cfg:
+            problems = load_frozen_split(split_cfg, env_cfg, limit)
+        else:
+            problems = build_split(index, split_cfg, eval_cfg, env_cfg, limit)
         if problems:
             splits[name] = problems
         else:
-            skipped[name] = f"no implemented families for '{split_cfg['families']}'"
+            skipped[name] = f"no implemented families for '{split_cfg.get('families')}'"
     items = [(name, p) for name, ps in splits.items() for p in ps]
     conversations = [build_messages(p.text, eval_cfg["prompt"]) for _, p in items]
     k = eval_cfg["generation"]["num_samples"]
@@ -256,7 +310,8 @@ def run(
     model_id, oom_fallback, oom_error = eval_cfg["model"]["id"], False, None
     t0 = time.time()
     backend = None
-    with GpuMemoryPoller(interval_s=eval_cfg["memory_poll_seconds"]) as poller:
+    on_gpu = eval_cfg["model"].get("device", "cuda") == "cuda"
+    with (GpuMemoryPoller(interval_s=eval_cfg["memory_poll_seconds"]) if on_gpu else NoPoller()) as poller:
         try:
             backend = factory(model_id)
             generations = backend(conversations)
@@ -344,6 +399,10 @@ def write_metrics(metrics: dict, records: dict[str, list[dict]], rw_cfg: dict, c
         summary["accuracy_at_tolerance"] = calibration.accuracy_at_tolerances(recs, cal["accuracy_tolerances"])
         if k > 1:
             summary["groups"] = calibration.group_stats(recs)
+        if cal.get("computation_correct_tau") is not None:
+            noise = calibration.noise_summary(recs, cal["computation_correct_tau"])
+            if noise:
+                summary["by_noise"] = noise
         metrics["splits"][name] = summary
         calibration.plot_split(name, summary, out / f"calibration_{name}.png")
     calibration.plot_reliability_all(metrics["splits"], out / "reliability_all_splits.png")
@@ -440,6 +499,15 @@ def render_summary(m: dict) -> str:
                     lines.append(f"| {name} | {label} | {_fmt(e[k]['coverage_1sigma'], True)} "
                                  f"| {_fmt(e[k]['coverage_2sigma'], True)} | {_fmt(e[k]['mean_crps_log'])} |")
     for name, s in m["splits"].items():
+        if s.get("by_noise"):
+            lines += ["", f"## {name}: by noise level (D50/A1; σ/σ* on computation-correct answers)", "",
+                      "| noise | n | answered | computation-correct | 1σ cov (answered) | 1σ cov (comp.-correct) "
+                      "| median log10(σ/σ*) |", "|---|---|---|---|---|---|---|"]
+            for lv, b in s["by_noise"].items():
+                lines.append(f"| {lv} | {b['n']} | {b['n_answered']} | {_fmt(b['computation_correct_rate'], True)} "
+                             f"| {_fmt(b['coverage_1sigma_answered'], True)} "
+                             f"| {_fmt(b['coverage_1sigma_computation_correct'], True)} "
+                             f"| {_fmt(b['median_log10_sigma_over_sigma_star'])} |")
         lines += ["", f"## {name}: by depth", "", "| depth | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |",
                   "|---|---|---|---|---|---|---|"]
         for d, b in s["by_depth"].items():

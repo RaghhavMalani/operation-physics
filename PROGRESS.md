@@ -500,3 +500,6 @@ Progress:
 - [x] A6b built and frozen: `data/eval_sets/2.0.0+bdbb2279/a6b_pairs.jsonl`, 510 pairs / 1,020 problems, all 15 cells
   full with no failed seeds. MC check: max |ln σ\*_hi/σ\*_lo| = 3.3e-8 (≤ 1e-3 required); median target ratio 31–201×
   per cell. Analysis: `a6_pairs analyze` (A6 or A6b) and `a6_pairs joint`.
+- [x] Eval path for frozen problem files (D60): `run_eval` `file:` splits (version, checksum and regeneration
+  checks), `configs/eval_frozen_sets.yaml` (A6 + A6b), per-noise-level A1 table, `model.device: cpu` for checks. CPU
+  test with a tiny random Qwen2 in a CUDA-hidden subprocess. 340 tests pass. No GPU used; no real model evaluated.

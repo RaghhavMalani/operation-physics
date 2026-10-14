@@ -1,6 +1,6 @@
 """D50/A6 and D59/A6b analyses: does a model's stated σ track σ* within pairs? (propagation vs lookup)
 
-    uv run python -m physcal.eval.a6_pairs analyze <eval tape over the A6 or A6b pair set> [--out DIR]
+    uv run python -m physcal.eval.a6_pairs analyze <eval tape> [--split a6_pairs|a6b_pairs] [--out DIR]
     uv run python -m physcal.eval.a6_pairs joint <A6 analysis json> <A6b analysis json> [--out DIR]
 
 Per pair (same template, depth, phrasing and noise level; worlds chosen so that σ* differs, physcal/env/pairs.py):
@@ -132,22 +132,27 @@ def joint(a6: dict, a6b: dict) -> dict:
                        "p_two_sided_vs_0": p6b.get("p_two_sided")}]}
 
 
-def analyze(tape: Path) -> dict:
+def analyze(tape: Path, split: str | None = None) -> dict:
+    """One pair set's analysis; `split` selects it from a tape that holds several (configs/eval_frozen_sets.yaml)."""
     pc = load_config("pairs")
     cfg = pc["analysis"]
-    rows = [member_row(r["problem"], r["breakdown"], cfg["tau"], cfg["sigma_floor_rel"]) for r in read_tape(tape)]
-    return {"tape": str(tape), "tau": cfg["tau"], **analyze_rows(rows, cfg, pc["invariance_analysis"])}
+    rows = [member_row(r["problem"], r["breakdown"], cfg["tau"], cfg["sigma_floor_rel"]) for r in read_tape(tape)
+            if split is None or r.get("split") == split]
+    if not rows:
+        raise ValueError(f"no records for split {split!r} in {tape}")
+    return {"tape": str(tape), "split": split, "tau": cfg["tau"], **analyze_rows(rows, cfg, pc["invariance_analysis"])}
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("action", choices=["analyze", "joint"])
     ap.add_argument("paths", nargs="+")
+    ap.add_argument("--split", default=None, help="analyze: the split to read from a multi-split tape")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
     paths = [Path(p) if Path(p).is_absolute() else REPO_ROOT / p for p in args.paths]
     if args.action == "analyze":
-        res = analyze(paths[0])
+        res = analyze(paths[0], args.split)
         name = f"{'a6' if res['kind'] == 'sensitivity' else 'a6b'}_pairs_analysis.json"
         out = Path(args.out) if args.out else paths[0].parent
     else:

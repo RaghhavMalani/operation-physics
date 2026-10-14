@@ -1,0 +1,42 @@
+# Eval on frozen problem files (generator 2.0.0): the A6 / A6b pair sets (D58, D59). The Phase 11 noise eval sets
+# go here as further `file:` splits once they are frozen. Model id / lora / output dir are set per run.
+run_id: eval-frozen-sets
+output_dir: results/eval_frozen_sets/_unset
+env_config: env_v2                          # must match the files' generator version (checked per problem)
+prompt: v4_worked_example
+
+model:
+  id: results/sft/qwen2.5-math-1.5b-instruct/merged
+  fallback_id: null
+  revision: null
+  dtype: bfloat16
+  lora: null
+  device: cuda                              # "cpu" only for tiny-model pipeline checks
+
+generation:
+  max_new_tokens: 512                       # the GRPO / eval budget
+  batch_size: 16
+  do_sample: false
+  repetition_penalty: 1.0
+  temperature: 1.0
+  top_p: 1.0
+  top_k: 0
+  num_samples: 1
+  seed: 0
+
+seed_block: 1000000                         # unused by file splits; kept for generator-built splits
+splits:
+  a6_pairs:
+    file: data/eval_sets/2.0.0+bdbb2279/a6_pairs.jsonl        # checksum from a6_pairs_manifest.json
+    verify_regenerate: -1                   # regenerate every problem and compare before evaluating
+  a6b_pairs:
+    file: data/eval_sets/2.0.0+bdbb2279/a6b_pairs.jsonl
+    verify_regenerate: -1
+
+memory_poll_seconds: 2.0
+
+calibration:
+  accuracy_tolerances: [0.01, 0.02, 0.05, 0.1]
+  pit_bins: 10
+  reliability_levels: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
+  computation_correct_tau: 1.0e-3           # D50/A1: |ln mu - ln f(x_meas)| <= tau (per-noise-level table)

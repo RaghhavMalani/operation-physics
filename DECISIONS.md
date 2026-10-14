@@ -1088,3 +1088,32 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Known confound:** A6 needs templates whose sensitivity varies, and A6b needs constant sensitivity, so the two
   halves use disjoint template classes. They differ in template mix as well as in σ\* variation, and the write-up
   says so.
+
+### D60. Eval path for frozen problem files
+- **What changed in `run_eval`:**
+  - A split can be `file: <frozen JSONL>` instead of families / depths / n.
+  - The eval config's `env_config` (default `configs/env.yaml`) selects the generator. Every problem's
+    `generator_version` must match it.
+  - The file's SHA-256 is checked against `sha256` or the file's `*_manifest.json`.
+  - `verify_regenerate` (N problems, −1 = all) regenerates problems and compares them before evaluating.
+  - `--limit` takes the first N lines (use an even N for pair sets).
+  - Replay already handles noisy and pair problems (`generator.regenerate`).
+- **Config:** `configs/eval_frozen_sets.yaml` runs A6 + A6b with generator 2.0.0, full regeneration checks, greedy
+  decoding, 512 tokens and prompt v4. The Phase 11 noise eval sets will be added as further `file:` splits once
+  they are frozen; they are not built yet.
+- **Report:** when `calibration.computation_correct_tau` is set (0.1%, A1), every split with noise information
+  gets a per-noise-level table:
+  - computation-correct rate;
+  - 1σ coverage over answered and over computation-correct answers;
+  - the median log10(stated relative σ / σ\*) on computation-correct answers.
+
+  Pair analyses read one split of the tape (`a6_pairs analyze <tape> --split a6_pairs|a6b_pairs`, then
+  `a6_pairs joint`).
+- **CPU option:** `model.device: cpu` skips every CUDA call and the nvidia-smi poller. It exists only for
+  pipeline checks.
+- **CPU check (`tests/test_frozen_eval.py`):**
+  - **Setup:** a tiny random 2-layer Qwen2 with the real tokenizer, run in a subprocess with
+    `CUDA_VISIBLE_DEVICES=""`, on 4 A6 + 4 A6b problems + a small generator-2.0.0 noise file (levels 0–5%).
+  - **Checked:** the tape replays exactly, both pair analyses run, and the per-noise table renders.
+  - **Refusals tested:** a version mismatch, a wrong checksum, and a tampered problem.
+  - **Not done:** no GPU was used and no real model was evaluated.
