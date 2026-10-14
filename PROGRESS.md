@@ -437,3 +437,18 @@ Progress:
   9.5% vs SFT-only 15.0% / 11.5% and last night 15.5% / 10.0% (all p ≥ 0.125); post-hoc control 35.0% / 33.5%
   (p < 1e-12 in its favour). Step 759: 11.5% / 8.1%, 50.5% of ID answers state σ = 0. 259 tests pass. GPU work
   ended 07:53 IST.
+
+## Phase 9.5 + Phase 10 step 2 (2026-10-14, unattended, daytime)
+
+- [x] CLAUDE.md: phases 9.5–15 merged (old Phase 10 README → Phase 15), D43.
+- [x] PREREGISTRATION.md committed (`f601bb7`) before any new result: families P (probe), S (split credit),
+  H (phases 10–14), Holm within each family.
+- [x] 9.5 step 1: σ = 0 alert in training (rolling 25-step share > 50%, alert only) and the standing post-hoc
+  baseline (× 18.1) in every eval report (`configs/monitor.yaml`), D44.
+- [x] 9.5 step 2: hidden-state probe on the SFT-only model (FINDINGS #7). Probe AUROC 0.917 vs stated σ 0.50, but
+  the random-init control matches it (0.914), so P1–P3 are uninterpretable per the pre-registration; exploratory
+  bag-of-words (0.906) and template (0.88) baselines show the signal is in the completion text. D45, D47.
+- [x] Phase 10 step 2: rounding audit (FINDINGS #8). Truth = f(displayed givens) exactly; counterfactual 3-s.f.
+  σ* median 0.26%; a 4-s.f. solver errs 0.014% median. D48.
+- [x] 9.5 step 3: split-credit trainer + tests + 10-step smoke test: 40.0 s/step, peak reserved 6.46 GiB, 0 OOMs.
+  The long run is not started. D46. 286 tests pass.
