@@ -367,8 +367,66 @@ seen in the fit set, so the readout transfers to deeper chains.
 - Protocol: PREREGISTRATION.md family P (commit `f601bb7`, before any result). Implementation details and deviations:
   D45, D47.
 - Fit set: `results/posthoc_calibration/sft_calibration_set/` (400) + `results/probe_sft/sft_calibration_ext/` (1,600,
-  replays exactly); SFT-only, greedy, prompt v4, 512 tokens; 4 parse failures excluded (1,996 used). Test set: the
+  replays exactly); SFT-only, greedy, prompt v4, 512 tokens; 4 failed answers (parse failure or unit mismatch)
+  excluded (1,996 used). Test set: the
   SFT-only eval tape re-scored under verifier 1.1.0 (400, 0 excluded).
 - Code: `physcal/interp/{extract,probes}.py`, `configs/probe_sft.yaml`, tests `tests/test_interp.py`. Hidden states
   (local only, gitignored): `results/probe_sft/hidden/{sft,random_init}/{fit,test}/layer_XX.npy`.
 - Results: `results/probe_sft/probe_results.json`, `probe_by_layer.png`; exploratory `results/probe_sft/exploratory.json`.
+
+---
+
+## #8. Rounding audit: ground truth already uses the displayed givens; rounding sets an error floor well inside the 1% band (2026-10-14)
+
+**Question (Phase 10 step 2).** Does the ground truth use unrounded world values while the problem text shows
+rounded givens? If so, how large is the implied σ\* relative to the 1% accuracy band?
+
+**Answer: no, the truth is computed from exactly the displayed givens (D4), so for the problems as defined σ\* = 0.**
+On all 400 frozen eval problems (generator 1.1.0, 200 ID + 200 depth 5), re-parsing every displayed given, converting
+it to SI and re-running the chain reproduces the stored truth with a relative difference of **exactly 0.0**. There
+is no hidden rounding noise between the text and the answer key.
+
+Two related quantities are still worth knowing, because they bound what an honest σ can be:
+
+**(a) Counterfactual σ\*: if the 3-s.f. givens were measurements** (true value uniform within half a unit in the
+last displayed place), the target would be uncertain by, per problem (Monte Carlo, 2,000 draws):
+
+| depth | median σ\*/value | 10th–90th pct | share with σ\* > 0.1% | share with 2σ\* > 1% |
+|---|---|---|---|---|
+| 1 | 0.14% | 0.07–0.31% | 66% | 8% |
+| 2 | 0.23% | 0.10–0.52% | 90% | 12% |
+| 3 | 0.24% | 0.09–0.48% | 86% | 8% |
+| 4 | 0.29% | 0.11–0.57% | 92% | 14% |
+| 5 | 0.30% | 0.13–0.73% | 96.5% | 26% |
+| all | **0.26%** | 0.10–0.63% | 90% | 18% |
+
+That is about a quarter of the 1% band at the median, growing with depth. This is the noise scale the Phase 10
+measurement-noise mode must dominate. With 3 s.f. displayed givens, rounding alone would add σ\* ≈ 0.26% (in
+quadrature) to a 1% measurement noise. The noise mode should therefore display noisy givens with ≥ 5 significant
+figures (half-ulp ≤ 5e-5 relative), as Phase 10.3 already requires ("rounding negligible against s").
+
+**(b) Solver-side rounding: the error of a *perfect* solver that rounds every intermediate and its answer to k
+significant figures.** This is the only irreducible error for the problems as defined.
+
+| k s.f. | median | 90th pct | 99th pct | share outside the 1% band |
+|---|---|---|---|---|
+| 3 | 0.15% | 0.44% | 1.19% | 2.0% overall; 2% at depth 4, 3.5% at depth 5 |
+| **4** (the SFT targets' habit) | **0.014%** | 0.041% | 0.11% | 0% |
+| 6 | 0.0001% | 0.0004% | 0.0009% | 0% |
+
+**What it explains.**
+- The "exactly right" spike in the model's errors is solver rounding. 15.5% (ID) / 8.5% (depth 5) of SFT-only
+  answers are within 0.1% of the truth, and their typical error (10th percentile 0.04% ID) matches a 4-s.f. solver.
+- An honest σ for a *correct* 4-s.f. chain is ~0.01–0.04% of the value, not 0. The SFT model's median stated σ
+  (0.05%) is in the right range **for correct answers**. What it lacks is a different σ for the answers that are
+  wrong by 2–50% (FINDINGS #6), which no rounding argument covers.
+- "± 0" is never exactly honest (the rounding error is > 0 almost surely), but its crps_log cost on a correct
+  answer is tiny (≈ |error|, ~1e-4).
+- At 3 s.f., a perfect solver misses the 1% band on 2–3.5% of deep problems. The 1% accuracy metric is safe
+  only for solvers that keep ≥ 4 s.f. through the chain, which the SFT targets do.
+
+### Provenance
+- `physcal/eval/rounding_audit.py`, `configs/rounding_audit.yaml`, tests `tests/test_rounding_audit.py`.
+- Output `results/rounding_audit/rounding_audit.json` (summary + one row per problem). Eval sets
+  `data/eval_sets/1.1.0+c735a0d4/{id,depth_extrapolation}.jsonl`. Observed errors from the SFT-only eval tape
+  re-scored under verifier 1.1.0.

@@ -1,0 +1,7 @@
+# Phase 10 step 2: rounding audit of the frozen eval sets (FINDINGS #8). CPU only.
+output_dir: results/rounding_audit
+n_mc: 2000                  # Monte Carlo draws per problem for the counterfactual sigma*
+seed: 0
+solver_sig_figs: [3, 4, 6]  # a solver that rounds every intermediate (and the answer) to k s.f.; SFT targets use 4
+accuracy_band: 0.01         # the 1% "correct" band
+sft_eval_tape: results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare_verifier_1.1.0/sft/rollouts.jsonl

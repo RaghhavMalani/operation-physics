@@ -583,3 +583,14 @@ worth a second look.
   completion text); they do not rescue P1–P3.
 - **Not done:** re-running with other probe positions or a residualized probe (beyond what a bag-of-words predicts).
   Both would be new, pre-registered experiments if pursued.
+
+### D48. Rounding audit scope (Phase 10 step 2)
+- **Finding first:** the truth already uses the displayed givens (D4, verified: relative difference 0.0 on all 400
+  eval problems), so the brief's "if so, compute the implied σ*" does not apply literally: σ* = 0 for the problems
+  as defined.
+- **Reported anyway:** (a) the counterfactual σ* if the 3-s.f. givens were measurements (uniform half-ulp error,
+  2,000 Monte Carlo draws per problem), because that is the noise floor the Phase 10 noise mode must dominate;
+  (b) the error of a perfect solver that rounds intermediates to 3/4/6 s.f., because that is the only irreducible
+  error for the current problems and explains the "exactly right" error spike.
+- **Units:** every display unit in the three families is a pure scale of its SI unit, so a relative half-ulp error
+  in the display unit equals the same relative error in SI (no offset units such as °C yet).
