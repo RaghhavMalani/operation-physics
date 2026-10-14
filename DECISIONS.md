@@ -950,3 +950,19 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   credits within 2%) are the chain evaluated on the *displayed* givens, i.e. what a correct solver computes. The
   clean intermediates stay in `noise.intermediates_true_si` for analysis only.
 - **No change:** neither code nor the generator version changes.
+
+### D56. Idea log, NOT pre-registered: E5, distill the A5 calibrator into the model
+- **Idea (yours, 2026-10-14):** fine-tune the model by SFT so that its stated σ reproduces the σ of the strongest
+  A5 baseline (FINDINGS #10: problem + answer + reasoning, GBT, fitted on the calibration split). Then compare
+  out-of-distribution calibration of the distilled model against the external calibrator applied to the same
+  completions, on depth 5 and the held-out family.
+- **Question:** does a calibrator internalized in the LM generalize OOD better or worse than the same calibrator
+  kept outside on surface features? The external A5 model sees only TF-IDF/GBT features. The distilled model may
+  learn something that transfers to unseen templates, or it may copy the surface mapping.
+- **Status:** an idea only. Nothing is designed, run or pre-registered. Before any E5 result exists, it needs a
+  pre-registration entry with:
+  - training data (calibration split only, no eval seeds);
+  - whether σ tokens are unmasked (they were masked in D35's SFT);
+  - the OOD splits (the held-out family needs optics or circuits built first);
+  - metrics (crps_log, 1σ coverage, ρ, per split);
+  - the control (the external A5 σ on the same completions).
