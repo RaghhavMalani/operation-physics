@@ -1,3 +1,25 @@
+# Update, 2026-10-14 evening (after your decisions)
+
+- **D54:** the main experiments use noise {0, 1, 2, 5}%; 10% is a "heavy-tail" regime scored only by crps_log
+  against the MC distribution, with no coverage claims. D54 records that the cap was chosen after seeing the
+  gate. The generator (`2.0.0+bdbb2279`) is unchanged.
+- **D55:** step credit on displayed-value intermediates is approved.
+- **D56:** E5 (distill the A5 calibrator into the model) is logged as an idea, not pre-registered.
+- **Gate rerun at ≤ 5%:** 10,005 fresh problems, A3 rules (FINDINGS #11). **FAILED** on one criterion only. At
+  ±2σ\*, 14 of 15 cells sit inside their 99% binomial interval; with 15 cells the rule needs all 15, which D54
+  flagged before the run. The miss is depth 4 / 1%, which over-covers (97.6%, p = 0.0035; Holm does not reject
+  it). Everything else passes:
+  - pooled coverage 67.6% / 95.5% (p = 0.16 / 0.92);
+  - PIT KS p = 0.28;
+  - all 500 noise-0 problems exact.
+- **A6 is not built, and Phase 10+ is stopped again.**
+- **Your call** (FINDINGS #11 has the options): amend the share rule (e.g. "at most ⌈5% of cells⌉ outside per
+  level") and rerun on fresh seeds; redesign the cell grid; or accept this as a false positive, recorded as
+  post hoc.
+- **Tonight's queue is unaffected:** split credit and E1 use generator 1.1.0.
+
+---
+
 # Report: 2026-10-14 laptop day (CPU only), and tonight's queue
 
 **Short version.** No GPU was used, and every step is committed and pushed. **325 tests pass.**
