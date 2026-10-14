@@ -1,0 +1,22 @@
+# D50/A6: counterfactual sensitivity pairs (propagation vs lookup); eval only. Built on generator 2.0.0.
+env_config: env_v2
+construction:                       # stored in every pair problem (replay uses the stored copy)
+  version: "1.0.0"
+  candidate_worlds: 24              # worlds drawn per chain; the lowest- and highest-sigma* (delta method) form the pair
+  min_ratio: 2.0                    # keep a pair only if sigma*_hi / sigma*_lo (delta method) >= this
+  max_chains: 20                    # chains tried per pair seed before giving up (power-law chains never qualify)
+export:                             # frozen pair set: data/eval_sets/<generator_version>/a6_pairs.jsonl
+  families: [kinematics, dynamics, energy]   # round-robin over pair seeds
+  depths: [1, 2, 3, 4, 5]
+  levels: [0.01, 0.02, 0.05]        # D54 main-experiment levels
+  pairs_per_cell: 34                # 15 cells x 34 = 510 pairs = 1,020 problems
+  max_seeds_per_cell: 136           # stop trying a cell after this many pair seeds (failures are reported)
+  seed_offset: 1800000000           # pair seeds; disjoint from every gate run and eval split
+  cell_seed_stride: 100000
+  n_jobs: 4
+analysis:                           # primary: OLS slope of d ln(stated sigma) on d ln(sigma*) within pairs (D50/A6)
+  tau: 1.0e-3                       # A1 computation-correct: |ln mu - ln f(x_meas)| <= tau
+  sigma_floor_rel: 1.0e-6           # stated sigma = 0 -> this relative floor (PREREGISTRATION convention)
+  bootstrap: 10000
+  seed: 0
+  alpha: 0.05

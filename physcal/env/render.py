@@ -125,6 +125,12 @@ def show_measured(q: Quantity, true_si: float, e: float, noise_rel: float, rng: 
     unit is picked from the true value with the same random draws as `show_value`, so problems that differ only
     in their noise level share units."""
     unit = choose_unit(q, true_si, rng, tuple(display_cfg["magnitude_range"]))
+    return measured_in_unit(q, true_si, e, noise_rel, unit, display_cfg, sig_figs)
+
+
+def measured_in_unit(q: Quantity, true_si: float, e: float, noise_rel: float, unit: str, display_cfg: dict,
+                     sig_figs: int) -> ShownValue:
+    """A measured value true·(1 + e) in a given display unit (A6 pairs share units across both members)."""
     shown = format_number(from_si(true_si * (1.0 + e), q.si_unit, unit), sig_figs,
                           tuple(display_cfg["fixed_exponent_range"]))
     return ShownValue(q.symbol, q.desc, shown, unit, to_si(float(shown), unit), noise_rel)

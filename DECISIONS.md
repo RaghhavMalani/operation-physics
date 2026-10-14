@@ -992,3 +992,41 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Files:** `configs/sigma_star_gate_final.yaml`, output `results/sigma_star_gate_final/`.
   - **If it passes:** build A6.
   - **If it fails:** stop and diagnose. There are no further reruns without a specific, diagnosed cause.
+
+### D58. A6 counterfactual sensitivity pairs: implementation (fixed before any model is evaluated on them)
+- **Code:** `physcal/env/pairs.py` (construction), `physcal/eval/a6_pairs.py` (analysis), `configs/pairs.yaml`.
+  Built on generator 2.0.0 after the final gate passed (FINDINGS #12).
+- **Construction** (per family, depth, noise level ∈ {1, 2, 5}% and pair seed):
+  1. Draw a chain, then 24 candidate worlds that pass the generator's validity and κ ≤ 5 filters.
+  2. Compute each world's delta-method σ\* at its true givens. Take the lowest and highest.
+  3. Keep the pair if σ\*_hi / σ\*_lo ≥ 2. Otherwise draw a new chain (up to 20).
+  - **What the two members share:** chain, phrasing (render stream), given and target units (chosen once,
+    from the lo world), distractors, noise level and the standardized measurement errors z.
+  - **Stored σ\*:** the MC value (A2).
+  - **Template bias:** templates whose sensitivity cannot vary (pure power laws) never form pairs. The pair set
+    is therefore biased toward sum/difference/quadratic templates, as D50 anticipated; the manifest reports the
+    family mix and the failures per cell.
+- **Identity and replay:**
+  - Member seeds are 2·pair_seed + {0 (lo), 1 (hi)}.
+  - `noise.pair` stores the pair seed, member, chain try, delta ratio and the full construction config, so
+    `generator.regenerate` replays from the problem itself. This needs no generator version change; the pair
+    version is `1.0.0+<hash of the construction>`.
+  - A refactor shared the noise-record code between the generator and the pairs. It was checked byte-identical
+    on 72 generator-2.0.0 problems, and the frozen 1.1.0 sets still match.
+- **Frozen set:**
+  - **Size:** 15 cells (depth 1–5 × {1, 2, 5}%) × 34 pairs = 510 pairs, 1,020 problems.
+  - **Seeds:** pair seeds from 1.8e9, families round-robin; at most 136 seeds are tried per cell, and shortfalls
+    are reported.
+  - **Files:** `data/eval_sets/2.0.0+bdbb2279/a6_pairs.jsonl` + `a6_pairs_manifest.json` (SHA-256).
+- **Analysis (D50/A6's primary test, made concrete):**
+  - **Variables:** x = ln σ\*_hi − ln σ\*_lo; y = ln σ_hi − ln σ_lo.
+  - **σ:** the stated *relative* σ (σ/|μ|, crps_log's scale). σ = 0 is floored at 1e-6 relative (the
+    PREREGISTRATION convention).
+  - **Primary:** pairs where both answers are computation-correct (A1, τ = 0.1%). The OLS slope of y on x with an
+    intercept, tested with a one-sided bootstrap over pairs (B = 10,000, seed 0) for slope > 0.
+  - **Secondary:** all pairs with both answers parsed.
+  - **Sensitivity:** primary pairs without a stated σ = 0.
+  - **Reference points:** an honest propagator has slope ≈ 1, a surface lookup ≈ 0 (synthetic tests).
+- **Not built yet:** an eval path that runs a model on a frozen problem file (run_eval builds splits from the
+  generator). It is needed when a noise-trained model exists (Phase 12). Until then the pair set is used only
+  through `a6_pairs.analyze` on an eval tape over it.

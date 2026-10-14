@@ -168,19 +168,8 @@ def generate_problem(family: str, depth: int, seed: int, split: str = "train", c
     step_values = outputs_meas if noisy else outputs
     noise_info = None
     if noise_cfg is not None:
-        noise_info = {"level": noise, "sig_figs": noise_cfg["sig_figs"] if noisy else gen["display"]["sig_figs"],
-                      "point_estimate_si": step_values[chain.target]}
-        if noisy:
-            noise_info.update(
-                givens={g: {"rel": noise, "true_si": world[g], "e": float(e[i])} for i, g in enumerate(chain.givens)},
-                intermediates_true_si={x: outputs[x] for x in chain.intermediates},
-                sigma_star_log_delta=noise_mode.delta_sigma_log(
-                    noise_mode.log_sensitivities(fam, chain, measured, gen["condition_rel_step"]),
-                    {g: noise for g in chain.givens}),
-                **noise_mode.summarize(log_draws, step_values[chain.target], target_si))
-        else:
-            noise_info.update(sigma_star_log=0.0, sigma_star_log_sd=0.0, sigma_star_log_delta=0.0,
-                              sigma_star_si_sd=0.0, pit_truth=None, mc_draws=0)
+        noise_info = noise_record(fam, chain, gen, noise, world if noisy else None, e if noisy else None,
+                                  measured if noisy else None, outputs, step_values, log_draws if noisy else None)
     return Problem(
         text=text,
         target_symbol=chain.target,
@@ -204,9 +193,40 @@ def generate_problem(family: str, depth: int, seed: int, split: str = "train", c
     )
 
 
+def noise_record(fam, chain: Chain, gen: dict, noise: float, world: dict | None, e, measured: dict | None,
+                 outputs: dict, step_values: dict, log_draws) -> dict[str, Any]:
+    """The `noise` field of a generator >= 2.0.0 problem (shared by generate_problem and the A6 pairs)."""
+    noisy = noise != 0.0
+    info: dict[str, Any] = {"level": noise,
+                            "sig_figs": gen["noise"]["sig_figs"] if noisy else gen["display"]["sig_figs"],
+                            "point_estimate_si": step_values[chain.target]}
+    if noisy:
+        info.update(
+            givens={g: {"rel": noise, "true_si": world[g], "e": float(e[i])} for i, g in enumerate(chain.givens)},
+            intermediates_true_si={x: outputs[x] for x in chain.intermediates},
+            sigma_star_log_delta=noise_mode.delta_sigma_log(
+                noise_mode.log_sensitivities(fam, chain, measured, gen["condition_rel_step"]),
+                {g: noise for g in chain.givens}),
+            **noise_mode.summarize(log_draws, step_values[chain.target], outputs[chain.target]))
+    else:
+        info.update(sigma_star_log=0.0, sigma_star_log_sd=0.0, sigma_star_log_delta=0.0,
+                    sigma_star_si_sd=0.0, pit_truth=None, mc_draws=0)
+    return info
+
+
 def regenerate(problem: dict, cfg: dict, split: str = "eval") -> Problem:
-    """The problem a logged dict came from (tape replay), including its noise level."""
-    level = (problem.get("noise") or {}).get("level", 0.0)
+    """The problem a logged dict came from (tape replay), including its noise level and, for an A6 pair member,
+    the pair construction stored in the problem itself."""
+    noise = problem.get("noise") or {}
+    if noise.get("pair"):
+        from physcal.env.pairs import generate_pair
+
+        pr = noise["pair"]
+        pair = generate_pair(problem["family"], problem["depth"], pr["pair_seed"], noise["level"], cfg, pr["construction"])
+        if pair is None:
+            raise RuntimeError(f"pair {pr['pair_seed']} no longer generates")
+        return pair[pr["member_index"]]
+    level = noise.get("level", 0.0)
     return generate_problem(problem["family"], problem["depth"], problem["seed"], split=split, cfg=cfg, noise=level)
 
 
