@@ -1,0 +1,16 @@
+# Phase 10 step 4, rerun after D54 (noise capped at 5%): the same A3 criteria as configs/sigma_star_gate.yaml.
+env_config: env_v2
+families: [kinematics, dynamics, energy]   # round-robin within each cell
+depths: [1, 2, 3, 4, 5]
+levels: [0.01, 0.02, 0.05]                # D54 main-experiment levels; noise 0 is checked separately for exactness
+n_per_cell: 667                           # 15 cells x 667 = 10,005 problems
+noise_zero_n: 500
+seed_offset: 1600000000                   # fresh seeds: disjoint from the first gate run (1.5e9) and the eval splits
+cell_seed_stride: 100000                  # each cell gets its own seeds (cells are independent, not paired)
+interval_k: [1, 2]                        # intervals ln f(x_meas) +/- k sigma*; nominal = P(|N(0,1)| <= k)
+alpha: 0.05                               # Kupiec pooled, per-cell Holm, PIT KS
+binomial_interval: 0.99                   # per-cell coverage must sit inside this central binomial interval...
+min_share_cells_inside: 0.95              # ...for at least this share of cells (per level k)
+pit_bins: 10
+n_jobs: 4
+output_dir: results/sigma_star_gate_capped

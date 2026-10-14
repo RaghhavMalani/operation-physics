@@ -916,3 +916,31 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     problems. E1 tapes replay exactly. An echo model run through eval and compare gives Δcrps_log = 0.
   - **Not testable today:** the Unsloth training step itself has had no GPU smoke test (no GPU today), so the
     first E1 step tonight is its smoke test.
+
+## Decisions after the first Phase 10 gate (2026-10-14, evening)
+
+### D54. Noise dial capped at 5% for the main experiments; 10% becomes a "heavy-tail" regime (your decision)
+- **This cap was chosen after seeing the gate result (FINDINGS #9).** It is a post-hoc design change.
+- **Main experiments** (Phases 11–14: frozen eval sets, curriculum, H1–H5, calibration surface) use noise levels
+  {0, 1%, 2%, 5%}.
+- **10% "heavy-tail" regime:**
+  - It is scored only by crps_log against the Monte Carlo predictive distribution: the expected CRPS of the
+    stated Gaussian over the generator's MC draws (regenerated from the problem's seeded MC stream). It may also
+    be scored against the realized truth, which A1 keeps valid everywhere.
+  - No coverage claims and no coverage tests are made in this regime. It is always reported separately.
+- **The generator is unchanged:** generator 2.0.0 (`configs/env_v2.yaml`, `2.0.0+bdbb2279`) still generates
+  10%. Which levels an experiment draws is set in that experiment's config, so problem identities and the
+  version string do not change.
+- **Gate rerun** on {0, 1, 2, 5}% under the A3 rules:
+  - **Sample:** 10,005 noisy problems (15 cells = depth 1–5 × {1, 2, 5}%, 667 per cell, families round-robin)
+    plus 500 noise-0 problems for the exactness check.
+  - **Fresh seeds:** offset 1.6e9, disjoint from the first gate run (1.5e9). The rerun is therefore an
+    independent sample, not a re-score of problems already seen.
+  - **Config and output:** `configs/sigma_star_gate_capped.yaml`, `results/sigma_star_gate_capped/`.
+  - **Next step:** build A6 if it passes; stop and report if it fails.
+- **Stated before the rerun: what A3 means with 15 cells.**
+  - "≥ 95% of cells inside the 99% binomial interval" with 15 cells means all 15 (14/15 = 93.3% < 95%).
+  - A valid generator passes that criterion with probability ≈ 0.99^15 ≈ 0.86 per level, against ≈ 0.98 with the
+    20 cells of the first run.
+  - The rule is applied as written. If the rerun fails only on it, that is reported as a failure. The number of
+    cells outside is reported either way.

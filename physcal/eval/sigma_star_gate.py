@@ -1,6 +1,6 @@
 """Phase 10 step 4: the generator's own σ* must cover the clean truth at nominal rates (gate as amended, D50/A3).
 
-    nice uv run python -m physcal.eval.sigma_star_gate
+    nice uv run python -m physcal.eval.sigma_star_gate [--config sigma_star_gate_capped]
 
 10,000 noisy problems (depth 1–5 × noise 1, 2, 5, 10%; 500 per cell, families round-robin, every cell with its
 own seeds). Interval: ln f(x_meas) ± k·σ* (σ* = CRPS-optimal log-scale, A2), k = 1, 2. The gate passes iff
@@ -73,6 +73,7 @@ def evaluate(rows: list[dict], cfg: dict, sigma_key: str = "sigma") -> dict:
             "pooled_ok": pooled["p"] > alpha,
             "holm_ok": not any(v["rejected"] for v in h.values()),
             "share_cells_inside": share_inside,
+            "n_cells_outside": sum(not v["inside"] for v in per_cell.values()),
             "share_ok": share_inside >= cfg["min_share_cells_inside"],
             "superseded_every_cell_ok": all(v["p"] > alpha for v in per_cell.values()),
         }
@@ -80,7 +81,11 @@ def evaluate(rows: list[dict], cfg: dict, sigma_key: str = "sigma") -> dict:
 
 
 def main() -> None:
-    cfg = load_config("sigma_star_gate")
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", default="sigma_star_gate")
+    cfg = load_config(ap.parse_args().config)
     env = load_config(cfg["env_config"])
     noisy_jobs, zero_jobs = jobs(cfg)
     with ProcessPoolExecutor(cfg["n_jobs"]) as ex:
@@ -133,6 +138,7 @@ def render(res: dict, cfg: dict) -> str:
     lines = [f"# Phase 10 generator self-consistency gate ({res['generator_version']})", "",
              f"**Gate (D50/A3): {'PASSED' if g['passed'] else 'FAILED'}**; superseded every-cell rule: "
              f"{'passed' if res['superseded_rule_every_cell_kupiec']['passed'] else 'failed'} (not used).", "",
+             f"Levels {cfg['levels']}, {cfg['n_per_cell']} per cell. "
              f"{res['n_noisy']} noisy problems, {res['n_errors']} generation errors; noise 0: {res['noise_zero']['n']} "
              f"problems, all exact: {res['noise_zero']['all_exact']}.", "",
              "| criterion | ok |", "|---|---|"]
@@ -143,7 +149,7 @@ def render(res: dict, cfg: dict) -> str:
     for k, lv in res["primary_sigma_crps"]["levels"].items():
         lines += [f"## ±{k}σ* (nominal {lv['nominal']:.2%}): pooled {lv['pooled']['coverage']:.2%}, "
                   f"Kupiec p = {lv['pooled']['p']:.3g}; cells inside the {cfg['binomial_interval']:.0%} binomial "
-                  f"interval: {lv['share_cells_inside']:.0%}", "",
+                  f"interval: {lv['share_cells_inside']:.0%} ({lv['n_cells_outside']} outside)", "",
                   "| cell | n | coverage | Kupiec p | Holm rejects | inside |", "|---|---|---|---|---|---|"]
         lines += [f"| {c} | {v['n']} | {v['coverage']:.1%} | {v['p']:.3g} | {lv['holm'][c]['rejected']} | {v['inside']} |"
                   for c, v in lv["cells"].items()]
