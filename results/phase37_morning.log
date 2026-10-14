@@ -1,0 +1,6 @@
+[07:30:57] training process exited
+[07:31:07] GPU at 58C
+[07:31:07] eval rl287 (permanent_checkpoints/checkpoint-287), timeout 3533s
+[07:42:18] eval rl287 exit 0
+[07:42:18] GPU at 66C
+[07:42:18] eval rlfinal (final_adapter), timeout 2862s
