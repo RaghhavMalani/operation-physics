@@ -418,3 +418,22 @@ Progress:
 - [x] Final 3-way eval + paired tests (FINDINGS #5): ID acc ≤1% raw base 0% → SFT 38.0% → SFT+RL 40.0%;
   depth 5 0% → 31.0% → 31.0%. RL vs SFT: +4/−0 problems on ID (p = 0.125), reward +0.046 (p = 0.018 nominal),
   depth 5 unchanged, calibration unchanged (1σ coverage ~15%). 238 tests pass. GPU work ended 07:07 IST.
+
+## Phase 3.7 — σ floor removed, matched-step GRPO rerun (2026-10-13/14, unattended)
+
+- [x] Verifier 1.1.0 (D37 approved, D38): crps_log σ floor 1e-6, `version` in `configs/reward.yaml`, logged in
+  every breakdown; old tapes replay under their own config. 13 new tests (strict σ monotonicity at 0.01–0.1%,
+  MC propriety below the old floor, version checks, exact replay of last night's eval tapes). 251 tests pass.
+- [x] Stage 1: last night's SFT-only and SFT+RL eval tapes re-scored under 1.1.0 into new, replayable tapes
+  (`compare_verifier_1.1.0/`; originals untouched).
+- [x] Stage 2: post-hoc control (D40). SFT-only completions on 400 training-seed problems; σ scale c = 18.1
+  (crps fit) → SFT-only 1σ coverage 15.0% → 35.0% (ID), 11.5% → 33.5% (depth 5); coverage-matched c = 585 → 65% /
+  72.5% at a large crps_log cost. 24% of SFT answers state σ = 0.
+- [x] Stage 3: memory fix (D39): micro-batch 2 × 16 + 7.5 GiB allocator cap; smoke test 6.46 GiB peak, 0 OOMs.
+- [x] Stage 4: overnight GRPO, identical to last night except the verifier: 759 steps (07:30 IST stop),
+  35.7 s/step, peak reserved 7.05 GiB, permanent step-287 adapter. 24,288 rollouts (replay exact, tape gzipped,
+  D42). σ = 0 share 25% until step ~300, then 95–98% from step ~575.
+- [x] Stage 5: evals (step 287 first, then step 759) + paired tests (FINDINGS #6). At step 287: 1σ coverage 14.0% /
+  9.5% vs SFT-only 15.0% / 11.5% and last night 15.5% / 10.0% (all p ≥ 0.125); post-hoc control 35.0% / 33.5%
+  (p < 1e-12 in its favour). Step 759: 11.5% / 8.1%, 50.5% of ID answers state σ = 0. 259 tests pass. GPU work
+  ended 07:53 IST.
