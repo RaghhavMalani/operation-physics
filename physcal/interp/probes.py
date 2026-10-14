@@ -181,17 +181,23 @@ def plot(res: dict, path: Path) -> None:
         ax.set_title(titles[task], color=TEXT_PRIMARY, fontsize=10, loc="left")
         ax.set_xlabel("layer (0 = embeddings)", color=TEXT_SECONDARY, fontsize=9)
     h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, frameon=False, fontsize=9, labelcolor=TEXT_PRIMARY, loc="upper right", ncol=3)
     fig.suptitle("Linear probes on the pre-answer hidden state (dot = layer chosen by CV on the fit set)",
                  color=TEXT_PRIMARY, fontsize=11, x=0.01, ha="left")
-    fig.tight_layout(rect=(0, 0, 1, 0.93))
+    fig.legend(h, l, frameon=False, fontsize=9, labelcolor=TEXT_PRIMARY, loc="upper left",
+               bbox_to_anchor=(0.005, 0.94), ncol=3)
+    fig.tight_layout(rect=(0, 0, 1, 0.87))
     fig.savefig(path, dpi=130, facecolor=SURFACE)
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--skip-mlp", action="store_true")
+    ap.add_argument("--replot", action="store_true", help="redraw the figure from probe_results.json")
     args = ap.parse_args()
+    if args.replot:
+        root = REPO_ROOT / load_config("probe_sft")["output_dir"]
+        plot(json.loads((root / "probe_results.json").read_text()), root / "probe_by_layer.png")
+        return
     cfg = load_config("probe_sft")
     pc = cfg["probes"]
     seed, nb = pc["seed"], pc["bootstrap"]
@@ -219,13 +225,9 @@ def main() -> None:
             "metadata": metadata_probe(idx_fit, idx_test, yf, yt, task, seed, pc)}
         if not args.skip_mlp:
             print(f"[{task}] MLP probes", flush=True)
-            sel = res["linear"][task]["sft"]["selected_layer"]
-            mlp = probe(fit, test, yf, yt, task, "mlp", seed, pc)
-            k = mlp["selected_layer"]
-            res["mlp"][task] = {"sft": mlp,
-                                "random_init": probe(rfit, rtest, yf, yt, task, "mlp", seed, pc, layers=[k]),
-                                "sft_shuffled": probe(fit, test, yf[perm], yt, task, "mlp", seed, pc, layers=[k]),
-                                "linear_selected_layer": sel}
+            res["mlp"][task] = {"sft": probe(fit, test, yf, yt, task, "mlp", seed, pc),
+                                "random_init": probe(rfit, rtest, yf, yt, task, "mlp", seed, pc),
+                                "sft_shuffled": probe(fit, test, yf[perm], yt, task, "mlp", seed, pc)}
 
     # pre-registered tests (pooled test set)
     yc, ye = labels["correct"][1], labels["log_error"][1]
@@ -239,6 +241,11 @@ def main() -> None:
     t["P3_probe_vs_stated_sigma_spearman"] = paired_bootstrap("log_error", ye, lin_e["test_scores"], sig_e, nb, seed)
     t["holm"] = holm({k: t[k]["p_one_sided"] for k in ("P1_probe_vs_stated_sigma_auroc", "P2_probe_vs_metadata_auroc",
                                                          "P3_probe_vs_stated_sigma_spearman")}, 0.05)
+    if res["mlp"]:
+        t["secondary_mlp_vs_stated_sigma_auroc"] = paired_bootstrap(
+            "correct", yc, res["mlp"]["correct"]["sft"]["test_scores"], sig_c, nb, seed)
+        t["secondary_mlp_vs_stated_sigma_spearman"] = paired_bootstrap(
+            "log_error", ye, res["mlp"]["log_error"]["sft"]["test_scores"], sig_e, nb, seed)
     shuf = res["linear"]["correct"]["sft_shuffled"]["test_scores"]
     t["sanity_shuffled_auroc"] = paired_bootstrap("correct", yc, shuf, np.zeros(len(yc)) + 0.5, nb, seed)
     t["sanity_real_vs_random_init_auroc"] = paired_bootstrap(

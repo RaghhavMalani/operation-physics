@@ -1,0 +1,211 @@
+{
+  "run_id": "probe-sft-calibration-ext",
+  "model_id": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+  "model_revision": null,
+  "lora": null,
+  "lora_hash": null,
+  "oom_backoffs": 0,
+  "oom_fallback": false,
+  "oom_error": null,
+  "generation_seconds": 2317.8711445331573,
+  "memory": {
+    "torch_max_allocated_gib": 4.479276657104492,
+    "torch_max_reserved_gib": 4.75,
+    "device_total_gib": 7.99560546875,
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "nvidia_smi_peak_used_gib_device_wide": 5.216796875
+  },
+  "generator_version": "1.1.0+c735a0d4",
+  "reward_rule": "crps_log",
+  "prompt_id": "v4_worked_example",
+  "skipped_splits": {},
+  "splits": {
+    "calibration": {
+      "n": 1600,
+      "n_answered": 1598,
+      "n_with_sigma": 1598,
+      "accuracy": 0.39875,
+      "accuracy_among_answered": 0.3992490613266583,
+      "median_rel_error": 0.02211658253942578,
+      "parse_fail_rate": 0.00125,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.0,
+      "coverage_1sigma": 0.12390488110137672,
+      "coverage_2sigma": 0.16520650813516896,
+      "mean_rel_sigma": 0.0020599793235426514,
+      "median_rel_sigma": 0.0005020199946229843,
+      "mean_reward": -0.15794019817001492,
+      "mean_score_by_rule": {
+        "crps": -0.27046188105630226,
+        "binary": 0.39875,
+        "log_score": -5.209235299325387,
+        "abs_rel_error": -0.27122218272248344,
+        "crps_log": -0.25077353150334825
+      },
+      "mean_step_score": 0.6188888888888889,
+      "copied_given_rate": 0.009386733416770964,
+      "steps_block_rate": 0.99875,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": 0.06695869837296621,
+          "n": 1598
+        },
+        {
+          "nominal": 0.2,
+          "observed": 0.08135168961201501,
+          "n": 1598
+        },
+        {
+          "nominal": 0.3,
+          "observed": 0.09449311639549436,
+          "n": 1598
+        },
+        {
+          "nominal": 0.4,
+          "observed": 0.10638297872340426,
+          "n": 1598
+        },
+        {
+          "nominal": 0.5,
+          "observed": 0.11076345431789737,
+          "n": 1598
+        },
+        {
+          "nominal": 0.6,
+          "observed": 0.11576971214017522,
+          "n": 1598
+        },
+        {
+          "nominal": 0.7,
+          "observed": 0.12578222778473092,
+          "n": 1598
+        },
+        {
+          "nominal": 0.8,
+          "observed": 0.13829787234042554,
+          "n": 1598
+        },
+        {
+          "nominal": 0.9,
+          "observed": 0.15269086357947434,
+          "n": 1598
+        },
+        {
+          "nominal": 0.95,
+          "observed": 0.16332916145181478,
+          "n": 1598
+        },
+        {
+          "nominal": 0.99,
+          "observed": 0.18147684605757197,
+          "n": 1598
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          692,
+          13,
+          9,
+          24,
+          41,
+          89,
+          16,
+          6,
+          23,
+          685
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 1598
+      },
+      "truncation_rate": 0.00125,
+      "mean_completion_tokens": 195.96875,
+      "by_depth": {
+        "1": {
+          "n": 400,
+          "accuracy": 0.6425,
+          "median_rel_error": 0.0029298360655738093,
+          "parse_fail_rate": 0.0025,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.2681704260651629
+        },
+        "2": {
+          "n": 400,
+          "accuracy": 0.375,
+          "median_rel_error": 0.021295217011834486,
+          "parse_fail_rate": 0.0025,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.09774436090225563
+        },
+        "3": {
+          "n": 400,
+          "accuracy": 0.3,
+          "median_rel_error": 0.04013960958063508,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.06
+        },
+        "4": {
+          "n": 400,
+          "accuracy": 0.2775,
+          "median_rel_error": 0.050073218938366235,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.07
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 532,
+          "accuracy": 0.575187969924812,
+          "median_rel_error": 0.005851669240252712,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.15977443609022557
+        },
+        "energy": {
+          "n": 532,
+          "accuracy": 0.19924812030075187,
+          "median_rel_error": 0.05609237970024113,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.06578947368421052
+        },
+        "kinematics": {
+          "n": 536,
+          "accuracy": 0.4216417910447761,
+          "median_rel_error": 0.022996806532623443,
+          "parse_fail_rate": 0.0037313432835820895,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.14606741573033707
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.39875,
+          "0.02": 0.484375,
+          "0.05": 0.610625,
+          "0.1": 0.703125
+        },
+        "sigma_free": {
+          "0.01": 0.39875,
+          "0.02": 0.484375,
+          "0.05": 0.610625,
+          "0.1": 0.703125
+        }
+      }
+    }
+  }
+}

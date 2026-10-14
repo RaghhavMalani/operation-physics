@@ -314,3 +314,61 @@ neither significant).
 - Eval: `compare/{rl287,rlfinal}/` (400 rollouts each, replay exactly); paired tests and tables
   `compare/phase37_paired.json`, `compare/phase37_tables.md` (`scripts/phase37_compare.py`, which uses
   `scripts/paired_tests.py`); chain `scripts/phase37_morning.sh`. D41.
+
+---
+
+## #7. A linear readout predicts correctness at AUROC 0.92 where stated σ is at chance, but a random-init model does as well: the signal is in the text, not demonstrably in the model (2026-10-14)
+
+**Question (Phase 9.5 step 2, PREREGISTRATION.md family P).** Does the SFT-only model "know" its own error, even though
+its stated σ does not?
+
+**Pre-registered answer: uninterpretable.** The probes beat stated σ by a wide margin (P1–P3 all pass Holm, p < 1e-4),
+but the pre-registered sanity condition **fails**. A probe on a *randomly initialized* copy of the model predicts
+correctness just as well (AUROC 0.914 vs 0.917, paired bootstrap p = 0.40). The pre-registration says P1–P3 are then
+reported as uninterpretable, and they are.
+
+| predictor (fit on 1,996 training-seed completions, tested on the 400 frozen eval completions) | correct ≤1%: test AUROC | log\|error\|: test Spearman ρ |
+|---|---|---|
+| **stated σ** | **0.50** | **0.02** |
+| family + depth (metadata) | 0.76 | 0.49 |
+| linear probe, SFT-only model (CV-chosen layer 15 / 16) | **0.917** [0.887, 0.944] | **0.733** [0.676, 0.780] |
+| linear probe, random-init model (CV-chosen layer 2 / 1) | 0.914 | 0.689 |
+| linear probe, shuffled labels | 0.48 (CI contains 0.5 ✓) | −0.13 |
+| MLP probe, SFT-only model (secondary) | 0.930 | 0.676 |
+| MLP probe, random-init model | 0.899 | 0.610 |
+
+Per split (pooled numbers above): ID probe AUROC 0.944 vs stated σ 0.494; depth 5 0.899 vs 0.501. Depth 5 is never
+seen in the fit set, so the readout transfers to deeper chains.
+
+**Exploratory follow-up (not pre-registered; `scripts/probe_exploratory.py`).** What in the text carries the signal?
+- **The completion's words:** a TF-IDF bag-of-words logistic regression on the completion text gets AUROC **0.906**
+  (ID 0.925, depth 5 0.883), statistically the same as the SFT probe (difference +0.011, CI [−0.012, 0.035]).
+- **Which chain the problem uses:** one-hot (family, target, set of givens) alone gets **0.88** on the ID split (0.90 on
+  the 40% of test problems whose template occurs in the fit set). Most of the signal is per-template difficulty: the
+  model reliably gets some chains right and others wrong, and the formulas it writes reveal which chain it is on.
+- **Length** alone: 0.66.
+- **Error magnitude is the one place the trained model adds something:** for log|error| the SFT probe beats the
+  random-init probe, ρ 0.733 vs 0.689 (+0.044, CI [0.007, 0.082], one-sided p = 0.010, uncorrected).
+
+### What this means
+- **The information an informative σ needs is in the model's own context at answer time.** A linear reader of the
+  completion separates right from wrong answers at AUROC ~0.9. The stated σ uses none of it (0.50). The bottleneck
+  is learning to *map* that context to σ, not access to the information. That is consistent with the
+  credit-assignment diagnosis of FINDINGS #6 and supports trying split credit (Phase 9.5 step 3).
+- **But "knowing its error" here mostly means recognizing the problem type and the formulas it used**, which a random
+  network or a bag of words does equally well. There is no evidence of introspective knowledge beyond the text,
+  except a small, exploratory edge on error magnitude.
+- **For Phase 13:** a hidden-state probe as an uncertainty source must be reported next to the random-init and
+  bag-of-words controls, or it will overclaim. And a text- or template-conditional post-hoc σ (for example, conformal
+  per template) is likely a much stronger baseline than the single global scale: the global scale can't use any of
+  the 0.9-AUROC signal.
+
+### Provenance
+- Protocol: PREREGISTRATION.md family P (commit `f601bb7`, before any result). Implementation details and deviations:
+  D45, D47.
+- Fit set: `results/posthoc_calibration/sft_calibration_set/` (400) + `results/probe_sft/sft_calibration_ext/` (1,600,
+  replays exactly); SFT-only, greedy, prompt v4, 512 tokens; 4 parse failures excluded (1,996 used). Test set: the
+  SFT-only eval tape re-scored under verifier 1.1.0 (400, 0 excluded).
+- Code: `physcal/interp/{extract,probes}.py`, `configs/probe_sft.yaml`, tests `tests/test_interp.py`. Hidden states
+  (local only, gitignored): `results/probe_sft/hidden/{sft,random_init}/{fit,test}/layer_XX.npy`.
+- Results: `results/probe_sft/probe_results.json`, `probe_by_layer.png`; exploratory `results/probe_sft/exploratory.json`.

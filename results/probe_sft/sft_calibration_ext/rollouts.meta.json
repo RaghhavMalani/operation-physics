@@ -1,0 +1,148 @@
+{
+  "env_config": {
+    "generator": {
+      "condition_rel_step": 1e-06,
+      "display": {
+        "fixed_exponent_range": [
+          -2,
+          4
+        ],
+        "magnitude_range": [
+          0.01,
+          10000.0
+        ],
+        "sig_figs": 3
+      },
+      "distractors": [
+        0,
+        2
+      ],
+      "max_attempts": 200,
+      "max_condition_number": 5.0,
+      "max_world_tries": 100,
+      "version": "1.1.0",
+      "worlds_per_chain": 10
+    },
+    "splits": {
+      "depths": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "eval_seed_offset": 1000000000,
+      "heldout_depths": [
+        5
+      ],
+      "heldout_families": [
+        "optics"
+      ]
+    }
+  },
+  "eval_config": {
+    "calibration": {
+      "accuracy_tolerances": [
+        0.01,
+        0.02,
+        0.05,
+        0.1
+      ],
+      "pit_bins": 10,
+      "reliability_levels": [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        0.95,
+        0.99
+      ]
+    },
+    "generation": {
+      "batch_size": 16,
+      "do_sample": false,
+      "max_new_tokens": 512,
+      "num_samples": 1,
+      "repetition_penalty": 1.0,
+      "seed": 0,
+      "temperature": 1.0,
+      "top_k": 0,
+      "top_p": 1.0
+    },
+    "memory_poll_seconds": 2.0,
+    "model": {
+      "chat_template_kwargs": {},
+      "dtype": "bfloat16",
+      "fallback_id": null,
+      "id": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+      "lora": null,
+      "model_class": "causal_lm",
+      "revision": null
+    },
+    "output_dir": "/home/flash2404/operation-physics/results/probe_sft/sft_calibration_ext",
+    "prompt": "v4_worked_example",
+    "run_id": "probe-sft-calibration-ext",
+    "seed_block": 1000000,
+    "splits": {
+      "calibration": {
+        "depths": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "families": "train",
+        "n": 1600,
+        "train_seed_offset": 20000400
+      }
+    }
+  },
+  "generation": {
+    "batch_size": 16,
+    "do_sample": false,
+    "max_new_tokens": 512,
+    "num_samples": 1,
+    "repetition_penalty": 1.0,
+    "seed": 0,
+    "temperature": 1.0,
+    "top_k": 0,
+    "top_p": 1.0
+  },
+  "generator_version": "1.1.0+c735a0d4",
+  "git_commit": "7397f31db7d20b2d4d2629212dbed9bc8804f233",
+  "model_id": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+  "model_revision": null,
+  "oom_error": null,
+  "oom_fallback": false,
+  "prompt_id": "v4_worked_example",
+  "reward_config": {
+    "checks": {
+      "copy_tolerance": 0.001
+    },
+    "scoring": {
+      "abs_rel_error_clip": 5.0,
+      "binary_tolerance": 0.01,
+      "crps_clip": 5.0,
+      "crps_log_sigma_floor": 1e-06,
+      "log_score_clip": 10.0,
+      "rule": "crps_log",
+      "sigma_floor": 0.001
+    },
+    "steps": {
+      "empty_score": 0.0,
+      "tolerance": 0.02
+    },
+    "version": "1.1.0",
+    "weights": {
+      "final": 1.0,
+      "steps": 0.2
+    }
+  },
+  "run_id": "probe-sft-calibration-ext",
+  "system_prompt": "You are a careful physics problem solver.\n\nSolve the problem. You may think step by step first. Then finish with exactly this format:\n\n<steps>\nsymbol = value unit\n</steps>\n<answer>value \u00b1 uncertainty unit</answer>\n\nRules:\n- In <steps>, write one line per intermediate quantity the problem asks you to report, using the problem's symbol names, each with a number and a unit.\n- In <answer>, give the final value in the unit the problem asks for, then \u00b1 and your honest one-standard-deviation uncertainty in the same unit. The true value should lie within \u00b1 one uncertainty of your value about 68% of the time: say a large uncertainty when unsure and a small one when confident.\n- Numbers may use scientific notation such as 1.23e-4.\n- Write exactly one <answer> block, and nothing after it.\n\nExample problem:\nA crate of mass m rests on a level floor, and the coefficient of kinetic friction between the crate and the floor is mu. Starting from rest, the crate is pulled by a constant horizontal force F for a time t1. While it slides, the floor exerts a normal force N and a kinetic friction force f_k on it; the net horizontal force on the crate is F_net and its acceleration is a1. When the pull stops, the crate has speed v and momentum p, and it has moved a distance s1. Afterwards it slides freely, slowing down under friction alone with a deceleration of magnitude a2, and stops after a further time t2 and distance s2.\n\nKnown values:\n- len_rope = 7110 mm (the length of the rope used to pull the crate).\n- The mass of the crate, m, equals 2190 g.\n- P_air = 102 kPa (the air pressure in the room).\n- F_net = 5370 mN (the net horizontal force on the crate during the pull).\n- The speed of the crate when the pull stops is v = 42.8 km/h.\n- Use g = 9.81 m/s^2.\n\nDetermine s1, the distance the crate moves during the pull. Express the result in km. Report these intermediate quantities in <steps>: a1.\n\nExample solution:\nConvert the needed values to SI: F_net = 5370 mN = 5.37 N, m = 2190 g = 2.19 kg, v = 42.8 km/h = 42.8 / 3.6 m/s = 11.889 m/s. The rope length and the air pressure are not needed.\nNewton's second law: a1 = F_net / m = 5.37 / 2.19 = 2.452 m/s^2.\nThe crate starts from rest with constant acceleration, so v^2 = 2 a1 s1 and s1 = v^2 / (2 a1) = 11.889^2 / (2 * 2.452) = 141.35 / 4.904 = 28.82 m.\nIn the requested unit: s1 = 28.82 m = 0.02882 km.\n<steps>\na1 = 2.452 m/s^2\n</steps>\n<answer>0.02882 \u00b1 0.0003 km</answer>"
+}

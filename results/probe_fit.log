@@ -1,0 +1,686 @@
+[correct] linear probes
+[correct] MLP probes
+[log_error] linear probes
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.12534040051105e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.557637360378067e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.05655346880485e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.991717071969106e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.459119982262564e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.762888915545773e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.566371268945659e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.16697803934585e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.506417804530429e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.913676114412738e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.904972593702041e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.417059950081239e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.400014112590725e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.222290238611095e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.365301257777901e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.921233364209911e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.912617595527081e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.848310363238852e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.344336694359299e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.8263466939934005e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.796089024874163e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.735875667298387e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.031721255794764e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.630458043195176e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.789316131516898e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.306873245875977e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.61124701650806e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.54469900496224e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.385443012708492e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.271312713579391e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.385836570643733e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.100798254417896e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.785015133596971e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.657619167071971e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.071493885428936e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.699780641383768e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.856845402580802e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.258530843046174e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.720257061942903e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.12819874845627e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.013729603182583e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.828688097788472e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.347915698119323e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.98672542651002e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.461008439373472e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.104828997877121e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.420049286110952e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.452874146134491e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.975244476985608e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.678608682226695e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.709780819846856e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.507897154506281e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.014060005554711e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.7654126806028216e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.264705376679558e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.552858877739709e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.992793544213782e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.333315383244553e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.555445253297876e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.720849654584526e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.363259785757691e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.825182279930232e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.222352055829106e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.89688519628362e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.254521167647908e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.812035107690463e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.017840886192062e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.873360630128445e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.086278230872267e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.412385999965409e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0685729989745596e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0497080182858554e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.358220699416052e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.218881137305289e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.088227332336828e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.561700326481514e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0780787818021054e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.085054048478924e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0045688725313084e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.883541369186787e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.217350000450097e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.390770034338857e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.917753125890158e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.277272118244582e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.32987936405516e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.884083430553801e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.543610618971798e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.79295649017331e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.980624244259161e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.246783522736223e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.095914066392652e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.539975482335649e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.04420431879771e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.767253151769182e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.122184252419174e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.52242578730511e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.558024688909427e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.71729852747194e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.183186477912386e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.832309189050648e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.711572263564449e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0024236729577751e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0873828415469688e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.572565945996757e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.370661047114481e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.622905056654417e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.049169508694831e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.779372961953413e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0125977212283033e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.532992978871334e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.227645136888896e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.163051117866416e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0078225898269011e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.511513271969307e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.319937450096404e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.717484061866344e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.198510042551789e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.203622397535582e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.787874605786783e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.324283212208684e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.826318603245454e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.823989444157633e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.871601491795445e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0431227082108308e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.135129892304576e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1886501738445077e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.674365486489478e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.029083591674862e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.759921226759616e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0163632424564639e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.879205009610814e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/physcal/interp/probes.py:36: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  return float(spearmanr(a, b).statistic)
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1873719785171488e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1757069273699017e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.557637360378067e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.125339689968314e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.05655346880485e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.459119982262564e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.991717071969106e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.762888915545773e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.904973304244777e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.506418515073165e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.365300547235165e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.16697803934585e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.222290238611095e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.400014112590725e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.848311073781588e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.913676114412738e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.566371268945659e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.417059950081239e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.031721255794764e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.544699715504976e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.630458043195176e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.735876377841123e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.92123194312444e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.271312713579391e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.912617950798449e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.657619167071971e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.8263466939934005e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.306873245875977e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.796088314331428e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.828689518873944e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.344336694359299e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.720257061942903e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.100798964960632e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.104828287334385e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.071494595971672e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.61124701650806e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.385837281186468e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.785015133596971e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.128197327370799e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.789316842059634e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.385443012708492e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.678608682226695e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.452874146134491e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.347915698119323e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.461009149916208e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.98672542651002e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.014060005554711e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.699781351926504e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.258530843046174e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.013729603182583e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.856844692038067e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.507896443963546e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.70978010930412e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.7654126806028216e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.975243766442873e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.264704666136822e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.420049286110952e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.552858877739709e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.992793544213782e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.720850365127262e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.333315383244553e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.555445253297876e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.363259075214955e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.89688519628362e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.222352055829106e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.825182279930232e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.254521167647908e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.086279651957739e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.412385999965409e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.873361340671181e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.017840886192062e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0497080182858554e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.561701747566985e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.812035107690463e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.218879716219817e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.358220699416052e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0780787818021054e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.883541369186787e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.917752415347422e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.085054048478924e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0685731410831067e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.390770034338857e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.32987936405516e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.79295649017331e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.088226621794092e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.277272118244582e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.246782101650751e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.04420431879771e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.980624244259161e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.217350710992832e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0045688014770349e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.832309189050648e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.767253151769182e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.71729852747194e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.884083430553801e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.370661047114481e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.572565235454022e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.54360848734359e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.095914776935388e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.52242578730511e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.539974771792913e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.087382983655516e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.049169508694831e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0024236729577751e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.122183541876439e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.558025399452163e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.532992978871334e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.779372961953413e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.711572974107185e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.183186477912386e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.163053249494624e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.227645136888896e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.511513271969307e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.622904346111682e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.31993816063914e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0078225898269011e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0125976501740297e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.717484061866344e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.198510042551789e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.203622397535582e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.826318603245454e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.823989444157633e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.787874605786783e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0431227082108308e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.324283212208684e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.674365486489478e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.871602202338181e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.759921226759616e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.135129892304576e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1886501738445077e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0290835206205884e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0163632424564639e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 9.879204299068078e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.68262822248289e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.821693432357279e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.594068935328323e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.773543503868495e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.356085435754721e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.3151200773982055e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 5.462640473297142e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.798186712510869e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0364836100507091e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.868621392821296e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 8.391965167220405e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0559543284216488e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/sklearn/linear_model/_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.0163428498799476e-07.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+[log_error] MLP probes
+/home/flash2404/operation-physics/physcal/interp/probes.py:36: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  return float(spearmanr(a, b).statistic)
+{
+ "P1_probe_vs_stated_sigma_auroc": {
+  "a": 0.916777298373714,
+  "b": 0.5016318176789467,
+  "diff": 0.4151454806947673,
+  "diff_ci": [
+   0.3502140876348868,
+   0.4796223668748553
+  ],
+  "a_ci": [
+   0.8866367967108719,
+   0.9436562825396319
+  ],
+  "p_one_sided": 0.0,
+  "n_boot": 10000
+ },
+ "P2_probe_vs_metadata_auroc": {
+  "a": 0.916777298373714,
+  "b": 0.7630130545414316,
+  "diff": 0.15376424383228238,
+  "diff_ci": [
+   0.10873730931160341,
+   0.2023460887488077
+  ],
+  "a_ci": [
+   0.8866367967108719,
+   0.9436562825396319
+  ],
+  "p_one_sided": 0.0,
+  "n_boot": 10000
+ },
+ "P3_probe_vs_stated_sigma_spearman": {
+  "a": 0.73290763882174,
+  "b": 0.01580862928501599,
+  "diff": 0.717099009536724,
+  "diff_ci": [
+   0.6054000204840805,
+   0.8259132497954819
+  ],
+  "a_ci": [
+   0.6761446025582443,
+   0.7798621743019916
+  ],
+  "p_one_sided": 0.0,
+  "n_boot": 10000
+ },
+ "holm": {
+  "P1_probe_vs_stated_sigma_auroc": {
+   "p": 0.0,
+   "holm_threshold": 0.016666666666666666,
+   "reject_null": true
+  },
+  "P2_probe_vs_metadata_auroc": {
+   "p": 0.0,
+   "holm_threshold": 0.025,
+   "reject_null": true
+  },
+  "P3_probe_vs_stated_sigma_spearman": {
+   "p": 0.0,
+   "holm_threshold": 0.05,
+   "reject_null": true
+  }
+ },
+ "secondary_mlp_vs_stated_sigma_auroc": {
+  "a": 0.9295552605376701,
+  "b": 0.5016318176789467,
+  "diff": 0.4279234428587234,
+  "diff_ci": [
+   0.3632941555044085,
+   0.49282743312963323
+  ],
+  "a_ci": [
+   0.9027803201657741,
+   0.9531059027777777
+  ],
+  "p_one_sided": 0.0,
+  "n_boot": 10000
+ },
+ "secondary_mlp_vs_stated_sigma_spearman": {
+  "a": 0.6764071405292327,
+  "b": 0.01580862928501599,
+  "diff": 0.6605985112442166,
+  "diff_ci": [
+   0.5462007724077764,
+   0.7716334872767905
+  ],
+  "a_ci": [
+   0.6104148957050728,
+   0.7333214732298869
+  ],
+  "p_one_sided": 0.0,
+  "n_boot": 10000
+ },
+ "sanity_shuffled_auroc": {
+  "a": 0.4808883726075893,
+  "b": 0.5,
+  "diff": -0.01911162739241068,
+  "diff_ci": [
+   -0.07667351313467238,
+   0.03871657182181884
+  ],
+  "a_ci": [
+   0.42332648686532764,
+   0.5387165718218189
+  ],
+  "p_one_sided": 0.7377,
+  "n_boot": 10000
+ },
+ "sanity_real_vs_random_init_auroc": {
+  "a": 0.916777298373714,
+  "b": 0.9139008739904857,
+  "diff": 0.0028764243832283265,
+  "diff_ci": [
+   -0.020564863686910913,
+   0.026263310292648306
+  ],
+  "a_ci": [
+   0.8866367967108719,
+   0.9436562825396319
+  ],
+  "p_one_sided": 0.4016,
+  "n_boot": 10000
+ }
+}

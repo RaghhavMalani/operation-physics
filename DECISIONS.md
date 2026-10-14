@@ -539,3 +539,47 @@ worth a second look.
 - **Why show (b):** it tells apart "RL changed σ's level" (fixable by a scale) from "RL changed σ's ranking"
   (not fixable by a scale). Pooled windows (counts, not a mean of per-step shares) avoid over-weighting steps with
   few parsed answers.
+
+### D45. Probe implementation details (Phase 9.5 step 2, within PREREGISTRATION family P)
+- **Fit set size:** 2,000 calibration-split completions (the 400 post-hoc problems + 1,600 new, seeds
+  20,000,400–20,001,999), generated with the eval's exact settings. 400 alone is too few for 1,536-dim probes.
+- **Token:** the last token whose characters start before `<answer>`, from a teacher-forced pass over the exact
+  prompt (chat template as in run_eval) + the logged completion text. Re-tokenizing the decoded completion can
+  differ from the sampled ids in rare cases; it is the same text, so this is accepted.
+- **Backbone only:** hidden states come from `model.get_decoder()` (no LM head), which saves ~2 GB of logits per
+  batch. Layer 0 = embedding output, layer 28 = the last block (after the final norm in HF's convention).
+- **Metadata baseline on depth 5:** depth 5 never occurs in the fit set, so its one-hot is unseen and those test
+  rows are scored on family alone (`handle_unknown="ignore"`).
+- **MLP probes** use the same CV and layer-selection rule as the linear ones, controls included (the
+  pre-registration's "same pipeline"); they are secondary and outside the Holm family.
+
+### D46. Split-credit trainer design (Phase 9.5 step 3)
+- **Mechanism:** a subclass of the (curriculum) GRPO trainer overrides `_generate_and_score_completions`. After TRL
+  has generated, scored and computed its per-sequence advantages, the subclass replaces `advantages` with a
+  (batch, completion length) tensor. Unsloth's loss (`grpo_compute_loss_slow` and the chunked
+  `grpo_accumulated_loss`) only unsqueezes 1-D advantages and otherwise uses them elementwise, and TRL's
+  shuffle/split helpers index dim 0, so per-token advantages pass through unchanged. A test runs Unsloth's real
+  loss function on 2-D advantages and checks loss and gradients against a reference DAPO implementation.
+- **σ tokens:** the tokens overlapping the σ number after the first ± marker (±, +/-, +-, \pm) in the single answer
+  block, the same "σ number only" convention as the SFT masking (D35). The ± sign, units and everything else are
+  answer tokens. Token-to-character offsets come from re-encoding the decoded completion when that reproduces
+  the sampled ids; otherwise from decoding every prefix. Rows that still can't be matched get no σ tokens and
+  are counted (`unmatched_offsets` in `split_credit.jsonl`).
+- **Reward parts:** r_answer = w_final·crps_log(μ, σ_ref) + w_steps·steps with σ_ref = 1% of μ, r_sigma =
+  w_final·[crps_log(μ, σ) − crps_log(μ, σ_ref)]; they sum to the verifier's reward. Failures keep everything in
+  r_answer (r_sigma = 0). Both parts use TRL's exact group normalization (`nanstd`, + 1e-4).
+- **Alignment guard:** the reward function stores the parts in completion order; the trainer checks the count and
+  that `batch_decode(completion_ids)` equals the texts the reward saw, and raises otherwise. A silent
+  misalignment would corrupt training.
+- **Unchanged:** the verifier, the logged reward, the curriculum (which still reads σ-free binary correctness),
+  every hyperparameter. A test checks that `grpo_split_credit.yaml` differs from `grpo_overnight2.yaml` only in
+  `split_credit` and the run id.
+
+### D47. Probe: the pre-registered sanity check failed; exploratory baselines added afterwards
+- **What happened:** the random-init probe matched the SFT probe on correctness (0.914 vs 0.917, p = 0.40). Per
+  PREREGISTRATION.md, P1–P3 are reported as uninterpretable, even though each passes its Holm-corrected test.
+- **Added after seeing results, labelled exploratory:** template one-hot, TF-IDF bag-of-words, length, and the
+  real-vs-random-init test on log|error|. They explain the failed sanity check (the signal is readable from the
+  completion text); they do not rescue P1–P3.
+- **Not done:** re-running with other probe positions or a residualized probe (beyond what a bag-of-words predicts).
+  Both would be new, pre-registered experiments if pursued.
