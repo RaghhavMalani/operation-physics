@@ -14,3 +14,4 @@ results/sft/*/checkpoints/
 results/train/*/merged/
 results/train/*/permanent_checkpoints/
 results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/rollouts.jsonl
+results/probe_sft/hidden/

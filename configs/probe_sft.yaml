@@ -1,0 +1,33 @@
+# Phase 9.5 step 2: hidden-state probes on the SFT-only model (PREREGISTRATION.md, family P; FINDINGS #7).
+label: qwen2.5-math-1.5b-instruct     # model = results/sft/<label>/merged
+budget: 512
+output_dir: results/probe_sft
+
+# Fit set = SFT-only greedy completions on the calibration split (training seeds 20,000,000-20,001,999).
+calibration_ext_split:                # seeds 20,000,400-20,001,999 (the first 400 already exist)
+  families: train
+  depths: [1, 2, 3, 4]
+  n: 1600
+  train_seed_offset: 20000400
+fit_tapes:
+  - results/posthoc_calibration/sft_calibration_set/rollouts.jsonl
+  - results/probe_sft/sft_calibration_ext/rollouts.jsonl
+test_tapes:                           # frozen eval sets, SFT-only, verifier 1.1.0 (never used for fitting)
+  - results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare_verifier_1.1.0/sft/rollouts.jsonl
+
+extract:
+  batch_size: 4                       # sequences per forward pass (fits 8 GB with all hidden states)
+  dtype: bfloat16
+  random_init_seed: 0                 # control: same architecture, random weights
+
+probes:
+  correct_tolerance: 0.01             # label (i): |relative error| <= 1%
+  log_error_floor: 1.0e-6             # label (ii): log10(max(|relative error|, floor))
+  cv_folds: 5
+  logistic_C: [0.001, 0.01, 0.1, 1.0]
+  ridge_alpha: [1.0, 10.0, 100.0, 1000.0, 10000.0]
+  mlp_hidden: 64
+  mlp_alpha: [0.001, 0.01, 0.1, 1.0]  # MLP L2 penalty grid (selected by CV like the linear probes)
+  bootstrap: 10000
+  seed: 0
+  n_jobs: 12                          # joblib workers (24 cores; loky caps BLAS threads per worker)

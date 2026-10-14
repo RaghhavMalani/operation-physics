@@ -12,6 +12,7 @@ dependencies = [
     "peft>=0.21.2",
     "pint>=0.25.3",
     "pyyaml>=6.0.3",
+    "scikit-learn>=1.9.1",
     "scipy>=1.17.1",
     "sympy>=1.14.0",
     "torch>=2.14.1",
