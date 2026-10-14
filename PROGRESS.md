@@ -452,3 +452,12 @@ Progress:
   σ* median 0.26%; a 4-s.f. solver errs 0.014% median. D48.
 - [x] 9.5 step 3: split-credit trainer + tests + 10-step smoke test: 40.0 s/step, peak reserved 6.46 GiB, 0 OOMs.
   The long run is not started. D46. 286 tests pass.
+
+## 2026-10-14 (laptop day, CPU only)
+
+- [x] Security check (repo is public). Regex sweep for tokens, API keys, private keys, `.env`/credential files and
+  URL-embedded passwords over **all 624 blobs in all 77 commits** plus the working tree (tracked, untracked and
+  ignored-but-present files); positive control matched. **No secrets found.** All 329 keyword hits are the word
+  "token" in the LLM sense. Informational only: committed tapes/logs contain the local path
+  `/home/flash2404/...` (in `model_id` fields), and commits are authored as `Raghhav <you@example.com>`.
+  No history rewrite. `.gitignore` now also excludes `.env`, `.env.*`, `*.pem`, `.netrc`.
