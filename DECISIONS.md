@@ -797,3 +797,30 @@ worth a second look.
 decisions?* The contribution is a controlled testbed that separates the two, plus an analysis of when and why RL
 fails or succeeds; a clear mechanistic negative result counts. Where CLAUDE.md's phase text conflicts with A1–A8,
 A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
+
+### D51. Generator 2.0.0: the measurement-noise mode (Phase 10 step 3; σ\* per D50/A2) **[REVIEW]**
+- **Where it lives:** `configs/env_v2.yaml` (version 2.0.0 = 1.1.0 plus a `generator.noise` block). `configs/env.yaml`
+  stays at 1.1.0 and stays the default, so tonight's split-credit run, E1, the frozen 1.1.0 eval sets and every
+  existing tape are untouched; Phase 10+ code loads `env_v2` explicitly. 1.1.0 problem dicts are byte-identical
+  (the frozen-set test passes); the new `noise` field and a given's `noise_rel` are omitted when absent/zero.
+- **Noise dial:** one level per problem, s ∈ {0, 1, 2, 5, 10%}, applied to every given and every distractor (so
+  "± p%" does not mark the relevant values). Displayed = round(x_true·(1 + e), 5 s.f.), e ~ N(0, s²), shown as
+  "2.4013 kg ± 2%", plus one sentence saying what ± p% means (one-SD relative uncertainty; unmarked values exact).
+  Mixed per-given levels are representable (`noise.givens[sym].rel`) but not generated yet.
+- **Truth:** the noise-free chain on the unrounded true values. **Noise 0** behaves exactly like 1.1.0 (3 s.f., truth
+  from the displayed values, D4), so σ\* = 0 and f(x_meas) = truth there.
+- **Paired by construction:** the noise level is not part of the main random stream; e = s·z with z from a side
+  stream, and the MC draws use another side stream shared across levels. The same seed at different levels has
+  the same chain, world, units, phrasing and clean truth, with the measurement errors scaled by s (tested).
+- **Step credit [REVIEW]:** `intermediates` (what the verifier credits within 2%) are the chain on the *displayed*
+  values, i.e. what a correct solver computes; the clean intermediates are stored in
+  `noise.intermediates_true_si`. Alternative: clean intermediates, which would penalize correct arithmetic by
+  ~s·κ and make step credit noisy at 5–10%.
+- **Stored per problem (`noise`):** level, f(x_meas) (`point_estimate_si`), true values and realized errors,
+  σ\* = CRPS-optimal Gaussian log-scale centred at ln f(x_meas) (A2 primary), the SD of the log draws, the
+  delta-method σ, the SD in SI, and the PIT of the truth under the 4,000 MC draws.
+- **Rejection:** an attempt is resampled if f(x_meas) or any MC draw leaves the valid domain (on top of the κ ≤ 5
+  filter on the true values). This conditions on the noise draw; it is rare with κ ≤ 5, and the A3 gate measures
+  the net effect.
+- **Cross-check (step 3):** for s ≤ 2%, MC SD vs delta method and CRPS-optimal vs SD agree within 6% on 45 problems
+  per level (test).

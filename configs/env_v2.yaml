@@ -1,0 +1,28 @@
+# Problem generator settings, generator 2.0.0 (Phase 10, D51): configs/env.yaml (1.1.0) plus the measurement-noise
+# mode. env.yaml stays the default for every Phase 9.5 run (split credit, E1) and the frozen 1.1.0 eval sets;
+# Phase 10+ code loads this file explicitly. Old tapes replay under their own logged config.
+# Everything under `generator` changes problem content, so it is hashed into the generator version string:
+# a problem is reproducible from (generator_version, family, depth, seed).
+generator:
+  version: "2.0.0"                    # 2.0.0: measurement-noise mode (D51); noise 0 behaves as 1.1.0
+  display:
+    sig_figs: 3                         # significant figures of every displayed given
+    magnitude_range: [0.01, 10000.0]    # preferred |value| when picking a display unit
+    fixed_exponent_range: [-2, 4]       # decimal exponents shown in fixed notation; others use e-notation
+  distractors: [0, 2]                   # inclusive range of irrelevant quantities per problem
+  max_condition_number: 5.0             # reject chains whose outputs amplify relative rounding of givens more than this
+  condition_rel_step: 1.0e-6            # finite-difference step for the condition number
+  max_attempts: 200                     # world resamples before giving up on a problem
+  worlds_per_chain: 10                  # world resamples per chain before drawing a new chain
+  max_world_tries: 100                  # basis resamples per world
+  noise:                                # Phase 10 step 3 (D51): displayed = true * (1 + e), e ~ N(0, level^2)
+    levels: [0.0, 0.01, 0.02, 0.05, 0.1]  # relative SD of every given's measurement error (the noise dial)
+    sig_figs: 5                         # noisy givens: rounding negligible against the noise (FINDINGS #8)
+    n_mc: 4000                          # Monte Carlo draws for sigma* (spec: >= 2000)
+
+# Which (family, depth) cells each split may use. Not hashed: it does not change any problem's content.
+splits:
+  depths: [1, 2, 3, 4, 5]
+  heldout_families: [optics]            # eval only; added in phase 6
+  heldout_depths: [5]                   # eval only (depth extrapolation)
+  eval_seed_offset: 1000000000          # eval seeds start here; training seeds stay below it

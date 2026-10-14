@@ -40,6 +40,13 @@ STEPS_TEMPLATES = (
 NO_STEPS_TEMPLATES = {
     "1.0.0": "No intermediate values need to be reported, so <steps> may be empty.",
     "1.1.0": "Show your calculation first; no intermediate values need to be listed in <steps>.",
+    "2.0.0": "Show your calculation first; no intermediate values need to be listed in <steps>.",
+}
+
+# Measurement-noise mode (generator 2.0.0): what "± p%" on a given means. Only rendered when a given is noisy.
+NOISE_NOTES = {
+    "2.0.0": "Values marked ± p% are measurements: p% is the relative standard uncertainty (one standard deviation) "
+             "of that measurement. Values without ± are exact.",
 }
 
 
@@ -47,6 +54,12 @@ def no_steps_template(version: str) -> str:
     if version not in NO_STEPS_TEMPLATES:
         raise ValueError(f"generator version {version!r} has no depth-1 wording; known: {sorted(NO_STEPS_TEMPLATES)}")
     return NO_STEPS_TEMPLATES[version]
+
+
+def noise_note(version: str) -> str:
+    if version not in NOISE_NOTES:
+        raise ValueError(f"generator version {version!r} has no noise mode; known: {sorted(NOISE_NOTES)}")
+    return NOISE_NOTES[version]
 
 CONSTANT_TEMPLATE = "Use {sym} = {val}."
 
@@ -62,13 +75,18 @@ class ShownValue:
     display: str
     unit: str
     value_si: float
+    noise_rel: float = 0.0  # stated relative standard uncertainty of a measured value (0 = exact)
 
     @property
     def text(self) -> str:
-        return f"{self.display} {self.unit}".strip()
+        base = f"{self.display} {self.unit}".strip()
+        return f"{base} ± {100 * self.noise_rel:g}%" if self.noise_rel else base
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        if not self.noise_rel:  # exact values keep the generator-1.x dict shape (frozen sets, tape replay)
+            del d["noise_rel"]
+        return d
 
 
 def format_number(x: float, sig_figs: int, fixed_exponents: tuple[int, int]) -> str:
@@ -101,6 +119,17 @@ def show_value(q: Quantity, value_si: float, rng: np.random.Generator, display_c
     return ShownValue(q.symbol, q.desc, shown, unit, to_si(float(shown), unit))
 
 
+def show_measured(q: Quantity, true_si: float, e: float, noise_rel: float, rng: np.random.Generator,
+                  display_cfg: dict, sig_figs: int) -> ShownValue:
+    """A measured value true·(1 + e), shown with `sig_figs` significant figures and its stated uncertainty. The
+    unit is picked from the true value with the same random draws as `show_value`, so problems that differ only
+    in their noise level share units."""
+    unit = choose_unit(q, true_si, rng, tuple(display_cfg["magnitude_range"]))
+    shown = format_number(from_si(true_si * (1.0 + e), q.si_unit, unit), sig_figs,
+                          tuple(display_cfg["fixed_exponent_range"]))
+    return ShownValue(q.symbol, q.desc, shown, unit, to_si(float(shown), unit), noise_rel)
+
+
 def _pick(rng: np.random.Generator, options: tuple[str, ...]) -> str:
     return options[rng.integers(len(options))]
 
@@ -114,8 +143,10 @@ def render_text(
     rng: np.random.Generator,
     display_cfg: dict,
     no_steps_text: str,
+    noise_text: str | None = None,
 ) -> str:
-    """Assemble intro, givens (in random order), constants, question and the steps instruction."""
+    """Assemble intro, givens (in random order), constants, question and the steps instruction. `noise_text`
+    (noise mode) follows the givens; it draws nothing from `rng`."""
     intro = _pick(rng, family.intros)
     order = rng.permutation(len(shown))
     lines = [
@@ -139,4 +170,6 @@ def render_text(
         givens = _pick(rng, GIVEN_HEADERS) + "\n" + "\n".join(f"- {line}" for line in lines)
     else:
         givens = " ".join(lines)
+    if noise_text:
+        givens = f"{givens}\n\n{noise_text}"
     return f"{intro}\n\n{givens}\n\n{question} {steps}"

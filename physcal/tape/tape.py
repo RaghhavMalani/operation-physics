@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
 
-from physcal.env.generator import Problem, generate_problem, generator_version
+from physcal.env.generator import Problem, generate_problem, generator_version, regenerate
 from physcal.verify.reward import reward
 
 TAPE_FIELDS = (
@@ -105,7 +105,7 @@ def replay(path: str | Path) -> ReplayReport:
         if rec["generator_version"] != expected_version:
             raise ValueError(f"line {i}: generator {rec['generator_version']} != config {expected_version}")
         logged = rec["problem"]
-        problem = generate_problem(logged["family"], logged["depth"], rec["seed"], split="eval", cfg=env_cfg)
+        problem = regenerate(logged, env_cfg)
         if problem.to_dict() != logged:
             problem_bad.append(i)
         r, _ = reward(problem, rec["completion"], reward_cfg)
