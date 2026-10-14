@@ -469,3 +469,9 @@ Progress:
   (b) 31.0% / −0.306. Every eval report now has a "Conditional post-hoc baselines (D49)" table; the four existing
   verifier-1.1.0 reports were refreshed (only the baseline block changed). `scripts/phase95_compare.py` runs family A
   (A1 coverage error, A2 ρ, A3 crps_log; Holm) against (a), and against (a′) as sensitivity. 296 tests pass.
+- [x] D50: amendments A1–A8 from REVIEW_SYNTHESIS_2026-10-14.md recorded and pushed before any further result.
+- [x] Phase 10 step 3 (D51): generator 2.0.0 noise mode in `configs/env_v2.yaml` (env.yaml stays 1.1.0), σ\* by MC
+  per A2, delta-method cross-check passes. 16 + 4 new tests.
+- [x] Phase 10 step 4, gate under A3 (FINDINGS #9): **FAILED**, 1 of 7 criteria. Per-cell ±2σ\* Kupiec with Holm
+  rejects depth 3 / 10% noise (91.8%, p = 0.0004). Pooled coverage, PIT KS and the binomial-interval share
+  pass. Phase 10+ work stopped (A6 not built). Decision needed (FINDINGS #9 options).

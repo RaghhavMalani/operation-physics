@@ -430,3 +430,48 @@ significant figures.** This is the only irreducible error for the problems as de
 - Output `results/rounding_audit/rounding_audit.json` (summary + one row per problem). Eval sets
   `data/eval_sets/1.1.0+c735a0d4/{id,depth_extrapolation}.jsonl`. Observed errors from the SFT-only eval tape
   re-scored under verifier 1.1.0.
+
+---
+
+## #9. Phase 10 gate (D50/A3): the generator's σ\* FAILS on one cell, the 2σ tail at depth 3 / 10% noise (2026-10-14)
+
+**Verdict.** Generator 2.0.0 (`2.0.0+bdbb2279`) **fails** the amended self-consistency gate. 6 of 7 criteria pass;
+per-cell Kupiec at ±2σ\* fails Holm in one cell. By your brief, Phase 10+ work stops here; A6 (counterfactual
+pairs) is not built.
+
+**Run.** 10,000 noisy problems (depth 1–5 × noise 1/2/5/10%, 500 per cell, own seeds per cell) + 500 noise-0
+problems; σ\* = CRPS-optimal Gaussian log-scale centred at ln f(x_meas) (A2), intervals ln f(x_meas) ± kσ\*.
+`uv run python -m physcal.eval.sigma_star_gate`; `results/sigma_star_gate/gate.{md,json}`, per-problem rows in
+`rows.jsonl`. The gate code was committed (`162c573`) before it ran; it ran once.
+
+| criterion (A3) | result |
+|---|---|
+| pooled Kupiec, ±1σ\*: 67.97% vs 68.27% | p = 0.52, pass |
+| pooled Kupiec, ±2σ\*: 95.22% vs 95.45% | p = 0.27, pass |
+| per-cell Kupiec + Holm (20 cells), ±1σ\* | no rejection (smallest p = 0.027), pass |
+| per-cell Kupiec + Holm (20 cells), ±2σ\* | **d3 / 10%: 91.8%, p = 0.0004 < 0.0025: FAIL** |
+| cells inside the 99% binomial interval | 100% (±1σ\*), 95% = 19/20 (±2σ\*, the minimum), pass |
+| pooled PIT KS (truth under the MC distribution) | D = 0.0078, p = 0.57, pass |
+| noise 0: truth = f(x_meas), σ\* = 0 | all 500 exact |
+
+The superseded rule ("Kupiec p > 0.05 in every cell", replaced by A3 before the gate ran) also fails: 5 cells
+have p < 0.05.
+
+**Diagnosis (post hoc, same run, no new data).** The predictive distribution itself looks right. Its Gaussian
+summary is too thin in the tails at 10% noise:
+- In the failing cell, the PIT is uniform (KS p = 0.64), but the standardized deviations (ln y − ln f)/σ\* have
+  SD 1.12 and excess kurtosis 1.06.
+- The MC distribution's own central 95.45% interval covers **93.6%** there (vs 91.8% for ±2σ\*). Pooled over all
+  10%-noise problems, MC quantile intervals cover 95.44%, against 94.72% for ±2σ\*.
+- At 1–5% noise, pooled ±2σ\* coverage is 95.1–96.2%.
+- First-order propagation is fine in the median (SD/delta 1.001–1.020), but individual problems deviate by up
+  to 74%.
+- The misses are spread across families (17 / 13 / 11) and are only mildly more ill-conditioned (median κ 2.0 vs 1.74).
+
+**What this means / options (yours to decide; nothing was changed):**
+1. Keep the gate as is: the generator is not valid at 10% noise with a Gaussian σ\*.
+2. Cap the noise dial at 5%: all ±2σ\* cells pass Holm at 1–5% in this run. But choosing a cap after seeing this
+   run is a forking path, and it needs a fresh gate run.
+3. Grade coverage against the MC predictive quantiles rather than a Gaussian σ\*. This would change A2's primary
+   target, and also needs a fresh gate run.
+4. Treat one Holm rejection among 40 tests as chance: not allowed by A3 as written.
