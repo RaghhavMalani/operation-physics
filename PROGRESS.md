@@ -489,3 +489,5 @@ Progress:
 - [x] Gate rerun on {0, 1, 2, 5}% under A3, fresh seeds (FINDINGS #11): **FAILED**, 1 of 7 criteria. The ±2σ\*
   cell-share rule fails: 14 of 15 cells inside, and d4 / 1% over-covers (97.6%, p = 0.0035). Everything else passes.
   A6 not built; Phase 10+ stopped again pending your decision.
+- [x] D57 (miss-count rule; next rerun final) recorded before the rerun. FINAL gate (FINDINGS #12): **PASSED** all
+  7 criteria, 0 cells outside at both levels, PIT p = 0.98. Phase 10+ resumes: A6 next.

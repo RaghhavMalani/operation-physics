@@ -1,0 +1,68 @@
+# Phase 10 generator self-consistency gate (2.0.0+bdbb2279)
+
+**Gate (D50/A3): PASSED**; superseded every-cell rule: failed (not used).
+
+Levels [0.01, 0.02, 0.05], 667 per cell. 10005 noisy problems, 0 generation errors; noise 0: 500 problems, all exact: True.
+
+| criterion | ok |
+|---|---|
+| k1_pooled | True |
+| k1_holm | True |
+| k1_miss_count | True |
+| k2_pooled | True |
+| k2_holm | True |
+| k2_miss_count | True |
+| pit_ks | True |
+
+PIT KS (pooled): D = 0.0047, p = 0.978; by level: 0.01: p = 0.671, 0.02: p = 0.299, 0.05: p = 0.102
+PIT histogram (10 bins): [974, 1054, 992, 976, 987, 1059, 958, 983, 1029, 993]
+
+## ±1σ* (nominal 68.27%): pooled 68.32%, Kupiec p = 0.92; cells inside the 99% binomial interval: 100% (0 outside; miss-count P(X >= 0) = 1)
+
+| cell | n | coverage | Kupiec p | Holm rejects | inside |
+|---|---|---|---|---|---|
+| d1/s0.01 | 667 | 69.0% | 0.699 | False | True |
+| d1/s0.02 | 667 | 67.5% | 0.657 | False | True |
+| d1/s0.05 | 667 | 72.0% | 0.0381 | False | True |
+| d2/s0.01 | 667 | 66.3% | 0.269 | False | True |
+| d2/s0.02 | 667 | 66.4% | 0.306 | False | True |
+| d2/s0.05 | 667 | 66.0% | 0.204 | False | True |
+| d3/s0.01 | 667 | 67.8% | 0.781 | False | True |
+| d3/s0.02 | 667 | 67.8% | 0.781 | False | True |
+| d3/s0.05 | 667 | 69.1% | 0.638 | False | True |
+| d4/s0.01 | 667 | 64.9% | 0.0653 | False | True |
+| d4/s0.02 | 667 | 69.1% | 0.638 | False | True |
+| d4/s0.05 | 667 | 71.2% | 0.0992 | False | True |
+| d5/s0.01 | 667 | 69.1% | 0.638 | False | True |
+| d5/s0.02 | 667 | 69.1% | 0.638 | False | True |
+| d5/s0.05 | 667 | 69.6% | 0.47 | False | True |
+
+## ±2σ* (nominal 95.45%): pooled 95.71%, Kupiec p = 0.204; cells inside the 99% binomial interval: 100% (0 outside; miss-count P(X >= 0) = 1)
+
+| cell | n | coverage | Kupiec p | Holm rejects | inside |
+|---|---|---|---|---|---|
+| d1/s0.01 | 667 | 96.1% | 0.408 | False | True |
+| d1/s0.02 | 667 | 95.4% | 0.904 | False | True |
+| d1/s0.05 | 667 | 95.5% | 0.948 | False | True |
+| d2/s0.01 | 667 | 94.9% | 0.505 | False | True |
+| d2/s0.02 | 667 | 94.8% | 0.398 | False | True |
+| d2/s0.05 | 667 | 94.8% | 0.398 | False | True |
+| d3/s0.01 | 667 | 95.1% | 0.627 | False | True |
+| d3/s0.02 | 667 | 94.8% | 0.398 | False | True |
+| d3/s0.05 | 667 | 97.0% | 0.0408 | False | True |
+| d4/s0.01 | 667 | 95.5% | 0.948 | False | True |
+| d4/s0.02 | 667 | 96.1% | 0.408 | False | True |
+| d4/s0.05 | 667 | 96.4% | 0.221 | False | True |
+| d5/s0.01 | 667 | 97.2% | 0.0239 | False | True |
+| d5/s0.02 | 667 | 96.1% | 0.408 | False | True |
+| d5/s0.05 | 667 | 96.3% | 0.306 | False | True |
+
+## σ* checks
+
+| level | median σ* (log) | median SD/delta | max |SD/delta − 1| | median CRPS-opt/SD |
+|---|---|---|---|---|
+| 0.01 | 0.0197 | 1.0008 | 0.376 | 0.9998 |
+| 0.02 | 0.0400 | 1.0029 | 0.398 | 0.9986 |
+| 0.05 | 0.0956 | 1.0082 | 0.552 | 0.9965 |
+
+Secondary (σ* = SD of the log draws): pooled coverage ±1: 68.55% (p = 0.552), ±2: 95.80% (p = 0.087)

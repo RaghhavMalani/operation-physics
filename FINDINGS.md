@@ -539,3 +539,32 @@ problems. Run once: `uv run python -m physcal.eval.sigma_star_gate --config sigm
    to this one.
 2. Keep the rule as is, and redesign the cell grid so that 95% of cells allows a miss (≥ 20 cells per level).
 3. Accept this run's failure as a known false positive, and record that it was accepted after the fact.
+
+---
+
+## #12. Phase 10 gate, FINAL run (D57): PASSED; generator 2.0.0's σ\* is self-consistent at noise ≤ 5% (2026-10-14)
+
+**Verdict.** On fresh seeds (offset 1.7e9, disjoint from #9 and #11), with noise levels {1, 2, 5}% (D54) and the A3
+criteria with the miss-count rule (D57), generator 2.0.0 (`2.0.0+bdbb2279`) **passes all 7 criteria**. This was the
+run D57 declared final. Phase 10+ work resumes with A6.
+
+| criterion | result |
+|---|---|
+| pooled Kupiec ±1σ\*: 68.32% vs 68.27% | p = 0.92, pass |
+| pooled Kupiec ±2σ\*: 95.71% vs 95.45% | p = 0.20, pass |
+| per-cell Kupiec + Holm (15 cells), ±1σ\* / ±2σ\* | no rejection, pass |
+| miss-count (D57), ±1σ\* / ±2σ\* | 0 of 15 cells outside at both levels, pass |
+| pooled PIT KS | D = 0.0047, p = 0.98, pass |
+| noise 0 exact | 500 / 500 |
+
+- **Superseded rules:** the old share rule would also have passed (0 outside). The pre-A3 every-cell rule fails
+  (d1 / 5% at ±1σ\*: 72.0%, p = 0.038). It is reported only because the report always shows it.
+- **Cross-checks:** MC SD vs the delta method agree to 1.0008 / 1.0029 / 1.0082 in the median at 1 / 2 / 5%.
+  The CRPS-optimal σ\* sits within 0.4% of the SD.
+- **Provenance:** `uv run python -m physcal.eval.sigma_star_gate --config sigma_star_gate_final`;
+  `results/sigma_star_gate_final/`. Code and config were committed (`5202b1f`) before the run.
+- **The full gate history is part of the result:**
+  - #9: 10% noise failed (heavy tails).
+  - D54: the cap was set after seeing #9.
+  - #11: the share-rule design error.
+  - D57: the rule was replaced before this final run.
