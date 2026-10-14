@@ -20,3 +20,27 @@ analysis:                           # primary: OLS slope of d ln(stated sigma) o
   bootstrap: 10000
   seed: 0
   alpha: 0.05
+
+# D59/A6b: invariance pairs (power-law templates: relative sigma* does not depend on the values). Eval only.
+invariance_construction:            # stored in every A6b problem (replay uses the stored copy)
+  version: "1.0.0"
+  kind: invariance
+  candidate_worlds: 24              # worlds per chain; smallest / largest clean target value form the pair
+  min_target_ratio: 2.0             # keep a pair only if target_hi / target_lo >= this
+  max_chains: 20
+  power_law_tol: 1.0e-5             # a chain is power-law if its log-sensitivities agree within this...
+  power_law_reference_worlds: 6     # ...at this many reference worlds...
+  power_law_reference_seed: 0       # ...drawn with this seed
+  max_log_sigma_ratio: 1.0e-3       # MC check: |ln(sigma*_hi / sigma*_lo)| must not exceed this
+invariance_export:                  # data/eval_sets/<generator_version>/a6b_pairs.jsonl
+  families: [kinematics, dynamics, energy]   # round-robin over the families with power-law templates at a depth
+  depths: [1, 2, 3, 4, 5]
+  levels: [0.01, 0.02, 0.05]
+  pairs_per_cell: 34
+  max_seeds_per_cell: 136
+  seed_offset: 1900000000
+  cell_seed_stride: 100000
+  n_jobs: 4
+invariance_analysis:                # D59: TOST of the slope of d ln(stated sigma) on ln(target_hi / target_lo)
+  equivalence_margin: 0.3
+  ci_level: 0.90                    # TOST at alpha = 0.05: the 90% CI must lie inside the margin

@@ -496,3 +496,7 @@ Progress:
   2.2–3.6× per cell; 0–13 seeds per cell without a pair. Analysis = the D50 slope test (synthetic checks: honest ≈ 1,
   lookup ≈ 0). 332 tests pass. Not yet built: an eval path that runs a model on a frozen problem file
   (needed at Phase 12).
+- [x] D59: A6b pre-registered (invariance pairs, TOST of the slope on Δ ln truth, joint two-sided verdict with A6).
+- [x] A6b built and frozen: `data/eval_sets/2.0.0+bdbb2279/a6b_pairs.jsonl`, 510 pairs / 1,020 problems, all 15 cells
+  full with no failed seeds. MC check: max |ln σ\*_hi/σ\*_lo| = 3.3e-8 (≤ 1e-3 required); median target ratio 31–201×
+  per cell. Analysis: `a6_pairs analyze` (A6 or A6b) and `a6_pairs joint`.

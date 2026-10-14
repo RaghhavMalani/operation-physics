@@ -1,0 +1,335 @@
+{
+  "generator_version": "2.0.0+bdbb2279",
+  "pair_version": "1.0.0+08089077",
+  "construction": {
+    "version": "1.0.0",
+    "kind": "invariance",
+    "candidate_worlds": 24,
+    "min_target_ratio": 2.0,
+    "max_chains": 20,
+    "power_law_tol": 1e-05,
+    "power_law_reference_worlds": 6,
+    "power_law_reference_seed": 0,
+    "max_log_sigma_ratio": 0.001
+  },
+  "export": {
+    "families": [
+      "kinematics",
+      "dynamics",
+      "energy"
+    ],
+    "depths": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "levels": [
+      0.01,
+      0.02,
+      0.05
+    ],
+    "pairs_per_cell": 34,
+    "max_seeds_per_cell": 136,
+    "seed_offset": 1900000000,
+    "cell_seed_stride": 100000,
+    "n_jobs": 4
+  },
+  "n_pairs": 510,
+  "n_problems": 1020,
+  "sha256": "6d2d05a10b57182fc92159adf7db8fa91226599d2362b9c3fa44e5c886ce4ce2",
+  "cells": {
+    "d1/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.0000000000000122,
+      "mc_ratio_min": 0.999999999946537,
+      "target_ratio_median": 83.46220918890549,
+      "max_abs_log_sigma_ratio_mc": 5.363354205057348e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "kinematics",
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d1/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.0000000000000395,
+      "mc_ratio_min": 0.9999999999579327,
+      "target_ratio_median": 31.08664161184061,
+      "max_abs_log_sigma_ratio_mc": 4.2067349604654175e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "kinematics",
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d1/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 0.9999999999999354,
+      "mc_ratio_min": 0.9999999999522716,
+      "target_ratio_median": 113.86449315586492,
+      "max_abs_log_sigma_ratio_mc": 3.27259554096735e-08,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "kinematics",
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d2/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 0.9999999999998908,
+      "mc_ratio_min": 0.999999999956593,
+      "target_ratio_median": 66.20106930622231,
+      "max_abs_log_sigma_ratio_mc": 4.340694470622414e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "kinematics",
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d2/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.0000000000000902,
+      "mc_ratio_min": 0.9999999999772521,
+      "target_ratio_median": 98.13803104746269,
+      "max_abs_log_sigma_ratio_mc": 4.5599524155574623e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "kinematics",
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d2/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.0000000000000109,
+      "mc_ratio_min": 0.9999999999738356,
+      "target_ratio_median": 62.36591214324964,
+      "max_abs_log_sigma_ratio_mc": 2.8365753787654903e-08,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "kinematics",
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d3/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 1.0000000000000036,
+      "mc_ratio_min": 0.9999999999674142,
+      "target_ratio_median": 172.10226751051275,
+      "max_abs_log_sigma_ratio_mc": 3.453948238470198e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d3/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 1.0000000000000093,
+      "mc_ratio_min": 0.9999999999727899,
+      "target_ratio_median": 101.00508510780745,
+      "max_abs_log_sigma_ratio_mc": 4.9477311135801025e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d3/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 1.0000000000000007,
+      "mc_ratio_min": 0.9999999683563338,
+      "target_ratio_median": 145.48499491393756,
+      "max_abs_log_sigma_ratio_mc": 3.164366674352512e-08,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d4/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 1.000000000000035,
+      "mc_ratio_min": 0.9999999999392641,
+      "target_ratio_median": 171.5795780315282,
+      "max_abs_log_sigma_ratio_mc": 6.073586078698823e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d4/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 1.0000000000000122,
+      "mc_ratio_min": 0.9999999999742311,
+      "target_ratio_median": 126.99277322303841,
+      "max_abs_log_sigma_ratio_mc": 3.1049385284604795e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d4/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 0.9999999999999456,
+      "mc_ratio_min": 0.9999999999689827,
+      "target_ratio_median": 201.3645165098701,
+      "max_abs_log_sigma_ratio_mc": 2.9104491504076058e-08,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d5/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 0.9999999999999936,
+      "mc_ratio_min": 0.9999999999619469,
+      "target_ratio_median": 158.62732930665433,
+      "max_abs_log_sigma_ratio_mc": 3.805311621435619e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d5/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 0.9999999999998854,
+      "mc_ratio_min": 0.9999999999541709,
+      "target_ratio_median": 156.67054222086398,
+      "max_abs_log_sigma_ratio_mc": 5.704281491440375e-11,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    },
+    "d5/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 0,
+        "dynamics": 17,
+        "energy": 17
+      },
+      "mc_ratio_median": 0.9999999999999258,
+      "mc_ratio_min": 0.9999999694905247,
+      "target_ratio_median": 130.53605173507125,
+      "max_abs_log_sigma_ratio_mc": 3.0509475744908376e-08,
+      "mc_rejected": 0,
+      "eligible_families": [
+        "dynamics",
+        "energy"
+      ]
+    }
+  }
+}
