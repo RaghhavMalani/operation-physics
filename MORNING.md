@@ -46,7 +46,7 @@ Details are in [FINDINGS.md](FINDINGS.md) #6, [DECISIONS.md](DECISIONS.md) D38�
 | 23:57–07:30 | Stage 4: overnight GRPO, 759 steps (permanent step-287 adapter saved at 02:50) | `9112529`, `0ef6ee6` |
 | 07:31–07:42 | Stage 5a: eval of step 287 (primary) | `2fdbced` |
 | 07:42–07:53 | Stage 5b: eval of step 759 (secondary, "longer training") | `b3c2d47` |
-| 07:53–08:05 | FINDINGS #6, PROGRESS, this report | `81f2892` … |
+| 07:53–08:00 | FINDINGS #6, PROGRESS, this report | `81f2892` … |
 
 ## 2. Verifier 1.1.0 (D38, your approval of D37)
 
