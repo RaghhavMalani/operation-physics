@@ -1030,3 +1030,61 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Not built yet:** an eval path that runs a model on a frozen problem file (run_eval builds splits from the
   generator). It is needed when a noise-trained model exists (Phase 12). Until then the pair set is used only
   through `a6_pairs.analyze` on an eval tape over it.
+
+### D59. Pre-registration of A6b, invariance pairs (written before A6b is built; no model has been evaluated on A6 or A6b)
+- **Purpose:** the second side of the propagation test.
+  - **A6** asks whether the stated σ moves when σ\* moves (expected slope ≈ 1).
+  - **A6b** asks whether the stated σ stays put when the values change but the relative σ\* does not (expected
+    slope ≈ 0).
+  - **What each kind of model does:**
+    - a propagating model passes both;
+    - a surface lookup passes A6b trivially and fails A6;
+    - a magnitude-driven model fails A6b. For example, one that quotes a roughly fixed *absolute* σ, so that its
+      relative σ shrinks as the values grow, gives a slope ≈ −1.
+- **Templates:** power-law chains only, i.e. chains whose log-sensitivities d ln f / d ln x_i agree within 1e-5 at
+  6 reference worlds. They exist at every depth. The structural count, a generator property checked before
+  building:
+
+  | family | depth 1 | depth 2 | depth 3 | depth 4 | depth 5 |
+  |---|---|---|---|---|---|
+  | kinematics | 15 / 42 | 18 / 181 | 0 | 0 | 0 |
+  | dynamics | 40 / 43 | 142 / 158 | 225 / 290 | 177 / 250 | 12 / 97 |
+  | energy | 23 / 30 | 43 / 85 | 39 / 112 | 28 / 89 | 8 / 36 |
+
+  Depths 3–5 therefore come from dynamics and energy only.
+- **Construction**, per pair seed and noise level ∈ {1, 2, 5}%:
+  1. The family goes round-robin over families that have power-law templates at that depth. The chain is drawn
+     uniformly from that cell's power-law templates.
+  2. Draw 24 candidate worlds that pass the generator's validity and κ ≤ 5 filters.
+  3. lo / hi = the worlds with the smallest / largest clean target value. Keep the pair if the ratio is ≥ 2;
+     otherwise redraw the chain (up to 20 times).
+  4. **Shared exactly as in A6:** template, phrasing, units (from lo), distractors, noise level, standardized
+     errors z, and the MC draws.
+  5. **MC check, required for every pair:** |ln(σ\*_hi / σ\*_lo)| ≤ 1e-3 (A2 σ\*). Pairs that fail are discarded
+     and counted. For an exact power law the two members' MC log-draws differ by a constant, so the ratio should
+     be 1 up to floating point.
+- **Frozen set:** depth 1–5 × {1, 2, 5}% × 34 pairs = 510 pairs; pair seeds from 1.9e9.
+  `data/eval_sets/2.0.0+bdbb2279/a6b_pairs.jsonl` + manifest.
+- **Analysis:**
+  - **Variables:** y = Δ ln σ_rel (stated, hi − lo; σ = 0 → the 1e-6 floor); m = ln(truth_hi / truth_lo)
+    (≥ ln 2 by construction).
+  - **Statistic:** the OLS slope of y on m, with an intercept, on pairs where both answers are
+    computation-correct (A1, τ = 0.1%).
+  - **A6b test:** equivalence (TOST) of the slope to 0 with margin δ = 0.3. The 90% bootstrap CI (B = 10,000,
+    pairs resampled, seed 0) must lie inside [−0.3, 0.3].
+    - The margin is a third of the way from the propagation ideal (0) to the absolute-σ habit (−1). It is fixed
+      here.
+  - **Also reported:** a two-sided bootstrap p for slope ≠ 0, the mean |y|, the slope's distance from −1, and
+    the all-answered and no-σ = 0 versions (as for A6).
+- **Joint verdict: the two-sided propagation test,** reported in one table with A6.
+  - **"Propagates"** iff A6's primary test is supported (slope of y on Δ ln σ\* > 0, one-sided, D58) **and** A6b's
+    slope is equivalent to 0.
+  - This is an intersection-union test, each part at α = 0.05, so no multiplicity correction is needed.
+  - **Labels:**
+    - A6 fails → "no propagation (lookup-like)";
+    - A6 passes and A6b fails → "magnitude-driven";
+    - both pass → "propagates".
+  - A6's slope is also reported against 1 (CI).
+- **Known confound:** A6 needs templates whose sensitivity varies, and A6b needs constant sensitivity, so the two
+  halves use disjoint template classes. They differ in template mix as well as in σ\* variation, and the write-up
+  says so.
