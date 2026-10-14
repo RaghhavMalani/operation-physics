@@ -1,0 +1,32 @@
+results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/rollouts.jsonl
+  steps   1- 25: n= 795 sigma0=0.30 med_rel_sigma=0.00061 cov1=0.20 acc=0.46
+  steps  26- 50: n= 796 sigma0=0.25 med_rel_sigma=0.00067 cov1=0.22 acc=0.52
+  steps  51- 75: n= 796 sigma0=0.23 med_rel_sigma=0.00068 cov1=0.10 acc=0.41
+  steps  76-100: n= 798 sigma0=0.25 med_rel_sigma=0.00068 cov1=0.21 acc=0.47
+  steps 101-125: n= 799 sigma0=0.25 med_rel_sigma=0.00050 cov1=0.17 acc=0.40
+  steps 126-150: n= 795 sigma0=0.26 med_rel_sigma=0.00053 cov1=0.18 acc=0.42
+  steps 151-175: n= 799 sigma0=0.24 med_rel_sigma=0.00067 cov1=0.17 acc=0.42
+  steps 176-200: n= 798 sigma0=0.29 med_rel_sigma=0.00055 cov1=0.19 acc=0.43
+  steps 201-225: n= 797 sigma0=0.26 med_rel_sigma=0.00070 cov1=0.19 acc=0.45
+  steps 226-250: n= 795 sigma0=0.24 med_rel_sigma=0.00054 cov1=0.16 acc=0.44
+  steps 251-275: n= 797 sigma0=0.22 med_rel_sigma=0.00072 cov1=0.17 acc=0.47
+  steps 276-300: n= 798 sigma0=0.25 med_rel_sigma=0.00048 cov1=0.18 acc=0.44
+  steps 301-325: n= 800 sigma0=0.29 med_rel_sigma=0.00040 cov1=0.25 acc=0.52
+  steps 326-350: n= 797 sigma0=0.35 med_rel_sigma=0.00032 cov1=0.16 acc=0.42
+  steps 351-375: n= 798 sigma0=0.36 med_rel_sigma=0.00030 cov1=0.15 acc=0.45
+  steps 376-400: n= 799 sigma0=0.33 med_rel_sigma=0.00026 cov1=0.14 acc=0.48
+  steps 401-425: n= 795 sigma0=0.39 med_rel_sigma=0.00027 cov1=0.12 acc=0.50
+  steps 426-450: n= 795 sigma0=0.35 med_rel_sigma=0.00021 cov1=0.12 acc=0.46
+  steps 451-475: n= 798 sigma0=0.52 med_rel_sigma=0.00000 cov1=0.15 acc=0.46
+  steps 476-500: n= 792 sigma0=0.62 med_rel_sigma=0.00000 cov1=0.10 acc=0.55
+  steps 501-525: n= 797 sigma0=0.66 med_rel_sigma=0.00000 cov1=0.08 acc=0.52
+  steps 526-550: n= 796 sigma0=0.89 med_rel_sigma=0.00000 cov1=0.06 acc=0.48
+  steps 551-575: n= 798 sigma0=0.91 med_rel_sigma=0.00000 cov1=0.02 acc=0.51
+  steps 576-600: n= 800 sigma0=0.95 med_rel_sigma=0.00000 cov1=0.02 acc=0.41
+  steps 601-625: n= 797 sigma0=0.95 med_rel_sigma=0.00000 cov1=0.03 acc=0.49
+  steps 626-650: n= 798 sigma0=0.97 med_rel_sigma=0.00000 cov1=0.02 acc=0.50
+  steps 651-675: n= 794 sigma0=0.96 med_rel_sigma=0.00000 cov1=0.05 acc=0.43
+  steps 676-700: n= 798 sigma0=0.94 med_rel_sigma=0.00000 cov1=0.05 acc=0.50
+  steps 701-725: n= 794 sigma0=0.98 med_rel_sigma=0.00000 cov1=0.04 acc=0.38
+  steps 726-750: n= 799 sigma0=0.95 med_rel_sigma=0.00000 cov1=0.07 acc=0.48
+  steps 751-775: n= 288 sigma0=0.96 med_rel_sigma=0.00000 cov1=0.14 acc=0.47

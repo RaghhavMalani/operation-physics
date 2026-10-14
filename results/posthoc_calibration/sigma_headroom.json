@@ -23,6 +23,26 @@
         "stated_sigma": -0.27500355775861607,
         "oracle_sigma": -0.17398507130917365
       }
+    },
+    "rl287": {
+      "depth_extrapolation": {
+        "stated_sigma": -0.436739503566422,
+        "oracle_sigma": -0.2760327881539953
+      },
+      "id": {
+        "stated_sigma": -0.282157294166349,
+        "oracle_sigma": -0.17823947170247859
+      }
+    },
+    "rlfinal": {
+      "depth_extrapolation": {
+        "stated_sigma": -0.3435777947026067,
+        "oracle_sigma": -0.2249631052722428
+      },
+      "id": {
+        "stated_sigma": -0.23899279371502813,
+        "oracle_sigma": -0.1525224306943432
+      }
     }
   }
 }

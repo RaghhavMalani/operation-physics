@@ -1,0 +1,13 @@
+results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/rollouts.jsonl
+  steps   1- 25: n= 798 sigma0=0.29 med_rel_sigma=0.00062 cov1=0.22 acc=0.45
+  steps  26- 50: n= 796 sigma0=0.25 med_rel_sigma=0.00072 cov1=0.23 acc=0.52
+  steps  51- 75: n= 798 sigma0=0.23 med_rel_sigma=0.00085 cov1=0.11 acc=0.41
+  steps  76-100: n= 799 sigma0=0.24 med_rel_sigma=0.00074 cov1=0.18 acc=0.40
+  steps 101-125: n= 798 sigma0=0.24 med_rel_sigma=0.00081 cov1=0.21 acc=0.41
+  steps 126-150: n= 798 sigma0=0.30 med_rel_sigma=0.00052 cov1=0.20 acc=0.46
+  steps 151-175: n= 794 sigma0=0.21 med_rel_sigma=0.00077 cov1=0.16 acc=0.43
+  steps 176-200: n= 798 sigma0=0.24 med_rel_sigma=0.00075 cov1=0.19 acc=0.39
+  steps 201-225: n= 795 sigma0=0.24 med_rel_sigma=0.00058 cov1=0.17 acc=0.40
+  steps 226-250: n= 798 sigma0=0.27 med_rel_sigma=0.00057 cov1=0.18 acc=0.44
+  steps 251-275: n= 795 sigma0=0.19 med_rel_sigma=0.00070 cov1=0.21 acc=0.48
+  steps 276-300: n= 383 sigma0=0.26 med_rel_sigma=0.00062 cov1=0.10 acc=0.38

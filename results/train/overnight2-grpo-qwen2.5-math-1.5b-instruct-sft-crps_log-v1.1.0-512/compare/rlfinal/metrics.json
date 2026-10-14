@@ -1,0 +1,374 @@
+{
+  "run_id": "overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-compare-rlfinal",
+  "model_id": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+  "model_revision": null,
+  "lora": "/home/flash2404/operation-physics/results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/final_adapter",
+  "lora_hash": "e33c888028e2ec0a",
+  "oom_backoffs": 0,
+  "oom_fallback": false,
+  "oom_error": null,
+  "generation_seconds": 670.2351591587067,
+  "memory": {
+    "torch_max_allocated_gib": 4.48492956161499,
+    "torch_max_reserved_gib": 4.763671875,
+    "device_total_gib": 7.99560546875,
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "nvidia_smi_peak_used_gib_device_wide": 5.181640625
+  },
+  "generator_version": "1.1.0+c735a0d4",
+  "reward_rule": "crps_log",
+  "prompt_id": "v4_worked_example",
+  "skipped_splits": {},
+  "splits": {
+    "id": {
+      "n": 200,
+      "n_answered": 200,
+      "n_with_sigma": 200,
+      "accuracy": 0.41,
+      "accuracy_among_answered": 0.41,
+      "median_rel_error": 0.02837064459771221,
+      "parse_fail_rate": 0.0,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.0,
+      "coverage_1sigma": 0.115,
+      "coverage_2sigma": 0.16,
+      "mean_rel_sigma": 0.001164212563795884,
+      "median_rel_sigma": 0.0,
+      "mean_reward": -0.14099279371502824,
+      "mean_score_by_rule": {
+        "crps": -0.29316714477301153,
+        "binary": 0.41,
+        "log_score": -4.762146578354608,
+        "abs_rel_error": -0.2937839775500335,
+        "crps_log": -0.2389927937150283
+      },
+      "mean_step_score": 0.6533333333333333,
+      "copied_given_rate": 0.005,
+      "steps_block_rate": 1.0,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": 0.07,
+          "n": 200
+        },
+        {
+          "nominal": 0.2,
+          "observed": 0.08,
+          "n": 200
+        },
+        {
+          "nominal": 0.3,
+          "observed": 0.085,
+          "n": 200
+        },
+        {
+          "nominal": 0.4,
+          "observed": 0.11,
+          "n": 200
+        },
+        {
+          "nominal": 0.5,
+          "observed": 0.115,
+          "n": 200
+        },
+        {
+          "nominal": 0.6,
+          "observed": 0.115,
+          "n": 200
+        },
+        {
+          "nominal": 0.7,
+          "observed": 0.115,
+          "n": 200
+        },
+        {
+          "nominal": 0.8,
+          "observed": 0.135,
+          "n": 200
+        },
+        {
+          "nominal": 0.9,
+          "observed": 0.15,
+          "n": 200
+        },
+        {
+          "nominal": 0.95,
+          "observed": 0.16,
+          "n": 200
+        },
+        {
+          "nominal": 0.99,
+          "observed": 0.165,
+          "n": 200
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          80,
+          0,
+          0,
+          1,
+          1,
+          15,
+          5,
+          1,
+          4,
+          93
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 200
+      },
+      "truncation_rate": 0.0,
+      "mean_completion_tokens": 193.41,
+      "by_depth": {
+        "1": {
+          "n": 50,
+          "accuracy": 0.74,
+          "median_rel_error": 0.001769643792561609,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.28
+        },
+        "2": {
+          "n": 50,
+          "accuracy": 0.32,
+          "median_rel_error": 0.03976184413728111,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.06
+        },
+        "3": {
+          "n": 50,
+          "accuracy": 0.32,
+          "median_rel_error": 0.04228924293018476,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.06
+        },
+        "4": {
+          "n": 50,
+          "accuracy": 0.26,
+          "median_rel_error": 0.08539200387185228,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.06
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 68,
+          "accuracy": 0.6323529411764706,
+          "median_rel_error": 0.003836316927136388,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.17647058823529413
+        },
+        "energy": {
+          "n": 64,
+          "accuracy": 0.140625,
+          "median_rel_error": 0.09811293631611764,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.046875
+        },
+        "kinematics": {
+          "n": 68,
+          "accuracy": 0.4411764705882353,
+          "median_rel_error": 0.01733672344687783,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.11764705882352941
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.41,
+          "0.02": 0.47,
+          "0.05": 0.6,
+          "0.1": 0.695
+        },
+        "sigma_free": {
+          "0.01": 0.41,
+          "0.02": 0.47,
+          "0.05": 0.6,
+          "0.1": 0.695
+        }
+      }
+    },
+    "depth_extrapolation": {
+      "n": 200,
+      "n_answered": 198,
+      "n_with_sigma": 198,
+      "accuracy": 0.31,
+      "accuracy_among_answered": 0.31313131313131315,
+      "median_rel_error": 0.0342153486076806,
+      "parse_fail_rate": 0.01,
+      "unit_mismatch_rate": 0.0,
+      "missing_sigma_rate": 0.005,
+      "coverage_1sigma": 0.08080808080808081,
+      "coverage_2sigma": 0.13131313131313133,
+      "mean_rel_sigma": 0.0014982153270624546,
+      "median_rel_sigma": 0.00026069061986905506,
+      "mean_reward": -0.20282779470260665,
+      "mean_score_by_rule": {
+        "crps": -0.3862439879116537,
+        "binary": 0.31,
+        "log_score": -6.287694977861161,
+        "abs_rel_error": -0.3870705359264928,
+        "crps_log": -0.3435777947026066
+      },
+      "mean_step_score": 0.70375,
+      "copied_given_rate": 0.0,
+      "steps_block_rate": 0.99,
+      "reliability": [
+        {
+          "nominal": 0.1,
+          "observed": 0.020202020202020204,
+          "n": 198
+        },
+        {
+          "nominal": 0.2,
+          "observed": 0.030303030303030304,
+          "n": 198
+        },
+        {
+          "nominal": 0.3,
+          "observed": 0.045454545454545456,
+          "n": 198
+        },
+        {
+          "nominal": 0.4,
+          "observed": 0.06060606060606061,
+          "n": 198
+        },
+        {
+          "nominal": 0.5,
+          "observed": 0.06565656565656566,
+          "n": 198
+        },
+        {
+          "nominal": 0.6,
+          "observed": 0.0707070707070707,
+          "n": 198
+        },
+        {
+          "nominal": 0.7,
+          "observed": 0.08080808080808081,
+          "n": 198
+        },
+        {
+          "nominal": 0.8,
+          "observed": 0.09595959595959595,
+          "n": 198
+        },
+        {
+          "nominal": 0.9,
+          "observed": 0.12121212121212122,
+          "n": 198
+        },
+        {
+          "nominal": 0.95,
+          "observed": 0.13131313131313133,
+          "n": 198
+        },
+        {
+          "nominal": 0.99,
+          "observed": 0.15656565656565657,
+          "n": 198
+        }
+      ],
+      "pit_histogram": {
+        "counts": [
+          95,
+          2,
+          1,
+          2,
+          3,
+          3,
+          4,
+          1,
+          3,
+          84
+        ],
+        "edges": [
+          0.0,
+          0.1,
+          0.2,
+          0.30000000000000004,
+          0.4,
+          0.5,
+          0.6000000000000001,
+          0.7000000000000001,
+          0.8,
+          0.9,
+          1.0
+        ],
+        "n": 198
+      },
+      "truncation_rate": 0.005,
+      "mean_completion_tokens": 317.3,
+      "by_depth": {
+        "5": {
+          "n": 200,
+          "accuracy": 0.31,
+          "median_rel_error": 0.0342153486076806,
+          "parse_fail_rate": 0.01,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.08080808080808081
+        }
+      },
+      "by_family": {
+        "dynamics": {
+          "n": 67,
+          "accuracy": 0.417910447761194,
+          "median_rel_error": 0.01401708722771872,
+          "parse_fail_rate": 0.0,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.08955223880597014
+        },
+        "energy": {
+          "n": 66,
+          "accuracy": 0.030303030303030304,
+          "median_rel_error": 0.18385757933930508,
+          "parse_fail_rate": 0.015151515151515152,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.015384615384615385
+        },
+        "kinematics": {
+          "n": 67,
+          "accuracy": 0.47761194029850745,
+          "median_rel_error": 0.01129447309713573,
+          "parse_fail_rate": 0.014925373134328358,
+          "unit_mismatch_rate": 0.0,
+          "coverage_1sigma": 0.13636363636363635
+        }
+      },
+      "accuracy_at_tolerance": {
+        "strict": {
+          "0.01": 0.31,
+          "0.02": 0.415,
+          "0.05": 0.54,
+          "0.1": 0.635
+        },
+        "sigma_free": {
+          "0.01": 0.31,
+          "0.02": 0.415,
+          "0.05": 0.54,
+          "0.1": 0.635
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+# Eval summary: overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-compare-rlfinal
+
+- model: `/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged` @ `None`
+- generator: `1.1.0+c735a0d4`, reward rule: `crps_log`, prompt: `v4_worked_example`
+- generation time: 670 s
+- torch_max_allocated_gib: 4.48
+- torch_max_reserved_gib: 4.76
+- device_total_gib: 8.00
+- device_name: NVIDIA GeForce RTX 4060 Laptop GPU
+- nvidia_smi_peak_used_gib_device_wide: 5.18
+
+| split | n | accuracy (≤1%) | median rel. err | parse fail | unit mismatch | missing ± | 1σ cov | 2σ cov | median rel σ | mean reward | truncated |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| id | 200 | 41.0% | 0.0284 | 0.0% | 0.0% | 0.0% | 11.5% | 16.0% | 0 | -0.141 | 0.0% |
+| depth_extrapolation | 200 | 31.0% | 0.0342 | 1.0% | 0.0% | 0.5% | 8.1% | 13.1% | 0.000261 | -0.203 | 0.5% |
+
+## id: by depth
+
+| depth | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |
+|---|---|---|---|---|---|---|
+| 1 | 50 | 74.0% | 0.00177 | 0.0% | 0.0% | 28.0% |
+| 2 | 50 | 32.0% | 0.0398 | 0.0% | 0.0% | 6.0% |
+| 3 | 50 | 32.0% | 0.0423 | 0.0% | 0.0% | 6.0% |
+| 4 | 50 | 26.0% | 0.0854 | 0.0% | 0.0% | 6.0% |
+
+## id: by family
+
+| family | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |
+|---|---|---|---|---|---|---|
+| dynamics | 68 | 63.2% | 0.00384 | 0.0% | 0.0% | 17.6% |
+| energy | 64 | 14.1% | 0.0981 | 0.0% | 0.0% | 4.7% |
+| kinematics | 68 | 44.1% | 0.0173 | 0.0% | 0.0% | 11.8% |
+
+Mean score by rule (failures at the rule's floor): crps -0.293, binary 0.41, log_score -4.76, abs_rel_error -0.294, crps_log -0.239
+Mean step score: 0.653; copied-given rate: 0.5%; steps block present: 100.0%; mean completion tokens: 193
+
+## depth_extrapolation: by depth
+
+| depth | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |
+|---|---|---|---|---|---|---|
+| 5 | 200 | 31.0% | 0.0342 | 1.0% | 0.0% | 8.1% |
+
+## depth_extrapolation: by family
+
+| family | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |
+|---|---|---|---|---|---|---|
+| dynamics | 67 | 41.8% | 0.014 | 0.0% | 0.0% | 9.0% |
+| energy | 66 | 3.0% | 0.184 | 1.5% | 0.0% | 1.5% |
+| kinematics | 67 | 47.8% | 0.0113 | 1.5% | 0.0% | 13.6% |
+
+Mean score by rule (failures at the rule's floor): crps -0.386, binary 0.31, log_score -6.29, abs_rel_error -0.387, crps_log -0.344
+Mean step score: 0.704; copied-given rate: 0.0%; steps block present: 99.0%; mean completion tokens: 317
