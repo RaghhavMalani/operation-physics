@@ -280,8 +280,10 @@ neither significant).
   value would have scored better on average (mean crps_log −0.184 vs −0.191). The collapse goes *against* the
   reward's σ gradient, so it is not reward hacking of the verifier.
 - **Likely mechanism (hypothesis, not tested by intervention):** credit assignment. "± 0" answers are slightly
-  more often correct (47–50% vs 40–45% for σ > 0, at every stage), so the answer's large correctness advantage is
-  credited to the "± 0" tokens too. That outweighs the σ term's own ~0.001-sized effect. Once most of a group says
+  more often correct (46–50% vs 40–48% for σ > 0, in every 100-step window up to step 600 of both runs; after
+  that only 65–139 σ > 0 answers per window remain, and they are more often correct), so the answer's large
+  correctness advantage is credited to the "± 0" tokens too. That outweighs the σ term's own ~0.001-sized
+  effect. Once most of a group says
   "± 0", σ no longer varies within the group and gets no gradient at all, so the state is absorbing. Last night's
   run had the same correlation and didn't drift within 287 steps, and neither did tonight's. Whether the drift
   after step 300 needs the floor removed (σ = 0 and 0.1% scored identically under 1.0.0) or only more steps can't
