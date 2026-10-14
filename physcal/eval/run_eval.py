@@ -428,6 +428,17 @@ def render_summary(m: dict) -> str:
                 if k in e:
                     lines.append(f"| {name} | {label} | {_fmt(e[k]['coverage_1sigma'], True)} "
                                  f"| {_fmt(e[k]['coverage_2sigma'], True)} | {_fmt(e[k]['mean_crps_log'])} |")
+    a5 = cond.get("a5") or {}
+    if a5.get("available"):
+        lines += ["", f"## Strongest A5 nested baseline (D50, the judgement since D50): `{a5['strongest_sigma']}`", "",
+                  "Fitted on the SFT-only calibration split; applied to the same completions, so μ is unchanged."
+                  + ("" if a5["baseline_comparable"] else " SFT-only rows omitted (not comparable here)."), "",
+                  "| split | rows | 1σ cov | 2σ cov | mean crps_log |", "|---|---|---|---|---|"]
+        for name, e in a5["splits"].items():
+            for k, label in (("this_model_a5", "this model × A5 σ"), ("sft_only_a5", "SFT-only × A5 σ")):
+                if k in e:
+                    lines.append(f"| {name} | {label} | {_fmt(e[k]['coverage_1sigma'], True)} "
+                                 f"| {_fmt(e[k]['coverage_2sigma'], True)} | {_fmt(e[k]['mean_crps_log'])} |")
     for name, s in m["splits"].items():
         lines += ["", f"## {name}: by depth", "", "| depth | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |",
                   "|---|---|---|---|---|---|---|"]

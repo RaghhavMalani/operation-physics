@@ -19,6 +19,12 @@ Holm over {A1, A2, A3}:
 - A3: mean crps_log of split-credit > that of SFT-only + (a).
 "RL calibration beats post-hoc" = A1 and A2 supported. The same three tests against (a') (text direct, σ' = c(x)·|μ|)
 are reported as a sensitivity analysis; (b) (oracle per cell, in-sample) is a headline row only, never tested.
+D49's family A is SUPERSEDED by D50/A5 (still computed and reported, labelled so).
+
+D50/A5 family N (the judgement since D50): the strongest nested baseline (results/a5_baselines, chosen on the
+calibration split) applied to the SAME split-credit completions, so μ is identical and only σ differs:
+- N1: |1σ coverage − 68.27%| smaller; N2: Spearman ρ(σ, |error|) higher; N3: mean crps_log higher.
+Holm over {N1, N2, N3}; "RL σ beats the baseline" = N2 and N3 supported (N1 reported).
 Writes <run>/compare/phase95_family_S.json and .md.
 """
 
@@ -86,17 +92,19 @@ def holm(p: dict) -> dict:
     return out
 
 
-def family_a(rl: dict, ctrl: dict, keys: list) -> dict:
-    """D49 amendment tests of `rl` against a post-hoc control on the pooled eval sets."""
+def family_a(rl: dict, ctrl: dict, keys: list, prefix: str = "A", beats: tuple = ("1", "2")) -> dict:
+    """Coverage-error, ρ and crps_log tests of `rl` against a control on the pooled eval sets (D49 family A, or
+    D50 family N with prefix "N" and beats = ("2", "3"))."""
     cov_err = lambda d, ks: abs(float(np.mean([d[k]["cov1"] for k in ks])) - COVERAGE_TARGET)
     crps = lambda d, ks: float(np.mean([d[k]["crps_log"] for k in ks]))
     t = {}
-    for name, stat, better_low in (("A1_cov1_error", cov_err, True), ("A2_rho", rho, False), ("A3_crps_log", crps, False)):
+    for name, stat, better_low in ((f"{prefix}1_cov1_error", cov_err, True), (f"{prefix}2_rho", rho, False),
+                                   (f"{prefix}3_crps_log", crps, False)):
         d = bootstrap(rl, ctrl, keys, stat)
         t[name] = {"rl": stat(rl, keys), "control": stat(ctrl, keys), "diff_ci": np.percentile(d, [2.5, 97.5]).tolist(),
                    "p_one_sided": float(np.mean(d >= 0) if better_low else np.mean(d <= 0))}
     t["holm"] = holm({k.split("_")[0]: v["p_one_sided"] for k, v in t.items()})
-    t["rl_calibration_beats_posthoc"] = t["holm"]["A1"]["supported"] and t["holm"]["A2"]["supported"]
+    t["rl_calibration_beats_posthoc"] = all(t["holm"][f"{prefix}{i}"]["supported"] for i in beats)
     return t
 
 
@@ -129,10 +137,18 @@ def main(run: Path) -> None:
     reported = {"crps_log_vs_posthoc": {"mean_diff": st.mean(diffs), "wilcoxon_p_two_sided": float(wilcoxon(diffs).pvalue)}}
     cond = {name: load(path) for name, path in COND.items()}
     assert all(set(keys) == set(c) for c in cond.values()), "different eval problems (conditional post-hoc)"
-    amendment = {"A_vs_text_scale": family_a(split, cond["text_scale"], keys),
-                 "sensitivity_A_vs_text_direct": family_a(split, cond["text_direct"], keys)}
-    rows = {"sft": sft, "posthoc": post, **{f"sft_{k}": v for k, v in cond.items()}, "uniform_rl287": uni,
-            "split_rl287": split}
+    from physcal.eval.nested_baselines import load_models, write_scaled_tape
+
+    models, sel = load_models()
+    a5_tape = run / "compare/rl287_a5_sigma.jsonl"
+    write_scaled_tape(run / "compare/rl287/rollouts.jsonl", models["sigma"][sel["strongest"]["sigma"]], a5_tape)
+    a5_same = load(a5_tape)
+    amendment = {"N_vs_A5_strongest_same_completions": family_a(split, a5_same, keys, "N", ("2", "3")),
+                 "superseded_D49_A_vs_text_scale": family_a(split, cond["text_scale"], keys),
+                 "superseded_D49_sensitivity_A_vs_text_direct": family_a(split, cond["text_direct"], keys)}
+    rows = {"sft": sft, "posthoc": post, **{f"sft_{k}": v for k, v in cond.items()},
+            "sft_a5_strongest": load(ROOT / "results/a5_baselines/sft_eval_a5_sigma.jsonl"), "uniform_rl287": uni,
+            "split_rl287": split, "split_rl287_a5_strongest": a5_same}
     final = run / "compare/rlfinal/rollouts.jsonl"
     if final.exists():
         rows["split_final"] = load(final)
@@ -149,12 +165,12 @@ def main(run: Path) -> None:
     lines += ["", "| hypothesis | p (one-sided) | Holm threshold | supported |", "|---|---|---|---|"]
     lines += [f"| {k} | {v['p']:.3g} | {v['holm_threshold']:.3g} | {v['supported']} |" for k, v in t["holm"].items()]
     for name, a in amendment.items():
-        lines += ["", f"D49 {name} (split-credit RL@287 vs SFT-only + post-hoc; RL calibration beats post-hoc: "
+        lines += ["", f"{name} (split-credit RL@287 stated σ vs the control; RL σ beats it: "
                   f"{a['rl_calibration_beats_posthoc']})", "",
                   "| test | RL | control | 95% CI of RL − control | p (one-sided) | Holm threshold | supported |",
                   "|---|---|---|---|---|---|---|"]
         for k, v in a.items():
-            if k.startswith("A"):
+            if k[0] in "AN" and k[1].isdigit():
                 h = a["holm"][k.split("_")[0]]
                 lines.append(f"| {k} | {v['rl']:.4f} | {v['control']:.4f} | [{v['diff_ci'][0]:.4f}, {v['diff_ci'][1]:.4f}] "
                              f"| {h['p']:.3g} | {h['holm_threshold']:.3g} | {h['supported']} |")

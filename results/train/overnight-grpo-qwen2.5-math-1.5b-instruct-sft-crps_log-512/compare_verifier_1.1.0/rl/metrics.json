@@ -542,7 +542,46 @@
         "scale": 0.03,
         "direct": 0.003
       },
-      "baseline_comparable": true
+      "baseline_comparable": true,
+      "a5": {
+        "available": true,
+        "strongest_sigma": "problem_answer_reasoning/gbt",
+        "baseline_comparable": true,
+        "splits": {
+          "id": {
+            "this_model_a5": {
+              "n": 200,
+              "n_with_sigma": 199,
+              "coverage_1sigma": 0.6884422110552764,
+              "coverage_2sigma": 0.7939698492462312,
+              "mean_crps_log": -0.24781204380863794
+            },
+            "sft_only_a5": {
+              "n": 200,
+              "n_with_sigma": 199,
+              "coverage_1sigma": 0.6733668341708543,
+              "coverage_2sigma": 0.7788944723618091,
+              "mean_crps_log": -0.28952881253017443
+            }
+          },
+          "depth_extrapolation": {
+            "this_model_a5": {
+              "n": 200,
+              "n_with_sigma": 199,
+              "coverage_1sigma": 0.6582914572864321,
+              "coverage_2sigma": 0.7638190954773869,
+              "mean_crps_log": -0.32247129645360384
+            },
+            "sft_only_a5": {
+              "n": 200,
+              "n_with_sigma": 200,
+              "coverage_1sigma": 0.665,
+              "coverage_2sigma": 0.755,
+              "mean_crps_log": -0.3207279579494538
+            }
+          }
+        }
+      }
     }
   }
 }

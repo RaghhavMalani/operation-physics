@@ -1,0 +1,39 @@
+{
+  "train": {
+    "tapes": [
+      "results/posthoc_calibration/sft_calibration_set/rollouts.jsonl",
+      "results/probe_sft/sft_calibration_ext/rollouts.jsonl"
+    ],
+    "n_rows": 1996,
+    "excluded": {
+      "no_marker": 3,
+      "not_ok": 1
+    },
+    "prompt_tokens_max": 1476,
+    "prompt_tokens_median": 1224.0,
+    "verifier_versions": [
+      "1.1.0"
+    ],
+    "generator_versions": [
+      "1.1.0+c735a0d4"
+    ]
+  },
+  "eval": {
+    "tapes": [
+      "results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare_verifier_1.1.0/sft/rollouts.jsonl"
+    ],
+    "n_rows": 400,
+    "excluded": {
+      "no_marker": 0,
+      "not_ok": 0
+    },
+    "prompt_tokens_max": 1475,
+    "prompt_tokens_median": 1321.5,
+    "verifier_versions": [
+      "1.1.0"
+    ],
+    "generator_versions": [
+      "1.1.0+c735a0d4"
+    ]
+  }
+}

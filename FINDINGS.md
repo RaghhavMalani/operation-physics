@@ -475,3 +475,29 @@ summary is too thin in the tails at 10% noise:
 3. Grade coverage against the MC predictive quantiles rather than a Gaussian σ\*. This would change A2's primary
    target, and also needs a fresh gate run.
 4. Treat one Holm rejection among 40 tests as chance: not allowed by A3 as written.
+
+---
+
+## #10. A5 nested baselines: the SFT model's own text predicts its error far better than its stated σ (2026-10-14)
+
+**Claim.** Surface features of the problem and of the SFT-only model's completion, fitted only on the calibration
+split, give a σ with ~67% 1σ coverage and ρ(σ, |error|) ≈ 0.70 on the frozen eval sets. The model's stated σ gives
+13% coverage and ρ ≈ 0. This is the bar any RL σ is now judged against, on the same completions (D50/A5).
+
+| σ source (SFT-only completions, pooled eval, 399 answered) | mean crps_log | 1σ cov | ρ(σ, err) |
+|---|---|---|---|
+| stated σ | −0.327 | 13.3% | −0.02 |
+| metadata (family, depth), GBT | −0.303 | 63.2% | 0.49 |
+| + problem text, GBT | −0.296 | 68.4% | 0.65 |
+| + answer, GBT | −0.296 | 69.4% | 0.65 |
+| + reasoning, linear | −0.292 | 66.7% | 0.66 |
+| **+ reasoning, GBT (strongest by calibration CV)** | **−0.293** | **66.9%** | **0.70** |
+
+- **p channel (correct within 1%):** the strongest model reaches Brier 0.111 and AUROC 0.913 on the eval sets.
+  Metadata alone reaches AUROC 0.78.
+- **Nesting:** most of the gain comes from the problem text. The answer adds ~nothing, and the reasoning adds a
+  little.
+- **Provenance:** `results/a5_baselines/` (`selection.json` written before eval use; `summary.md`,
+  `eval_sft.json`).
+- **Caveat:** the selection used calibration-split CV. The eval-set ranking of the top candidates differs
+  slightly (linear vs GBT on crps_log), which is expected at n = 400.

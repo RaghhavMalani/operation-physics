@@ -166,9 +166,10 @@ def baseline_report(records_by_split: dict[str, list[dict]], scoring_cfg: dict, 
     Per split: this model's σ times the standing scale, and, when the eval is on the same frozen sets (same
     generator version and split name) and the same verifier, the SFT-only baseline itself (unscaled and scaled).
     `conditional` holds the D49 rows: the text-feature scale (a) and the oracle per-cell scale (b)."""
-    from physcal.eval import posthoc_cond
+    from physcal.eval import nested_baselines, posthoc_cond
 
     conditional = posthoc_cond.baseline_rows(records_by_split, scoring_cfg, generator_version, verifier)
+    conditional["a5"] = nested_baselines.report_rows(records_by_split, scoring_cfg, generator_version, verifier)
     path = REPO_ROOT / load_config("monitor")["posthoc_baseline"]
     if not path.exists():
         return {"available": False, "reason": f"{path} not found", "conditional": conditional}

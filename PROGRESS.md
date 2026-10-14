@@ -475,3 +475,10 @@ Progress:
 - [x] Phase 10 step 4, gate under A3 (FINDINGS #9): **FAILED**, 1 of 7 criteria. Per-cell ±2σ\* Kupiec with Holm
   rejects depth 3 / 10% noise (91.8%, p = 0.0004). Pooled coverage, PIT KS and the binomial-interval share
   pass. Phase 10+ work stopped (A6 not built). Decision needed (FINDINGS #9 options).
+- [x] D52: E1 pre-registered before any E1 data or result.
+- [x] A5 nested baselines (FINDINGS #10, D53). Strongest = problem + answer + reasoning / GBT (calibration CV).
+  On SFT-only eval: crps_log −0.293 vs stated −0.327, 1σ coverage 67% vs 13%, ρ 0.70 vs −0.02. Added to every eval
+  report (the four existing reports were refreshed) and to `scripts/phase95_compare.py` as family N (the judgement).
+- [ ] A6 counterfactual pairs: **not built**. It is Phase 10+ work and the A3 gate failed (FINDINGS #9).
+- [x] E1 data and configs: 1,996 training and 400 eval prefixes (`results/e1/data/`), `configs/grpo_e1{a,b}.yaml`,
+  trainer, eval and family-E compare (`physcal/train/e1*.py`). 325 tests pass. No GPU smoke test (no GPU today).

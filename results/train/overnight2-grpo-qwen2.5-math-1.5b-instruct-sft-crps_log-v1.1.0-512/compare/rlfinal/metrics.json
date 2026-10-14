@@ -540,7 +540,46 @@
         "scale": 0.03,
         "direct": 0.003
       },
-      "baseline_comparable": true
+      "baseline_comparable": true,
+      "a5": {
+        "available": true,
+        "strongest_sigma": "problem_answer_reasoning/gbt",
+        "baseline_comparable": true,
+        "splits": {
+          "id": {
+            "this_model_a5": {
+              "n": 200,
+              "n_with_sigma": 199,
+              "coverage_1sigma": 0.7185929648241206,
+              "coverage_2sigma": 0.8391959798994975,
+              "mean_crps_log": -0.20766138083956048
+            },
+            "sft_only_a5": {
+              "n": 200,
+              "n_with_sigma": 199,
+              "coverage_1sigma": 0.6733668341708543,
+              "coverage_2sigma": 0.7788944723618091,
+              "mean_crps_log": -0.28952881253017443
+            }
+          },
+          "depth_extrapolation": {
+            "this_model_a5": {
+              "n": 200,
+              "n_with_sigma": 198,
+              "coverage_1sigma": 0.702020202020202,
+              "coverage_2sigma": 0.803030303030303,
+              "mean_crps_log": -0.3124504468109384
+            },
+            "sft_only_a5": {
+              "n": 200,
+              "n_with_sigma": 200,
+              "coverage_1sigma": 0.665,
+              "coverage_2sigma": 0.755,
+              "mean_crps_log": -0.3207279579494538
+            }
+          }
+        }
+      }
     }
   }
 }

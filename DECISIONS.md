@@ -886,3 +886,33 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - Neither supported → the σ channel did not learn in 300 steps.
 - **Pipeline sanity (not a result):** if more than 10% of step-1 suffixes fail to parse, or the run OOMs, the
   run is reported as a pipeline failure.
+
+### D53. A5 and E1 implementation notes (no result had been seen when these were fixed, except where stated)
+- **A5 (`physcal/eval/nested_baselines.py`, `configs/nested_baselines.yaml`):**
+  - **Features:** TF-IDF unigrams over whitespace tokens (min_df 3, sublinear tf), one vocabulary per field. The
+    GBT uses the 1,000 most frequent terms per field as dense input.
+  - **Grids, the same for every feature set:** ridge α (5 values), logistic C (5 values), and 4 HistGradientBoosting
+    configurations.
+  - **CV:** 5-fold GroupKFold by template (865 templates in the 2,000 calibration completions).
+  - **σ target:** the σ target is ln max(|ln(μ/y)|, 1e-6) and σ_log = c·exp(ŷ), with c fitted for crps_log on the
+    out-of-fold predictions.
+  - **Answers with μ ≤ 0** (one SFT eval answer) count as failures for the baselines; crps_log already gives them
+    the clip.
+  - **Selection** (`selection.json`) was written before any eval-set use. A rerun to fix a pickling path
+    (`__main__.Candidate`) reproduced it byte for byte.
+- **Superseded, not deleted:** D49's rows and family A remain in the reports and the compare script, labelled as
+  superseded. The judgement is now family N (N1–N3) against the strongest A5 σ applied to the *same*
+  completions.
+- **E1 (`physcal/train/e1.py`, `e1_compare.py`, `configs/e1.yaml`, `configs/grpo_e1{a,b}.yaml`):**
+  - **Prefixes:** 1,996 training prefixes (3 completions without ± and 1 unit mismatch excluded) and 400 eval
+    prefixes (none excluded).
+  - **Token budget:** the longest prompt + prefix is 1,476 tokens, so `max_prompt_length` is 1,536 and never
+    truncates. The original σ suffixes are ≤ 15 tokens; the budget is 24.
+  - **Training reward:** "SFT completion with a parsed answer" = verifier reason ok.
+  - **μ ≤ 0:** an answer with μ ≤ 0 keeps the crps_log clip and is excluded only from ρ.
+  - **Code paths:** E1 has its own trainer (it reuses the GRPO callbacks); `grpo.train`, which runs tonight's
+    split-credit run, is untouched.
+  - **CPU checks:** prefix + the SFT's own suffix reproduces the logged SFT reward exactly on all 400 eval
+    problems. E1 tapes replay exactly. An echo model run through eval and compare gives Δcrps_log = 0.
+  - **Not testable today:** the Unsloth training step itself has had no GPU smoke test (no GPU today), so the
+    first E1 step tonight is its smoke test.

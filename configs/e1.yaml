@@ -1,0 +1,33 @@
+# E1, the fixed-mu sigma-only pilot (DECISIONS.md D52, pre-registered). Shared by E1a and E1b.
+model_id: results/sft/qwen2.5-math-1.5b-instruct/merged   # the SFT-only start of every RL run
+prompt: v4_worked_example
+chat_template_kwargs: {}
+reward_rule: crps_log
+data_dir: results/e1/data
+train_tapes:                          # SFT-only greedy completions, calibration split (training seeds)
+  - results/posthoc_calibration/sft_calibration_set/rollouts.jsonl
+  - results/probe_sft/sft_calibration_ext/rollouts.jsonl
+eval_tapes:                           # SFT-only greedy completions on the frozen 1.1.0 eval sets (verifier 1.1.0)
+  - results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare_verifier_1.1.0/sft/rollouts.jsonl
+bins: [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.3, 1.0]   # E1b relative sigma bins (and bin entropy)
+mu_changed_rtol: 1.0e-9               # suffix moved mu in SI (a unit change) if |mu / mu_sft - 1| exceeds this
+eval:
+  generation:                         # greedy sigma suffix, as the main eval decodes
+    batch_size: 16
+    max_new_tokens: 24
+    do_sample: false
+    temperature: 1.0
+    top_p: 1.0
+    top_k: 0
+    repetition_penalty: 1.0
+    seed: 0
+compare:
+  a5_sigma_tape: results/a5_baselines/sft_eval_a5_sigma.jsonl   # strongest A5 sigma on the same SFT completions
+  runs:
+    E1a: results/train/e1a-sigma-only-free-seed0
+    E1b: results/train/e1b-sigma-only-bins-seed0
+  bootstrap: 10000
+  seed: 0
+  alpha: 0.05
+  coverage_target: 0.6827
+  output_dir: results/e1

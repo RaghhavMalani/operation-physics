@@ -48,6 +48,17 @@ SFT-only rows are on the same frozen split.
 | id | SFT-only × (a') text direct | 79.5% | 88.5% | -0.293 |
 | id | SFT-only × (b) oracle per cell (upper bound) | 31.0% | 39.5% | -0.306 |
 
+## Strongest A5 nested baseline (D50, the judgement since D50): `problem_answer_reasoning/gbt`
+
+Fitted on the SFT-only calibration split; applied to the same completions, so μ is unchanged.
+
+| split | rows | 1σ cov | 2σ cov | mean crps_log |
+|---|---|---|---|---|
+| id | this model × A5 σ | 68.8% | 80.9% | -0.254 |
+| id | SFT-only × A5 σ | 67.3% | 77.9% | -0.29 |
+| depth_extrapolation | this model × A5 σ | 64.3% | 74.9% | -0.399 |
+| depth_extrapolation | SFT-only × A5 σ | 66.5% | 75.5% | -0.321 |
+
 ## id: by depth
 
 | depth | n | accuracy | median rel. err | parse fail | unit mismatch | 1σ cov |
