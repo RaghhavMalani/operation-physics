@@ -19,8 +19,8 @@ def test_kupiec_size_is_close_to_alpha():
 
 
 def test_holm():
-    h = holm({"a": 0.001, "b": 0.02, "c": 0.04}, 0.05)
-    assert h["a"]["rejected"] and not h["b"]["rejected"] and not h["c"]["rejected"]  # 0.02 > 0.05/2
+    h = holm({"a": 0.001, "b": 0.03, "c": 0.04}, 0.05)
+    assert h["a"]["rejected"] and not h["b"]["rejected"] and not h["c"]["rejected"]  # 0.03 > 0.05/2, then stop
     assert holm({"a": 0.01, "b": 0.02}, 0.05)["b"]["rejected"]
 
 
