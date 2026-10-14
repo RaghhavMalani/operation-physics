@@ -267,13 +267,13 @@ neither significant).
 - **Removing the floor restored the gradient, not its size.** Below 0.1% the reward now strictly increases with σ
   toward |error| (tested), but the slope is ≈ 0.56 per unit of relative σ. Widening σ from 0.05% to 0.1% of the
   value earns ~0.0003, while the error term varies by 0.01–0.5 within a GRPO group.
-- **Training-side, steps 1–287, the two runs are indistinguishable:** σ = 0 share 24–26% vs 24–25%, median stated σ
-  0.055–0.067% vs 0.062–0.074%, 1σ coverage 17–18% vs 18–19%, σ-free accuracy 42–46% vs 42–44% (per 100-step
-  window, tonight vs last night).
+- **Training-side, steps 1–287, the two runs are indistinguishable:** σ = 0 share 24–26% vs 23.5–25%, median stated
+  σ 0.055–0.067% vs 0.062–0.074%, 1σ coverage 16.5–18.5% vs 17.5–19%, σ-free accuracy 42–46% vs 42–44% (per
+  100-step window, tonight vs last night).
 
 ### Longer training: the σ = 0 collapse
 - The share of training answers stating "± 0" (literally; not a parser artifact) stays at 24–26% until step
-  ~300, then rises to 33% (steps 301–400), 52–62% (451–500), 89% (526–550) and 94–98% from step 576 to the end.
+  ~300, then rises to 29–36% (steps 301–400), 52–62% (451–500), 89–91% (526–575) and 94–98% from step 576 to the end.
   Training 1σ coverage falls from ~18% to 2–7%. Greedy, the final adapter states σ = 0 on 50.5% (ID) / 36% (depth
   5) of eval problems, and one depth-5 answer drops the ± altogether (a parse failure).
 - **The scoring rule does not favour it.** On the σ = 0 training answers of steps 401–520, stating σ = 1% of the

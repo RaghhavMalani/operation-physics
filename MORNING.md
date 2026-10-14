@@ -1,25 +1,37 @@
-# Morning report: 2026-10-13 (Phase 3.6: SFT warm-up A/B + overnight GRPO)
+# Morning report: 2026-10-14 (Phase 3.7: σ floor removed, matched-step GRPO rerun)
 
-**Short version.** Your approved Phase 3.6 ran end to end, and everything is committed and pushed.
+**Short version.** Everything you asked for ran, and everything is committed and pushed.
 
-- **The SFT warm-up worked.** 30 minutes of σ-masked SFT on generator solutions took Qwen2.5-Math-1.5B from
-  **0% → 38%** within-1% accuracy on the in-distribution (ID) eval, and from **0% → 31% on depth 5**. Parse
-  failures went from 100% to 0%.
-- **The A/B went to Qwen2.5-Math-1.5B + SFT, but it was effectively a tie** (binary zero-variance 56.2% vs 60.4%,
-  27 vs 29 groups of 48). Its truncation at 512 tokens is 0%, so the GRPO budget was **512**.
-- **The overnight GRPO** (crps_log, 4 × 8, EMA curriculum from depths 1–2) ran **287 steps** before the 06:30
-  hard stop.
-- **What RL added on top of SFT is small and not significant:**
-  - ID 38.0% → 40.0% (4 problems flipped to correct, 0 flipped to wrong, McNemar p = 0.125).
-  - Mean reward +0.046 (Wilcoxon p = 0.018 nominal; not significant after multiple-comparison correction).
-  - Depth 5 unchanged.
-  - **Calibration did not improve:** 1σ coverage ~15% against the 68% target.
-- I think I found a likely reason for the calibration result: the 0.1% σ floor in the scoring rule (D37). It's
-  your call, because fixing it means changing the verifier, which you said not to touch.
+**FINDINGS #6 (the answer to your question): removing the σ floor did not let RL move calibration at matched
+steps, and RL does not beat post-hoc scaling.**
 
-238 tests pass, nothing is BLOCKED, and all GPU work ended at 07:07 IST. Full details are in
-[FINDINGS.md](FINDINGS.md) #4 and #5, [DECISIONS.md](DECISIONS.md) D35–D37, and
-[PROGRESS.md](PROGRESS.md).
+- **At step 287, 1σ coverage is unchanged.**
+  - New RL: **14.0% (ID) / 9.5% (depth 5)**.
+  - SFT-only: 15.0% / 11.5%. Last night's RL: 15.5% / 10.0%.
+  - Every paired McNemar p is ≥ 0.125, and the direction is slightly worse.
+- **A free post-hoc σ scale beats RL by about 20 points.**
+  - One multiplier (c = 18.1), fitted on 400 training-seed problems, lifts SFT-only coverage to **35.0% /
+    33.5%**.
+  - That beats RL@287 by 42 / 48 problems (p < 1e-12).
+  - It still falls short of 68%: matching 68% on the calibration set needs c = 585, which gives 65% / 72.5% but
+    costs 0.2 in crps_log.
+- **Longer training (to step 759) made σ collapse to exactly zero.**
+  - After step ~550, 95–98% of training answers say "± 0".
+  - The final adapter's greedy coverage falls to 11.5% / 8.1%, with 50.5% of ID answers stating σ = 0.
+  - The scoring rule doesn't favour this: on those answers, σ = 1% of the value would have scored better. So it
+    is a learning-dynamics failure, not verifier gaming.
+- **Why, in one line:** under crps_log, σ is worth almost no reward for this policy.
+  - The best global σ scale gains only +0.001 crps_log per problem.
+  - σ that tracked each answer's own error would gain +0.12, but the model's σ has ~zero correlation with its
+    error.
+  - So the σ signal is swamped by correctness and gets credited along with it.
+
+**Housekeeping:**
+- All 5 stages done. **259 tests pass. Nothing BLOCKED.**
+- GPU work ended at **07:53 IST**, 37 minutes before the 08:30 cutoff.
+- Peak torch reserved memory was **7.05 GiB** (cap 7.5), with 0 OOMs and no thermal pauses.
+
+Details are in [FINDINGS.md](FINDINGS.md) #6, [DECISIONS.md](DECISIONS.md) D38–D42 and [PROGRESS.md](PROGRESS.md).
 
 ---
 
@@ -27,132 +39,162 @@
 
 | time | stage | commit |
 |---|---|---|
-| 00:25–00:57 | SFT code (data builder with σ masking, trainer, merge, EMA curriculum, 3-way compare) + tests | `0e5c97c`, `ab8e79e` |
-| 00:27–00:57 | SFT Qwen3.5-2B: 262 steps / 2,096 examples, loss 0.59 → 0.05 | `abe84f1` |
-| 00:59–01:30 | SFT Qwen2.5-Math-1.5B: 325 steps / 2,600 examples, loss 0.64 → 0.06 | `eee48d5` |
-| 01:31–01:48 | Merges (CPU) + the unchanged k = 8 group probe on both SFT'd models → A/B decision | `a2d8bb2` |
-| 01:49–06:30 | Overnight GRPO, 287 steps (checkpoints pushed at 50/100/150/200/250) | `79afcc3` … `186209d` |
-| 06:31–07:07 | Final eval: raw base / SFT-only / SFT + RL, plus paired tests | this commit |
+| 23:35–23:41 | Verifier 1.1.0 (crps_log floor 1e-6, version bump) + 13 tests | `3d65dc1` |
+| 23:42–23:46 | Stage 1: re-score last night's SFT-only / SFT+RL eval tapes under 1.1.0 | `2d3ec25` |
+| 23:43–23:56 | Stage 2: SFT-only completions on 400 training-seed problems (GPU, 9.4 min) + σ-scale fit (CPU) | `9ad3768` |
+| 23:52–23:57 | Stage 3: memory fix + 5-step smoke test | `faf1327` |
+| 23:57–07:30 | Stage 4: overnight GRPO, 759 steps (permanent step-287 adapter saved at 02:50) | `9112529`, `0ef6ee6` |
+| 07:31–07:42 | Stage 5a: eval of step 287 (primary) | `2fdbced` |
+| 07:42–07:53 | Stage 5b: eval of step 759 (secondary, "longer training") | `b3c2d47` |
+| 07:53–08:05 | FINDINGS #6, PROGRESS, this report | `81f2892` … |
 
-SFT data came only from training seeds 10,000,000–10,002,999 (12 training cells). No eval seeds, no depth 5 and
-no held-out family were used, and `build_examples` refuses eval-range seeds. A test runs 240 SFT targets through
-our own verifier: all correct, with full step credit. GRPO problems used training seeds 0.., cell-major.
+## 2. Verifier 1.1.0 (D38, your approval of D37)
 
-## 2. SFT A/B (FINDINGS #4)
+- `configs/reward.yaml` now has `version: "1.1.0"` and `scoring.crps_log_sigma_floor: 1.0e-6`.
+  - `sigma_floor: 1e-3` still applies to `crps` (the spec's own floor) and `log_score`; nothing else changed.
+  - Every breakdown logs `verifier_version`.
+  - A config without `version` is 1.0.0 and keeps the shared floor, so every old tape still replays exactly.
+- **Your conditions:**
+  - All existing propriety and Monte Carlo tests pass unchanged.
+  - The new test shows the reward **strictly increases** as σ rises from 0.01% to 0.1% of the value, for errors
+    from 0.1% to 5%. It runs through the full `reward()` pipeline, and the same answers were exactly flat under
+    1.0.0.
+  - A new Monte Carlo test shows propriety at a 0.03% belief spread: below the old floor, where 1.0.0 was flat.
+- **Stage 1:** `compare_verifier_1.1.0/{sft,rl}/` hold new, replayable tapes and metrics. The originals are
+  untouched. Mean rewards change by less than 0.001 (at most 0.0064 on any one problem), which is itself a sign
+  of how little σ is worth.
 
-The unchanged group probe (48 ID problems, k = 8, T = 1.0, prompt v4, 1024 tokens):
+## 3. Post-hoc calibration control (D40)
 
-| model | binary zero-var | crps_log zero-var | pass@8 | pass rate | parse fail | truncated | tokens | sampled acc ≤1% | 1σ cov |
-|---|---|---|---|---|---|---|---|---|---|
-| Qwen3.5-2B base | 72.9% | 56.2% | 27.1% | 7.0% | 87.8% | 76.3% | 885 | 7.0% | 27.9% |
-| Qwen3.5-2B + SFT | 60.4% | 0.0% | 60.4% | 35.7% | 0.3% | 0.3% | 205 | 35.7% | 30.5% |
-| Qwen2.5-Math base | 97.9% | 95.8% | 2.1% | 0.3% | 99.5% | 17.2% | 708 | 0.3% | – |
-| **Qwen2.5-Math + SFT** | **56.2%** | 0.0% | 58.3% | 36.2% | 0.3% | **0.0%** | 197 | 36.2% | 20.2% |
+- **Calibration set:** SFT-only, greedy, with the same settings as the eval.
+  - 400 problems from the generator's *train* split: seeds 20,000,000–20,000,399, over the 12 training cells.
+  - These seeds are disjoint from the GRPO pool, the SFT data and all eval seeds, and the code checks this.
+- **Fits:**
+  - **Primary:** the scale that maximizes mean crps_log, the objective RL optimizes. Result: c = 18.1.
+  - **Sensitivity:** the scale that gives exactly 68.27% 1σ coverage on the calibration set. Result: c = 585.
+- **A 24% blind spot:** 24% of SFT-only answers state **σ = 0** exactly. No multiplicative scale can cover those
+  (first fit attempt got this wrong; fixed and tested).
 
-- **Winner by your rule: Qwen2.5-Math + SFT.** Note that 27 vs 29 zero-variance groups is within noise.
-- **Budget: 512** (0% truncation at 512, under the 20% threshold).
+| SFT-only eval | 1σ / 2σ cov ID | 1σ / 2σ cov depth 5 | mean crps_log ID / depth 5 |
+|---|---|---|---|
+| stated σ | 15.0 / 20.5% | 11.5 / 16.0% | −0.320 / −0.357 |
+| × 18.1 (crps fit) | 35.0 / 40.5% | 33.5 / 38.0% | −0.319 / −0.354 |
+| × 585 (coverage-matched) | 65.0 / 69.5% | 72.5 / 76.0% | −0.519 / −0.506 |
 
-## 3. Overnight GRPO
+## 4. Memory fix (D39)
 
-Qwen2.5-Math-1.5B + SFT (merged), fresh LoRA r = 16, crps_log + 0.2·steps, **4 prompts × 8 completions per
-step**, 512 tokens, lr 5e-6, DAPO loss (TRL default), no KL. EMA curriculum: w = p(1−p) + 0.02, starting at
-depths 1–2, with depth d+1 unlocking at an EMA pass rate ≥ 0.5 after ≥ 8 groups (D36). Hard stop 06:30 IST;
-checkpoints every 50 steps, keeping 3.
+- **Cause:** on WSL, Unsloth strips `expandable_segments`, so fragmentation pushed reserved memory to 8.96 GiB
+  last night while only 4.58 GiB was ever allocated.
+- **Fix:** micro-batch 2 × 16 accumulation instead of 4 × 8, plus a 7.5 GiB allocator cap
+  (`set_per_process_memory_fraction`).
+- **Why nothing else changes:** it is the same 32-completion batch, and DAPO divides by the token count of the
+  whole batch, so the gradient is identical up to float summation order. A test checks that the two YAML files
+  differ only in the allowed keys.
+- **Smoke test:** 6.46 GiB peak, 0 OOMs. The curriculum drew the same cells as last night for steps 1–5.
+- **Full run:** 7.05 GiB peak reserved, 1 allocator retry, 0 OOMs. It ran faster than last night: 35.7 vs
+  58.9 s/step.
 
-- **287 steps** in 4 h 42 min (**58.9 s/step**). Peak **4.58 GiB** torch-allocated / **7.73 GiB** device-wide.
-  The guard never paused (it checked every 2 steps; the GPU ran at 72–74 °C).
-  - Torch's *reserved* memory peaked at 8.96 GiB, above the 8 GiB of VRAM, so WSL probably spilled into shared
-    system memory at some point. Worth knowing before longer runs.
-- **Curriculum:**
-  - Unlocked dynamics/3 (after 56 groups), dynamics/4 (136), kinematics/3 (180), kinematics/4 (256).
-  - **Energy never left depths 1–2**: energy/2's EMA pass rate ended at 0.16.
-  - Final EMA pass rates: dynamics 0.85 / 0.59 / 0.56 / 0.24; kinematics 0.65 / 0.34 / 0.18 / 0.24;
-    energy 0.41 / 0.16 (depths 1–4).
-- **Checkpoints kept:** 200, 250, 287. The final adapter has `lora_hash 8b4b2376bf92206f`. All of these are local
-  only.
+## 5. Overnight GRPO (stage 4)
 
-![training curve](results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/training_curve.png)
+759 steps in 7 h 32 min (24,288 rollouts, replay exact). The permanent step-287 adapter is at
+`permanent_checkpoints/checkpoint-287`, and the rotating checkpoints 700/750/759 are kept (all local only).
+The curriculum again never unlocked energy beyond depth 2 (energy/2 EMA pass rate 0.16 at the end).
+kinematics/4 unlocked only at step 590.
 
-| steps | mean reward | zero-var (crps_log) | zero-var (binary) | accuracy ≤1% | median stated rel. σ | 1σ cov |
-|---|---|---|---|---|---|---|
-| 1–50 | −0.118 | 0.5% | 48% | 48% | 0.074% | 23% |
-| 51–100 | −0.154 | 0.5% | 51% | 41% | 0.074% | 15% |
-| 101–150 | −0.235 | 0.0% | 55% | 44% | 0.078% | 21% |
-| 151–200 | −0.185 | 0.5% | 56% | 41% | 0.077% | 18% |
-| 201–250 | −0.211 | 1.5% | 55% | 42% | 0.063% | 18% |
-| 251–287 | −0.129 | 2.0% | 49% | 45% | 0.072% | 18% |
+![tonight vs last night](results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/training_vs_control.png)
 
-**Reading:** almost every step had a gradient (crps_log zero-variance ≈ 0%, against 40–80% in Phase 4), so
-the reward design did its job. The training reward isn't comparable across the run, because the curriculum
-moved toward harder cells. Stated σ never moved (see §5, D37).
+| training rollouts (per window) | σ = 0 share | median stated σ | 1σ cov | acc ≤1% |
+|---|---|---|---|---|
+| last night, steps 1–287 | 23.5–25% | 0.06–0.07% | 17.5–19% | 42–44% |
+| tonight, steps 1–287 | 24–26% | 0.055–0.067% | 16.5–18.5% | 42–46% |
+| tonight, steps 301–400 | 29–36% | 0.026–0.040% | 14–25% | 42–52% |
+| tonight, steps 451–575 | 52 → 91% | 0 | 2–15% | 46–55% |
+| tonight, steps 576–759 | 94–98% | 0 | 2–7% (14% in the last 9 steps) | 38–50% |
 
-## 4. Final eval: raw base vs SFT-only vs SFT + RL (FINDINGS #5)
+The σ = 0 answers are literally "± 0" in the text; it is not a parser artifact.
 
-Same frozen eval sets for all three (200 ID + 200 depth-5, generator `1.1.0+c735a0d4`), prompt v4, greedy,
-**512 tokens**, all loaded text-only, transformers 5.17. Every eval tape replays exactly.
+## 6. Eval (stage 5): frozen sets, greedy, 512 tokens, all on verifier 1.1.0
 
-| split | model | acc ≤1% | ≤2% | ≤5% | ≤10% | parse fail | 1σ / 2σ cov | median rel. σ | mean reward |
-|---|---|---|---|---|---|---|---|---|---|
-| ID | raw base | 0.0% | 0.0% | 0.0% | 0.0% | 100% | – | – | −5.000 |
-| ID | SFT only | 38.0% | 44.5% | 60.5% | 67.5% | 0% | 15.0 / 20.5% | 0.050% | −0.224 |
-| ID | **SFT + RL** | **40.0%** | **46.5%** | 60.5% | **71.0%** | 0% | 15.5 / 20.0% | 0.042% | **−0.177** |
-| depth 5 | raw base | 0.0% | 0.0% | 0.0% | 0.0% | 100% | – | – | −5.000 |
-| depth 5 | SFT only | 31.0% | 40.0% | 51.0% | 60.0% | 0% | 11.5 / 16.0% | 0.081% | −0.215 |
-| depth 5 | SFT + RL | 31.0% | 39.5% | 51.0% | 59.5% | 0% | 10.0 / 15.0% | 0.064% | −0.220 |
-
-**Paired tests (same problems, greedy):**
-
-| comparison | split | strict ≤1% correct: before → after (only-after / only-before) | McNemar p | reward Δ | Wilcoxon p |
+| split | model | acc ≤1% | 1σ / 2σ cov | σ = 0 answers | mean crps_log |
 |---|---|---|---|---|---|
-| **RL vs SFT-only** (what RL added) | ID | 76 → 80 (4 / 0) | 0.125 | +0.046 | 0.018 |
-| **RL vs SFT-only** | depth 5 | 62 → 62 (4 / 4) | 1.0 | −0.005 | 0.37 |
-| RL vs raw base | ID / depth 5 | 0 → 80 / 0 → 62 | < 1e-18 | +4.8 | < 1e-33 |
-| SFT vs raw base | ID / depth 5 | 0 → 76 / 0 → 62 | < 1e-18 | +4.8 | < 1e-33 |
+| ID | SFT-only | 38.0% | 15.0 / 20.5% | 25.5% | −0.320 |
+| ID | post-hoc (c = 18.1) | 38.0% | **35.0 / 40.5%** | 25.5% | −0.319 |
+| ID | last night's RL @287 | 40.0% | 15.5 / 20.0% | 27.0% | −0.275 |
+| ID | **new RL @287 (primary)** | 39.5% | 14.0 / 18.5% | 27.0% | −0.282 |
+| ID | new RL @759 (longer) | 41.0% | 11.5 / 16.0% | 50.5% | −0.239 |
+| depth 5 | SFT-only | 31.0% | 11.5 / 16.0% | 12.0% | −0.357 |
+| depth 5 | post-hoc (c = 18.1) | 31.0% | **33.5 / 38.0%** | 12.0% | −0.354 |
+| depth 5 | last night's RL @287 | 31.0% | 10.0 / 15.0% | 13.5% | −0.361 |
+| depth 5 | **new RL @287 (primary)** | 29.0% | 9.5 / 14.0% | 15.0% | −0.437 |
+| depth 5 | new RL @759 (longer) | 31.0% | 8.1 / 13.1% | 35.9% | −0.344 |
 
-**Reading:**
-- **RL added little, and nothing that is statistically solid.** The ID gain all points one way (4 flips to
-  correct, none to wrong), but four discordant pairs can't reach p < 0.05. The reward p = 0.018 is one of 8
-  RL-vs-SFT tests, so it isn't significant after correction. Depth 5 is unchanged, and so is calibration.
-- Per depth, the ID gain sits at depth 4 (22% → 28%).
-- By family: energy is weak in every model (ID 14–16%, depth 5 1.5–3%), while dynamics and kinematics reach
-  38–62%.
+**Paired tests, primary (step 287).** 1σ-covered counts out of 200 problems:
 
-## 5. Decisions to review
+| comparison | ID: 1σ covered, before → after (p) | depth 5: 1σ covered, before → after (p) | other |
+|---|---|---|---|
+| vs SFT-only | 30 → 28 (p = 0.50) | 23 → 19 (p = 0.125) | accuracy 76 → 79 (p = 0.38) |
+| vs last night's RL | 31 → 28 (p = 0.25) | 20 → 19 (p = 1.0) | accuracy 80 → 79 (p = 1.0) |
+| vs post-hoc control | 70 → 28 (p = 5e-13) | 67 → 19 (p = 7e-15) | crps_log: RL better on ID (−0.282 vs −0.319, p = 0.87), worse on depth 5 (−0.437 vs −0.354, p = 0.014) |
 
-1. **D37: the σ floor (please read).** The scoring rule treats every relative σ below 0.1% as exactly 0.1%. The
-   SFT'd policy states σ ≈ 0.05% (median), so crps_log is **flat in σ** wherever the policy sits, and RL got
-   essentially no signal to widen σ. CRPS stays finite as σ → 0, so the floor only matters for the log score.
-   **Recommendation:** lower `sigma_floor` to ~1e-6 for the CRPS rules (a verifier/config change, which I didn't
-   make) before the next RL run, and re-score old tapes with `rescore`.
-2. **D36: A/B and GRPO design.** Equal wall clock rather than equal examples; the curriculum unlock threshold
-   (0.5, my choice); 4 × 8 per step; and the final comparison at 512 tokens (so its raw-base numbers differ from
-   the 1024-token probe).
-3. **D35: SFT data and masking.** The σ number is masked; `±`, the unit and the end-of-turn token are trained.
-   The target text holds a placeholder σ (2%) that the model is never trained to produce.
+**Secondary, longer training (step 759 vs step 287):**
+- ID 1σ covered 28 → 23 (p = 0.18).
+- Accuracy 79 → 82 (p = 0.45).
+- Against SFT-only: accuracy 76 → 82 (p = 0.07), 1σ 30 → 23 (p = 0.065), 2σ 41 → 32 (p = 0.035, nominal).
 
-## 6. Recommendation: what to decide next
+So longer RL is trending toward slightly better accuracy and worse calibration; neither is significant after
+correction.
 
-The SFT'd Qwen2.5-Math is now a solid base: 38% / 31% accuracy, 0% format failures, ~200-token answers, and
-nearly every GRPO group has variance. The open problem is that **RL with this reward isn't yet improving accuracy
-or calibration measurably.** My suggestions, in order:
+## 7. Decisions to review
 
-1. **Fix the σ floor for crps_log (D37).** This is the most likely reason calibration (RQ2) didn't move, and it is
-   a one-line config change plus a reward-config version bump. Approve or reject.
-2. **Give RL a real budget and a stronger step.** Try lr 1e-5–2e-5 (5e-6 barely moves a LoRA in 287 steps) and run
-   for several nights, or rent a GPU for the run. Measure against the SFT-only checkpoint again with the same
-   paired tests; that comparison is now the fixed yardstick.
-3. **Fix the energy family before blaming RL.** It sits at 14–16% even after SFT, and the curriculum never
-   unlocked energy/3. Check the SFT targets for energy (the sqrt-heavy formulas like v1 = sqrt(2gh) and
-   v2² = v1² − 2μgL) and whether 30 min of SFT was too little for it. A short energy-weighted SFT top-up may help.
-4. **RQ1 (binary vs dense reward) is now testable.** From the SFT'd base, binary groups have variance about 45% of
-   the time, so a binary-reward arm with the same seeds and budget is meaningful. It's the next ablation once (1)
-   and (2) are settled.
+1. **D38: verifier 1.1.0.** A separate floor key, rather than lowering the shared one. That keeps the spec's
+   `crps` and the log score unchanged.
+2. **D40: post-hoc control design.** The crps fit is the headline, and the coverage-matched fit is a
+   sensitivity row. The fit used depths 1–4 only, because training seeds can't make depth 5; the scale was
+   transferred to depth 5 unchanged and held up (33.5%).
+3. **D39: memory.** A hard 7.5 GiB allocator cap. If a step ever needs more than 7.5 GiB live, it OOMs instead
+   of spilling. The live peak was 4.56 GiB, so the margin is large.
+4. **D41: paired coverage counts failures as not covered.** With 0–1% parse failures this matches the
+   headline coverage.
+5. **D42: tonight's training tape is committed gzipped** (101 MB raw, over GitHub's limit). Progress commits up
+   to step 400 put several raw versions (6–50 MB) into git history. I did not rewrite history.
 
-## 7. BLOCKED / housekeeping
+## 8. Recommendation: what to decide next
+
+The result is clear: **with the current reward, RL is not a calibration method for this model.**
+- σ gets credit only through the whole completion's reward, which correctness dominates.
+- A post-hoc scale does better for free.
+- Running longer is actively harmful (the σ = 0 collapse).
+
+My suggestions, in order:
+
+1. **Give σ its own credit (design change, your call).** Two options:
+   - **(a) Two-stage answer.** The model answers, then a second short turn asks for σ, which is scored by
+     crps_log with μ fixed. σ's reward then depends only on σ. This is the cleanest option and needs no change
+     to the reward rule, only to the rollout format.
+   - **(b) Token-level advantage split in the GRPO loss.** The answer tokens get the group-normalized
+     correctness or error advantage. The σ tokens get the group-normalized advantage of
+     `crps_log(μ, σ) − crps_log(μ, σ_ref)`, whose μ-only part cancels. This is a trainer change.
+
+   The prize is large if σ can learn to track error: an oracle σ is worth +0.12 crps_log per problem here, against
+   +0.001 for any global scale.
+2. **Decide what "± 0" means.** It is a legal point forecast under CRPS, but for RL it is an absorbing state
+   (no σ variance in the group means no gradient). The options are to treat σ = 0 as "missing ±"
+   (`parse_fail`), or to keep it and rely on (1). Either way, it is a verifier change and needs your approval.
+3. **Make the σ = 0 share and 1σ coverage first-class stop and alert signals** (the spec's reward-hacking check,
+   inverted). Here, step 287 is better calibrated than step 759. I'd add an alert-only rule (σ = 0 share > 50%
+   over 25 steps) to the training loop, which doesn't need verifier changes.
+4. **Report the post-hoc scale as the calibration baseline** in every future table. RL has to beat 35.0% / 33.5%
+   coverage at equal or better crps_log.
+5. **Unchanged from yesterday:** the energy family is still stuck at depth 2 (pass rate 0.16), and RL still adds
+   little accuracy (ID +3 problems at step 287, +6 at step 759, neither significant). RQ1 (binary vs dense
+   reward) is now testable from this starting point and is the natural next ablation.
+
+## 9. BLOCKED / housekeeping
 
 - **BLOCKED:** nothing.
-- Large local-only artifacts (gitignored):
-  - SFT adapters and merged models: `results/sft/*/{adapter,merged}`, ~3–4 GB each.
-  - GRPO checkpoints and final adapter: `results/train/overnight-*/{checkpoints,final_adapter}`.
-- The project pins `transformers==5.17.0` (needed by Unsloth). The `~/.local/bin/python3.11` symlink from the
-  first night is still there (`rm ~/.local/bin/python3.11`).
+- **Local-only artifacts (gitignored):**
+  - Tonight's adapters: `permanent_checkpoints/checkpoint-287` (`lora_hash 86f7436e726bbaa5`), `final_adapter`
+    (step 759, `e33c888028e2ec0a`), and checkpoints 700/750/759.
+  - The raw training tape `rollouts.jsonl` (101 MB). The gzipped copy is in git.
+- **Smoke-test run dir:** `results/train/smoke-overnight2-mb2/` is committed (5 steps); its checkpoint is local
+  only.
