@@ -966,3 +966,29 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - the OOD splits (the held-out family needs optics or circuits built first);
   - metrics (crps_log, 1σ coverage, ρ, per split);
   - the control (the external A5 σ on the same completions).
+
+### D57. A3's cell-share rule is replaced by a miss-count test; the next gate rerun is FINAL (your decision, recorded before any rerun)
+- **Why:** the share rule ("≥ 95% of cells inside their 99% binomial interval") was a **design error**. With 15
+  cells per level it demanded zero misses, so even a valid generator would fail it about 14% of the time per
+  level. The error was found before the first rerun (D54 spelled out the zero-miss consequence before that run).
+  FINDINGS #11 then confirmed it: that rerun failed only on this rule, with one cell outside.
+- **New rule (per level k, replacing the share rule):** under a valid generator, each cell falls outside its
+  central 99% binomial interval with probability ≤ 0.01. The number of such cells, X, is therefore (at most)
+  Binomial(n_cells, 0.01). The test rejects if P(X ≥ observed) < 0.01.
+  - With 15 cells, at most 1 miss is allowed: P(X ≥ 1) = 0.140, P(X ≥ 2) = 0.0096.
+  - With 20 cells, at most 2.
+  - Because the discrete binomial interval holds at least 99%, the Binomial(n, 0.01) null is conservative.
+- **Everything else in A3 is unchanged:**
+  - pooled Kupiec at both levels: p > 0.05;
+  - per-cell Kupiec with Holm: no rejection;
+  - pooled PIT KS: p > 0.05;
+  - noise-0 exactness.
+- **FINDINGS #9 and #11 stand as reported.** Noted for transparency, not used: under D57, #11's data would have
+  passed (one miss at ±2σ\*, all other criteria passing). #9 would still fail, on the Holm criterion. Neither
+  verdict is revised; the decision rests on the new run below.
+- **The next rerun is FINAL:**
+  - **Sample:** fresh seeds (offset 1.7e9, disjoint from both earlier runs) and D54's levels {1, 2, 5}% × depth
+    1–5, 667 per cell (10,005 problems), plus 500 noise-0 problems.
+  - **Files:** `configs/sigma_star_gate_final.yaml`, output `results/sigma_star_gate_final/`.
+  - **If it passes:** build A6.
+  - **If it fails:** stop and diagnose. There are no further reruns without a specific, diagnosed cause.

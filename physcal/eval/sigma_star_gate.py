@@ -6,7 +6,8 @@
 own seeds). Interval: ln f(x_meas) ± k·σ* (σ* = CRPS-optimal log-scale, A2), k = 1, 2. The gate passes iff
 1. pooled Kupiec p > α at both levels;
 2. per-cell Kupiec, Holm across the cells (per level): no rejection;
-3. per level, ≥ 95% of cells have coverage inside the central 99% binomial interval around nominal;
+3. per level, cells outside their central 99% binomial interval around nominal: the share rule (≥ 95% inside,
+   original A3) or, since D57 (`cell_rule: miss_count`), the miss-count test P(Binomial(n_cells, 0.01) ≥ misses) ≥ α;
 4. pooled PIT KS (truth under the MC predictive distribution): p > α.
 The superseded rule ("Kupiec p > 0.05 in every cell") is evaluated on the same run and reported, not used.
 Noise-0 problems are checked for exactness (truth = f(x_meas), σ* = 0). Writes <output_dir>/gate.{json,md}.
@@ -19,7 +20,7 @@ import math
 from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
-from scipy.stats import kstest, norm
+from scipy.stats import binom, kstest, norm
 
 from physcal.config import REPO_ROOT, load_config
 from physcal.env.generator import generate_problem, generator_version
@@ -68,6 +69,8 @@ def evaluate(rows: list[dict], cfg: dict, sigma_key: str = "sigma") -> dict:
             per_cell[f"d{d}/s{lv:g}"] = {**t, "binomial_interval": [lo, hi], "inside": lo <= t["coverage"] <= hi}
         h = holm({name: v["p"] for name, v in per_cell.items()}, alpha)
         share_inside = float(np.mean([v["inside"] for v in per_cell.values()]))
+        misses = sum(not v["inside"] for v in per_cell.values())
+        p_miss = float(binom.sf(misses - 1, len(per_cell), 1.0 - cfg["binomial_interval"]))
         out["levels"][str(k)] = {
             "nominal": nominal, "pooled": pooled, "cells": per_cell, "holm": h,
             "pooled_ok": pooled["p"] > alpha,
@@ -75,6 +78,8 @@ def evaluate(rows: list[dict], cfg: dict, sigma_key: str = "sigma") -> dict:
             "share_cells_inside": share_inside,
             "n_cells_outside": sum(not v["inside"] for v in per_cell.values()),
             "share_ok": share_inside >= cfg["min_share_cells_inside"],
+            "miss_count_p": p_miss,
+            "miss_count_ok": p_miss >= cfg.get("miss_count_alpha", 0.0),
             "superseded_every_cell_ok": all(v["p"] > alpha for v in per_cell.values()),
         }
     return out
@@ -100,15 +105,18 @@ def main() -> None:
     pit_by_level = {f"{lv:g}": float(kstest([r["pit"] for r in noisy if r["level"] == lv], "uniform").pvalue)
                     for lv in cfg["levels"]}
     primary = evaluate(noisy, cfg, "sigma")
+    cell_rule = "miss_count" if cfg.get("cell_rule") == "miss_count" else "share"  # D57 replaced "share"
     a3 = {f"k{k}_{name}": primary["levels"][str(k)][f"{name}_ok"] for k in cfg["interval_k"]
-          for name in ("pooled", "holm", "share")}
+          for name in ("pooled", "holm", cell_rule)}
     a3["pit_ks"] = bool(ks.pvalue > alpha)
     ratio = lambda lv, a, b: np.array([r[a] / r[b] for r in noisy if r["level"] == lv])
     result = {
         "generator_version": generator_version(env),
         "config": cfg,
         "n_noisy": len(noisy), "n_errors": len(errors), "errors": errors[:20],
-        "gate_A3": {"criteria": a3, "passed": all(a3.values())},
+        "gate_A3": {"criteria": a3, "passed": all(a3.values()), "cell_rule": cell_rule},
+        "superseded_share_rule_not_used": ({f"k{k}_share": primary["levels"][str(k)]["share_ok"]
+                                            for k in cfg["interval_k"]} if cell_rule == "miss_count" else None),
         "superseded_rule_every_cell_kupiec": {
             "passed": all(primary["levels"][str(k)]["superseded_every_cell_ok"] for k in cfg["interval_k"]),
             "note": "D50/A3 replaced this rule before the gate ran; reported for transparency only"},
@@ -149,7 +157,8 @@ def render(res: dict, cfg: dict) -> str:
     for k, lv in res["primary_sigma_crps"]["levels"].items():
         lines += [f"## ±{k}σ* (nominal {lv['nominal']:.2%}): pooled {lv['pooled']['coverage']:.2%}, "
                   f"Kupiec p = {lv['pooled']['p']:.3g}; cells inside the {cfg['binomial_interval']:.0%} binomial "
-                  f"interval: {lv['share_cells_inside']:.0%} ({lv['n_cells_outside']} outside)", "",
+                  f"interval: {lv['share_cells_inside']:.0%} ({lv['n_cells_outside']} outside; miss-count "
+                  f"P(X >= {lv['n_cells_outside']}) = {lv['miss_count_p']:.3g})", "",
                   "| cell | n | coverage | Kupiec p | Holm rejects | inside |", "|---|---|---|---|---|---|"]
         lines += [f"| {c} | {v['n']} | {v['coverage']:.1%} | {v['p']:.3g} | {lv['holm'][c]['rejected']} | {v['inside']} |"
                   for c, v in lv["cells"].items()]

@@ -1,0 +1,18 @@
+# Phase 10 step 4, FINAL rerun (D57): D54 levels, A3 criteria with the cell-share rule replaced by the miss-count test.
+env_config: env_v2
+families: [kinematics, dynamics, energy]   # round-robin within each cell
+depths: [1, 2, 3, 4, 5]
+levels: [0.01, 0.02, 0.05]                # D54 main-experiment levels; noise 0 is checked separately for exactness
+n_per_cell: 667                           # 15 cells x 667 = 10,005 problems
+noise_zero_n: 500
+seed_offset: 1700000000                   # fresh seeds: disjoint from both earlier gate runs (1.5e9, 1.6e9)
+cell_seed_stride: 100000                  # each cell gets its own seeds (cells are independent, not paired)
+interval_k: [1, 2]                        # intervals ln f(x_meas) +/- k sigma*; nominal = P(|N(0,1)| <= k)
+alpha: 0.05                               # Kupiec pooled, per-cell Holm, PIT KS
+binomial_interval: 0.99                   # per-cell coverage must sit inside this central binomial interval...
+min_share_cells_inside: 0.95              # superseded share rule (reported, not used)
+cell_rule: miss_count                     # D57: reject if P(Binomial(n_cells, 1 - binomial_interval) >= misses) < alpha
+miss_count_alpha: 0.01
+pit_bins: 10
+n_jobs: 4
+output_dir: results/sigma_star_gate_final
