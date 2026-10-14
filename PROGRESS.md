@@ -484,3 +484,8 @@ Progress:
   trainer, eval and family-E compare (`physcal/train/e1*.py`). 325 tests pass. No GPU smoke test (no GPU today).
 - [x] Tonight's queue prepared, NOT launched: `scripts/queue_split_e1.sh` (split-credit seed 0 → 287 + eval + sanity +
   family S/N compare, then E1a and E1b + evals, then family E). PID-based waiting only; dry run checked.
+- [x] D54 (noise capped at 5%, chosen after the gate; 10% = heavy-tail regime), D55 (step credit approved), D56
+  (E5 idea, not pre-registered).
+- [x] Gate rerun on {0, 1, 2, 5}% under A3, fresh seeds (FINDINGS #11): **FAILED**, 1 of 7 criteria. The ±2σ\*
+  cell-share rule fails: 14 of 15 cells inside, and d4 / 1% over-covers (97.6%, p = 0.0035). Everything else passes.
+  A6 not built; Phase 10+ stopped again pending your decision.

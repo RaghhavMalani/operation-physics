@@ -501,3 +501,41 @@ split, give a σ with ~67% 1σ coverage and ρ(σ, |error|) ≈ 0.70 on the froz
   `eval_sft.json`).
 - **Caveat:** the selection used calibration-split CV. The eval-set ranking of the top candidates differs
   slightly (linear vs GBT on crps_log), which is expected at n = 400.
+
+---
+
+## #11. Phase 10 gate rerun with noise capped at 5% (D54): FAILS again, on the cell-share rule only (2026-10-14)
+
+**Verdict.** On fresh seeds and noise levels {1, 2, 5}%, generator 2.0.0 (`2.0.0+bdbb2279`) **fails** the A3 gate.
+6 of 7 criteria pass. The failure is the share rule at ±2σ\*: one of 15 cells (depth 4 / 1%) is outside its 99%
+binomial interval. It **over**-covers: 97.6% vs 95.45%, Kupiec p = 0.0035. With 15 cells the rule requires all
+15 inside (D54 said so before the run). By your instruction, Phase 10+ stops again and **A6 is not built**.
+
+**Run.** 10,005 noisy problems (15 cells × 667, seeds from 1.6e9, disjoint from the first run) + 500 noise-0
+problems. Run once: `uv run python -m physcal.eval.sigma_star_gate --config sigma_star_gate_capped`;
+`results/sigma_star_gate_capped/gate.{md,json}`, `rows.jsonl`.
+
+| criterion (A3) | result |
+|---|---|
+| pooled Kupiec ±1σ\*: 67.61% vs 68.27% | p = 0.16, pass |
+| pooled Kupiec ±2σ\*: 95.47% vs 95.45% | p = 0.92, pass |
+| per-cell Kupiec + Holm (15 cells), ±1σ\* / ±2σ\* | no rejection at either level (smallest p = 0.0035 vs threshold 0.0033), pass |
+| cells inside the 99% binomial interval, ±1σ\* | 15 / 15, pass |
+| cells inside the 99% binomial interval, ±2σ\* | **14 / 15 = 93% < 95%: FAIL** (d4 / 1%: 97.6%) |
+| pooled PIT KS | D = 0.0099, p = 0.28, pass |
+| noise 0 exact | 500 / 500 |
+
+**Reading (descriptive, after the run):**
+- **Opposite direction from the first run.** That run's failure was **under**-coverage at 10% noise (heavy tails).
+  This cell **over**-covers at the lowest noise level, and its ±1σ\* coverage is normal (65.8%).
+- **Calibration everywhere else is close to nominal:** pooled ±2σ\* coverage is 95.47%. Per level, the MC SD
+  agrees with the delta method to within 0.9% in the median.
+- **One cell outside is roughly a chance event:** a valid generator puts at least one of 15 cells outside a 99%
+  interval about 14% of the time per level. This is not evidence of a defect, but the gate as written fails.
+
+**Options (yours):**
+1. Amend the share rule, for example "at most ⌈5% of cells⌉ outside, per level". That allows one cell here, and
+   one in the first run's 20 cells. It is a post-hoc amendment: apply it to a **fresh** run on new seeds, not
+   to this one.
+2. Keep the rule as is, and redesign the cell grid so that 95% of cells allows a miss (≥ 20 cells per level).
+3. Accept this run's failure as a known false positive, and record that it was accepted after the fact.
