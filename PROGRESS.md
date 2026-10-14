@@ -482,3 +482,5 @@ Progress:
 - [ ] A6 counterfactual pairs: **not built**. It is Phase 10+ work and the A3 gate failed (FINDINGS #9).
 - [x] E1 data and configs: 1,996 training and 400 eval prefixes (`results/e1/data/`), `configs/grpo_e1{a,b}.yaml`,
   trainer, eval and family-E compare (`physcal/train/e1*.py`). 325 tests pass. No GPU smoke test (no GPU today).
+- [x] Tonight's queue prepared, NOT launched: `scripts/queue_split_e1.sh` (split-credit seed 0 → 287 + eval + sanity +
+  family S/N compare, then E1a and E1b + evals, then family E). PID-based waiting only; dry run checked.
