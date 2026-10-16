@@ -9,3 +9,6 @@ SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step"
 [15:38:35] end split_compare: exit 0
 [15:38:35] E1 time split: E1a until 18:34 IST, E1b until 21:30 IST
 [15:38:35] start e1a_train (timeout 10542s): uv run python -m physcal.train.e1 train --config grpo_e1a --stop-at 2026-10-16T18:24:17+05:30
+[18:21:52] end e1a_train: exit 0
+[18:21:52] GPU at 63C
+[18:21:52] start e1a_eval_final (timeout 11288s): uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter final_adapter --out-name final

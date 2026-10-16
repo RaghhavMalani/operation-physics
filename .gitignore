@@ -22,3 +22,4 @@ results/probe_sft/hidden/
 .netrc
 results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0/rollouts.jsonl
 results/queue_split_e1/*.pid
+results/train/e1a-sigma-only-free-seed0/rollouts.jsonl

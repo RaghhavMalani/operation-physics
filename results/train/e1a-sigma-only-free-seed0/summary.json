@@ -1,0 +1,17 @@
+{
+  "run_id": "e1a-sigma-only-free-seed0",
+  "e1_mode": "free",
+  "steps_completed": 300,
+  "train_seconds": 9758.591915845871,
+  "seconds_per_step": 32.528639719486236,
+  "peak_vram": {
+    "torch_max_reserved_gib": 7.46875,
+    "torch_max_allocated_gib": 5.63273811340332,
+    "num_ooms": 0
+  },
+  "grpo_config_dropped_keys": [
+    "max_prompt_length"
+  ],
+  "train_loss": 0.002568868862775465,
+  "final_adapter": "/home/flash2404/operation-physics/results/train/e1a-sigma-only-free-seed0/final_adapter"
+}
