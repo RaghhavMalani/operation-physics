@@ -21,3 +21,7 @@ SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step"
 [20:57:36] start e1b_eval_final (timeout 1944s): uv run python -m physcal.train.e1 eval --run results/train/e1b-sigma-only-bins-seed0 --adapter final_adapter --out-name final
 [21:01:05] end e1b_eval_final: exit 0
 [21:01:05] start e1b_eval_step150 (timeout 1735s): uv run python -m physcal.train.e1 eval --run results/train/e1b-sigma-only-bins-seed0 --adapter permanent_checkpoints/checkpoint-150 --out-name step150
+[21:06:13] end e1b_eval_step150: exit 0
+[21:06:13] start e1_compare (timeout 1800s): uv run python -m physcal.train.e1 compare
+[21:06:19] end e1_compare: exit 0
+[21:06:19] queue done

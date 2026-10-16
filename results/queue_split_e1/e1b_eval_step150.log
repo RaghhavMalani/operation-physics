@@ -1,0 +1,8 @@
+W1016 15:31:13.641000 43917 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1016 15:31:13.684000 43917 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<01:00,  5.55it/s]Loading weights:  12%|█▏        | 39/338 [00:00<00:01, 163.11it/s]Loading weights:  19%|█▊        | 63/338 [00:00<00:01, 189.47it/s]Loading weights:  25%|██▌       | 85/338 [00:00<00:01, 185.35it/s]Loading weights:  31%|███▏      | 106/338 [00:00<00:01, 163.11it/s]Loading weights:  37%|███▋      | 124/338 [00:00<00:01, 155.08it/s]Loading weights:  47%|████▋     | 159/338 [00:00<00:00, 204.19it/s]Loading weights:  54%|█████▍    | 183/338 [00:01<00:00, 204.97it/s]Loading weights:  61%|██████    | 206/338 [00:01<00:00, 209.17it/s]Loading weights:  71%|███████   | 239/338 [00:01<00:00, 241.92it/s]Loading weights:  79%|███████▉  | 268/338 [00:01<00:00, 247.12it/s]Loading weights:  87%|████████▋ | 294/338 [00:01<00:00, 244.16it/s]Loading weights:  94%|█████████▍| 319/338 [00:01<00:00, 234.48it/s]Loading weights: 100%|██████████| 338/338 [00:01<00:00, 206.86it/s]
+{
+  "n": 400,
+  "mode": "bins",
+  "out": "/home/flash2404/operation-physics/results/train/e1b-sigma-only-bins-seed0/e1_eval/step150"
+}
