@@ -1,0 +1,5 @@
+[12:33:09] queue start; GPU deadline 21:30 IST; queue PID 4641
+[12:33:09] start split_train (timeout 31011s): uv run python -m physcal.train.grpo --config grpo_split_credit --max-steps 287 --stop-at 2026-10-16T21:00:00+05:30
+[15:27:12] end split_train: exit 0
+[15:27:12] GPU at 65C
+[15:27:12] start split_eval287 (timeout 21768s): uv run python -m physcal.train.compare --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 --label qwen2.5-math-1.5b-instruct --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287
