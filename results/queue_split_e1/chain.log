@@ -16,3 +16,6 @@ SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step"
 [18:29:27] start e1a_eval_step150 (timeout 10833s): uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter permanent_checkpoints/checkpoint-150 --out-name step150
 [18:35:14] end e1a_eval_step150: exit 0
 [18:35:14] start e1b_train (timeout 10486s): uv run python -m physcal.train.e1 train --config grpo_e1b --stop-at 2026-10-16T21:20:00+05:30
+[20:57:36] end e1b_train: exit 0
+[20:57:36] GPU at 63C
+[20:57:36] start e1b_eval_final (timeout 1944s): uv run python -m physcal.train.e1 eval --run results/train/e1b-sigma-only-bins-seed0 --adapter final_adapter --out-name final

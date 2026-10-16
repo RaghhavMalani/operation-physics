@@ -1,0 +1,17 @@
+{
+  "run_id": "e1b-sigma-only-bins-seed0",
+  "e1_mode": "bins",
+  "steps_completed": 300,
+  "train_seconds": 8508.406093597412,
+  "seconds_per_step": 28.36135364532471,
+  "peak_vram": {
+    "torch_max_reserved_gib": 7.470703125,
+    "torch_max_allocated_gib": 5.63273811340332,
+    "num_ooms": 0
+  },
+  "grpo_config_dropped_keys": [
+    "max_prompt_length"
+  ],
+  "train_loss": 0.0022357875873179485,
+  "final_adapter": "/home/flash2404/operation-physics/results/train/e1b-sigma-only-bins-seed0/final_adapter"
+}
