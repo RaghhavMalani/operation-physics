@@ -1,0 +1,30 @@
+eval: 400 problems x 1 samples in splits ['id', 'depth_extrapolation']; skipped []
+W1016 09:57:23.719000 22191 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1016 09:57:23.764000 22191 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<04:32,  1.24it/s]Loading weights:   1%|▏         | 5/338 [00:00<00:50,  6.57it/s]Loading weights:   5%|▍         | 16/338 [00:01<00:15, 21.31it/s]Loading weights:   8%|▊         | 28/338 [00:01<00:08, 37.30it/s]Loading weights:  12%|█▏        | 39/338 [00:01<00:06, 44.37it/s]Loading weights:  15%|█▌        | 51/338 [00:01<00:05, 52.73it/s]Loading weights:  17%|█▋        | 58/338 [00:01<00:05, 53.86it/s]Loading weights:  19%|█▉        | 65/338 [00:01<00:05, 51.51it/s]Loading weights:  22%|██▏       | 75/338 [00:01<00:04, 59.94it/s]Loading weights:  26%|██▌       | 87/338 [00:02<00:03, 64.48it/s]Loading weights:  29%|██▉       | 99/338 [00:02<00:03, 72.05it/s]Loading weights:  32%|███▏      | 107/338 [00:02<00:03, 68.96it/s]Loading weights:  34%|███▍      | 115/338 [00:02<00:03, 61.41it/s]Loading weights:  36%|███▋      | 123/338 [00:02<00:03, 61.53it/s]Loading weights:  40%|███▉      | 135/338 [00:02<00:02, 70.11it/s]Loading weights:  42%|████▏     | 143/338 [00:02<00:02, 67.29it/s]Loading weights:  44%|████▍     | 150/338 [00:03<00:03, 59.04it/s]Loading weights:  47%|████▋     | 159/338 [00:03<00:02, 61.81it/s]Loading weights:  51%|█████     | 171/338 [00:03<00:02, 69.92it/s]Loading weights:  53%|█████▎    | 179/338 [00:03<00:02, 68.22it/s]Loading weights:  55%|█████▌    | 186/338 [00:03<00:02, 60.41it/s]Loading weights:  58%|█████▊    | 196/338 [00:03<00:02, 59.10it/s]Loading weights:  61%|██████    | 207/338 [00:03<00:01, 67.69it/s]Loading weights:  65%|██████▍   | 219/338 [00:04<00:01, 77.54it/s]Loading weights:  67%|██████▋   | 228/338 [00:04<00:01, 77.97it/s]Loading weights:  70%|███████   | 237/338 [00:04<00:01, 71.56it/s]Loading weights:  72%|███████▏  | 245/338 [00:04<00:01, 65.95it/s]Loading weights:  76%|███████▌  | 256/338 [00:04<00:01, 73.80it/s]Loading weights:  79%|███████▉  | 267/338 [00:04<00:00, 76.94it/s]Loading weights:  81%|████████▏ | 275/338 [00:04<00:00, 71.94it/s]Loading weights:  84%|████████▎ | 283/338 [00:05<00:00, 62.28it/s]Loading weights:  86%|████████▋ | 292/338 [00:05<00:00, 62.92it/s]Loading weights:  90%|████████▉ | 303/338 [00:05<00:00, 67.47it/s]Loading weights:  92%|█████████▏| 310/338 [00:05<00:00, 63.90it/s]Loading weights:  94%|█████████▍| 317/338 [00:05<00:00, 54.06it/s]Loading weights:  97%|█████████▋| 328/338 [00:05<00:00, 55.34it/s]Loading weights: 100%|██████████| 338/338 [00:05<00:00, 57.66it/s]
+  generated 16/400  (30s)
+  generated 32/400  (58s)
+  generated 48/400  (84s)
+  generated 64/400  (109s)
+  generated 80/400  (136s)
+  generated 96/400  (163s)
+  generated 112/400  (189s)
+  generated 128/400  (212s)
+  generated 144/400  (238s)
+  generated 160/400  (263s)
+  generated 176/400  (285s)
+  generated 192/400  (309s)
+  generated 208/400  (333s)
+  generated 224/400  (353s)
+  generated 240/400  (376s)
+  generated 256/400  (396s)
+  generated 272/400  (422s)
+  generated 288/400  (449s)
+  generated 304/400  (469s)
+  generated 320/400  (493s)
+  generated 336/400  (516s)
+  generated 352/400  (536s)
+  generated 368/400  (560s)
+  generated 384/400  (583s)
+  generated 400/400  (602s)
+eval done in 618s; results in /home/flash2404/operation-physics/results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0/compare/rl287
