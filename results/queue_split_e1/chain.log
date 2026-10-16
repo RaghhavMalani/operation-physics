@@ -6,3 +6,6 @@
 [15:37:41] end split_eval287: exit 0
 SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step": true, "parse_fail_below_5pct": true}, "peak_reserved_gib": 7.05078125, "num_ooms": 0, "eval_parse_fail_rate": 0.0, "sane": true}
 [15:37:41] start split_compare (timeout 1800s): uv run python scripts/phase95_compare.py results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0
+[15:38:35] end split_compare: exit 0
+[15:38:35] E1 time split: E1a until 18:34 IST, E1b until 21:30 IST
+[15:38:35] start e1a_train (timeout 10542s): uv run python -m physcal.train.e1 train --config grpo_e1a --stop-at 2026-10-16T18:24:17+05:30
