@@ -1,0 +1,30 @@
+eval: 400 problems x 1 samples in splits ['id', 'depth_extrapolation']; skipped []
+W1016 20:56:39.094000 18826 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1016 20:56:39.136000 18826 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<00:34,  9.71it/s]Loading weights:  23%|██▎       | 77/338 [00:00<00:00, 441.07it/s]Loading weights:  51%|█████     | 172/338 [00:00<00:00, 657.73it/s]Loading weights:  80%|███████▉  | 269/338 [00:00<00:00, 768.70it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 704.84it/s]
+  generated 16/400  (29s)
+  generated 32/400  (58s)
+  generated 48/400  (86s)
+  generated 64/400  (116s)
+  generated 80/400  (141s)
+  generated 96/400  (169s)
+  generated 112/400  (197s)
+  generated 128/400  (224s)
+  generated 144/400  (252s)
+  generated 160/400  (275s)
+  generated 176/400  (302s)
+  generated 192/400  (328s)
+  generated 208/400  (350s)
+  generated 224/400  (375s)
+  generated 240/400  (400s)
+  generated 256/400  (422s)
+  generated 272/400  (448s)
+  generated 288/400  (477s)
+  generated 304/400  (501s)
+  generated 320/400  (524s)
+  generated 336/400  (548s)
+  generated 352/400  (574s)
+  generated 368/400  (596s)
+  generated 384/400  (620s)
+  generated 400/400  (644s)
+eval done in 653s; results in /home/flash2404/operation-physics/results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1/compare/rl287

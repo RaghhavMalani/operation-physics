@@ -6,3 +6,10 @@
 [23:38:49] queue start; GPU deadline 08:30 IST; queue PID 2363
 [23:38:49] start seed1_train (timeout 30671s): uv run python -m physcal.train.grpo --config grpo_split_credit_seed1 --max-steps 287 --stop-at 2026-10-17T08:00:00+05:30
 [02:26:24] end seed1_train: exit 0
+[02:26:29] commit 'Split-credit seed 1: training to step 287 (exit 0); tape gzipped': pushed
+[02:26:29] GPU at 63C
+[02:26:29] start seed1_eval287 (timeout 21811s): uv run python -m physcal.train.compare --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1 --label qwen2.5-math-1.5b-instruct --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287
+[02:37:32] end seed1_eval287: exit 0
+SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step": true, "parse_fail_below_5pct": true}, "peak_reserved_gib": 7.42578125, "num_ooms": 0, "eval_parse_fail_rate": 0.0, "sane": true}
+[02:37:32] start seed1_compare (timeout 1800s): uv run python scripts/phase95_compare.py results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1
+[02:38:23] end seed1_compare: exit 0
