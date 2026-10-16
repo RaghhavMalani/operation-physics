@@ -160,6 +160,15 @@ def test_split_credit_config_differs_from_the_control_only_in_split_credit():
     assert new == old
 
 
+@pytest.mark.parametrize("seed", [1, 2])
+def test_split_credit_seed_configs_differ_from_seed_0_only_in_seed_and_run_id(seed):
+    """D62: seeds 1 and 2 change cfg["seed"] (LoRA init, sampling, curriculum) and the run id, nothing else."""
+    base, new = load_config("grpo_split_credit"), load_config(f"grpo_split_credit_seed{seed}")
+    assert (base.pop("seed"), new.pop("seed")) == (0, seed)
+    assert new.pop("run_id") == base.pop("run_id").replace("-seed0", f"-seed{seed}")
+    assert new == base
+
+
 UNSLOTH_CHECK = r"""
 import sys, torch
 import unsloth  # noqa: F401  (patches trl's GRPOTrainer)

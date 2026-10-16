@@ -92,3 +92,27 @@ def test_frozen_split_checks_the_checksum_and_regeneration(tmp_path):
     bad.write_text("\n".join([lines[0], json.dumps(d, sort_keys=True)] + lines[2:]) + "\n")
     with pytest.raises(ValueError, match="regenerate"):
         load_frozen_split({"file": str(bad), "verify_regenerate": -1}, V2)
+
+
+def test_compare_sampled_eval_config_runs_on_cpu(tiny_model, tmp_path):
+    """D62: `compare --samples K` samples K completions per problem with the config's settings; K = 0 stays greedy."""
+    from physcal.train.compare import eval_config
+
+    run, sft = tmp_path / "run", tmp_path / "sft"
+    greedy = eval_config("rl", "qwen2.5-math-1.5b-instruct", 512, run, sft, "a", "g")
+    assert greedy["generation"]["do_sample"] is False and greedy["generation"]["num_samples"] == 1
+    cfg = eval_config("rl", "qwen2.5-math-1.5b-instruct", 512, run, sft, "a", "s", samples=2)
+    assert cfg["generation"] | {"do_sample": False, "num_samples": 1} == greedy["generation"]
+    assert cfg["generation"]["do_sample"] is True and cfg["generation"]["num_samples"] == 2
+    cfg["model"].update(id=str(tiny_model), dtype="float32", device="cpu", lora=None)
+    cfg["generation"].update(max_new_tokens=8, batch_size=4)
+    cfg["output_dir"] = str(tmp_path / "out")
+    (tmp_path / "cfg.yaml").write_text(yaml.safe_dump(cfg))
+    subprocess.run([sys.executable, "-m", "physcal.eval.run_eval", "--config", str(tmp_path / "cfg.yaml"),
+                    "--limit", "2"], cwd=REPO_ROOT, check=True, env={**os.environ, "CUDA_VISIBLE_DEVICES": ""},
+                   capture_output=True)
+    out = tmp_path / "out"
+    recs = list(read_tape(out / "rollouts.jsonl"))
+    assert len(recs) == 2 * 2 * len(cfg["splits"])
+    assert set(json.loads((out / "metrics.json").read_text())["splits"]) == set(cfg["splits"])
+    assert replay(out / "rollouts.jsonl").ok

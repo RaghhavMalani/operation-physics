@@ -264,39 +264,58 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
 
 
 # ------------------------------------------------------------------------------------------- eval
-def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None) -> dict:
-    """Greedy σ suffixes from the E1 model on the frozen eval prefixes; a replayable tape plus per-row scores."""
+def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None, samples: int = 0) -> dict:
+    """Greedy σ suffixes from the E1 model on the frozen eval prefixes; a replayable tape plus per-row scores.
+    `samples` = K > 0 instead samples K suffixes per prefix with the eval config's sampling settings (D62,
+    exploratory); every sample is a row, tagged with its index."""
     e1 = _config()
     mode = read_meta(run_dir / "rollouts.jsonl")["train_config"]["e1_mode"]
     rows = read_rows("eval")
+    gen_cfg = {**e1["eval"]["generation"], "num_samples": 1} if samples <= 0 else \
+        {**e1["eval"]["generation"], "do_sample": True, "num_samples": samples}
     if backend is None:
         from physcal.eval.run_eval import HFBackend
 
         backend = HFBackend(str(REPO_ROOT / e1["model_id"]),
                             {"id": str(REPO_ROOT / e1["model_id"]), "dtype": "bfloat16", "model_class": "causal_lm",
                              "lora": str(run_dir / adapter), "chat_template_kwargs": e1.get("chat_template_kwargs", {})},
-                            {**e1["eval"]["generation"], "num_samples": 1})
+                            gen_cfg)
     rw_cfg = reward_config()
     rw_cfg["scoring"]["rule"] = e1["reward_rule"]
     out = run_dir / "e1_eval" / out_name
     out.mkdir(parents=True, exist_ok=True)
     gens = []
     bs = e1["eval"]["generation"]["batch_size"]
-    for start in range(0, len(rows), bs):
-        gens += [g[0] for g in backend._generate([r["prompt"] for r in rows[start:start + bs]], 1)]
+    if samples <= 0:
+        for start in range(0, len(rows), bs):
+            gens += [g[0] for g in backend._generate([r["prompt"] for r in rows[start:start + bs]], 1)]
+    else:
+        import torch
+
+        torch.manual_seed(gen_cfg["seed"])
+        per_batch = max(1, bs // samples)
+        for start in range(0, len(rows), per_batch):
+            gens += backend._generate([r["prompt"] for r in rows[start:start + per_batch]], samples)
     meta = {"env_config": env_config(), "reward_config": rw_cfg, "e1": e1, "e1_mode": mode,
             "adapter": str(run_dir / adapter), "eval_tapes": e1["eval_tapes"]}
+    if samples > 0:
+        meta["sampled"] = {"num_samples": samples, "generation": gen_cfg}
     (out / "rollouts.jsonl").unlink(missing_ok=True)
     scored = []
     with TapeWriter(out / "rollouts.jsonl", f"{run_dir.name}-e1-eval-{out_name}", meta) as tape:
-        for r, g in zip(rows, gens):
+        for r, g_or_group in zip(rows, gens):
             problem = problem_from_dict(json.loads(r["problem_json"]))
-            s = score_suffix(problem, r["prefix"], g.text, r["orig_mu"], rw_cfg, mode, e1["bins"])
-            tape.log(0, problem, s["full"], s["verifier_reward"], s["breakdown"], str(run_dir / adapter),
-                     getattr(backend, "lora_hash", None),
-                     {"split": r["split"], "n_tokens": g.n_tokens, "truncated": g.truncated, "e1_mode": mode,
-                      "suffix": g.text, "sigma_used_rel": s["sigma_used_rel"], "mu_changed": s["mu_changed"]})
-            scored.append(e1_row(r, s, rw_cfg["scoring"]))
+            group = [g_or_group] if samples <= 0 else g_or_group
+            for j, g in enumerate(group):
+                s = score_suffix(problem, r["prefix"], g.text, r["orig_mu"], rw_cfg, mode, e1["bins"])
+                extra = {"split": r["split"], "n_tokens": g.n_tokens, "truncated": g.truncated, "e1_mode": mode,
+                         "suffix": g.text, "sigma_used_rel": s["sigma_used_rel"], "mu_changed": s["mu_changed"]}
+                row = e1_row(r, s, rw_cfg["scoring"])
+                if samples > 0:
+                    extra["sample"] = row["sample"] = j
+                tape.log(0, problem, s["full"], s["verifier_reward"], s["breakdown"], str(run_dir / adapter),
+                         getattr(backend, "lora_hash", None), extra)
+                scored.append(row)
     (out / "rows.jsonl").write_text("".join(json.dumps(x) + "\n" for x in scored))
     return {"n": len(scored), "mode": mode, "out": str(out)}
 
@@ -327,6 +346,7 @@ def main() -> None:
     ap.add_argument("--run", default=None)
     ap.add_argument("--adapter", default="final_adapter")
     ap.add_argument("--out-name", default="final")
+    ap.add_argument("--samples", type=int, default=0, help="eval: K > 0 sampled σ suffixes per prefix (D62)")
     args = ap.parse_args()
     if args.action == "data":
         print(json.dumps(build_data(), indent=2))
@@ -336,7 +356,7 @@ def main() -> None:
                          indent=2, default=str))
     elif args.action == "eval":
         run_dir = Path(args.run) if Path(args.run).is_absolute() else REPO_ROOT / args.run
-        print(json.dumps(evaluate(run_dir, args.adapter, args.out_name), indent=2))
+        print(json.dumps(evaluate(run_dir, args.adapter, args.out_name, samples=args.samples), indent=2))
     else:
         from physcal.train.e1_compare import compare
 

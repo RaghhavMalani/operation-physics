@@ -3,9 +3,11 @@
     uv run python -m physcal.train.compare --part base|sft|rl --run results/train/<run_id> --label <label> --budget 512
     uv run python -m physcal.train.compare --part tests --run results/train/<run_id>
     uv run python -m physcal.train.compare --part rl --adapter permanent_checkpoints/checkpoint-287 --out-name rl287 ...
+    uv run python -m physcal.train.compare --part rl ... --samples 4 --out-name rl287_sampled   # D62, exploratory
 
 Every part uses `eval_probe_greedy` (200 ID + 200 depth-5 problems of generator 1.1.0, prompt v4, greedy) with
-max_new_tokens = the training budget, and loads the model text-only (`causal_lm`). `tests` runs the paired
+max_new_tokens = the training budget, and loads the model text-only (`causal_lm`). `--samples K` (K > 0) samples
+K completions per problem with the config's sampling settings (T, top_p, top_k, seed) instead of greedy (D62). `tests` runs the paired
 McNemar / Wilcoxon tests (scripts/paired_tests.py) for rl-vs-sft (what RL added), rl-vs-base and sft-vs-base.
 """
 
@@ -25,12 +27,14 @@ PAIRS = (("rl", "sft"), ("rl", "base"), ("sft", "base"))
 
 
 def eval_config(part: str, label: str, budget: int, run_dir: Path, sft_dir: Path, adapter: str = "final_adapter",
-                out_name: str | None = None) -> dict:
+                out_name: str | None = None, samples: int = 0) -> dict:
     probe = load_config("model_probe")
     base = next(c for c in probe["candidates"] if c["label"] == label)
     cfg = copy.deepcopy(load_config(probe["greedy_config"]))
     cfg["generation"]["max_new_tokens"] = budget
     cfg["generation"]["batch_size"] = base.get("batch_size", cfg["generation"]["batch_size"])
+    if samples > 0:
+        cfg["generation"].update(do_sample=True, num_samples=samples)
     out_name = out_name or part
     cfg["output_dir"] = str(run_dir / "compare" / out_name)
     cfg["run_id"] = f"{run_dir.name}-compare-{out_name}"
@@ -70,13 +74,14 @@ def main() -> None:
     ap.add_argument("--budget", type=int, default=None)
     ap.add_argument("--adapter", default="final_adapter", help="rl part: adapter dir relative to the run dir")
     ap.add_argument("--out-name", default=None, help="output subdir of <run>/compare (default: the part name)")
+    ap.add_argument("--samples", type=int, default=0, help="K > 0: K sampled completions per problem (D62)")
     args = ap.parse_args()
     run_dir = Path(args.run) if Path(args.run).is_absolute() else REPO_ROOT / args.run
     if args.part == "tests":
         print(json.dumps(paired_tests(run_dir), indent=2)[:3000])
         return
     sft_dir = Path(args.sft_dir) if args.sft_dir else REPO_ROOT / "results" / "sft" / args.label / "merged"
-    run(eval_config(args.part, args.label, args.budget, run_dir, sft_dir, args.adapter, args.out_name))
+    run(eval_config(args.part, args.label, args.budget, run_dir, sft_dir, args.adapter, args.out_name, args.samples))
 
 
 if __name__ == "__main__":

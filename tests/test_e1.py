@@ -133,3 +133,30 @@ def test_eval_and_compare_with_an_echo_model_equal_sft(tmp_path, monkeypatch):
     assert res["tests"]["E1a-P"]["mean_diff"] == 0.0 and res["tests"]["E1b"] == "not run"
     assert res["describe"]["E1a"]["mean_crps_log"] == pytest.approx(res["describe"]["SFT stated σ"]["mean_crps_log"])
     assert not any(v["rejected"] for v in res["holm"].values())
+
+
+class EchoKBackend(EchoBackend):
+    """The SFT suffix, k times per prefix (the sampled path's shape)."""
+
+    def _generate(self, prompts, k):
+        return [[Generation(self.map[p], 10, False) for _ in range(k)] for p in prompts]
+
+
+def test_sampled_eval_logs_k_rows_per_prefix_and_replays(tmp_path, monkeypatch):
+    """D62: --samples K writes K tagged rows per prefix; with identical samples they equal the greedy rows."""
+    rows = e1.read_rows("eval")[:6]
+    logged = {tuple((x["problem"]["family"], x["problem"]["depth"], x["problem"]["seed"])): x for x in read_tape(EVAL_TAPE)}
+    run = tmp_path / "e1a-run"
+    run.mkdir()
+    TapeWriter(run / "rollouts.jsonl", "fake", {"env_config": env_config(), "reward_config": RW,
+                                                 "train_config": {"e1_mode": "free"}}).close()
+    monkeypatch.setattr(e1, "read_rows", lambda which: rows)
+    e1.evaluate(run, "final_adapter", "greedy", backend=EchoBackend(rows, logged))
+    e1.evaluate(run, "final_adapter", "sampled", backend=EchoKBackend(rows, logged), samples=3)
+    greedy = [json.loads(x) for x in (run / "e1_eval" / "greedy" / "rows.jsonl").read_text().splitlines()]
+    sampled = [json.loads(x) for x in (run / "e1_eval" / "sampled" / "rows.jsonl").read_text().splitlines()]
+    assert "sample" not in greedy[0] and len(sampled) == 3 * len(greedy)
+    assert [r["sample"] for r in sampled[:3]] == [0, 1, 2]
+    for i, g in enumerate(greedy):
+        assert all({k: v for k, v in s.items() if k != "sample"} == g for s in sampled[3 * i:3 * i + 3])
+    assert replay(run / "e1_eval" / "sampled" / "rollouts.jsonl").ok
