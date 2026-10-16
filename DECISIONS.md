@@ -1117,3 +1117,22 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Checked:** the tape replays exactly, both pair analyses run, and the per-noise table renders.
   - **Refusals tested:** a version mismatch, a wrong checksum, and a tampered problem.
   - **Not done:** no GPU was used and no real model was evaluated.
+
+### D61. A6 slope labels (refines D59 and D50/A6; written before any model result on A6 or A6b exists)
+- **Origin:** proposed in review on 2026-10-14. It was not committed then because the session ended. It is
+  committed now (2026-10-16), and no model has been evaluated on A6 or A6b (only the D60 tiny-random-model pipeline
+  check, which is not a result).
+- **What is reported:** the A6 slope (Δ ln stated σ on Δ ln σ\*, computation-correct pairs, as in D58) with its
+  90% CI.
+- **Labels:**
+  - **"full propagation"** if the CI excludes 0 and contains 1;
+  - **"partial propagation"** if the CI excludes 0 but lies entirely below 1;
+  - **"no propagation"** if the CI contains 0;
+  - **"over-propagation"** if the CI lies entirely above 1.
+- **Joint A6/A6b verdict:** uses these labels in place of "slope > 0". The existing pass/fail rules in D59 stay as
+  written and are reported alongside.
+- **Recording note (Claude, not part of the rule above; open for your decision):** read literally, a CI that lies
+  entirely below 0 "excludes 0 but lies entirely below 1" and would be labelled "partial propagation". D59 already
+  treats a negative slope as a distinct habit (the absolute-σ pattern gives about −1 on A6b), so this case
+  probably needs its own label. It is not resolved here. The labels are not implemented in
+  `physcal/eval/a6_pairs.py` yet; that waits until this case is settled.
