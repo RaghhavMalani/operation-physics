@@ -1,2 +1,4 @@
 [19:29:13] waiting for the previous queue (PID 4641) to exit
 [21:06:26] queue start; GPU deadline 08:30 IST; queue PID 40172
+[21:06:29] commit 'E1b seed 0 + E1 family E: leftovers of the previous queue': pushed
+[21:06:29] start seed1_train (timeout 39811s): uv run python -m physcal.train.grpo --config grpo_split_credit_seed1 --max-steps 287 --stop-at 2026-10-17T08:00:00+05:30

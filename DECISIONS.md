@@ -1193,3 +1193,37 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Waiting:** the queue waits on the previous queue's PID before it starts.
   - **Commits:** it commits and pushes after every stage itself (tapes gzipped), so commits do not depend on a
     watcher.
+
+### D63. Split-credit seed 1 restarted from step 0 after the laptop shut down (no resume)
+- **What happened:** the laptop shut down abruptly at about 23:30 IST on 2026-10-16. Seed 1 had started at
+  21:06 and had logged 162 of 287 steps.
+  - **Checkpoints:** the last complete one was `checkpoints/checkpoint-150` (23:24 IST).
+  - **Tape:** it ended cleanly at step 162 (5,184 lines, all parseable).
+  - **Damage check:** no stale `index.lock` and no running git process. `git fsck` is clean, local HEAD equals
+    `origin/main` (`d371ca2`), and every tracked file matches HEAD. The SFT model, the seed-0 step-287 adapter
+    and the E1a/E1b final adapters all load.
+- **Your rule:** resume only if optimizer, scheduler, RNG state AND the curriculum/EMA sampler state are
+  restored and the tape continues cleanly; otherwise restart from step 0.
+- **Decision: restart from step 0.** Resuming fails the rule:
+  1. `physcal/train/grpo.py` has no resume path (`trainer.train()` is called without `resume_from_checkpoint`).
+  2. The checkpoint holds optimizer.pt, scheduler.pt and rng_state.pth, but not the `EMASampler` state.
+     - The sampler's own numpy RNG (`default_rng(seed)`) is saved nowhere.
+     - `curriculum.jsonl` logs the EMA pass rates rounded to 4 decimals, so the exact state cannot be rebuilt.
+  3. A transformers resume would also replay the dataloader to skip the first 150 steps. Here that would call
+     the curriculum's `next_batch` with no matching `observe`, which changes the sampler's path.
+  4. The tape, `train_metrics`, `curriculum.jsonl` and `split_credit.jsonl` would need truncating to step 150.
+- **The partial run was moved, not deleted:** to `results/discarded/split-credit-seed1-partial-crash-2026-10-16/`
+  (git-ignored, about 375 MB), with its training log and the queue log at the crash. It is not a result and is
+  not used anywhere. The restarted seed 1 writes a fresh run directory, so it can never append to the old tape.
+- **Relaunch:** the same queue (`scripts/queue_split_seeds.sh`, D62).
+  - **Order:** seed 1 from step 0 → eval → sanity → (gate) seed 2 → eval. Then the sampled-σ evals, only if
+    there is time.
+  - **Deadline:** GPU work ends by 08:30 IST.
+  - **Changes:** each sampled eval now starts only if enough time is left (`SPLIT_SAMPLED_MIN_S` = 3,600 s,
+    `E1_SAMPLED_MIN_S` = 2,100 s, about 1.3× the estimated duration). Otherwise it is logged as skipped and moves
+    to tomorrow night (your brief: seeds come first). `LEFTOVERS=0` skips the stage-0 commit, which already
+    happened.
+- **Expected timing at seed 0's pace** (36 s/step + an 11-min eval): seed 1 ≈ 02:45, seed 2 ≈ 05:50, sampled
+  evals ≈ 07:20.
+- **Follow-up, not done tonight:** if mid-run resume is wanted in future, the sampler state (including its RNG
+  state) has to be checkpointed alongside the adapter and replayed without dataloader skipping.

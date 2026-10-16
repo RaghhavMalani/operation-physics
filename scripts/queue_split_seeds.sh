@@ -22,6 +22,9 @@ PREV_PID_FILE=${PREV_PID_FILE:-results/queue_split_e1/queue.pid}
 LOG=${QUEUE_LOG:-results/queue_split_seeds}
 GIT_LOCK=${GIT_LOCK:-.git/queue-commit.lock}
 SAMPLES=${SAMPLES:-4}                       # D62: k sampled completions per problem (exploratory)
+SPLIT_SAMPLED_MIN_S=${SPLIT_SAMPLED_MIN_S:-3600}  # D63: start the split-credit sampled eval only with this much time left
+E1_SAMPLED_MIN_S=${E1_SAMPLED_MIN_S:-2100}        # D63: same for each E1 sampled eval (otherwise: tomorrow night)
+LEFTOVERS=${LEFTOVERS:-1}                   # 0 skips stage 0 (the previous queue's leftovers are already committed)
 EVAL_RESERVE_S=${EVAL_RESERVE_S:-1800}      # kept back after each training run for its step-287 eval
 MIN_STAGE_S=${MIN_STAGE_S:-900}             # do not start a training stage with less than this left
 DRY_RUN=${DRY_RUN:-0}
@@ -87,7 +90,7 @@ DEADLINE=$(TZ=Asia/Kolkata date -d "${GPU_DEADLINE:-08:30}" +%s); [ "$DEADLINE" 
 log "queue start; GPU deadline $(ist "$DEADLINE") IST; queue PID $$"
 
 # ---- 0. leftovers of the previous queue ----------------------------------------------------------------------
-commit_stage "E1b seed 0 + E1 family E: leftovers of the previous queue" $(train_paths "$E1B_RUN") \
+[ "$LEFTOVERS" = 1 ] && commit_stage "E1b seed 0 + E1 family E: leftovers of the previous queue" $(train_paths "$E1B_RUN") \
   "$E1B_RUN/e1_eval" results/e1 results/queue_split_e1/chain.log results/queue_split_e1/nohup.log \
   results/queue_split_e1/e1b_train.log results/queue_split_e1/e1b_eval_final.log \
   results/queue_split_e1/e1b_eval_step150.log results/queue_split_e1/e1_compare.log
@@ -123,15 +126,22 @@ else
   log "seed 1 not sane (or did not finish): seed 2 does NOT run (brief)"
 fi
 
-# ---- 3. exploratory sampled evals (D62) ----------------------------------------------------------------------
+# ---- 3. exploratory sampled evals (D62); each starts only if it can finish before the deadline (D63) ----------
 SC0="${RUN_PREFIX}0"
-cool
-run_stage split0_sampled "$(left)" uv run python -m physcal.train.compare --part rl --run "$SC0" --label "$LABEL" \
-  --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_sampled --samples "$SAMPLES"
-commit_stage "Exploratory (D62): split-credit seed 0 @287, $SAMPLES sampled completions per problem" "$SC0/compare/rl287_sampled"
+if [ "$(left)" -lt "$SPLIT_SAMPLED_MIN_S" ]; then
+  log "skip split0_sampled: $(left)s left < ${SPLIT_SAMPLED_MIN_S}s; moves to tomorrow night (brief)"
+else
+  cool
+  run_stage split0_sampled "$(left)" uv run python -m physcal.train.compare --part rl --run "$SC0" --label "$LABEL" \
+    --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_sampled --samples "$SAMPLES"
+  commit_stage "Exploratory (D62): split-credit seed 0 @287, $SAMPLES sampled completions per problem" "$SC0/compare/rl287_sampled"
+fi
 for run in "$E1A_RUN" "$E1B_RUN"; do
   name=$(basename "$run" | cut -d- -f1)
   if [ "$DRY_RUN" != 1 ] && [ ! -d "$run/final_adapter" ]; then log "MISSING $run/final_adapter: no sampled eval"; continue; fi
+  if [ "$(left)" -lt "$E1_SAMPLED_MIN_S" ]; then
+    log "skip ${name}_sampled: $(left)s left < ${E1_SAMPLED_MIN_S}s; moves to tomorrow night (brief)"; continue
+  fi
   cool
   run_stage "${name}_sampled" "$(left)" uv run python -m physcal.train.e1 eval --run "$run" --adapter final_adapter \
     --out-name final_sampled --samples "$SAMPLES"
