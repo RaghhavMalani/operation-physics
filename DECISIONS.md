@@ -1136,3 +1136,60 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   treats a negative slope as a distinct habit (the absolute-σ pattern gives about −1 on A6b), so this case
   probably needs its own label. It is not resolved here. The labels are not implemented in
   `physcal/eval/a6_pairs.py` yet; that waits until this case is settled.
+
+### D62. Split-credit seeds 1 and 2; the seed-mean S1–S3 test; exploratory greedy vs sampled σ (written before any seed-1/2 data or sampled eval exists) **[REVIEW]**
+- **Context:** your brief of 2026-10-16 evening. Seed 0's family S results are already known (seed-0 numbers,
+  committed in `13da449`). This entry is written after seeing them and before seeds 1 and 2 have started.
+- **Seeds 1 and 2:**
+  - **Configs:** `configs/grpo_split_credit_seed{1,2}.yaml` are copies of `grpo_split_credit.yaml`. Only `seed`
+    and `run_id` differ (a test checks this).
+  - **What the seed changes:** `cfg["seed"]` drives the LoRA init, the TRL sampling seed and the EMA curriculum
+    sampler. The training problem pool (`train_seed_offset: 0`) is unchanged, as is everything else.
+  - **Run:** each goes to step 287 (permanent checkpoint), then gets the step-287 greedy eval on the frozen
+    1.1.0 sets, then `queue_sanity.py`, then `phase95_compare.py` (per-seed family S/N).
+  - **Gate:** seed 2 runs only if seed 1's `sanity.json` says PASS (your brief).
+- **The seed-mean test (PREREGISTRATION.md family S: "a hypothesis is supported only if it holds on the seed-mean
+  comparison").** The pre-registration does not say how the seed mean is tested, and McNemar has no direct
+  seed-mean form, so this fixes it:
+  - **Data:** per problem i (the pooled 400) and seed s ∈ {0, 1, 2}, the step-287 greedy outcomes. The controls
+    are as pre-registered: SFT-only, and the single uniform-credit RL@287 run (only one uniform-credit seed
+    exists).
+  - **S1a / S1b:** statistic = mean over i of (c̄_i − c^ctrl_i), with c̄_i = mean over s of the 1σ-coverage
+    indicator. One-sided paired bootstrap over problems: B = 10,000, seed 0; p = share of resamples ≤ 0.
+  - **S2:** statistic = (mean over s of ρ_s) − ρ_uniform. ρ_s is Spearman ρ(stated relative σ, |relative
+    error|) on seed s's answered problems, the same function as `phase95_compare.rho`. Each resample uses one
+    problem index set for all arms. p = share of resamples ≤ 0.
+  - **S3:** statistic = seed-mean accuracy (≤ 1%) − uniform accuracy. p = share of resamples ≤ −5 points, as in
+    the per-seed test.
+  - **Holm** over {S1a, S1b, S2, S3} at α = 0.05. A hypothesis is supported iff it is supported on this
+    seed-mean test.
+  - **Also reported, as pre-registered:** the per-seed tests (McNemar for S1, bootstrap for S2/S3), plus the
+    range across seeds.
+  - **Alternatives considered:**
+    - McNemar on a majority vote (covered in ≥ 2 of 3 seeds): discards information.
+    - McNemar on the 1,200 pooled problem-seed pairs: treats the same problem under 3 seeds as independent.
+    - Stouffer or Fisher combination of the per-seed p-values: tests "some seed differs", not the seed mean.
+  - **Why this one:** the paired bootstrap over problems is the pre-registration's general rule (§ general
+    rules), and McNemar is its binary special case.
+  - **Limitation:** inference is over problems, conditional on these three seeds. Seed-to-seed variance shows in
+    the per-seed range but is not in the p-value.
+  - **Code:** `scripts/phase95_seed_mean.py`, committed before any seed-1 eval exists.
+- **Exploratory, no tests: greedy vs sampled σ at eval.**
+  - **Why:** in training, split credit's sampled median σ settled near 1.3%, but its greedy eval σ is 0.24%.
+  - **Models:** split-credit seed 0 @287, E1a final, and E1b final, on the same frozen eval problems / prefixes
+    as their greedy evals.
+  - **Sampling:** k = 4 samples per problem at the training settings (T = 1.0, top_p 1, top_k off, repetition
+    penalty 1, torch seed 0).
+  - **Outputs:** `compare/rl287_sampled` and `e1_eval/final_sampled`.
+  - **Reported:** median relative σ, σ = 0 share, 1σ/2σ coverage, mean crps_log, ρ(σ, err) and the failure rate,
+    greedy vs sampled. Also the within-problem spread of ln σ across the k samples, and where the greedy σ falls
+    within its own samples. For split credit μ also varies between samples, so its sampled rows mix σ and answer
+    changes; E1's μ is fixed.
+  - **Code:** a `--samples K` option in `physcal.train.compare` and `physcal.train.e1 eval`. With K = 0 (the
+    default) the greedy path is unchanged, and a test checks this.
+- **Order and deadline:**
+  - **Order:** seed 1 → (gate) → seed 2 → the three sampled evals.
+  - **Deadline:** GPU work ends by 08:30 IST (2026-10-17).
+  - **Waiting:** the queue waits on the previous queue's PID before it starts.
+  - **Commits:** it commits and pushes after every stage itself (tapes gzipped), so commits do not depend on a
+    watcher.
