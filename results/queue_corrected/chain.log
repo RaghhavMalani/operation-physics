@@ -53,3 +53,7 @@
 [01:30:52] GPU at 63C
 [01:30:52] start split0_sampled_rerun (est 2100s, timeout 25148s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit_sampled_rerun --samples 4
 [02:00:52] end split0_sampled_rerun: exit 0
+[02:00:57] commit 'Corrected eval (D67): split credit seed 0 @287, k = 4 sampled, rerun of D65': pushed
+[02:00:57] GPU at 62C
+[02:00:57] start e1a_sampled_rerun (est 1200s, timeout 23343s): uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter final_adapter --out-name final_4bit_sampled_rerun --samples 4
+[02:10:19] end e1a_sampled_rerun: exit 0
