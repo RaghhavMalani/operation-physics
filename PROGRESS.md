@@ -518,5 +518,29 @@ Progress:
   narrowly supported, sensitive to the seed-mean definition (seed-mean p = 0.040; per-seed p 0.061 / 0.020 / 0.092)
   (FINDINGS #13). Family N fails on every seed.
 - [x] Exploratory greedy vs sampled σ (k = 4). GPU work ended at 07:11, inside the 08:30 cutoff.
-- [ ] Open: D61 negative-CI label; D62 [REVIEW] seed-mean operationalization; the 4-bit-train / bf16-eval
-  mismatch (MORNING §6).
+- [x] ~~Open: D61 negative-CI label; D62 [REVIEW] seed-mean operationalization; the 4-bit-train / bf16-eval
+  mismatch (MORNING §6).~~ All three settled on 2026-10-17 (D64, D62 review, D65 / FINDINGS #15).
+
+## 2026-10-17 evening: your decisions on MORNING §6
+
+- [x] **§6.3 → D64:** a 90% CI entirely below 0 is "anti-propagation". The D61/D64 labels and a labelled joint
+  verdict are in `a6_pairs.py`, with tests. Recorded before any A6/A6b model result (`9578ee6`).
+- [x] **§6.1 → D65 (exploratory, about 64 GPU-min):** split-credit seed 0 @287 and E1a on the 4-bit training base,
+  greedy and k = 4 sampled. They reproduce the training σ (g = 1.20 / 1.00).
+  - **Post-hoc diagnostics:** the bf16 merge rounds away 91–96% of every RL update.
+  - **FINDINGS #15:** every RL eval-set result so far measured the merged model, not the trained policy. Pointers
+    were added to #3, #5, #6, #13 and #14.
+  - **Commits:** `deff739` (code + plan), `07b6bed` (results).
+- [x] **§6.2:** D62 approved as written. S2 is reported as "narrowly supported; sensitive to the seed-mean
+  definition", with its per-seed p beside it (`913adfc`).
+- [x] **§6.4 → D66:** the curriculum state (and its RNG) is checkpointed with the adapter, and there is a
+  `--resume` path. Tested on CPU, end to end with the real TRL trainer and a negative control; the GPU path was
+  not run (`403a23c`).
+  - **Finding:** the curriculum draws one step ahead of its observations, on every seed.
+- [ ] **§6.5:** uniform-credit seeds 1–2 are deferred (your decision).
+- [ ] **Needs your call (FINDINGS #15):**
+  - re-evaluate every RL adapter unmerged;
+  - the eval default for adapters;
+  - a 4-bit SFT-only control;
+  - a 5-min GPU smoke test of `--resume`.
+- 373 tests pass.

@@ -1,4 +1,46 @@
-# Report: 2026-10-16 day + 2026-10-17 night (final, 07:30 IST)
+# Report: 2026-10-16 day + 2026-10-17 night (final, 07:30 IST), with the 2026-10-17 evening update
+
+## Evening update, 2026-10-17 (23:30 IST): your decisions on §6
+
+**The 4-bit check (§6.1) found the cause of the σ gap, and it is bigger than expected. FINDINGS #15.**
+- **What the check showed:** applied as trained (4-bit base, LoRA unmerged), the RL adapters state their training σ.
+  - split credit @287: sampled median 1.73% (training 1.34%; bf16-merged eval 0.37%);
+  - E1a: 3.55% (training 3.56%; merged 0.77%).
+- **The cause is the merge.** `merge_and_unload` into bf16 rounds 91–96% of every RL update's entries to zero
+  (relative error ≈ 0.9). The weight check covers every adapter; a 3-prefix CPU generation check agrees.
+- **Consequence:** every RL eval-set number so far (FINDINGS #3, #5, #6, #13, #14) describes "SFT + rounding noise",
+  not the trained policy. The pre-registered verdicts stand as tests of those merged models only.
+- **As trained, split credit:** 1σ coverage is 41.8% (vs 22.5% merged), but ρ(σ, err) is still 0.08.
+- **As trained, E1a:** still loses to the A5 surface-feature σ on the same answers (crps_log −0.331 vs −0.305;
+  descriptive).
+- **So far, then:** σ widens under RL, but it still does not track the error.
+
+| §6 item | what was done | where |
+|---|---|---|
+| 1. 4-bit eval check | ran: about 64 GPU-min, 22:07–23:11 (the 45-min estimate was low), plus CPU diagnostics | D65, FINDINGS #15, `results/precision_check/` |
+| 2. D62 | approved; S2 is reported as "narrowly supported; sensitive to the seed-mean definition", with per-seed p 0.061 / 0.020 / 0.092 | D62, FINDINGS #13 |
+| 3. D61 open point | "anti-propagation" (D64); labels plus a labelled joint verdict in `a6_pairs.py` | D64 |
+| 4. Resume | curriculum + RNG state in every checkpoint, `--resume latest`. CPU-tested end to end; the GPU path was not run | D66 |
+| 5. Uniform seeds 1–2 | deferred | – |
+
+**New decisions for you:**
+1. **Re-evaluate the RL adapters unmerged?**
+   - **Scope:** split credit seeds 0–2, uniform credit, E1a/E1b, greedy, on the frozen 1.1.0 sets. About 1–1.5
+     GPU-h.
+   - **Options:** the 4-bit training loader (exactly the trained policy), or the bf16 base with the LoRA unmerged
+     (the same adapter on a full-precision base; it matched 3 / 3 in the CPU check).
+   - **Record-keeping:** this would be a deviation, recorded in DECISIONS, since the pre-registered eval path is now
+     known to drop the update.
+2. **The eval default:** `run_eval` still merges adapters into bf16. Proposal: never merge RL adapters (or refuse
+   when the merge loses most of the update). Not changed yet.
+3. **A 4-bit SFT-only control** (about 15 GPU-min). Without it, the as-trained accuracy (37.8% vs 34.5%) cannot be
+   attributed to RL.
+4. **A GPU smoke test of `--resume`** (about 5 GPU-min, D66).
+5. **D64's labelled joint verdict** maps D61's labels onto D59's three branches. That mapping is my reading of
+   "in place of slope > 0"; please confirm.
+
+---
+
 
 The previous report (2026-10-14) is in git history: `git show d5abb76:MORNING.md`.
 

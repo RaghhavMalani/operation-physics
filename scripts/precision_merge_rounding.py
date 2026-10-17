@@ -9,7 +9,7 @@ The effective update is eff = merged − W (fp32). Reported over all modules, po
 - retained = ||eff||_F / ||delta||_F and rel_error = ||eff − delta||_F / ||delta||_F;
 - swallowed = the share of entries with delta ≠ 0 but eff == 0 (rounded away entirely);
 - the median |delta| / ulp_bf16(W) (below 0.5, an entry's update rounds to nothing unless W sits near a boundary).
-Adapters: the RL runs (split credit seeds 0-2 @287, uniform credit @287, E1a, E1b) on the merged SFT model, and the
+Adapters: the RL runs (split credit seeds 0-2 @287, uniform credit @287, the FINDINGS #5 run, E1a, E1b) on the merged SFT model, and the
 SFT adapter on its own base. Writes results/precision_check/merge_rounding.{json,md}.
 """
 
@@ -29,6 +29,7 @@ ADAPTERS = {
     **{f"split credit seed {s} @287": RUNS / f"split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed{s}"
        / "permanent_checkpoints/checkpoint-287" for s in (0, 1, 2)},
     "uniform credit @287": RUNS / "overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/permanent_checkpoints/checkpoint-287",
+    "overnight RL, final (FINDINGS #5)": RUNS / "overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/final_adapter",
     "E1a final": RUNS / "e1a-sigma-only-free-seed0/final_adapter",
     "E1b final": RUNS / "e1b-sigma-only-bins-seed0/final_adapter",
 }

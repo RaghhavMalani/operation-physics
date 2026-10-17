@@ -31,6 +31,14 @@
     "median_abs_delta_over_ulp": 0.032513320446014404,
     "share_abs_delta_below_half_ulp": 0.951964259147644
   },
+  "overnight RL, final (FINDINGS #5)": {
+    "modules": 196,
+    "retained_norm": 0.447340772196325,
+    "rel_error": 0.9477727582158331,
+    "swallowed_share": 0.957630602442393,
+    "median_abs_delta_over_ulp": 0.03315535932779312,
+    "share_abs_delta_below_half_ulp": 0.9509443640708923
+  },
   "E1a final": {
     "modules": 196,
     "retained_norm": 0.6291701905053954,
