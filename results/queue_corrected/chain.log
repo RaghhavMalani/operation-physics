@@ -14,3 +14,7 @@
 [00:36:07] GPU at 63C
 [00:36:07] start split1 (est 600s, timeout 28433s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit
 [00:44:46] end split1: exit 0
+[00:44:49] commit 'Corrected eval (D67): split credit seed 1 @287, 4-bit unmerged, greedy': pushed
+[00:44:49] GPU at 64C
+[00:44:49] start split2 (est 600s, timeout 27911s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit
+[00:53:40] end split2: exit 0
