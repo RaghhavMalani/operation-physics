@@ -64,3 +64,5 @@
 [02:17:58] commit 'D66 GPU resume check (resume-smoke A/B)': pushed
 [02:17:58] start analyses_final: scripts/corrected_analyses.sh
 [02:20:15] end analyses_final: exit 0
+[02:20:16] commit 'Corrected analyses (final): families S, N, E on the 4-bit unmerged evals (D67)': pushed
+[02:20:16] queue done

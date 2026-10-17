@@ -544,3 +544,26 @@ Progress:
   - a 4-bit SFT-only control;
   - a 5-min GPU smoke test of `--resume`.
 - 373 tests pass.
+
+## 2026-10-18 night: corrected evals (D67 / D68)
+
+- [x] **D67** recorded before any corrected result. The bf16 merge was a bug; the corrected evals are the primary
+  results; the merged ones are kept as superseded. D64's joint mapping is confirmed.
+- [x] **D68:** never merge RL adapters. This is the default (the 4-bit training loader) plus a guard in the eval
+  backend and in `train.merge`; `e1 eval --sft` was added. Tests.
+- [x] **Night queue, 00:17–02:20, every stage ran.**
+  - SFT-only (4-bit);
+  - split credit seeds 0–2; uniform credit; E1a/E1b final + step 150;
+  - the #5 and #6 adapters;
+  - the sampled reruns (byte-identical to D65);
+  - the D66 GPU resume check: PASS.
+- [x] **Corrected families S / N / E (FINDINGS #16):**
+  - S1a, S1b and S3 supported; **S2 not supported** (it was "narrowly supported" on the merged evals);
+  - N fails on every seed;
+  - E is unchanged (P yes, N no).
+  - Side by side: `results/corrected/side_by_side.md`.
+- [x] Bug in the corrected per-seed output names, fixed (`20ec565`).
+- 383 tests pass.
+- [ ] Next (your call, MORNING §7): Phase 11/12 noise mode. Decide the training base (4-bit vs bf16) before
+  Phase 12.
+

@@ -789,7 +789,24 @@ All nine tests go the wrong way (p = 1).
 - **"σ widens but does not track the error"** is now the corrected, pre-registered result.
 - **The superseded headline "S2 narrowly supported" is withdrawn.**
 
-**Determinism:** tonight's reruns of D65's two greedy tapes are byte-identical (400 / 400 completions each).
+**Also tonight (descriptive, tier 2):**
+- **Determinism:** all four reruns of D65's tapes are byte-identical to the originals (completions and rewards):
+  greedy and k = 4 sampled, for split credit seed 0 and E1a. The 4-bit eval is fully deterministic on this GPU.
+- **σ instability (D62), evaluated as trained:** the within-problem SD of ln σ over 4 samples is 0.85 for split
+  credit (1.01 merged) and 0.35 for E1a (0.94 merged). Much of the "σ moves by a factor of e between samples" in
+  MORNING 2026-10-17 §5 came from the merge.
+- **The FINDINGS #5 adapter, as trained:** σ is SFT-like (median 0.057%, 1σ cov 12.8%); accuracy 39.0%.
+- **The FINDINGS #6 adapter (step 759), as trained:** σ = 0 on 97.5% of eval answers (43.2% merged), with 1σ
+  coverage 2.8%. This is the training-log collapse of #6 (95–98% after step ~550), at full strength on the eval
+  set. The merge had hidden half of it.
+- **E1 at step 150, as trained:** E1a median σ 2.7%, 1σ cov 46.5%, ρ −0.00; E1b 2.0%, 41.2%, 0.02. Most of the
+  final effect is there by step 150, as before.
+- **D66's resume path on the GPU** (Unsloth, 4-bit PEFT): **PASS** on all three pre-set criteria
+  (`results/resume_gpu_check/report.md`).
+  - The logs are complete and the tape replays.
+  - The curriculum cells for steps 1–4 match the uninterrupted run.
+  - The reloaded adapter lands near the uninterrupted step 4, not step 2 (‖B4 − A4‖ = 0.0033 vs ‖B4 − A2‖ = 0.0089).
+
 **Provenance:**
 - D67 (committed `bb7ff3c`, before any corrected S/N/E result);
 - analysis code `d80ee83`, plus the per-seed output-name fix `20ec565`;

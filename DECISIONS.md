@@ -1517,3 +1517,13 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     refused; both before loading) and in the merge tool;
   - the E1 eval's meta, and the SFT-only E1 eval.
   - Two older tests that built RL configs without a run meta now pass the loader explicitly or build a fake meta.
+- **Execution notes for D67 (2026-10-18 night).** These are not new decisions.
+  - **Ran:** every stage of the queue ran, 00:17–02:20 IST, and none was skipped.
+  - **Bug found and fixed in my analysis code (`20ec565`):** in `--corrected` mode the per-seed family S/N outputs
+    are named after the run. The run names contain dots (`…v1.1.0…`), so `Path.with_suffix` collapsed all three
+    seeds into one file. The seed-mean and family E outputs use a different path and were not affected. Seeds
+    0–2 were rerun and a regression test added. Every number in FINDINGS #16 comes from the fixed outputs.
+  - **The sampled reruns:** you asked for them as "re-measure σ instability". D65 had already run exactly these
+    evals, so tonight's runs went to `*_rerun` dirs as D67 planned. They are byte-identical to D65's, and both are
+    reported.
+
