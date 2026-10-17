@@ -1,0 +1,191 @@
+{
+  "runs": [
+    "results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0",
+    "results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1",
+    "results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2"
+  ],
+  "sanity": [
+    true,
+    true,
+    true
+  ],
+  "seed_mean": {
+    "S1a": {
+      "seed_mean": 0.21666666666666667,
+      "control": 0.1325,
+      "diff": 0.08416666666666667,
+      "diff_ci": [
+        0.057499999999999996,
+        0.1125
+      ],
+      "p_threshold": 0.0,
+      "p_one_sided": 0.0
+    },
+    "S1b": {
+      "seed_mean": 0.21666666666666667,
+      "control": 0.1175,
+      "diff": 0.09916666666666668,
+      "diff_ci": [
+        0.07166666666666668,
+        0.12833333333333335
+      ],
+      "p_threshold": 0.0,
+      "p_one_sided": 0.0
+    },
+    "S2": {
+      "seed_mean": 0.08099592130430062,
+      "control": -0.01698232208041501,
+      "diff": 0.09797824338471564,
+      "diff_ci": [
+        -0.012338445430153206,
+        0.20765877350033837
+      ],
+      "p_threshold": 0.0,
+      "p_one_sided": 0.04
+    },
+    "S3": {
+      "seed_mean": 0.3566666666666667,
+      "control": 0.3425,
+      "diff": 0.01416666666666666,
+      "diff_ci": [
+        0.0008333333333333526,
+        0.02916666666666662
+      ],
+      "p_threshold": -0.05,
+      "p_one_sided": 0.0
+    },
+    "holm": {
+      "S1a": {
+        "p": 0.0,
+        "holm_threshold": 0.0125,
+        "supported": true
+      },
+      "S1b": {
+        "p": 0.0,
+        "holm_threshold": 0.016666666666666666,
+        "supported": true
+      },
+      "S3": {
+        "p": 0.0,
+        "holm_threshold": 0.025,
+        "supported": true
+      },
+      "S2": {
+        "p": 0.04,
+        "holm_threshold": 0.05,
+        "supported": true
+      }
+    }
+  },
+  "per_seed": {
+    "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0": {
+      "S1a": {
+        "before": 53,
+        "after": 90,
+        "only_after": 41,
+        "only_before": 4,
+        "p_one_sided": 4.6674415443703765e-09
+      },
+      "S1b": {
+        "before": 47,
+        "after": 90,
+        "only_after": 45,
+        "only_before": 2,
+        "p_one_sided": 8.022027486731531e-12
+      },
+      "S2": {
+        "split": 0.07776136082381441,
+        "uniform": -0.01698232208041501,
+        "p_one_sided": 0.0608
+      },
+      "S3": {
+        "split": 0.345,
+        "uniform": 0.3425,
+        "p_one_sided": 0.0
+      }
+    },
+    "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1": {
+      "S1a": {
+        "before": 53,
+        "after": 84,
+        "only_after": 34,
+        "only_before": 3,
+        "p_one_sided": 6.165646482259035e-08
+      },
+      "S1b": {
+        "before": 47,
+        "after": 84,
+        "only_after": 38,
+        "only_before": 1,
+        "p_one_sided": 7.275957614183426e-11
+      },
+      "S2": {
+        "split": 0.09896526636157439,
+        "uniform": -0.01698232208041501,
+        "p_one_sided": 0.0202
+      },
+      "S3": {
+        "split": 0.3625,
+        "uniform": 0.3425,
+        "p_one_sided": 0.0
+      }
+    },
+    "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2": {
+      "S1a": {
+        "before": 53,
+        "after": 86,
+        "only_after": 36,
+        "only_before": 3,
+        "p_one_sided": 1.8044374883174896e-08
+      },
+      "S1b": {
+        "before": 47,
+        "after": 86,
+        "only_after": 41,
+        "only_before": 2,
+        "p_one_sided": 1.0766143532237038e-10
+      },
+      "S2": {
+        "split": 0.0662611367275131,
+        "uniform": -0.01698232208041501,
+        "p_one_sided": 0.0919
+      },
+      "S3": {
+        "split": 0.3625,
+        "uniform": 0.3425,
+        "p_one_sided": 0.0
+      }
+    }
+  },
+  "range_across_seeds": {
+    "cov1": [
+      0.21,
+      0.225
+    ],
+    "acc": [
+      0.345,
+      0.3625
+    ],
+    "rho": [
+      0.0662611367275131,
+      0.09896526636157439
+    ]
+  },
+  "per_seed_point": {
+    "cov1": [
+      0.225,
+      0.21,
+      0.215
+    ],
+    "acc": [
+      0.345,
+      0.3625,
+      0.3625
+    ],
+    "rho": [
+      0.07776136082381441,
+      0.09896526636157439,
+      0.0662611367275131
+    ]
+  }
+}

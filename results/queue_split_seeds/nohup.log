@@ -35,3 +35,7 @@ SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step"
 [06:58:11] GPU at 62C
 [06:58:11] start e1b_sampled (timeout 5509s): uv run python -m physcal.train.e1 eval --run results/train/e1b-sigma-only-bins-seed0 --adapter final_adapter --out-name final_sampled --samples 4
 [07:10:57] end e1b_sampled: exit 0
+[07:11:00] commit 'Exploratory (D62): e1b final, 4 sampled sigma suffixes per prefix': pushed
+[07:11:00] GPU work done
+[07:11:00] start seed_mean (timeout 3600s): uv run python scripts/phase95_seed_mean.py results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1 results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2
+[07:11:52] end seed_mean: exit 0
