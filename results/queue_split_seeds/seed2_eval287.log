@@ -1,0 +1,30 @@
+eval: 400 problems x 1 samples in splits ['id', 'depth_extrapolation']; skipped []
+W1017 00:22:28.802000 36242 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1017 00:22:28.848000 36242 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<00:38,  8.77it/s]Loading weights:  22%|██▏       | 76/338 [00:00<00:00, 408.31it/s]Loading weights:  47%|████▋     | 159/338 [00:00<00:00, 573.41it/s]Loading weights:  72%|███████▏  | 243/338 [00:00<00:00, 664.79it/s]Loading weights:  94%|█████████▍| 319/338 [00:00<00:00, 696.77it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 616.21it/s]
+  generated 16/400  (29s)
+  generated 32/400  (59s)
+  generated 48/400  (87s)
+  generated 64/400  (117s)
+  generated 80/400  (142s)
+  generated 96/400  (171s)
+  generated 112/400  (198s)
+  generated 128/400  (226s)
+  generated 144/400  (251s)
+  generated 160/400  (277s)
+  generated 176/400  (303s)
+  generated 192/400  (325s)
+  generated 208/400  (351s)
+  generated 224/400  (376s)
+  generated 240/400  (397s)
+  generated 256/400  (422s)
+  generated 272/400  (449s)
+  generated 288/400  (478s)
+  generated 304/400  (499s)
+  generated 320/400  (526s)
+  generated 336/400  (550s)
+  generated 352/400  (573s)
+  generated 368/400  (598s)
+  generated 384/400  (622s)
+  generated 400/400  (643s)
+eval done in 652s; results in /home/flash2404/operation-physics/results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2/compare/rl287
