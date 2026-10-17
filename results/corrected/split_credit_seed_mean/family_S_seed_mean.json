@@ -1,0 +1,224 @@
+{
+  "runs": [
+    "results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0",
+    "results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1",
+    "results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2"
+  ],
+  "sanity": [
+    true,
+    true,
+    true
+  ],
+  "seed_mean": {
+    "S1a": {
+      "seed_mean": 0.4183333333333333,
+      "control": 0.12,
+      "diff": 0.2983333333333333,
+      "diff_ci": [
+        0.25500000000000006,
+        0.34166666666666673
+      ],
+      "p_threshold": 0.0,
+      "p_one_sided": 0.0
+    },
+    "S1b": {
+      "seed_mean": 0.4183333333333333,
+      "control": 0.105,
+      "diff": 0.3133333333333333,
+      "diff_ci": [
+        0.26999999999999996,
+        0.35750000000000004
+      ],
+      "p_threshold": 0.0,
+      "p_one_sided": 0.0
+    },
+    "S2": {
+      "seed_mean": 0.060694071076881656,
+      "control": 0.014595218801170758,
+      "diff": 0.046098852275710894,
+      "diff_ci": [
+        -0.09451798290156391,
+        0.183694100029671
+      ],
+      "p_threshold": 0.0,
+      "p_one_sided": 0.2623
+    },
+    "S3": {
+      "seed_mean": 0.37666666666666665,
+      "control": 0.3725,
+      "diff": 0.004166666666666652,
+      "diff_ci": [
+        -0.009999999999999953,
+        0.018333333333333313
+      ],
+      "p_threshold": -0.05,
+      "p_one_sided": 0.0
+    },
+    "holm": {
+      "S1a": {
+        "p": 0.0,
+        "holm_threshold": 0.0125,
+        "supported": true
+      },
+      "S1b": {
+        "p": 0.0,
+        "holm_threshold": 0.016666666666666666,
+        "supported": true
+      },
+      "S3": {
+        "p": 0.0,
+        "holm_threshold": 0.025,
+        "supported": true
+      },
+      "S2": {
+        "p": 0.2623,
+        "holm_threshold": 0.05,
+        "supported": false
+      }
+    }
+  },
+  "per_seed": {
+    "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0": {
+      "S1a": {
+        "before": 48,
+        "after": 167,
+        "only_after": 121,
+        "only_before": 2,
+        "p_one_sided": 7.1723963309772695e-34
+      },
+      "S1b": {
+        "before": 42,
+        "after": 167,
+        "only_after": 126,
+        "only_before": 1,
+        "p_one_sided": 7.52316384526264e-37
+      },
+      "S2": {
+        "split": 0.07687510316816443,
+        "uniform": 0.014595218801170758,
+        "p_one_sided": 0.2073
+      },
+      "S3": {
+        "split": 0.3775,
+        "uniform": 0.3725,
+        "p_one_sided": 0.0
+      }
+    },
+    "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1": {
+      "S1a": {
+        "before": 48,
+        "after": 165,
+        "only_after": 120,
+        "only_before": 3,
+        "p_one_sided": 2.9175581708313044e-32
+      },
+      "S1b": {
+        "before": 42,
+        "after": 165,
+        "only_after": 125,
+        "only_before": 2,
+        "p_one_sided": 4.7777967889171876e-35
+      },
+      "S2": {
+        "split": 0.03400401996180597,
+        "uniform": 0.014595218801170758,
+        "p_one_sided": 0.396
+      },
+      "S3": {
+        "split": 0.3675,
+        "uniform": 0.3725,
+        "p_one_sided": 0.0
+      }
+    },
+    "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2": {
+      "S1a": {
+        "before": 48,
+        "after": 170,
+        "only_after": 124,
+        "only_before": 2,
+        "p_one_sided": 9.406305795279945e-35
+      },
+      "S1b": {
+        "before": 42,
+        "after": 170,
+        "only_after": 129,
+        "only_before": 1,
+        "p_one_sided": 9.62435999735748e-38
+      },
+      "S2": {
+        "split": 0.07120309010067458,
+        "uniform": 0.014595218801170758,
+        "p_one_sided": 0.2245
+      },
+      "S3": {
+        "split": 0.385,
+        "uniform": 0.3725,
+        "p_one_sided": 0.0
+      }
+    }
+  },
+  "range_across_seeds": {
+    "cov1": [
+      0.4125,
+      0.425
+    ],
+    "acc": [
+      0.3675,
+      0.385
+    ],
+    "rho": [
+      0.03400401996180597,
+      0.07687510316816443
+    ]
+  },
+  "per_seed_point": {
+    "cov1": [
+      0.4175,
+      0.4125,
+      0.425
+    ],
+    "acc": [
+      0.3775,
+      0.3675,
+      0.385
+    ],
+    "rho": [
+      0.07687510316816443,
+      0.03400401996180597,
+      0.07120309010067458
+    ]
+  },
+  "per_seed_p": {
+    "S1a": [
+      7.1723963309772695e-34,
+      2.9175581708313044e-32,
+      9.406305795279945e-35
+    ],
+    "S1b": [
+      7.52316384526264e-37,
+      4.7777967889171876e-35,
+      9.62435999735748e-38
+    ],
+    "S2": [
+      0.2073,
+      0.396,
+      0.2245
+    ],
+    "S3": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "reported_as": {
+    "S1a": "supported",
+    "S1b": "supported",
+    "S2": "not supported",
+    "S3": "supported"
+  },
+  "inputs": {
+    "eval_tape": "compare/rl287_4bit/rollouts.jsonl",
+    "sft": "/home/flash2404/operation-physics/results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare/sft_4bit/rollouts.jsonl",
+    "uniform": "/home/flash2404/operation-physics/results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare/rl287_4bit/rollouts.jsonl"
+  }
+}

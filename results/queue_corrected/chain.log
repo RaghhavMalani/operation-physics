@@ -38,3 +38,6 @@
 [01:09:04] GPU at 64C
 [01:09:04] start e1b_step150 (est 300s, timeout 26456s): uv run python -m physcal.train.e1 eval --run results/train/e1b-sigma-only-bins-seed0 --adapter permanent_checkpoints/checkpoint-150 --out-name step150_4bit
 [01:11:13] end e1b_step150: exit 0
+[01:11:15] commit 'Corrected eval (D67): E1b step 150, 4-bit unmerged': pushed
+[01:11:15] start analyses_tier1: scripts/corrected_analyses.sh
+[01:13:36] end analyses_tier1: exit 0
