@@ -13,7 +13,7 @@ from physcal.env.generator import generator_version, regenerate
 from physcal.env.formulas import get_family
 from physcal.env.noise import log_sensitivities
 from physcal.env.pairs import generate_pair
-from physcal.eval.a6_pairs import analyze_rows, joint, member_row
+from physcal.eval.a6_pairs import analyze_rows, joint, member_row, slope_label
 from physcal.tape.tape import TapeWriter, replay
 from physcal.verify.reward import reward, reward_config
 
@@ -138,3 +138,33 @@ def test_invariance_analysis_and_joint_verdict():
     assert joint(lookup, rel)["verdict"] == "no propagation (lookup-like)"
     with pytest.raises(ValueError):
         analyze_rows(_inv_rows(False)[:4] + _rows(lambda s, r: s)[:4], cfg, PC["invariance_analysis"])
+
+
+@pytest.mark.parametrize("ci,label", [
+    ([0.2, 1.3], "full propagation"), ([0.1, 0.7], "partial propagation"), ([1.2, 1.6], "over-propagation"),
+    ([-0.1, 0.5], "no propagation"), ([-0.2, 1.4], "no propagation"), ([0.0, 0.4], "no propagation"),
+    ([-1.3, -0.4], "anti-propagation"), ([0.3, 1.0], "full propagation"), (None, None)])
+def test_slope_labels(ci, label):
+    """D61 / D64: labels from the slope's CI; a CI entirely below 0 is "anti-propagation" (D64)."""
+    assert slope_label(ci) == label
+
+
+def test_a6_labels_and_labelled_joint_verdict():
+    cfg = {**PC["analysis"], "bootstrap": 2000}
+    honest = analyze_rows(_rows(lambda s, r: s * float(np.exp(r.normal(0, 0.2)))), cfg)
+    half = analyze_rows(_rows(lambda s, r: s ** 0.5 * float(np.exp(r.normal(0, 0.1)))), cfg)
+    lookup = analyze_rows(_rows(lambda s, r: 0.02 * float(np.exp(r.normal(0, 0.2)))), cfg)
+    anti = analyze_rows(_rows(lambda s, r: 1e-4 / s * float(np.exp(r.normal(0, 0.1)))), cfg)
+    assert honest["primary_computation_correct"]["ci_level"] == PC["analysis"]["label_ci_level"] == 0.90
+    assert [x["label"] for x in (honest, half, lookup, anti)] == \
+        ["full propagation", "partial propagation", "no propagation", "anti-propagation"]
+    rel = analyze_rows(_inv_rows(stated_abs=False), cfg, PC["invariance_analysis"])
+    absolute = analyze_rows(_inv_rows(stated_abs=True), cfg, PC["invariance_analysis"])
+    assert joint(honest, rel)["labelled_verdict"] == "full propagation"
+    assert joint(half, rel)["labelled_verdict"] == "partial propagation"
+    assert joint(honest, absolute)["labelled_verdict"] == "magnitude-driven"
+    assert joint(lookup, rel)["labelled_verdict"] == "no propagation"
+    assert joint(anti, absolute)["labelled_verdict"] == "anti-propagation"  # A6 fails first, as in D59
+    j = joint(anti, rel)  # the D59 verdict is still reported alongside
+    assert j["verdict"] == "no propagation (lookup-like)" and j["A6_label"] == "anti-propagation"
+    assert j["table"][0]["label_ci"] == anti["primary_computation_correct"]["ci"]

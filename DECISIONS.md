@@ -1136,6 +1136,7 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   treats a negative slope as a distinct habit (the absolute-σ pattern gives about −1 on A6b), so this case
   probably needs its own label. It is not resolved here. The labels are not implemented in
   `physcal/eval/a6_pairs.py` yet; that waits until this case is settled.
+- **Resolved in D64** (2026-10-17): a CI entirely below 0 is "anti-propagation".
 
 ### D62. Split-credit seeds 1 and 2; the seed-mean S1–S3 test; exploratory greedy vs sampled σ (written before any seed-1/2 data or sampled eval exists) **[REVIEW]**
 - **Context:** your brief of 2026-10-16 evening. Seed 0's family S results are already known (seed-0 numbers,
@@ -1227,3 +1228,38 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   evals ≈ 07:20.
 - **Follow-up, not done tonight:** if mid-run resume is wanted in future, the sampler state (including its RNG
   state) has to be checkpointed alongside the adapter and replayed without dataloader skipping.
+
+### D64. A6 slope label for a CI entirely below 0: "anti-propagation" (your decision, 2026-10-17; written before any A6/A6b model result exists)
+- **Decision (yours, MORNING.md §6.3):** a 90% CI that lies entirely below 0 is labelled **"anti-propagation"**. This
+  closes D61's open point. D61's other four labels are unchanged.
+- **Status of the data:** no model has been evaluated on A6 or A6b. The only A6/A6b output so far is D60's
+  tiny-random-model pipeline check, which is not a result.
+- **The full rule, as implemented** (`physcal/eval/a6_pairs.py: slope_label`, on the primary slope's 90% pairs-bootstrap
+  CI; endpoints count as contained):
+  1. CI contains 0 → "no propagation";
+  2. CI entirely below 0 → "anti-propagation";
+  3. CI above 0 and contains 1 → "full propagation";
+  4. CI inside (0, 1) → "partial propagation";
+  5. CI entirely above 1 → "over-propagation".
+- **CI level:** `configs/pairs.yaml: analysis.label_ci_level = 0.90` (D61). The A6 primary result's `ci` field is
+  now the 90% CI; `ci95` is still written. Before this change the A6 `ci` field held the 95% CI, but nothing read
+  it and no A6 result existed.
+- **Joint verdict with labels (D61: "the labels in place of 'slope > 0'"; my implementation, for your review):**
+  D59's three branches, with the A6 label substituted for the one-sided test:
+  - A6 label is "no propagation" or "anti-propagation" → that label (D59's "A6 fails" branch; A6b is not
+    consulted);
+  - A6 label is full / partial / over, and A6b is not equivalent to 0 → "magnitude-driven";
+  - A6 label is full / partial / over, and A6b is equivalent to 0 → the A6 label itself.
+  `joint` writes this as `labelled_verdict`, next to the unchanged D59 `verdict`, the `A6_label`, and the label CI
+  in the table.
+- **Consistency with D59:** with a percentile bootstrap, a 90% CI whose lower end is above 0 is (up to ties) the same
+  event as D58's one-sided p < 0.05. So "A6 fails" under D59 and "no / anti-propagation" under the labels agree on
+  the same bootstrap draws.
+- **One case the labels leave coarse (no change made; flagged):** a wide CI containing both 0 and 1 is labelled
+  "no propagation" under rule 1, although such a result is really inconclusive. D61 says so as written, so it is
+  implemented that way. The write-up should report the CI next to the label.
+- **Tests:** `tests/test_pairs.py`:
+  - `test_slope_labels`: the CI → label table, including a CI touching 0 and one spanning [0, 1].
+  - `test_a6_labels_and_labelled_joint_verdict`: synthetic honest (slope 1), half-propagating (slope 0.5),
+    lookup (0) and anti (−1) answers get the four expected labels, and the labelled joint verdicts are checked
+    against relative-σ and absolute-σ A6b answers.

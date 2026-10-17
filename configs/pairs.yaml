@@ -20,6 +20,7 @@ analysis:                           # primary: OLS slope of d ln(stated sigma) o
   bootstrap: 10000
   seed: 0
   alpha: 0.05
+  label_ci_level: 0.90              # D61/D64: the primary slope's label comes from its 90% bootstrap CI
 
 # D59/A6b: invariance pairs (power-law templates: relative sigma* does not depend on the values). Eval only.
 invariance_construction:            # stored in every A6b problem (replay uses the stored copy)

@@ -13,6 +13,11 @@ parsed; sensitivity: pairs without a stated σ = 0.
 A6b (D59, invariance pairs, relative σ* equal within each pair): the same y regressed on m = ln(truth_hi/truth_lo);
 propagation predicts slope ≈ 0 (TOST with margin δ: the 90% bootstrap CI inside [−δ, δ]), a fixed absolute σ ≈ −1.
 `joint` gives the two-sided propagation verdict: "propagates" iff A6 is supported and A6b is equivalent to 0.
+
+Slope labels (D61, D64): the A6 primary slope's 90% CI (`label_ci_level`) gives "full propagation" (excludes 0,
+contains 1), "partial propagation" (inside (0, 1)), "over-propagation" (above 1), "no propagation" (contains 0) or
+"anti-propagation" (below 0). `joint` reports a labelled verdict with these labels in place of "slope > 0", next to
+the D59 verdict.
 """
 
 from __future__ import annotations
@@ -83,6 +88,23 @@ def slope_test(pairs: list[dict], n_boot: int, seed: int, regressor: str = "sigm
             "share_dy_positive": float(np.mean(y > 0))}
 
 
+def slope_label(ci: list[float] | None) -> str | None:
+    """D61 / D64 label of an A6 slope from its CI (endpoints count as contained)."""
+    if ci is None:
+        return None
+    lo, hi = ci
+    if lo <= 0 <= hi:
+        return "no propagation"
+    if hi < 0:
+        return "anti-propagation"
+    if lo <= 1 <= hi:
+        return "full propagation"
+    return "partial propagation" if hi < 1 else "over-propagation"
+
+
+NOT_PROPAGATING = ("no propagation", "anti-propagation")  # D59's "A6 fails" branch under the D61 / D64 labels
+
+
 def analyze_rows(rows: list[dict], cfg: dict, inv_cfg: dict | None = None) -> dict:
     """A6 (sensitivity pairs) or A6b (invariance pairs, needs `inv_cfg`), chosen by the rows' pair kind."""
     kinds = {r["kind"] for r in rows}
@@ -95,9 +117,9 @@ def analyze_rows(rows: list[dict], cfg: dict, inv_cfg: dict | None = None) -> di
     no_zero = [p for p in primary if not (p["lo"]["sigma_zero"] or p["hi"]["sigma_zero"])]
     nb, seed = cfg["bootstrap"], cfg["seed"]
     out = {"kind": kind, "n_pairs_total": len(pairs), "n_pairs_both_answered": len(both_ok)}
-    if kind == "sensitivity":  # A6 (D50/D58): slope on Δ ln σ* > 0
-        primary_test = slope_test(primary, nb, seed)
-        out.update(primary_computation_correct=primary_test,
+    if kind == "sensitivity":  # A6 (D50/D58): slope on Δ ln σ* > 0; label from its 90% CI (D61/D64)
+        primary_test = slope_test(primary, nb, seed, ci_level=cfg["label_ci_level"])
+        out.update(primary_computation_correct=primary_test, label=slope_label(primary_test["ci"]),
                    supported=primary_test["p_one_sided"] is not None and primary_test["p_one_sided"] < cfg["alpha"],
                    secondary_all_answered=slope_test(both_ok, nb, seed),
                    sensitivity_no_sigma_zero=slope_test(no_zero, nb, seed))
@@ -123,9 +145,16 @@ def joint(a6: dict, a6b: dict) -> dict:
         verdict = "magnitude-driven"
     else:
         verdict = "propagates"
+    label = a6.get("label")  # D61 / D64: the label replaces "slope > 0"; D59's verdict is reported alongside
+    if label is None or label in NOT_PROPAGATING:
+        labelled = label
+    else:
+        labelled = label if a6b["equivalent_to_zero"] else "magnitude-driven"
     p6, p6b = a6["primary_computation_correct"], a6b["primary_computation_correct"]
-    return {"verdict": verdict, "A6_supported": a6["supported"], "A6b_equivalent_to_zero": a6b["equivalent_to_zero"],
+    return {"verdict": verdict, "labelled_verdict": labelled, "A6_label": label, "A6_supported": a6["supported"],
+            "A6b_equivalent_to_zero": a6b["equivalent_to_zero"],
             "table": [{"set": "A6 (sensitivity)", "ideal_slope": 1.0, "slope": p6["slope"], "ci95": p6.get("ci95"),
+                       "label_ci": p6.get("ci"), "label_ci_level": p6.get("ci_level"), "label": label,
                        "n_pairs": p6["n_pairs"], "test": "slope > 0 (one-sided)", "p": p6["p_one_sided"]},
                       {"set": "A6b (invariance)", "ideal_slope": 0.0, "slope": p6b["slope"], "ci": p6b.get("ci"),
                        "n_pairs": p6b["n_pairs"], "test": f"TOST |slope| < {a6b['equivalence_margin']}",
