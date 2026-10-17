@@ -26,3 +26,7 @@
 [01:02:21] GPU at 63C
 [01:02:21] start e1a_final_rerun (est 300s, timeout 26859s): uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter final_adapter --out-name final_4bit_rerun
 [01:04:34] end e1a_final_rerun: exit 0
+[01:04:36] commit 'Corrected eval (D67): E1a final, rerun of D65 (determinism check)': pushed
+[01:04:36] GPU at 65C
+[01:04:36] start e1a_step150 (est 300s, timeout 26724s): uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter permanent_checkpoints/checkpoint-150 --out-name step150_4bit
+[01:06:48] end e1a_step150: exit 0
