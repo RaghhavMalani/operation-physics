@@ -2,3 +2,7 @@
 [00:17:46] GPU at 48C
 [00:17:46] start sft_4bit (est 620s, timeout 29534s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part sft --run results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512 --out-name sft_4bit
 [00:25:17] end sft_4bit: exit 0
+[00:25:23] commit 'Corrected eval (D67): SFT-only on the 4-bit base, frozen 1.1.0 sets, greedy': pushed
+[00:25:23] GPU at 62C
+[00:25:23] start e1_sft_4bit (est 300s, timeout 29077s): uv run python -m physcal.train.e1 eval --sft
+[00:27:16] end e1_sft_4bit: exit 0
