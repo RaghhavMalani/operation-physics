@@ -49,3 +49,7 @@
 [01:22:13] GPU at 63C
 [01:22:13] start n6_final (est 600s, timeout 25667s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part rl --run results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512 --adapter final_adapter --out-name rlfinal_4bit
 [01:30:49] end n6_final: exit 0
+[01:30:51] commit 'Corrected eval (D67): FINDINGS #6 adapter (overnight2 final, step 759), 4-bit unmerged': pushed
+[01:30:52] GPU at 63C
+[01:30:52] start split0_sampled_rerun (est 2100s, timeout 25148s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit_sampled_rerun --samples 4
+[02:00:52] end split0_sampled_rerun: exit 0
