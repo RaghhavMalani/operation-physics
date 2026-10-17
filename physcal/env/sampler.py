@@ -4,6 +4,9 @@ Interface (spec §5): `next_batch(n) -> list[cell]` and `observe(results)`, wher
 `(cell, [binary correctness of each completion in the group])`. The HMM sampler (phase 8) will implement the
 same interface. EMA is the baseline: weight w = p·(1 − p) + floor, which peaks at p = 0.5, where GRPO groups
 have reward variance.
+
+`state()` is the rounded per-step log; `checkpoint()` / `restore()` are the exact state, RNG included, saved with
+every training checkpoint so that a run can resume mid-way (D66).
 """
 
 from __future__ import annotations
@@ -22,6 +25,19 @@ class Sampler(Protocol):
 
     def state(self) -> dict: ...
 
+    def checkpoint(self) -> dict: ...
+
+    def restore(self, ckpt: dict) -> None: ...
+
+
+def _key(cell: Cell) -> str:
+    return f"{cell[0]}/{cell[1]}"
+
+
+def _cell(key: str) -> Cell:
+    family, depth = key.rsplit("/", 1)
+    return family, int(depth)
+
 
 class UniformSampler:
     def __init__(self, cells: list[Cell], seed: int):
@@ -36,6 +52,14 @@ class UniformSampler:
 
     def state(self) -> dict:
         return {"kind": "uniform"}
+
+    def checkpoint(self) -> dict:
+        return {"kind": "uniform", "cells": [_key(c) for c in self.cells], "rng": self.rng.bit_generator.state}
+
+    def restore(self, ckpt: dict) -> None:
+        if ckpt["kind"] != "uniform" or ckpt["cells"] != [_key(c) for c in self.cells]:
+            raise ValueError("checkpoint is not this uniform sampler's")
+        self.rng.bit_generator.state = ckpt["rng"]
 
 
 class EMASampler:
@@ -89,3 +113,20 @@ class EMASampler:
             "unlocked": sorted(f"{f}/{d}" for f, d in self.unlocked),
             "unlock_log": [(obs, f"{f}/{d}") for obs, (f, d) in self.unlock_log],
         }
+
+    def checkpoint(self) -> dict:
+        """The exact state (JSON floats round-trip exactly), including the numpy RNG."""
+        return {"kind": "ema", "cells": [_key(c) for c in self.cells], "p": {_key(c): self.p[c] for c in self.cells},
+                "n": {_key(c): self.n[c] for c in self.cells}, "unlocked": sorted(_key(c) for c in self.unlocked),
+                "unlock_log": [[obs, _key(c)] for obs, c in self.unlock_log], "observations": self.observations,
+                "rng": self.rng.bit_generator.state}
+
+    def restore(self, ckpt: dict) -> None:
+        if ckpt["kind"] != "ema" or ckpt["cells"] != [_key(c) for c in self.cells]:
+            raise ValueError("checkpoint is not this EMA sampler's (kind or cells differ)")
+        self.p = {_cell(k): v for k, v in ckpt["p"].items()}
+        self.n = {_cell(k): v for k, v in ckpt["n"].items()}
+        self.unlocked = {_cell(k) for k in ckpt["unlocked"]}
+        self.unlock_log = [(obs, _cell(k)) for obs, k in ckpt["unlock_log"]]
+        self.observations = ckpt["observations"]
+        self.rng.bit_generator.state = ckpt["rng"]

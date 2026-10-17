@@ -1316,3 +1316,83 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **If precision explains most of the gap,** every RL eval so far has understated the trained policy's σ. The
     pre-registered verdicts still stand as tests of the bf16-evaluated model, but the write-up must say which model
     was evaluated.
+
+### D66. Curriculum state checkpointed with the adapter; mid-run resume path (follows D63)
+- **Origin:** your decision on MORNING.md §6.4 (2026-10-17): checkpoint the curriculum sampler state (including its
+  RNG) with the adapter, add a resume path, and test it on CPU where possible. This is code only; no training was
+  run.
+- **What every rotating checkpoint now also holds** (`checkpoint-N/physcal_state.json`, curriculum runs; written
+  atomically by an `on_save` callback right after the trainer's own files):
+  - **The EMA sampler's exact state:** `EMASampler.checkpoint()`. It holds the full-precision pass rates, counts,
+    unlocked cells, unlock log, observation count and the numpy RNG's bit-generator state. `state()`, the rounded
+    per-step log, is unchanged.
+  - **The repeat sampler:** the per-cell cursors and every chunk drawn so far (the dataset indices).
+  - **The σ = 0 monitor's rolling window** and its alert flag.
+  - **Run identity:** `max_steps` and a digest of the run's configs (the tape meta).
+- **Finding while building it: the curriculum draws one step ahead.**
+  - **What happens:** chunk k + 1, the prompts of step k + 1, is drawn *before* step k's results are observed. The
+    trainer fetches all micro-batches of a step before generating, and accelerate prefetches one more batch.
+  - **Checked on the logs of all three split-credit seeds:** an `EMASampler(seed)` fed the tape's group outcomes
+    reproduces every one of the 287 logged chunks under this order, with 0 mismatches. Under the naive order
+    (observe, then draw) 32 of 287 steps differ on seed 0.
+  - **Checked in the real trainer** (CPU test below): checkpoint-N holds N + 1 drawn chunks.
+  - **What it means:** in every curriculum run so far, the EMA weights used for a draw were one step stale. This is
+    deterministic, identical across all arms, and changes no result. It is recorded here because the write-up
+    describes the curriculum.
+  - **Consequence for resume:** a checkpoint after step N holds a chunk that was drawn but not trained on. It must
+    be replayed, not redrawn.
+- **Resume** (`python -m physcal.train.grpo --config <cfg> --resume latest|<checkpoint dir>`, `setup_trainer` in
+  `physcal/train/grpo.py`):
+  1. **Checkpoint:** the newest complete checkpoint (`latest`), or the one named. Complete means the trainer state,
+     optimizer, scheduler, RNG, adapter and `physcal_state.json`. Checkpoints written before D66 cannot be
+     resumed, as in D63.
+  2. **Refusals:** the step in `physcal_state.json` differs from the trainer's; `max_steps` differs; the run's
+     configs differ from the saved digest or from `rollouts.meta.json`.
+  3. **Log cut-back:** before any log is reopened, the tape, `train_metrics`, `curriculum`, `split_credit` and
+     `memory` logs are cut back to steps ≤ N.
+     - **Completeness:** every step 1..N must be present with the expected line count (32 tape lines, 1
+       otherwise), and steps must never go backwards.
+     - **Crash debris:** a partial last line from the crash is dropped. Any other unreadable line refuses the
+       resume.
+     - **Cut lines are kept** in `resume_discarded/`. `events.jsonl` gets a "resumed from" event.
+  4. **Restore:** the EMA sampler, the σ = 0 monitor and the history are restored. The repeat sampler gets its
+     cursors and chunks back and replays the drawn-but-untrained chunks before it draws new ones.
+  5. **Training:** `trainer.train(resume_from_checkpoint=...)` restores LoRA, optimizer, scheduler and RNG, with
+     `ignore_data_skip=True`. The trainer's own data skipping would call `next_batch` with no matching `observe`
+     (D63 point 3).
+  6. **Summary:** records `resumed_from` / `resumed_at_step`. `train_seconds` is the resumed segment, and
+     `seconds_per_step` now divides by that segment's steps.
+  - **Scope:** curriculum runs only. A run without a curriculum raises NotImplementedError. E1 (`e1.py`) has no
+    curriculum and no resume path.
+- **Refactor:** `setup_trainer()` is extracted from `train()`. It covers everything between the loaded model and
+  `trainer.train()`, so the CPU test runs the real wiring with plain TRL.
+  - **Fresh runs do not change:** `ignore_data_skip` is passed only when resuming, so the GRPOConfig is the one
+    built before. The only addition is the `physcal_state.json` written into checkpoints.
+  - **Existing tests:** the training, split-credit and E1 tests all pass.
+- **What resume guarantees, and what it does not:**
+  - **Guaranteed:** a resumed run is a valid continuation of the same process. The sampler, curriculum, optimizer
+    and RNG are where an uninterrupted run would be, and given the same observations it makes the same choices.
+  - **Not guaranteed:** bit-identical model outputs on GPU. D63 already saw drift from step 3 with identical
+    code, so a resumed GPU run will diverge numerically from the uninterrupted one, as any rerun does.
+- **Tests (`tests/test_resume.py`, CPU, about 60 s):**
+  - **Samplers:** EMA and uniform checkpoints round-trip through JSON and continue identically. `restore` refuses
+    another sampler's checkpoint.
+  - **The real seed-0 logs:** the logged curriculum is reproduced under the one-step-ahead order. A checkpoint at
+    step 150, restored, reproduces steps 151–287.
+  - **Repeat sampler:** a restore replays the drawn chunks first.
+  - **σ = 0 monitor:** its checkpoint round-trips.
+  - **Helpers:** log cut-back (partial line, a missing step, backwards steps, unreadable lines), checkpoint
+    selection (newest complete, pre-D66 refused), and refusal of a changed run.
+  - **End to end (real TRL `GRPOTrainer`, its own checkpoint resume, a tiny random Qwen2 + LoRA, the real
+    `setup_trainer`):**
+    - 8 uninterrupted steps vs a "crash" with logs past step 4 and only checkpoint-4 left, resumed with D66;
+    - **result:** identical curriculum log, tape problems and final saved state, and the resumed tape replays;
+    - **negative control:** a naive resume (fresh curriculum, the trainer's data skipping, D63's failure) draws
+      different cells and unlocks different depths, so the test can tell the two apart.
+    - **Setup notes:** the model's completions are noise, so the binary outcome the curriculum sees is a fixed
+      function of the problem seed. The CPU config uses a fast curriculum (α = 0.5, unlock after 1 group); with
+      the real α = 0.1 the weights barely move in 4 steps, and the control could not separate the runs.
+- **Not tested: the GPU path.** That is Unsloth's patched trainer, plus resuming a 4-bit PEFT checkpoint through it.
+  Your brief allowed no other GPU work today. **Suggested check, about 5 GPU-min:** a 4-step smoke config (save
+  every 2 steps). Kill it after step 3, resume with `--resume latest`, and compare `curriculum.jsonl` and
+  `physcal_state.json` with an uninterrupted 4-step run.
