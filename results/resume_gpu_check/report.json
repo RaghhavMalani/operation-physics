@@ -1,0 +1,112 @@
+{
+  "run_A_exit": 0,
+  "run_B_killed_during_step": 3,
+  "run_B_checkpoints_at_kill": [
+    "checkpoint-2"
+  ],
+  "resume_exit": 0,
+  "seconds": 444.9554114341736,
+  "criterion_1_logs": {
+    "steps_completed": 4,
+    "resumed_at_step": 2,
+    "tape_rows_per_step": {
+      "1": 32,
+      "2": 32,
+      "3": 32,
+      "4": 32
+    },
+    "tape_replays": true,
+    "per_step_logs": {
+      "train_metrics.jsonl": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "curriculum.jsonl": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "split_credit.jsonl": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "memory.jsonl": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "resume_event": true,
+    "pass": true
+  },
+  "criterion_2_curriculum": {
+    "A_cells": [
+      [
+        "energy/2",
+        "dynamics/2",
+        "dynamics/1",
+        "dynamics/1"
+      ],
+      [
+        "kinematics/1",
+        "kinematics/2",
+        "energy/2",
+        "kinematics/1"
+      ],
+      [
+        "energy/2",
+        "kinematics/2",
+        "kinematics/1",
+        "dynamics/1"
+      ],
+      [
+        "kinematics/2",
+        "dynamics/1",
+        "kinematics/1",
+        "dynamics/2"
+      ]
+    ],
+    "B_cells": [
+      [
+        "energy/2",
+        "dynamics/2",
+        "dynamics/1",
+        "dynamics/1"
+      ],
+      [
+        "kinematics/1",
+        "kinematics/2",
+        "energy/2",
+        "kinematics/1"
+      ],
+      [
+        "energy/2",
+        "kinematics/2",
+        "kinematics/1",
+        "dynamics/1"
+      ],
+      [
+        "kinematics/2",
+        "dynamics/1",
+        "kinematics/1",
+        "dynamics/2"
+      ]
+    ],
+    "step_1_2_outcomes_equal": true,
+    "pass": true
+  },
+  "criterion_3_adapter": {
+    "d_B4_A4": 0.0032623648274241785,
+    "d_B4_A2": 0.008913945403744544,
+    "d_A4_A2": 0.00904611617094485,
+    "pass": true
+  },
+  "repeat_sampler_chunks_equal_at_step_4": true,
+  "verdict": "PASS"
+}

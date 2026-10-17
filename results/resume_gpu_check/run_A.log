@@ -1,0 +1,71 @@
+W1017 20:40:34.812000 68352 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1017 20:40:34.852000 68352 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<01:34,  3.55it/s]Loading weights:   9%|▊         | 29/338 [00:00<00:03, 95.08it/s]Loading weights:  26%|██▌       | 88/338 [00:00<00:01, 249.86it/s]Loading weights:  44%|████▍     | 148/338 [00:00<00:00, 354.26it/s]Loading weights:  62%|██████▏   | 208/338 [00:00<00:00, 423.87it/s]Loading weights:  79%|███████▉  | 268/338 [00:00<00:00, 475.21it/s]Loading weights:  97%|█████████▋| 329/338 [00:00<00:00, 512.47it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 372.58it/s]
+Unsloth 2026.10.3 patched 28 layers with 28 QKV layers, 28 O layers and 28 MLP layers.
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None}.
+==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
+   \\   /|    Num examples = 4,800 | Num Epochs = 1 | Total steps = 4
+O^O/ \_/ \    Batch size per device = 2 | Gradient accumulation steps = 16
+\        /    Data Parallel GPUs = 1 | Total batch size (2 x 16 x 1) = 32
+ "-____-"     Trainable parameters = 18,464,768 of 1,562,179,072 (1.18% trained)
+  0%|          | 0/4 [00:00<?, ?it/s]Passing `generation_config` together with generation-related arguments=({'pad_token_id', 'cache_implementation'}) is deprecated and will be removed in future versions. Please pass either a `generation_config` object OR all generation parameters explicitly, but not both.
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 25%|██▌       | 1/4 [00:41<02:05, 41.74s/it]                                              25%|██▌       | 1/4 [00:41<02:05, 41.74s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 50%|█████     | 2/4 [01:14<01:13, 36.63s/it]                                              50%|█████     | 2/4 [01:14<01:13, 36.63s/it]Unsloth: Restored added_tokens_decoder metadata in /home/flash2404/operation-physics/results/train/resume-smoke-A/checkpoints/checkpoint-2/tokenizer_config.json.
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 75%|███████▌  | 3/4 [01:50<00:36, 36.41s/it]                                              75%|███████▌  | 3/4 [01:50<00:36, 36.41s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+100%|██████████| 4/4 [02:20<00:00, 33.84s/it]                                             100%|██████████| 4/4 [02:20<00:00, 33.84s/it]Unsloth: Restored added_tokens_decoder metadata in /home/flash2404/operation-physics/results/train/resume-smoke-A/checkpoints/checkpoint-4/tokenizer_config.json.
+                                             100%|██████████| 4/4 [02:21<00:00, 33.84s/it]100%|██████████| 4/4 [02:21<00:00, 35.29s/it]
+Unsloth: Restored added_tokens_decoder metadata in /home/flash2404/operation-physics/results/train/resume-smoke-A/final_adapter/tokenizer_config.json.
+Unsloth: Will smartly offload gradients to save VRAM!
+Unsloth: Double buffering enabled (parallel H2D + compute) for backward pass.
+{'loss': '0.00426', 'grad_norm': '0.04465', 'learning_rate': '0', 'num_tokens': '3.635e+04', 'completions/mean_length': '133.7', 'completions/min_length': '99', 'completions/max_length': '163', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '133.7', 'completions/min_terminated_length': '99', 'completions/max_terminated_length': '163', 'rewards/verifier_reward/mean': '-0.2093', 'rewards/verifier_reward/std': '0.8911', 'reward': '-0.2093', 'reward_std': '0.8911', 'frac_reward_zero_std': '0', 'completion_length': '133.7', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '37.94', 'epoch': '0.05'}
+{'loss': '-0.01265', 'grad_norm': '0.03686', 'learning_rate': '1e-06', 'num_tokens': '7.46e+04', 'completions/mean_length': '173.1', 'completions/min_length': '116', 'completions/max_length': '211', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '173.1', 'completions/min_terminated_length': '116', 'completions/max_terminated_length': '211', 'rewards/verifier_reward/mean': '-0.2743', 'rewards/verifier_reward/std': '0.4255', 'reward': '-0.2743', 'reward_std': '0.4255', 'frac_reward_zero_std': '0', 'completion_length': '173.1', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '29.35', 'epoch': '0.1'}
+{'loss': '0.09784', 'grad_norm': '0.04533', 'learning_rate': '2e-06', 'num_tokens': '1.112e+05', 'completions/mean_length': '147.2', 'completions/min_length': '93', 'completions/max_length': '282', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '147.2', 'completions/min_terminated_length': '93', 'completions/max_terminated_length': '282', 'rewards/verifier_reward/mean': '-0.2066', 'rewards/verifier_reward/std': '0.991', 'reward': '-0.2066', 'reward_std': '0.991', 'frac_reward_zero_std': '0', 'completion_length': '147.2', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '32.08', 'epoch': '0.15'}
+{'loss': '0.005632', 'grad_norm': '0.03274', 'learning_rate': '3e-06', 'num_tokens': '1.476e+05', 'completions/mean_length': '121.9', 'completions/min_length': '80', 'completions/max_length': '172', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '121.9', 'completions/min_terminated_length': '80', 'completions/max_terminated_length': '172', 'rewards/verifier_reward/mean': '-0.02061', 'rewards/verifier_reward/std': '0.1384', 'reward': '-0.02061', 'reward_std': '0.1384', 'frac_reward_zero_std': '0', 'completion_length': '121.9', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '26.2', 'epoch': '0.2'}
+{'train_runtime': '141.2', 'train_samples_per_second': '0.907', 'train_steps_per_second': '0.028', 'train_loss': '0.02377', 'epoch': '0.2'}
+{
+  "run_id": "resume-smoke-A",
+  "model_id": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+  "model_revision": null,
+  "reward_rule": "crps_log",
+  "split_credit": {
+    "sigma_ref_rel": 0.01
+  },
+  "steps_completed": 4,
+  "train_seconds": 142.4721176624298,
+  "resumed_from": null,
+  "resumed_at_step": null,
+  "seconds_per_step": 35.61802941560745,
+  "peak_vram": {
+    "torch_max_allocated_gib": 4.386183738708496,
+    "torch_max_reserved_gib": 4.72265625,
+    "nvidia_smi_peak_used_gib_device_wide": 4.8720703125,
+    "max_reserved_cap_gib": 7.5,
+    "num_alloc_retries": 0,
+    "num_ooms": 0
+  },
+  "permanent_checkpoints": [],
+  "grpo_config_dropped_keys": [
+    "max_prompt_length"
+  ],
+  "grpo_config_resolved": {
+    "loss_type": "dapo",
+    "scale_rewards": "group",
+    "beta": 0.0,
+    "per_device_train_batch_size": 2,
+    "gradient_accumulation_steps": 16,
+    "num_generations": 8,
+    "max_completion_length": 512
+  },
+  "train_loss": 0.02377136703580618,
+  "final_adapter": "/home/flash2404/operation-physics/results/train/resume-smoke-A/final_adapter"
+}

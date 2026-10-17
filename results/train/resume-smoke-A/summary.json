@@ -1,0 +1,37 @@
+{
+  "run_id": "resume-smoke-A",
+  "model_id": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+  "model_revision": null,
+  "reward_rule": "crps_log",
+  "split_credit": {
+    "sigma_ref_rel": 0.01
+  },
+  "steps_completed": 4,
+  "train_seconds": 142.4721176624298,
+  "resumed_from": null,
+  "resumed_at_step": null,
+  "seconds_per_step": 35.61802941560745,
+  "peak_vram": {
+    "torch_max_allocated_gib": 4.386183738708496,
+    "torch_max_reserved_gib": 4.72265625,
+    "nvidia_smi_peak_used_gib_device_wide": 4.8720703125,
+    "max_reserved_cap_gib": 7.5,
+    "num_alloc_retries": 0,
+    "num_ooms": 0
+  },
+  "permanent_checkpoints": [],
+  "grpo_config_dropped_keys": [
+    "max_prompt_length"
+  ],
+  "grpo_config_resolved": {
+    "loss_type": "dapo",
+    "scale_rewards": "group",
+    "beta": 0.0,
+    "per_device_train_batch_size": 2,
+    "gradient_accumulation_steps": 16,
+    "num_generations": 8,
+    "max_completion_length": 512
+  },
+  "train_loss": 0.02377136703580618,
+  "final_adapter": "/home/flash2404/operation-physics/results/train/resume-smoke-A/final_adapter"
+}

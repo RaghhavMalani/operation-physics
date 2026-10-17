@@ -57,3 +57,7 @@
 [02:00:57] GPU at 62C
 [02:00:57] start e1a_sampled_rerun (est 1200s, timeout 23343s): uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter final_adapter --out-name final_4bit_sampled_rerun --samples 4
 [02:10:19] end e1a_sampled_rerun: exit 0
+[02:10:22] commit 'Corrected eval (D67): E1a final, k = 4 sampled, rerun of D65': pushed
+[02:10:22] GPU at 62C
+[02:10:22] start resume_check (est 900s, timeout 22778s): uv run python scripts/resume_gpu_check.py
+[02:17:56] end resume_check: exit 0

@@ -1,0 +1,4 @@
+{"step": 1, "time": 1792269897.32092, "max_reserved_gib": 4.388671875, "max_allocated_gib": 4.24183464050293, "reserved_gib": 1.591796875, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 2, "time": 1792269930.5750601, "max_reserved_gib": 4.720703125, "max_allocated_gib": 4.36935567855835, "reserved_gib": 4.720703125, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 3, "time": 1792270040.161717, "max_reserved_gib": 4.462890625, "max_allocated_gib": 4.277109622955322, "reserved_gib": 4.462890625, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 4, "time": 1792270070.0268896, "max_reserved_gib": 6.150390625, "max_allocated_gib": 4.386471748352051, "reserved_gib": 6.150390625, "num_alloc_retries": 0, "num_ooms": 0}
