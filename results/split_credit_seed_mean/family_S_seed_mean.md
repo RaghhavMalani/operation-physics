@@ -2,12 +2,12 @@
 
 Runs: results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0, results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1, results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2; sanity: [True, True, True]
 
-| test | split credit, seed mean | control | difference | 95% CI | p (one-sided) | Holm threshold | supported |
-|---|---|---|---|---|---|---|---|
-| S1a | 0.2167 | 0.1325 | +0.0842 | [+0.0575, +0.1125] | 0 | 0.0125 | True |
-| S1b | 0.2167 | 0.1175 | +0.0992 | [+0.0717, +0.1283] | 0 | 0.0167 | True |
-| S2 | 0.0810 | -0.0170 | +0.0980 | [-0.0123, +0.2077] | 0.04 | 0.05 | True |
-| S3 | 0.3567 | 0.3425 | +0.0142 | [+0.0008, +0.0292] | 0 | 0.025 | True |
+| test | split credit, seed mean | control | difference | 95% CI | p (one-sided) | Holm threshold | supported | reported as | per-seed p (runs in the order listed) |
+|---|---|---|---|---|---|---|---|---|---|
+| S1a | 0.2167 | 0.1325 | +0.0842 | [+0.0575, +0.1125] | 0 | 0.0125 | True | supported | 4.67e-09 / 6.17e-08 / 1.8e-08 |
+| S1b | 0.2167 | 0.1175 | +0.0992 | [+0.0717, +0.1283] | 0 | 0.0167 | True | supported | 8.02e-12 / 7.28e-11 / 1.08e-10 |
+| S2 | 0.0810 | -0.0170 | +0.0980 | [-0.0123, +0.2077] | 0.04 | 0.05 | True | narrowly supported; sensitive to the seed-mean definition | 0.0608 / 0.0202 / 0.0919 |
+| S3 | 0.3567 | 0.3425 | +0.0142 | [+0.0008, +0.0292] | 0 | 0.025 | True | supported | 0 / 0 / 0 |
 
 Per seed (as phase95_compare.py; one-sided p, no Holm):
 

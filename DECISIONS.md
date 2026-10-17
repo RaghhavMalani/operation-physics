@@ -1138,7 +1138,7 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   `physcal/eval/a6_pairs.py` yet; that waits until this case is settled.
 - **Resolved in D64** (2026-10-17): a CI entirely below 0 is "anti-propagation".
 
-### D62. Split-credit seeds 1 and 2; the seed-mean S1–S3 test; exploratory greedy vs sampled σ (written before any seed-1/2 data or sampled eval exists) **[REVIEW]**
+### D62. Split-credit seeds 1 and 2; the seed-mean S1–S3 test; exploratory greedy vs sampled σ (written before any seed-1/2 data or sampled eval exists) **[REVIEWED 2026-10-17: approved as written]**
 - **Context:** your brief of 2026-10-16 evening. Seed 0's family S results are already known (seed-0 numbers,
   committed in `13da449`). This entry is written after seeing them and before seeds 1 and 2 have started.
 - **Seeds 1 and 2:**
@@ -1188,6 +1188,12 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     changes; E1's μ is fixed.
   - **Code:** a `--samples K` option in `physcal.train.compare` and `physcal.train.e1 eval`. With K = 0 (the
     default) the greedy path is unchanged, and a test checks this.
+- **Review outcome (yours, 2026-10-17, after the results):** D62 is approved as written. No alternative seed-mean
+  test replaces it, so there is no deviation to record.
+  - **Reporting rule for S2:** "narrowly supported; sensitive to the seed-mean definition", always with the per-seed
+    p-values beside it (0.061 / 0.020 / 0.092). It holds on its own only on seed 1.
+  - **Applied in:** FINDINGS #13, `results/split_credit_seed_mean/family_S_seed_mean.md` (the script now prints the
+    per-seed p next to every seed-mean verdict) and PROGRESS.md.
 - **Order and deadline:**
   - **Order:** seed 1 → (gate) → seed 2 → the three sampled evals.
   - **Deadline:** GPU work ends by 08:30 IST (2026-10-17).

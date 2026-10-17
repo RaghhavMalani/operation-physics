@@ -514,8 +514,9 @@ Progress:
   `scripts/sigma_greedy_vs_sampled.py`, `scripts/queue_split_seeds.sh` (commits after every stage). 348 tests pass.
 - [x] Power loss at about 23:30 during seed 1 (step 162). Damage check clean. D63: restarted from step 0 (no
   resume: the sampler state is not checkpointed). Queue relaunched 23:38.
-- [x] Seeds 1 and 2 to step 287 + evals (both sanity PASS). Seed-mean family S: S1a, S1b, S2 (p = 0.040) and S3
-  supported (FINDINGS #13). Family N fails on every seed.
+- [x] Seeds 1 and 2 to step 287 + evals (both sanity PASS). Seed-mean family S: S1a, S1b and S3 supported; S2
+  narrowly supported, sensitive to the seed-mean definition (seed-mean p = 0.040; per-seed p 0.061 / 0.020 / 0.092)
+  (FINDINGS #13). Family N fails on every seed.
 - [x] Exploratory greedy vs sampled σ (k = 4). GPU work ended at 07:11, inside the 08:30 cutoff.
 - [ ] Open: D61 negative-CI label; D62 [REVIEW] seed-mean operationalization; the 4-bit-train / bf16-eval
   mismatch (MORNING §6).

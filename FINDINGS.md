@@ -569,17 +569,20 @@ run D57 declared final. Phase 10+ work resumes with A6.
   - #11: the share-rule design error.
   - D57: the rule was replaced before this final run.
 
-## #13. Split credit (Phase 9.5 step 3), 3 seeds: S1a, S1b, S2 and S3 supported on the seed mean, but σ still does not track the error (2026-10-17)
+## #13. Split credit (Phase 9.5 step 3), 3 seeds: S1a, S1b and S3 supported on the seed mean, S2 narrowly supported (sensitive to the seed-mean definition); σ still does not track the error (2026-10-17)
 
-**Verdict (PREREGISTRATION.md family S, evaluated on the seed mean as D62 fixes it).** All four hypotheses are
-supported under Holm. S2 passes narrowly, and the claim depends on how D62 operationalized the seed mean.
+**Verdict (PREREGISTRATION.md family S, evaluated on the seed mean as D62 fixes it; D62 approved as written in
+review, 2026-10-17).**
+- **S1a, S1b and S3 are supported** under Holm.
+- **S2 is narrowly supported; sensitive to the seed-mean definition.** Its per-seed p is 0.061 / 0.020 / 0.092,
+  so it holds on its own only on seed 1. The seed mean passes because all three effects point the same way.
 
-| test | split credit, mean of 3 seeds | control | difference [95% CI] | one-sided p | Holm threshold | supported |
-|---|---|---|---|---|---|---|
-| S1a: 1σ cov > SFT-only | 21.7% | 13.25% | +8.4 pts [+5.8, +11.3] | < 1e-4 | 0.0125 | yes |
-| S1b: 1σ cov > uniform RL@287 | 21.7% | 11.75% | +9.9 pts [+7.2, +12.8] | < 1e-4 | 0.0167 | yes |
-| S2: ρ(σ, err) > uniform RL@287 | 0.081 | −0.017 | +0.098 [−0.012, +0.208] | 0.040 | 0.05 | yes (narrow) |
-| S3: accuracy not > 5 pts below uniform | 35.7% | 34.25% | +1.4 pts [+0.1, +2.9] | < 1e-4 | 0.025 | yes |
+| test | split credit, mean of 3 seeds | control | difference [95% CI] | one-sided p | Holm threshold | verdict | per-seed p (seeds 0 / 1 / 2) |
+|---|---|---|---|---|---|---|---|
+| S1a: 1σ cov > SFT-only | 21.7% | 13.25% | +8.4 pts [+5.8, +11.3] | < 1e-4 | 0.0125 | supported | 4.7e-9 / 6.2e-8 / 1.8e-8 |
+| S1b: 1σ cov > uniform RL@287 | 21.7% | 11.75% | +9.9 pts [+7.2, +12.8] | < 1e-4 | 0.0167 | supported | 8.0e-12 / 7.3e-11 / 1.1e-10 |
+| S2: ρ(σ, err) > uniform RL@287 | 0.081 | −0.017 | +0.098 [−0.012, +0.208] | 0.040 | 0.05 | narrowly supported; sensitive to the seed-mean definition | 0.061 / 0.020 / 0.092 |
+| S3: accuracy not > 5 pts below uniform | 35.7% | 34.25% | +1.4 pts [+0.1, +2.9] | < 1e-4 | 0.025 | supported | < 1e-4 / < 1e-4 / < 1e-4 |
 
 - **Per seed** (seed 0 / 1 / 2):
   - 1σ coverage 22.5 / 21.0 / 21.5%; accuracy 34.5 / 36.2 / 36.2%;

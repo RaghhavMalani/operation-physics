@@ -10,7 +10,8 @@ Holm over {S1a, S1b, S2, S3} at α = 0.05:
 - S2: (mean over s of ρ_s) − ρ_uniform, ρ = phase95_compare.rho; p = share ≤ 0.
 - S3: seed-mean strict accuracy − uniform accuracy; p = share ≤ −5 points.
 A hypothesis is supported iff it is supported here (PREREGISTRATION.md family S). The per-seed tests (McNemar for
-S1, bootstrap for S2/S3, exactly as phase95_compare.py) and the range across seeds are reported alongside.
+S1, bootstrap for S2/S3, exactly as phase95_compare.py) and the range across seeds are reported alongside; the
+per-seed p-values also sit beside each seed-mean verdict. `REPORTED_AS` holds the wording your review of D62 fixed.
 Writes results/split_credit_seed_mean/family_S_seed_mean.{json,md}.
 """
 
@@ -25,6 +26,13 @@ from phase95_compare import MARGIN, N_BOOT, OLD, ROOT, SEED, UNIFORM, bootstrap,
 
 OUT = ROOT / "results/split_credit_seed_mean"
 EVAL_TAPE = "compare/rl287/rollouts.jsonl"
+TESTS = ("S1a", "S1b", "S2", "S3")
+# Your review of D62 (2026-10-17, after the results): how a seed-mean verdict is worded wherever it is reported.
+REPORTED_AS = {"S2": "narrowly supported; sensitive to the seed-mean definition"}
+
+
+def reported_as(test: str, supported: bool) -> str:
+    return REPORTED_AS.get(test, "supported") if supported else "not supported"
 
 
 def cov(d: dict, ks: list) -> float:
@@ -75,18 +83,22 @@ def main(runs: list[Path]) -> dict:
     point = {"cov1": [cov(d, keys) for d in seeds], "acc": [acc(d, keys) for d in seeds], "rho": [rho(d, keys) for d in seeds]}
     out = {"runs": [str(r.relative_to(ROOT)) for r in runs], "sanity": [s and s.get("sane") for s in sanity],
            "seed_mean": seed_mean_tests(seeds, sft, uni, keys), "per_seed": per_seed,
-           "range_across_seeds": {k: [min(v), max(v)] for k, v in point.items()}, "per_seed_point": point}
+           "range_across_seeds": {k: [min(v), max(v)] for k, v in point.items()}, "per_seed_point": point,
+           "per_seed_p": {k: [s[k]["p_one_sided"] for s in per_seed.values()] for k in TESTS}}
+    out["reported_as"] = {k: reported_as(k, out["seed_mean"]["holm"][k]["supported"]) for k in TESTS}
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "family_S_seed_mean.json").write_text(json.dumps(out, indent=2, default=float))
     t = out["seed_mean"]
     lines = ["# Family S on the seed mean (D62)", "", f"Runs: {', '.join(out['runs'])}; sanity: {out['sanity']}", "",
-             "| test | split credit, seed mean | control | difference | 95% CI | p (one-sided) | Holm threshold | supported |",
-             "|---|---|---|---|---|---|---|---|"]
-    for k in ("S1a", "S1b", "S2", "S3"):
+             "| test | split credit, seed mean | control | difference | 95% CI | p (one-sided) | Holm threshold | supported "
+             "| reported as | per-seed p (runs in the order listed) |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
+    for k in TESTS:
         v, h = t[k], t["holm"][k]
         lines.append(f"| {k} | {v['seed_mean']:.4f} | {v['control']:.4f} | {v['diff']:+.4f} | "
                      f"[{v['diff_ci'][0]:+.4f}, {v['diff_ci'][1]:+.4f}] | {h['p']:.3g} | {h['holm_threshold']:.3g} | "
-                     f"{bool(h['supported'])} |")
+                     f"{bool(h['supported'])} | {out['reported_as'][k]} | "
+                     f"{' / '.join(format(x, '.3g') for x in out['per_seed_p'][k])} |")
     lines += ["", "Per seed (as phase95_compare.py; one-sided p, no Holm):", "",
               "| run | S1a covered vs SFT | p | S1b covered vs uniform | p | S2 ρ split vs uniform | p | S3 acc split vs uniform | p |",
               "|---|---|---|---|---|---|---|---|---|"]
