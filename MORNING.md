@@ -1,17 +1,23 @@
-# Report: 2026-10-16 day + night (DRAFT, written 23:45 IST; the overnight sections are filled in the morning)
+# Report: 2026-10-16 day + 2026-10-17 night (final, 07:30 IST)
 
 The previous report (2026-10-14) is in git history: `git show d5abb76:MORNING.md`.
 
-**Short version so far.**
-1. **D61 recorded** (A6 slope labels) before any A6/A6b result. One open point is flagged for you (§6).
-2. **Split credit, seed 0:** it removed the σ = 0 collapse and raised 1σ coverage, but σ still does not track the
-   error. On all three N tests the A5 surface-feature σ beats it on the same answers. **No S1–S3 verdict:** that
-   needs the 3-seed mean.
-3. **E1 (family E, pre-registered, single seed):** E1a-P and E1b-P are supported and E1a-N and E1b-N are not.
-   This is D52's "clean negative": with μ fixed, a σ is learnable, but it does not beat surface features.
-4. **The laptop shut down at about 23:30** during split-credit seed 1, at step 162 of 287. Seed 1 was
-   **restarted from step 0** (D63: resume would not restore the curriculum sampler's state). The queue was
-   relaunched at 23:38.
+**Short version.**
+1. **Split credit, 3 seeds: S1a, S1b, S2 and S3 are SUPPORTED on the seed mean** (FINDINGS #13).
+   - **S1a/S1b:** 1σ coverage is 21.7%, against 13.25% for SFT and 11.75% for uniform credit.
+   - **S3:** accuracy is not worse (+1.4 pts).
+   - **S2 passes narrowly:** ρ 0.081 vs −0.017, p = 0.040 at a Holm threshold of 0.05. It rests on D62's
+     seed-mean definition [REVIEW].
+   - **But family N fails on every seed.** A surface-feature σ (A5) on the same answers still wins clearly:
+     coverage 66–68%, ρ ≈ 0.7. Split credit cures the σ = 0 collapse; it does not make σ informative.
+2. **E1 (family E):** E1a-P and E1b-P are supported and E1a-N and E1b-N are not (FINDINGS #14). This is D52's
+   "clean negative": with μ fixed, a σ is learnable, but it does not beat surface features.
+3. **The laptop shut down at about 23:30** during seed 1. Damage check clean; seed 1 was restarted from step 0
+   (D63). Every stage after that ran, and GPU work ended at 07:11, inside the 08:30 cutoff. The sampled-σ evals
+   also fit.
+4. **New observation, needs your call (§6):** RL adapters are trained on a 4-bit base but evaluated on the bf16
+   base. This may explain why eval σ is about 4× narrower than training σ.
+5. **D61** (A6 slope labels) is recorded, with one open point.
 
 ---
 
@@ -29,9 +35,17 @@ The previous report (2026-10-14) is in git history: `git show d5abb76:MORNING.md
 | 20:57–21:06 | E1b evals + family E (CPU) | §3 | `74254d7`, `d371ca2` |
 | 19:12–19:29 | **D62** (seeds 1/2, seed-mean test, sampled σ) + code, before any seed-1/2 data | 348 tests pass | `7a8f9f1`, `873dee5` |
 | 21:06–23:30 | split-credit seed 1, first attempt | **lost to the shutdown at step 162** | – |
-| 23:38 | **D63**; queue relaunched, seed 1 from step 0 | running | `6499145` |
+| 23:38 | **D63**; queue relaunched, seed 1 from step 0 | – | `6499145` |
+| 23:38–02:26 | split-credit seed 1 (restart), training to step 287 | 34.9 s/step, no OOM | `c6e1662` |
+| 02:26–02:38 | its eval, sanity, per-seed family S/N | sanity PASS, 0% parse failures | `7ec6ffe` |
+| 02:38–05:52 | split-credit seed 2, training to step 287 | 40.3 s/step (longer completions), no OOM | `63fbfce` |
+| 05:52–06:04 | its eval, sanity, per-seed family S/N | sanity PASS, 0% parse failures | `94515eb` |
+| 06:04–07:11 | sampled-σ evals (k = 4): split-credit seed 0, E1a, E1b | all ran | `26f1b96` and earlier |
+| 07:11 | seed-mean family S + greedy-vs-sampled report (CPU) | §4, §5 | `f7ab1e6`, `8b8cfca` |
 
-GPU work for the day queue ended at 21:06, inside the 21:30 cutoff.
+- **GPU cutoffs met:** the day queue ended at 21:06 (cutoff 21:30), the night queue at 07:11 (cutoff 08:30).
+- **Heat:** no thermal pause was triggered (no reading above 87 °C; the highest I saw was 83 °C, during E1b).
+- **Commits:** every stage was committed and pushed (the night queue did it itself).
 
 ## 2. Split credit, seed 0, at step 287 (family S and family N)
 
@@ -55,7 +69,7 @@ GPU work for the day queue ended at 21:06, inside the 21:30 cutoff.
 - **crps_log per split:** ID −0.300 for split credit (uniform −0.282, SFT −0.320); depth 5 −0.351 (uniform
   −0.437, SFT −0.357).
 
-**Family S: seed-0 numbers only, NO VERDICT** (PREREGISTRATION.md: supported only on the seed mean; your brief:
+**Family S: seed-0 numbers only, no verdict here (the 3-seed verdict is in §4)** (PREREGISTRATION.md: supported only on the seed mean; your brief:
 no S1–S3 verdict until 3 seeds exist). `phase95_compare.py` prints a "supported" column computed on seed 0
 alone. Read it as a per-seed result, not a verdict.
 
@@ -144,27 +158,111 @@ convention. The difference is not material.
 tiny (+0.002 crps_log, about 7% of the gap to A5), and σ does not track the error (ρ ≈ 0.06–0.08 vs 0.70). This
 is D52's "clean negative result".
 
-## 4. Overnight: split-credit seeds 1 and 2 (PENDING, filled in the morning)
+## 4. Split credit, 3 seeds: the pre-registered family S verdict
 
-## 5. Overnight: seed-mean S1–S3 and greedy vs sampled σ (PENDING)
+**Per seed** (step-287 greedy eval, pooled n = 400; all three seeds passed sanity with 0% parse failures):
+
+| seed | s/step | acc ≤ 1% | 1σ cov | 2σ cov | σ = 0 | median rel. σ | ρ(σ, err) | crps_log | A5 σ on same answers: cov / ρ / crps_log |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | 36.2 | 34.5% | 22.5% | 29.0% | 2.2% | 0.244% | 0.078 | −0.325 | 65.8% / 0.70 / −0.292 |
+| 1 | 34.9 | 36.2% | 21.0% | 27.5% | 6.5% | 0.209% | 0.099 | −0.302 | 68.0% / 0.69 / −0.269 |
+| 2 | 40.3 | 36.2% | 21.5% | 29.2% | 3.5% | 0.233% | 0.066 | −0.336 | 67.0% / 0.66 / −0.301 |
+| SFT-only | – | 34.5% | 13.2% | 18.2% | 18.8% | 0.063% | 0.02 | −0.339 | 66.8% / 0.69 / −0.305 |
+| uniform RL@287 (1 seed) | – | 34.2% | 11.8% | 16.2% | 21.0% | 0.050% | −0.02 | −0.359 | – |
+
+**Family S on the seed mean (D62; this is the pre-registered verdict):**
+
+| test | split credit, mean of 3 seeds | control | difference [95% CI] | one-sided p | Holm threshold | **verdict** |
+|---|---|---|---|---|---|---|
+| S1a: 1σ cov > SFT-only | 21.7% | 13.25% | +8.4 pts [+5.8, +11.3] | < 1e-4 | 0.0125 | **supported** |
+| S1b: 1σ cov > uniform RL@287 | 21.7% | 11.75% | +9.9 pts [+7.2, +12.8] | < 1e-4 | 0.0167 | **supported** |
+| S2: ρ(σ, err) > uniform RL@287 | 0.081 | −0.017 | +0.098 [−0.012, +0.208] | 0.040 | 0.05 | **supported (narrow)** |
+| S3: accuracy not > 5 pts below uniform | 35.7% | 34.25% | +1.4 pts [+0.1, +2.9] | < 1e-4 | 0.025 | **supported** |
+
+- **Per-seed tests, as pre-registered:**
+  - S1a and S1b hold on every seed (McNemar p < 1e-7), and so does S3.
+  - S2's per-seed p is 0.061 / 0.020 / 0.092, so it holds alone only on seed 1.
+  - The seed mean passes S2 because the three per-seed effects all point the same way.
+- **How much S2 depends on D62:** S2 is the hypothesis most sensitive to how the seed mean was defined (D62
+  [REVIEW], the mean of per-seed ρ). D62 was fixed before seeds 1/2 existed, but no pre-registration chose it.
+- **Family N (A5 strongest σ, same answers) fails on all three seeds:** all of N1–N3 go the wrong way with CIs
+  well clear of zero. For "RL σ beats the baseline" the answer is **no**, consistently.
+- **What it means:** split credit is a real fix for the collapse (σ = 0 falls from about 20% to 2–6%, and
+  coverage rises 9 points at no accuracy cost). The σ it produces is still far too narrow (21.7% vs 68.3% at 1σ)
+  and hardly informative (ρ ≈ 0.08 vs 0.70). S2's narrow pass is a statistically detectable but tiny ranking gain.
+- **Caveats:**
+  - Only one uniform-credit seed exists (control for S1b/S2/S3).
+  - Inference is over problems, conditional on these 3 seeds.
+  - Seed 1 is the restarted run (D63).
+- **Files:** `results/split_credit_seed_mean/family_S_seed_mean.{md,json}`, plus per-seed
+  `…/compare/phase95_family_S.md`.
+
+## 5. Exploratory: greedy vs sampled σ at eval (D62; no tests)
+
+k = 4 samples per problem at the training settings (T = 1.0), on the same frozen eval problems/prefixes:
+
+| model | decoding | fail | median rel. σ | σ = 0 | 1σ cov | 2σ cov | mean crps_log | ρ(σ, err) |
+|---|---|---|---|---|---|---|---|---|
+| split-credit seed 0 @287 | greedy | 0.0% | 0.244% | 2.2% | 22.5% | 29.0% | −0.325 | 0.08 |
+| split-credit seed 0 @287 | sampled | 0.9% | 0.367% | 5.5% | 19.9% | 25.7% | −0.517 | 0.08 |
+| E1a | greedy | 0.0% | 0.567% | 1.0% | 29.2% | 35.8% | −0.336 | 0.06 |
+| E1a | sampled | 0.2% | 0.773% | 2.7% | 32.6% | 39.1% | −0.343 | 0.03 |
+| E1b | greedy | 0.0% | 0.500% | 0.0% | 28.2% | 33.0% | −0.337 | 0.08 |
+| E1b | sampled | 0.2% | 0.500% | 0.0% | 30.6% | 38.0% | −0.343 | 0.03 |
+
+| model | median within-problem SD of ln σ (k = 4) | greedy σ mean mid-rank among the samples | greedy σ below all 4 samples |
+|---|---|---|---|
+| split-credit seed 0 | 1.01 | 0.43 | 7.5% |
+| E1a | 0.94 | 0.45 | 3.5% |
+| E1b | 0.82 | 0.43 | 2.8% |
+
+- **Greedy decoding does not explain the training-vs-eval σ gap.**
+  - The greedy σ sits near the middle of its own samples (mid-rank 0.43–0.45), not at the narrow end.
+  - Sampled eval σ is only about 1.5× the greedy σ (0.37% vs 0.24%), still far below the ~1.3% sampled in late
+    training.
+- **Problem mix does not explain it either** (descriptive, seed 0): at every depth, training samples in steps
+  263–287 state a median σ of 1.2–1.7%, while sampled eval at the same temperature states 0.27–0.42%, about 4×
+  narrower.
+- **The stated σ is very unstable within a problem:** the SD of ln σ across 4 samples is about 1. A resample
+  typically moves σ by a factor of about e.
+- **The sampled crps_log for split credit is much worse** (−0.517). Sampling also changes μ (more wrong answers,
+  0.9% failures at the −5 floor); it is not a σ effect. E1 (μ fixed) changes little.
+- **One remaining candidate for the gap (not tested):** the train/eval precision mismatch in §6.
 
 ## 6. Decisions to review
 
-1. **D61, open point:** read literally, a 90% CI lying entirely below 0 is labelled "partial propagation" (it
-   "excludes 0 but lies entirely below 1"). D59 treats a negative slope as a distinct habit (the absolute-σ
-   pattern). Which label should it get? The labels are not in `a6_pairs.py` until this is settled.
-2. **D62 [REVIEW]: how the seed-mean test works** (the pre-registration did not specify it).
-   - Per-problem 1σ coverage averaged over the 3 seeds for S1a/S1b; the mean of the per-seed ρ for S2; seed-mean
-     accuracy for S3.
-   - One-sided paired bootstrap over problems, Holm over 4. Only one uniform-credit seed exists for the controls.
-   - Recorded before any seed-1/2 data; the rejected alternatives are listed in D62.
-3. **D62: exploratory sampled eval:** k = 4 at the training settings. For split credit μ also varies between
-   samples, while E1's μ is fixed.
-4. **D63: seed 1 restarted rather than resumed.** The checkpoint lacks the curriculum sampler's state and RNG,
-   and `grpo.py` has no resume path. If you want crash-resume in future, the sampler state has to be
-   checkpointed.
+1. **NEW, train/eval precision mismatch (found this morning, nothing changed).**
+   - **What it is:** RL LoRAs are trained on a 4-bit base (`physcal/train/grpo.py:329`, `load_in_4bit=True`),
+     but every RL eval applies them to the bf16 merged SFT model (`configs/eval_probe_greedy.yaml`, plain
+     transformers).
+   - **What it affects:** all RL arms are evaluated the same way, so between-arm comparisons (S, N, E) stay fair.
+     But the eval measures a slightly different model than the trained policy. This is the only candidate left
+     for the ~4× σ gap (§5).
+   - **Proposed check, about 45 min of GPU:** evaluate split-credit seed 0 @287 on the 4-bit base (the same
+     loader as training), greedy and k = 4 sampled, and compare σ. If the gap closes, every RL eval so far has
+     understated the trained policy's σ.
+2. **D62 [REVIEW], how the seed-mean test works.**
+   - Per-problem coverage averaged over seeds; the mean of per-seed ρ; seed-mean accuracy; paired bootstrap
+     over problems; Holm.
+   - S2's support depends on it (§4).
+   - The alternatives are listed in D62. If you prefer one, it should be recorded as a deviation, since the
+     results are now known.
+3. **D61, open point:** read literally, a 90% CI lying entirely below 0 is labelled "partial propagation". Which
+   label should it get? The labels are not in `a6_pairs.py` until this is settled.
+4. **D63: seed 1 restarted, not resumed.** If you want crash-resume in future, the curriculum sampler's state
+   (including its RNG) has to be checkpointed with the adapter.
+5. **Only one uniform-credit seed exists.** A second and third uniform seed would make S1b, S2 and S3 symmetric
+   (about 6 GPU-hours).
 
-## 7. BLOCKED / housekeeping
+## 7. Recommendation
+
+- **Stop iterating on RL credit assignment for σ at this scale.** Split credit (3 seeds) and fixed-μ E1 both fix
+  the collapse but neither comes near the A5 surface-feature σ. The bottleneck is not credit assignment.
+- **First, run the 4-bit eval check** (§6.1). It is cheap and could change how every RL σ number reads.
+- **Then move to the noise-mode work (Phase 11/12)**, where σ\* is known per problem. A6/A6b then show directly
+  whether any σ source propagates input noise, which is the question A8 makes the headline.
+
+## 8. BLOCKED / housekeeping
 
 - **Laptop shutdown at about 23:30:** the damage check was clean. No stale lock, `git fsck` clean, local =
   origin, and the models and adapters load. The partial seed-1 run is kept, git-ignored, in
@@ -172,4 +270,6 @@ is D52's "clean negative result".
 - **The restart is not bit-identical past step 2:** the restarted seed 1 matches the crashed run exactly at steps
   1–2 and drifts from step 3 (GPU non-determinism). Same code, config and seed.
 - **The scratchpad in /tmp was wiped by the reboot.** Watchers were recreated; nothing in the repo was affected.
+- **Not run:** nothing. All planned stages ran, including the optional sampled evals.
+- **BLOCKED:** none.
 - `PHASES_10-15.md` is still untracked (its content is in CLAUDE.md).

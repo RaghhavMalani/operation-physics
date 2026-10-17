@@ -503,3 +503,19 @@ Progress:
 - [x] Eval path for frozen problem files (D60): `run_eval` `file:` splits (version, checksum and regeneration
   checks), `configs/eval_frozen_sets.yaml` (A6 + A6b), per-noise-level A1 table, `model.device: cpu` for checks. CPU
   test with a tiny random Qwen2 in a CUDA-hidden subprocess. 340 tests pass. No GPU used; no real model evaluated.
+
+## 2026-10-16 day + night (GPU): split-credit seeds 0–2, E1a/E1b, seed-mean family S
+
+- [x] D61 (A6 slope labels) recorded before any A6/A6b result. Open point: a CI wholly below 0.
+- [x] Split-credit seed 0 to step 287 + eval + family S/N (sanity PASS). E1a and E1b (300 steps each) + evals +
+  family E (FINDINGS #14). The day queue ended at 21:06, inside the 21:30 cutoff.
+- [x] D62 (seeds 1/2, the seed-mean test, sampled-σ exploratory) and its code, before any seed-1/2 data:
+  `--samples K` in both evals (greedy unchanged), `scripts/phase95_seed_mean.py`,
+  `scripts/sigma_greedy_vs_sampled.py`, `scripts/queue_split_seeds.sh` (commits after every stage). 348 tests pass.
+- [x] Power loss at about 23:30 during seed 1 (step 162). Damage check clean. D63: restarted from step 0 (no
+  resume: the sampler state is not checkpointed). Queue relaunched 23:38.
+- [x] Seeds 1 and 2 to step 287 + evals (both sanity PASS). Seed-mean family S: S1a, S1b, S2 (p = 0.040) and S3
+  supported (FINDINGS #13). Family N fails on every seed.
+- [x] Exploratory greedy vs sampled σ (k = 4). GPU work ended at 07:11, inside the 08:30 cutoff.
+- [ ] Open: D61 negative-CI label; D62 [REVIEW] seed-mean operationalization; the 4-bit-train / bf16-eval
+  mismatch (MORNING §6).

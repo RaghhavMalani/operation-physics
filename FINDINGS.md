@@ -568,3 +568,58 @@ run D57 declared final. Phase 10+ work resumes with A6.
   - D54: the cap was set after seeing #9.
   - #11: the share-rule design error.
   - D57: the rule was replaced before this final run.
+
+## #13. Split credit (Phase 9.5 step 3), 3 seeds: S1a, S1b, S2 and S3 supported on the seed mean, but σ still does not track the error (2026-10-17)
+
+**Verdict (PREREGISTRATION.md family S, evaluated on the seed mean as D62 fixes it).** All four hypotheses are
+supported under Holm. S2 passes narrowly, and the claim depends on how D62 operationalized the seed mean.
+
+| test | split credit, mean of 3 seeds | control | difference [95% CI] | one-sided p | Holm threshold | supported |
+|---|---|---|---|---|---|---|
+| S1a: 1σ cov > SFT-only | 21.7% | 13.25% | +8.4 pts [+5.8, +11.3] | < 1e-4 | 0.0125 | yes |
+| S1b: 1σ cov > uniform RL@287 | 21.7% | 11.75% | +9.9 pts [+7.2, +12.8] | < 1e-4 | 0.0167 | yes |
+| S2: ρ(σ, err) > uniform RL@287 | 0.081 | −0.017 | +0.098 [−0.012, +0.208] | 0.040 | 0.05 | yes (narrow) |
+| S3: accuracy not > 5 pts below uniform | 35.7% | 34.25% | +1.4 pts [+0.1, +2.9] | < 1e-4 | 0.025 | yes |
+
+- **Per seed** (seed 0 / 1 / 2):
+  - 1σ coverage 22.5 / 21.0 / 21.5%; accuracy 34.5 / 36.2 / 36.2%;
+  - ρ 0.078 / 0.099 / 0.066; per-seed S2 p 0.061 / 0.020 / 0.092;
+  - every per-seed S1 McNemar p < 1e-7.
+- **σ = 0 at eval:** 2.2 / 6.5 / 3.5%, vs 18.8% for SFT and 21.0% for uniform credit.
+- **Family N (D50; the strongest A5 σ applied to the same answers) fails on every seed.** All three N tests go
+  the wrong way with CIs well clear of 0: the A5 σ has coverage 66–68%, ρ 0.66–0.70, and crps_log better by
+  0.03–0.04. RL σ does not beat a surface-feature baseline.
+- **What this means:** split credit fixes the sequence-level credit problem behind the σ = 0 collapse (FINDINGS
+  #6). σ = 0 almost disappears and coverage rises by about 9 points, at no accuracy cost. But 1σ coverage
+  is still 21.7% against a 68.3% target, and σ barely ranks problems by error (ρ ≈ 0.08 vs 0.70 for
+  a text model). The narrow S2 pass should not be read as "σ tracks error".
+- **Caveats:**
+  - Only one uniform-credit seed exists, so S1b, S2 and S3 compare a 3-seed mean with a single control run.
+  - The inference is over problems, conditional on these 3 seeds (D62).
+  - Seed 1 was restarted from step 0 after a power loss (D63); runs are not bit-reproducible past step 2.
+- **Provenance:** `scripts/phase95_seed_mean.py` (committed `873dee5`, before any seed-1/2 data) →
+  `results/split_credit_seed_mean/`. Per-seed reports are at
+  `results/train/split-credit-…-seed{0,1,2}/compare/phase95_family_S.md`.
+
+## #14. E1, fixed-μ σ-only GRPO: σ is learnable but not beyond surface features (family E, 2026-10-16)
+
+**Verdict (D52, single seed by design).**
+- **E1a-P and E1b-P are supported.** The E1 σ beats SFT's stated σ on the same answers: Δcrps_log +0.0024 and
+  +0.0020, both p < 1e-4.
+- **E1a-N and E1b-N are not.** The E1 σ loses to the strongest A5 σ by 0.031 crps_log, CI [−0.040, −0.023].
+- **D52's interpretation rule:** "σ is learnable with fixed μ, but not beyond surface features". This is the clean
+  negative result.
+
+| σ source (same 400 SFT answers) | mean crps_log | 1σ cov | ρ(σ, err) | median rel. σ |
+|---|---|---|---|---|
+| SFT stated σ | −0.3386 | 13.2% | −0.02 | 0.061% |
+| E1a (free σ, 300 steps) | −0.3362 | 29.2% | 0.06 | 0.57% |
+| E1b (9 bins, 300 steps) | −0.3366 | 28.2% | 0.08 | 0.50% |
+| A5 strongest σ | −0.3051 | 66.8% | 0.70 | 8.0% |
+
+- **Size of the gain:** with credit assignment made clean (μ fixed, only σ varies within a group), 300 steps
+  widened σ and removed σ = 0. The gain is about 7% of the SFT-to-A5 gap. E1a and E1b are indistinguishable, and
+  most of the gain was there by step 150.
+- **Together with #13:** fixing credit assignment, whether by split credit or by fixing μ, is necessary to avoid
+  collapse but is not sufficient for an informative σ at this scale and budget.
+- **Provenance:** `results/e1/family_E.{json,md}`; evals in `results/train/e1{a,b}-…/e1_eval/`.
