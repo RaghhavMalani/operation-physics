@@ -1,0 +1,8 @@
+W1017 01:15:30.119000 41029 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1017 01:15:30.164000 41029 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   1%|          | 3/338 [00:00<00:12, 27.53it/s]Loading weights:  33%|███▎      | 112/338 [00:00<00:00, 609.41it/s]Loading weights:  65%|██████▌   | 220/338 [00:00<00:00, 809.49it/s]Loading weights:  96%|█████████▌| 325/338 [00:00<00:00, 886.81it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 784.89it/s]
+{
+  "n": 1600,
+  "mode": "free",
+  "out": "/home/flash2404/operation-physics/results/train/e1a-sigma-only-free-seed0/e1_eval/final_sampled"
+}

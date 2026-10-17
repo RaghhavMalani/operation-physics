@@ -27,3 +27,7 @@ SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step"
 [06:04:18] GPU at 57C
 [06:04:18] start split0_sampled (timeout 8742s): uv run python -m physcal.train.compare --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 --label qwen2.5-math-1.5b-instruct --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_sampled --samples 4
 [06:45:18] end split0_sampled: exit 0
+[06:45:22] commit 'Exploratory (D62): split-credit seed 0 @287, 4 sampled completions per problem': pushed
+[06:45:22] GPU at 63C
+[06:45:22] start e1a_sampled (timeout 6278s): uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter final_adapter --out-name final_sampled --samples 4
+[06:58:08] end e1a_sampled: exit 0
