@@ -2,7 +2,8 @@
 
     uv run python -m physcal.train.e1 data                                    # CPU: prefix datasets
     uv run python -m physcal.train.e1 train --config grpo_e1a [--stop-at "05:00 Asia/Kolkata"]
-    uv run python -m physcal.train.e1 eval --run results/train/<run_id> [--adapter final_adapter] [--loader unsloth_4bit]
+    uv run python -m physcal.train.e1 eval --run results/train/<run_id> [--adapter final_adapter]   # 4-bit, unmerged
+    uv run python -m physcal.train.e1 eval --sft                              # SFT-only σ control, 4-bit (D67)
     uv run python -m physcal.train.e1 compare                                 # CPU: family E tests
 
 Prefixes are existing SFT-only greedy completions truncated right after the "±" of their answer, so μ, the
@@ -265,14 +266,28 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
 
 # ------------------------------------------------------------------------------------------- eval
 def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None, samples: int = 0,
-             loader: str = "transformers") -> dict:
+             loader: str = "unsloth_4bit") -> dict:
     """Greedy σ suffixes from the E1 model on the frozen eval prefixes; a replayable tape plus per-row scores.
     `samples` = K > 0 instead samples K suffixes per prefix with the eval config's sampling settings (D62,
-    exploratory); every sample is a row, tagged with its index. `loader` = "unsloth_4bit" applies the adapter to the
-    4-bit base through the training loader instead of merging it into the bf16 base (D65, exploratory)."""
-    e1 = _config()
+    exploratory); every sample is a row, tagged with its index. The adapter is applied unmerged to the 4-bit
+    training base by default (D67 / D68); RL adapters are never merged."""
     train_cfg = read_meta(run_dir / "rollouts.jsonl")["train_config"]
-    mode = train_cfg["e1_mode"]
+    return _evaluate(run_dir / "e1_eval" / out_name, f"{run_dir.name}-e1-eval-{out_name}", train_cfg["e1_mode"],
+                     str(run_dir / adapter), train_cfg.get("model", {}), backend, samples, loader)
+
+
+def evaluate_sft(out: Path | None = None, backend=None, samples: int = 0, loader: str = "unsloth_4bit") -> dict:
+    """The SFT-only model's own σ suffix on the same eval prefixes, no adapter, scored like E1a (unbinned): family E's
+    "SFT stated σ" control on the same base as the E1 adapters (D67). Loader settings: the E1 training config's."""
+    e1 = _config()
+    sc = e1["sft_eval"]
+    return _evaluate(out or REPO_ROOT / sc["output_dir"], "sft-e1-eval", sc["mode"], None,
+                     load_config(sc["loader_settings_from"])["model"], backend, samples, loader)
+
+
+def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settings: dict, backend, samples: int,
+              loader: str) -> dict:
+    e1 = _config()
     rows = read_rows("eval")
     gen_cfg = {**e1["eval"]["generation"], "num_samples": 1} if samples <= 0 else \
         {**e1["eval"]["generation"], "do_sample": True, "num_samples": samples}
@@ -280,14 +295,13 @@ def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None, samples: 
         from physcal.eval.run_eval import HFBackend
 
         model_cfg = {"id": str(REPO_ROOT / e1["model_id"]), "dtype": "bfloat16", "model_class": "causal_lm",
-                     "lora": str(run_dir / adapter), "chat_template_kwargs": e1.get("chat_template_kwargs", {})}
-        if loader != "transformers":  # D65: the training run's own loader settings
-            model_cfg.update(loader=loader, max_seq_length=train_cfg["model"]["max_seq_length"],
-                             text_only=train_cfg["model"].get("text_only", False))
+                     "lora": lora, "loader": loader, "chat_template_kwargs": e1.get("chat_template_kwargs", {})}
+        if loader == "unsloth_4bit":  # the training run's own loader settings
+            model_cfg.update(max_seq_length=model_settings["max_seq_length"],
+                             text_only=model_settings.get("text_only", False))
         backend = HFBackend(model_cfg["id"], model_cfg, gen_cfg)
     rw_cfg = reward_config()
     rw_cfg["scoring"]["rule"] = e1["reward_rule"]
-    out = run_dir / "e1_eval" / out_name
     out.mkdir(parents=True, exist_ok=True)
     gens = []
     bs = e1["eval"]["generation"]["batch_size"]
@@ -301,16 +315,15 @@ def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None, samples: 
         per_batch = max(1, bs // samples)
         for start in range(0, len(rows), per_batch):
             gens += backend._generate([r["prompt"] for r in rows[start:start + per_batch]], samples)
+    model_id = lora or str(REPO_ROOT / e1["model_id"])
     meta = {"env_config": env_config(), "reward_config": rw_cfg, "e1": e1, "e1_mode": mode,
-            "adapter": str(run_dir / adapter), "eval_tapes": e1["eval_tapes"]}
+            "adapter": lora, "eval_tapes": e1["eval_tapes"], "loader": getattr(backend, "loader", loader),
+            "loader_check": getattr(backend, "loader_check", None)}
     if samples > 0:
         meta["sampled"] = {"num_samples": samples, "generation": gen_cfg}
-    if loader != "transformers":
-        meta["loader"] = loader
-        meta["loader_check"] = getattr(backend, "loader_check", None)
     (out / "rollouts.jsonl").unlink(missing_ok=True)
     scored = []
-    with TapeWriter(out / "rollouts.jsonl", f"{run_dir.name}-e1-eval-{out_name}", meta) as tape:
+    with TapeWriter(out / "rollouts.jsonl", tape_id, meta) as tape:
         for r, g_or_group in zip(rows, gens):
             problem = problem_from_dict(json.loads(r["problem_json"]))
             group = [g_or_group] if samples <= 0 else g_or_group
@@ -321,7 +334,7 @@ def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None, samples: 
                 row = e1_row(r, s, rw_cfg["scoring"])
                 if samples > 0:
                     extra["sample"] = row["sample"] = j
-                tape.log(0, problem, s["full"], s["verifier_reward"], s["breakdown"], str(run_dir / adapter),
+                tape.log(0, problem, s["full"], s["verifier_reward"], s["breakdown"], model_id,
                          getattr(backend, "lora_hash", None), extra)
                 scored.append(row)
     (out / "rows.jsonl").write_text("".join(json.dumps(x) + "\n" for x in scored))
@@ -355,8 +368,10 @@ def main() -> None:
     ap.add_argument("--adapter", default="final_adapter")
     ap.add_argument("--out-name", default="final")
     ap.add_argument("--samples", type=int, default=0, help="eval: K > 0 sampled σ suffixes per prefix (D62)")
-    ap.add_argument("--loader", default="transformers", choices=["transformers", "unsloth_4bit"],
-                    help="eval: unsloth_4bit applies the adapter to the 4-bit base, as in training (D65)")
+    ap.add_argument("--loader", default="unsloth_4bit", choices=["transformers", "unsloth_4bit"],
+                    help="eval: default unsloth_4bit (the 4-bit training base, adapter unmerged; D67 / D68)")
+    ap.add_argument("--sft", action="store_true", help="eval: the SFT-only model's σ suffix, no adapter (D67)")
+    ap.add_argument("--out-dir", default=None, help="eval --sft: output dir (default: e1.yaml sft_eval.output_dir)")
     args = ap.parse_args()
     if args.action == "data":
         print(json.dumps(build_data(), indent=2))
@@ -365,6 +380,10 @@ def main() -> None:
         print(json.dumps(train(cfg, args.run_id or cfg["run_id"], args.max_steps, parse_deadline(args.stop_at)),
                          indent=2, default=str))
     elif args.action == "eval":
+        if args.sft:
+            out = Path(args.out_dir) if args.out_dir else None
+            print(json.dumps(evaluate_sft(out, samples=args.samples, loader=args.loader), indent=2))
+            return
         run_dir = Path(args.run) if Path(args.run).is_absolute() else REPO_ROOT / args.run
         print(json.dumps(evaluate(run_dir, args.adapter, args.out_name, samples=args.samples, loader=args.loader),
                          indent=2))

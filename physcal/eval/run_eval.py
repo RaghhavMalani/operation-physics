@@ -144,6 +144,11 @@ class GpuMemoryPoller:
 LOADERS = ("transformers", "unsloth_4bit")
 
 
+def default_loader(model_cfg: dict) -> str:
+    """D68: a model with an adapter loads through the training loader (unmerged); one without, through transformers."""
+    return "unsloth_4bit" if model_cfg.get("lora") else "transformers"
+
+
 def load_unsloth_4bit(model_id: str, model_cfg: dict, tok) -> tuple[Any, dict]:
     """The RL trainers' loader (physcal/train/grpo.py, e1.py): Unsloth, bitsandbytes 4-bit base, the LoRA attached
     unmerged (Unsloth loads the adapter dir and the base it names), then Unsloth's inference mode. Model config keys
@@ -191,15 +196,22 @@ class HFBackend:
 
     Model config keys: id, revision (exact commit; pinned), dtype, chat_template_kwargs (e.g.
     {enable_thinking: false}), model_class ("causal_lm" or "image_text_to_text" for VL checkpoints), loader
-    ("transformers", the default: bf16 base, LoRA merged; or "unsloth_4bit": the RL training loader, 4-bit base and
-    LoRA unmerged, see `load_unsloth_4bit`; dtype and model_class are then not used).
+    (default: "unsloth_4bit" with an adapter, "transformers" without, D68). "unsloth_4bit" is the RL training loader:
+    4-bit base, LoRA unmerged, see `load_unsloth_4bit`; dtype and model_class are then not used. "transformers" loads
+    the bf16 model; an adapter is merged into it only if `merge_adapter: true` and it is not an RL adapter
+    (`physcal.adapters.check_merge_allowed`, checked before anything is loaded).
     """
 
     def __init__(self, model_id: str, model_cfg: dict, gen_cfg: dict):
         os.environ.setdefault("HF_HOME", str(REPO_ROOT / ".cache" / "huggingface"))
-        loader = model_cfg.get("loader", "transformers")
+        loader = model_cfg.get("loader") or default_loader(model_cfg)
         if loader not in LOADERS:
             raise ValueError(f"unknown loader {loader!r}; expected one of {LOADERS}")
+        if loader == "transformers" and model_cfg.get("lora"):  # D68: fail before loading anything
+            from physcal.adapters import check_merge_allowed
+
+            check_merge_allowed(model_cfg["lora"], bool(model_cfg.get("merge_adapter", False)))
+        self.loader = loader
         if loader == "unsloth_4bit" and model_cfg.get("device", "cuda") != "cuda":
             raise ValueError("the unsloth_4bit loader needs CUDA")
         import torch
@@ -435,7 +447,7 @@ def run(
         "model_revision": model_revision,
         "lora": eval_cfg["model"].get("lora"),
         "lora_hash": lora_hash,
-        "loader": eval_cfg["model"].get("loader", "transformers"),
+        "loader": getattr(backend, "loader", None) or eval_cfg["model"].get("loader"),
         "loader_check": loader_check,
         "oom_backoffs": oom_backoffs,
         "oom_fallback": oom_fallback,

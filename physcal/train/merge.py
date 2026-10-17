@@ -2,7 +2,8 @@
 
     uv run python -m physcal.train.merge --base Qwen/Qwen3.5-2B --revision <sha> --adapter <dir> --out <dir>
 
-For Qwen3.5 the base is loaded text-only (AutoModelForCausalLM), matching how the adapter was trained.
+For Qwen3.5 the base is loaded text-only (AutoModelForCausalLM), matching how the adapter was trained. RL adapters
+are refused (D68, FINDINGS #15): this tool exists to build the SFT model, and a merge erases an RL update.
 """
 
 from __future__ import annotations
@@ -17,6 +18,9 @@ from physcal.config import REPO_ROOT
 
 
 def merge(base: str, revision: str | None, adapter: str, out: str, device: str = "cpu") -> dict:
+    from physcal.adapters import check_merge_allowed
+
+    check_merge_allowed(adapter, requested=True)  # running this tool is the explicit request; RL adapters still refused
     os.environ.setdefault("HF_HOME", str(REPO_ROOT / ".cache" / "huggingface"))
     import torch
     from peft import PeftModel

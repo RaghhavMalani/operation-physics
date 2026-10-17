@@ -4,13 +4,14 @@
     uv run python -m physcal.train.compare --part tests --run results/train/<run_id>
     uv run python -m physcal.train.compare --part rl --adapter permanent_checkpoints/checkpoint-287 --out-name rl287 ...
     uv run python -m physcal.train.compare --part rl ... --samples 4 --out-name rl287_sampled   # D62, exploratory
-    uv run python -m physcal.train.compare --part rl ... --loader unsloth_4bit --out-name rl287_4bit  # D65, exploratory
+    uv run python -m physcal.train.compare --part rl ... --out-name rl287_4bit   # D67: 4-bit base, adapter unmerged
 
 Every part uses `eval_probe_greedy` (200 ID + 200 depth-5 problems of generator 1.1.0, prompt v4, greedy) with
 max_new_tokens = the training budget, and loads the model text-only (`causal_lm`). `--samples K` (K > 0) samples
 K completions per problem with the config's sampling settings (T, top_p, top_k, seed) instead of greedy (D62).
-`--loader unsloth_4bit` applies the adapter to the 4-bit base through the training loader instead of merging it into
-the bf16 base (D65; max_seq_length from the run's training config). `tests` runs the paired
+The loader defaults to `unsloth_4bit` for the sft and rl parts (D67/D68: the 4-bit training base, adapters unmerged;
+max_seq_length from the run's training config) and to `transformers` for the raw base. RL adapters are never merged
+(`physcal.adapters`). `tests` runs the paired
 McNemar / Wilcoxon tests (scripts/paired_tests.py) for rl-vs-sft (what RL added), rl-vs-base and sft-vs-base.
 """
 
@@ -28,10 +29,12 @@ from physcal.eval.run_eval import LOADERS, run
 from physcal.tape.tape import read_meta
 
 PAIRS = (("rl", "sft"), ("rl", "base"), ("sft", "base"))
+DEFAULT_LOADER = {"base": "transformers", "sft": "unsloth_4bit", "rl": "unsloth_4bit"}  # D67 / D68
 
 
 def eval_config(part: str, label: str, budget: int, run_dir: Path, sft_dir: Path, adapter: str = "final_adapter",
-                out_name: str | None = None, samples: int = 0, loader: str = "transformers") -> dict:
+                out_name: str | None = None, samples: int = 0, loader: str | None = None) -> dict:
+    loader = loader or DEFAULT_LOADER[part]
     probe = load_config("model_probe")
     base = next(c for c in probe["candidates"] if c["label"] == label)
     cfg = copy.deepcopy(load_config(probe["greedy_config"]))
@@ -50,10 +53,10 @@ def eval_config(part: str, label: str, budget: int, run_dir: Path, sft_dir: Path
         cfg["model"].update(id=str(sft_dir), revision=None, lora=None)
     else:
         cfg["model"].update(id=str(sft_dir), revision=None, lora=str(run_dir / adapter))
-    if loader != "transformers":  # D65: the default leaves the model block exactly as before
+    cfg["model"]["loader"] = loader
+    if loader == "unsloth_4bit":  # the run's own training loader settings
         train_model = read_meta(run_dir / "rollouts.jsonl")["train_config"]["model"]
-        cfg["model"].update(loader=loader, max_seq_length=train_model["max_seq_length"],
-                            text_only=train_model.get("text_only", False))
+        cfg["model"].update(max_seq_length=train_model["max_seq_length"], text_only=train_model.get("text_only", False))
     return cfg
 
 
@@ -83,7 +86,8 @@ def main() -> None:
     ap.add_argument("--adapter", default="final_adapter", help="rl part: adapter dir relative to the run dir")
     ap.add_argument("--out-name", default=None, help="output subdir of <run>/compare (default: the part name)")
     ap.add_argument("--samples", type=int, default=0, help="K > 0: K sampled completions per problem (D62)")
-    ap.add_argument("--loader", default="transformers", choices=LOADERS, help="unsloth_4bit: the training loader (D65)")
+    ap.add_argument("--loader", default=None, choices=LOADERS,
+                    help="default: unsloth_4bit for sft / rl, transformers for base (D67 / D68)")
     args = ap.parse_args()
     run_dir = Path(args.run) if Path(args.run).is_absolute() else REPO_ROOT / args.run
     if args.part == "tests":

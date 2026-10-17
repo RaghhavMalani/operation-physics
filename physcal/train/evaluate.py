@@ -1,4 +1,5 @@
 """Evaluate a trained adapter on exactly the eval config its base model was probed with (phase 3.5 greedy).
+The adapter is applied unmerged to its 4-bit training base (D68).
 
     uv run python -m physcal.train.evaluate --run results/train/<run_id> --label <candidate label>
 
@@ -14,6 +15,7 @@ from pathlib import Path
 from physcal.config import REPO_ROOT, load_config
 from physcal.eval.model_probe import candidate_eval_config
 from physcal.eval.run_eval import run
+from physcal.tape.tape import read_meta
 
 KEYS = ("parse_fail_rate", "missing_sigma_rate", "unit_mismatch_rate", "coverage_1sigma", "coverage_2sigma",
         "median_rel_sigma", "median_rel_error", "truncation_rate", "mean_completion_tokens", "mean_reward",
@@ -50,6 +52,9 @@ def main() -> None:
     cfg["output_dir"] = str(run_dir / "eval_greedy")
     cfg["run_id"] = f"{run_dir.name}-eval-greedy"
     cfg["model"]["lora"] = str(run_dir / args.adapter)
+    train_model = read_meta(run_dir / "rollouts.jsonl")["train_config"]["model"]  # D68: 4-bit base, unmerged
+    cfg["model"].update(loader="unsloth_4bit", max_seq_length=train_model["max_seq_length"],
+                        text_only=train_model.get("text_only", False))
     if args.model_class:
         cfg["model"]["model_class"] = args.model_class
     after = run(cfg)

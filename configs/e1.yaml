@@ -21,6 +21,10 @@ eval:
     top_k: 0
     repetition_penalty: 1.0
     seed: 0
+sft_eval:                             # D67: the SFT-only sigma suffix on the eval prefixes (family E control)
+  output_dir: results/e1/sft_4bit
+  mode: free                          # scored unbinned, like the SFT stated sigma it replaces
+  loader_settings_from: grpo_e1a      # max_seq_length / text_only of the E1 training loader
 compare:
   a5_sigma_tape: results/a5_baselines/sft_eval_a5_sigma.jsonl   # strongest A5 sigma on the same SFT completions
   runs:

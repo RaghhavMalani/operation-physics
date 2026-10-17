@@ -99,9 +99,9 @@ def test_compare_sampled_eval_config_runs_on_cpu(tiny_model, tmp_path):
     from physcal.train.compare import eval_config
 
     run, sft = tmp_path / "run", tmp_path / "sft"
-    greedy = eval_config("rl", "qwen2.5-math-1.5b-instruct", 512, run, sft, "a", "g")
+    greedy = eval_config("rl", "qwen2.5-math-1.5b-instruct", 512, run, sft, "a", "g", loader="transformers")
     assert greedy["generation"]["do_sample"] is False and greedy["generation"]["num_samples"] == 1
-    cfg = eval_config("rl", "qwen2.5-math-1.5b-instruct", 512, run, sft, "a", "s", samples=2)
+    cfg = eval_config("rl", "qwen2.5-math-1.5b-instruct", 512, run, sft, "a", "s", samples=2, loader="transformers")
     assert cfg["generation"] | {"do_sample": False, "num_samples": 1} == greedy["generation"]
     assert cfg["generation"]["do_sample"] is True and cfg["generation"]["num_samples"] == 2
     cfg["model"].update(id=str(tiny_model), dtype="float32", device="cpu", lora=None)

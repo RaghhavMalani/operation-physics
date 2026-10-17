@@ -96,11 +96,16 @@ def test_footprint_reads_local_model_directories(tmp_path):
     assert footprint.model_shape(str(tmp_path), None) == footprint.shape_from(CFG, TENSORS)
 
 
-def test_compare_configs_differ_only_in_the_model():
+def test_compare_configs_differ_only_in_the_model(tmp_path):
+    from physcal.env.generator import env_config
+    from physcal.tape.tape import TapeWriter
     from physcal.train.compare import eval_config
 
-    run_dir, sft = Path("/tmp/run"), Path("/tmp/sft")
+    run_dir, sft = tmp_path / "run", tmp_path / "sft"
+    TapeWriter(run_dir / "rollouts.jsonl", "fake", {"env_config": env_config(),
+                                                     "train_config": {"model": {"max_seq_length": 2048}}}).close()
     cfgs = {p: eval_config(p, "qwen3.5-2b", 512, run_dir, sft) for p in ("base", "sft", "rl")}
+    assert [cfgs[p]["model"]["loader"] for p in ("base", "sft", "rl")] == ["transformers", "unsloth_4bit", "unsloth_4bit"]
     for c in cfgs.values():
         assert c["generation"]["max_new_tokens"] == 512 and c["prompt"] == "v4_worked_example"
         assert c["model"]["model_class"] == "causal_lm" and c["generation"]["do_sample"] is False

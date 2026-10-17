@@ -1489,3 +1489,31 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     is kept.
   - A side-by-side table (corrected vs superseded) goes in FINDINGS and MORNING.md.
 - **Also decided (yours):** RL adapters are never merged. This becomes the eval default, with a guard (D68).
+
+### D68. "Never merge RL adapters" is the eval default, with a guard (your decision, 2026-10-18)
+- **Default loader** (`physcal/eval/run_eval.py: default_loader`): a model config with an adapter loads through
+  `unsloth_4bit`, the 4-bit training base with the LoRA unmerged. One without an adapter loads through
+  `transformers`, as before.
+  - **`compare`:** defaults to `unsloth_4bit` for the sft and rl parts and to `transformers` for the raw base.
+  - **`e1 eval`:** defaults to `unsloth_4bit`.
+  - **Phase-4 `train.evaluate`:** passes the run's 4-bit loader settings.
+  - **Loader settings:** `max_seq_length` and `text_only` always come from the run's own training config.
+- **Guard** (`physcal/adapters.py: check_merge_allowed`): called before any merge, and before anything is loaded.
+  - **An RL adapter is always refused.** Either of two independent marks makes an adapter RL: the nearest run dir's
+    `rollouts.meta.json` (the adapter dir or up to 2 levels above it) holds a GRPO training config; or the adapter's
+    model card names GRPO (TRL writes it, so a copied adapter is caught too).
+  - **Any other adapter** is merged only on an explicit `merge_adapter: true` in the eval's model config.
+  - **`physcal.train.merge`** (the tool that built the SFT model) also refuses RL adapters.
+  - **The one deliberate merge left** is `scripts/precision_merge_check.py`, the FINDINGS #15 diagnostic, which
+    merges on purpose to demonstrate the bug.
+- **Also new:** `e1 eval --sft` gives family E's SFT-only σ control on the same base (D67), with no adapter, scored
+  unbinned. The loader settings come from `grpo_e1a` (`configs/e1.yaml: sft_eval`).
+- **Tests** (`tests/test_eval_loader.py`):
+  - the defaults per part, with settings from the training config;
+  - an adapter defaulting to the 4-bit loader;
+  - the evidence rules on fake runs, model cards and real adapters (all real RL adapters are flagged, the SFT
+    adapter is not);
+  - the guard in the backend (an RL adapter is refused even with `merge_adapter: true`; an unrequested merge is
+    refused; both before loading) and in the merge tool;
+  - the E1 eval's meta, and the SFT-only E1 eval.
+  - Two older tests that built RL configs without a run meta now pass the loader explicitly or build a fake meta.
