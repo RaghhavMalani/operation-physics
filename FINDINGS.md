@@ -150,7 +150,7 @@ differ even when all 8 answers are right or all wrong.
 
 ## #5. Overnight GRPO on the SFT'd model: SFT did the heavy lifting; RL added a small, non-significant ID gain and no calibration (2026-10-13)
 
-> **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy.
+> **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy. **Corrected results: #16.**
 
 **Setup.** Qwen2.5-Math-1.5B + SFT (FINDINGS #4), fresh LoRA r = 16, crps_log + 0.2·steps, 4 prompts × 8
 completions per step, 512 tokens, EMA curriculum from depths 1–2, lr 5e-6, DAPO loss, no KL. **287 steps**
@@ -194,7 +194,7 @@ depth 3 (energy/2 EMA pass rate 0.16), and energy remains the weak family (14–
 
 ## #6. Removing the σ floor did not let RL move calibration at matched steps; a free post-hoc σ scale beats it, and longer training collapses σ to zero (2026-10-14)
 
-> **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy.
+> **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy. **Corrected results: #16.**
 
 **Question.** With the crps_log σ floor removed (verifier 1.1.0, D37/D38), does a GRPO run that is otherwise
 identical to last night's move calibration by the same step (287)? Does it beat a single post-hoc σ scale fitted
@@ -577,7 +577,7 @@ run D57 declared final. Phase 10+ work resumes with A6.
 
 ## #13. Split credit (Phase 9.5 step 3), 3 seeds: S1a, S1b and S3 supported on the seed mean, S2 narrowly supported (sensitive to the seed-mean definition); σ still does not track the error (2026-10-17)
 
-> **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy.
+> **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy. **Corrected results: #16.**
 
 **Verdict (PREREGISTRATION.md family S, evaluated on the seed mean as D62 fixes it; D62 approved as written in
 review, 2026-10-17).**
@@ -614,7 +614,7 @@ review, 2026-10-17).**
 
 ## #14. E1, fixed-μ σ-only GRPO: σ is learnable but not beyond surface features (family E, 2026-10-16)
 
-> **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy.
+> **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy. **Corrected results: #16.**
 
 **Verdict (D52, single seed by design).**
 - **E1a-P and E1b-P are supported.** The E1 σ beats SFT's stated σ on the same answers: Δcrps_log +0.0024 and
@@ -715,3 +715,83 @@ bf16 SFT model instead. Is that why eval σ was ~4× narrower than training σ (
 → `results/precision_check/report.{json,md}`; diagnostics `scripts/precision_merge_check.py`,
 `scripts/precision_merge_rounding.py`; eval tapes `…/compare/rl287_4bit{,_sampled}/` and
 `…/e1_eval/final_4bit{,_sampled}/` (all four replay exactly).
+
+## #16. Corrected evals (D67: adapters unmerged on the 4-bit training base) are the primary results: S1a, S1b, S3 supported, S2 NOT supported; family N fails on every seed; family E unchanged (2026-10-18)
+
+**What changed.** FINDINGS #15 found that every RL eval had merged the adapter into bf16, which erased > 90% of
+the update. D67 makes the corrected evals primary.
+- **RL adapters:** applied unmerged, on the 4-bit base they were trained on.
+- **Controls:** SFT-only and uniform credit, on the same base.
+- **Everything else is as pre-registered and as in the superseded runs:** the analysis code (only the input paths
+  differ), the frozen 1.1.0 sets (200 ID + 200 depth 5), greedy decoding, the A5 baseline, D62's seed-mean rule
+  and Holm.
+- **The superseded (bf16-merged) results stay in the repo and are shown beside each corrected one:**
+  `results/corrected/side_by_side.md`.
+
+**Family S on the seed mean (pre-registered verdict; split credit seeds 0–2 @287):**
+
+| test | corrected: split / control | difference [95% CI] | p | verdict | superseded verdict |
+|---|---|---|---|---|---|
+| S1a: 1σ cov > SFT-only | 41.8% / 12.0% | +29.8 pts [+25.5, +34.2] | < 1e-4 | **supported** | supported (+8.4 pts) |
+| S1b: 1σ cov > uniform RL@287 | 41.8% / 10.5% | +31.3 pts [+27.0, +35.8] | < 1e-4 | **supported** | supported (+9.9 pts) |
+| S2: ρ(σ, err) > uniform RL@287 | 0.061 / 0.015 | +0.046 [−0.095, +0.184] | 0.262 | **not supported** | narrowly supported (p = 0.040) |
+| S3: accuracy not > 5 pts below uniform | 37.7% / 37.2% | +0.4 pts [−1.0, +1.8] | < 1e-4 | **supported** | supported |
+
+- **Per-seed p:**
+  - S1a: 7e-34 / 3e-32 / 9e-35; S1b: 8e-37 / 5e-35 / 1e-37;
+  - **S2: 0.207 / 0.396 / 0.225, so no seed passes S2 on its own;**
+  - S3: < 1e-4 on every seed.
+- **S2's narrow pass was an artifact of the merged eval.** Evaluated as trained, split credit's σ does not rank
+  problems by error better than uniform credit's. ρ is 0.08 / 0.03 / 0.07 across seeds.
+
+**Family N (split credit's σ vs the strongest A5 σ on the same corrected answers): fails on every seed, as before.**
+
+| seed | N1: \|1σ cov − 68.3%\|, RL vs A5 | N2: ρ, RL vs A5 | N3: crps_log, RL vs A5 |
+|---|---|---|---|
+| 0 | 0.265 vs 0.005 | 0.077 vs 0.676 | −0.316 vs −0.289 |
+| 1 | 0.270 vs 0.002 | 0.034 vs 0.674 | −0.317 vs −0.290 |
+| 2 | 0.258 vs 0.003 | 0.071 vs 0.644 | −0.307 vs −0.283 |
+
+All nine tests go the wrong way (p = 1).
+
+**Family E (μ fixed; the SFT control is the SFT model's own σ suffix on the same 4-bit base): verdicts unchanged.**
+
+| test | corrected Δcrps_log [95% CI] | verdict | superseded |
+|---|---|---|---|
+| E1a-P: E1a σ > SFT σ | +0.0077 [+0.0062, +0.0092] | **supported** | +0.0024, supported |
+| E1b-P: E1b σ > SFT σ | +0.0075 [+0.0061, +0.0090] | **supported** | +0.0020, supported |
+| E1a-N: E1a σ > A5 σ | −0.0258 [−0.0342, −0.0181] | **not supported** | −0.0310, not supported |
+| E1b-N: E1b σ > A5 σ | −0.0259 [−0.0345, −0.0181] | **not supported** | −0.0314, not supported |
+
+- **The E1 σ itself:** E1a states a median 3.2% (vs 0.57% merged), with 1σ coverage 48.5% (29.2%) and
+  ρ(σ, err) = 0.01. E1b: 2.0%, 45.5%, 0.01.
+- **Size of the gain:** about 23% of the SFT-to-A5 gap in crps_log (superseded: about 7%).
+
+**Headline, pooled 400 problems, corrected (greedy):**
+
+| arm | acc ≤ 1% | 1σ / 2σ cov | σ = 0 | median rel. σ | ρ(σ, err) | crps_log |
+|---|---|---|---|---|---|---|
+| SFT-only (4-bit) | 36.8% | 12.0 / 17.0% | 16.8% | 0.063% | 0.05 | −0.333 |
+| SFT + standing post-hoc scale (c = 18.1, not re-fitted) | 36.8% | 34.2 / 42.2% | 16.8% | 1.15% | 0.05 | −0.329 |
+| SFT + A5 σ | 36.8% | 67.8 / 78.2% | 0.0% | 6.2% | 0.68 | −0.302 |
+| uniform credit @287 | 37.2% | 10.5 / 15.0% | 19.5% | 0.052% | 0.01 | −0.324 |
+| split credit @287, seeds 0 / 1 / 2 | 37.8 / 36.8 / 38.5% | 41.8–42.5 / 49.8–51.5% | 0.0–0.3% | 1.59–1.64% | 0.08 / 0.03 / 0.07 | −0.316 / −0.317 / −0.307 |
+
+- **Accuracy:** the 4-bit SFT model is about 2 points more accurate than the bf16 merge (36.8% vs 34.5%). Most of
+  RL's "as-trained accuracy" in #15 is therefore the base, not RL. S3 (split vs uniform) is unaffected.
+- **Uniform credit:** evaluated as trained, it is still collapsed (σ = 0 on 19.5% of answers, median σ 0.05%).
+  This is #6's collapse, now confirmed on the eval set.
+
+**What this means.**
+- **Split credit's σ:** the coverage effect is real and much larger than the superseded numbers showed (≈ 42% vs
+  ≈ 11%). But the σ is informative about nothing: ρ is no better than uniform credit's, and the surface-feature
+  baseline wins every N test.
+- **"σ widens but does not track the error"** is now the corrected, pre-registered result.
+- **The superseded headline "S2 narrowly supported" is withdrawn.**
+
+**Determinism:** tonight's reruns of D65's two greedy tapes are byte-identical (400 / 400 completions each).
+**Provenance:**
+- D67 (committed `bb7ff3c`, before any corrected S/N/E result);
+- analysis code `d80ee83`, plus the per-seed output-name fix `20ec565`;
+- eval tapes `…/compare/{sft_4bit,rl287_4bit}`, `…/e1_eval/{final_4bit,step150_4bit}`, `results/e1/sft_4bit`;
+- analyses in `results/corrected/`.
