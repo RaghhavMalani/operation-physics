@@ -1208,6 +1208,16 @@
     "median_rel_sigma": 0.0005002486914710042,
     "rho_sigma_err": -0.006976165346136844,
     "mean_crps_log": -0.31775810527977333
+   },
+   "corrected": {
+    "n": 400,
+    "acc": 0.39,
+    "cov1": 0.1275,
+    "cov2": 0.175,
+    "sigma_zero": 0.20100502512562815,
+    "median_rel_sigma": 0.000571646116376596,
+    "rho_sigma_err": 0.02230387895798449,
+    "mean_crps_log": -0.34220083791871575
    }
   },
   "#6 overnight2 (uniform), final (step 759)": {
@@ -1220,6 +1230,16 @@
     "median_rel_sigma": 0.00016741063584173744,
     "rho_sigma_err": -0.038638168911792115,
     "mean_crps_log": -0.29128529420881744
+   },
+   "corrected": {
+    "n": 400,
+    "acc": 0.3825,
+    "cov1": 0.0275,
+    "cov2": 0.03,
+    "sigma_zero": 0.974937343358396,
+    "median_rel_sigma": 0.0,
+    "rho_sigma_err": 0.010364092192600467,
+    "mean_crps_log": -0.23425608547810384
    }
   }
  },
@@ -1290,11 +1310,27 @@
    "same_length": true,
    "rewards_identical": 1.0
   },
-  "split seed 0 @287 sampled k=4": "missing",
-  "E1a final sampled k=4": "missing"
+  "split seed 0 @287 sampled k=4": {
+   "n": 1600,
+   "identical": 1.0,
+   "same_length": true,
+   "rewards_identical": 1.0
+  },
+  "E1a final sampled k=4": {
+   "n": 1600,
+   "identical": 1.0,
+   "same_length": true,
+   "rewards_identical": 1.0
+  }
  },
  "instability": {
   "split seed 0 @287, D65": {
+   "problems_with_2plus_samples": 400,
+   "median_sd_ln_sigma": 0.8457018138163145,
+   "greedy_mean_midrank": 0.4981203007518797,
+   "greedy_below_all_samples": 0.045112781954887216
+  },
+  "split seed 0 @287, rerun": {
    "problems_with_2plus_samples": 400,
    "median_sd_ln_sigma": 0.8457018138163145,
    "greedy_mean_midrank": 0.4981203007518797,
@@ -1307,6 +1343,12 @@
    "greedy_below_all_samples": 0.075
   },
   "E1a final, D65": {
+   "problems_with_2plus_samples": 400,
+   "median_sd_ln_sigma": 0.3465735902799727,
+   "greedy_mean_midrank": 0.4546875,
+   "greedy_below_all_samples": 0.0225
+  },
+  "E1a final, rerun": {
    "problems_with_2plus_samples": 400,
    "median_sd_ln_sigma": 0.3465735902799727,
    "greedy_mean_midrank": 0.4546875,

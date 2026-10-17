@@ -61,3 +61,6 @@
 [02:10:22] GPU at 62C
 [02:10:22] start resume_check (est 900s, timeout 22778s): uv run python scripts/resume_gpu_check.py
 [02:17:56] end resume_check: exit 0
+[02:17:58] commit 'D66 GPU resume check (resume-smoke A/B)': pushed
+[02:17:58] start analyses_final: scripts/corrected_analyses.sh
+[02:20:15] end analyses_final: exit 0

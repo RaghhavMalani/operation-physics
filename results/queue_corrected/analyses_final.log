@@ -1,0 +1,6 @@
+family S/N seed 0: done
+family S/N seed 1: done
+family S/N seed 2: done
+family S seed mean: done
+family E: done (an E1 run without a corrected eval counts as p = 1, as pre-registered)
+side by side: results/corrected/side_by_side.md

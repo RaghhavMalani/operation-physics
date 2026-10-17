@@ -47,7 +47,9 @@ N1 = |1σ coverage − 68.3%| (lower is better), N2 = ρ(σ, err), N3 = mean crp
 | split_rl287_a5_strongest (seed 2) | superseded | 36.2% | 67.0% | 77.2% | 0.0% | 6.083% | 0.66 | -0.3005 |
 | split_rl287_a5_strongest (seed 2) | corrected | 38.5% | 68.0% | 77.8% | 0.3% | 6.415% | 0.64 | -0.2828 |
 | #5 overnight RL, final (step 287) | superseded | 35.5% | 12.8% | 17.5% | 20.2% | 0.050% | -0.01 | -0.3178 |
+| #5 overnight RL, final (step 287) | corrected | 39.0% | 12.8% | 17.5% | 20.1% | 0.057% | 0.02 | -0.3422 |
 | #6 overnight2 (uniform), final (step 759) | superseded | 36.0% | 9.8% | 14.5% | 43.2% | 0.017% | -0.04 | -0.2913 |
+| #6 overnight2 (uniform), final (step 759) | corrected | 38.2% | 2.8% | 3.0% | 97.5% | 0.000% | 0.01 | -0.2343 |
 
 ## Family E (D52; μ fixed, the same 400 prefixes)
 
@@ -79,14 +81,16 @@ N1 = |1σ coverage − 68.3%| (lower is better), N2 = ρ(σ, err), N3 = mean crp
 |---|---|---|---|
 | split seed 0 @287 greedy | 400 | 100.0% | 100.0% |
 | E1a final greedy | 400 | 100.0% | 100.0% |
-| split seed 0 @287 sampled k=4 | missing | | |
-| E1a final sampled k=4 | missing | | |
+| split seed 0 @287 sampled k=4 | 1600 | 100.0% | 100.0% |
+| E1a final sampled k=4 | 1600 | 100.0% | 100.0% |
 
 ## σ instability (D62): within-problem spread of sampled σ (k = 4)
 
 | model, sampled run | median SD of ln σ | greedy σ mean mid-rank | greedy σ below all samples |
 |---|---|---|---|
 | split seed 0 @287, D65 | 0.85 | 0.50 | 4.5% |
+| split seed 0 @287, rerun | 0.85 | 0.50 | 4.5% |
 | split seed 0 @287, superseded (bf16 merged) | 1.01 | 0.43 | 7.5% |
 | E1a final, D65 | 0.35 | 0.45 | 2.2% |
+| E1a final, rerun | 0.35 | 0.45 | 2.2% |
 | E1a final, superseded (bf16 merged) | 0.94 | 0.45 | 3.5% |
