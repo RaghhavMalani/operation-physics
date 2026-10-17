@@ -1263,3 +1263,50 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - `test_a6_labels_and_labelled_joint_verdict`: synthetic honest (slope 1), half-propagating (slope 0.5),
     lookup (0) and anti (−1) answers get the four expected labels, and the labelled joint verdicts are checked
     against relative-σ and absolute-σ A6b answers.
+
+### D65. Exploratory: RL adapters evaluated on the 4-bit training base (written before any 4-bit eval exists)
+- **Origin:** MORNING.md §6.1 (2026-10-17). RL LoRAs are trained on a 4-bit base (`physcal/train/grpo.py`,
+  `e1.py`: Unsloth, `load_in_4bit=True`), but every RL eval so far merged them into the bf16 SFT model. Your decision
+  (2026-10-17): run the check now, as an exploratory analysis. It changes no pre-registered result: every family S /
+  N / E verdict stays on the bf16 evals, as pre-registered.
+- **Question:** is the ~4× gap between training σ and eval σ (MORNING.md §5) a train/eval precision artifact?
+- **What changes (one variable):** how the adapter is applied. The bf16 evals used a bf16 base with the LoRA merged.
+  This check uses the training loader: a 4-bit base with the LoRA unmerged. Everything else is identical: the frozen
+  eval problems / prefixes, prompt v4, the token budget (512 / 24), the decoding, and the eval tokenizer.
+- **Loader (`model.loader: unsloth_4bit`, `physcal/eval/run_eval.py: load_unsloth_4bit`):**
+  - `FastLanguageModel.from_pretrained(<adapter dir>, load_in_4bit=True, dtype=None, fast_inference=False)`, with
+    `max_seq_length` and `text_only` taken from the run's own training config. Unsloth quantizes the base the adapter
+    names and attaches the adapter unmerged. The loader checks that this base is the SFT model the bf16 eval used.
+  - Generation then runs in Unsloth's inference mode. Unsloth's `generate` enters that mode itself, so training
+    rollouts used it too.
+  - **Prompts:** still built and tokenized by the eval's own tokenizer. The loader checks that Unsloth's tokenizer is
+    identical (vocabulary, chat template, EOS id, backend JSON). In the smoke test it was identical in all four.
+  - **Adapter check:** the loader checks that the adapter changes the logits (adapter on vs off on one prompt).
+  - **Smoke test:** split-credit @287, 4 problems, greedy. It ran, with 1.6 GiB peak and about the bf16 speed.
+- **Runs** (this order, one at a time, GPU temp > 87 °C → 10-min pause; `scripts/queue_precision_check.sh`):
+  1. E1a final, greedy → `e1_eval/final_4bit`
+  2. split-credit seed 0 @287, greedy → `compare/rl287_4bit`
+  3. E1a final, k = 4 sampled → `e1_eval/final_4bit_sampled`
+  4. split-credit seed 0 @287, k = 4 sampled → `compare/rl287_4bit_sampled`
+  - **Sampling** is D62's: T = 1.0, top_p 1, top_k off, repetition penalty 1, torch seed 0.
+  - **GPU time:** about 70–75 min at the bf16 durations (11 + 41 min split credit, about 5 + 13 min E1a). This is
+    more than the 45 min in MORNING.md, which counted only split credit's greedy run and underestimated its sampled
+    one.
+- **Report (`scripts/precision_check.py` → `results/precision_check/report.{json,md}`; descriptive, no tests):**
+  - **Per arm × decoding × precision**, as in D62: failure rate, median relative σ, σ = 0 share, 1σ/2σ coverage,
+    mean crps_log, ρ(σ, err) and accuracy (split credit).
+  - **Paired, greedy, 4-bit vs bf16:**
+    - the share of byte-identical completions (σ suffixes for E1a);
+    - for split credit, the share with the same μ;
+    - the median of ln(σ_4bit / σ_bf16) on problems answered in both runs (σ floored at 1e-6).
+  - **Training reference:** the median relative σ of training samples, overall and per depth, in the last 25 steps:
+    split credit steps 263–287 and E1a steps 276–300. The per-depth table controls for the problem mix.
+- **Reading rule, fixed before results:**
+  - **The share of the gap closed** is g = ln(σ̃_4bit,sampled / σ̃_bf16,sampled) / ln(σ̃_train / σ̃_bf16,sampled),
+    with σ̃ the median relative σ.
+  - **Labels:** g ≥ 0.75 → "precision explains most of the gap"; 0.25 ≤ g < 0.75 → "partly"; g < 0.25 → "does not
+    explain the gap".
+  - g is computed per arm. E1a is the cleaner arm, because μ is fixed and only the σ suffix differs.
+  - **If precision explains most of the gap,** every RL eval so far has understated the trained policy's σ. The
+    pre-registered verdicts still stand as tests of the bf16-evaluated model, but the write-up must say which model
+    was evaluated.

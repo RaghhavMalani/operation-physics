@@ -2,7 +2,7 @@
 
     uv run python -m physcal.train.e1 data                                    # CPU: prefix datasets
     uv run python -m physcal.train.e1 train --config grpo_e1a [--stop-at "05:00 Asia/Kolkata"]
-    uv run python -m physcal.train.e1 eval --run results/train/<run_id> [--adapter final_adapter]
+    uv run python -m physcal.train.e1 eval --run results/train/<run_id> [--adapter final_adapter] [--loader unsloth_4bit]
     uv run python -m physcal.train.e1 compare                                 # CPU: family E tests
 
 Prefixes are existing SFT-only greedy completions truncated right after the "±" of their answer, so μ, the
@@ -264,22 +264,27 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
 
 
 # ------------------------------------------------------------------------------------------- eval
-def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None, samples: int = 0) -> dict:
+def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None, samples: int = 0,
+             loader: str = "transformers") -> dict:
     """Greedy σ suffixes from the E1 model on the frozen eval prefixes; a replayable tape plus per-row scores.
     `samples` = K > 0 instead samples K suffixes per prefix with the eval config's sampling settings (D62,
-    exploratory); every sample is a row, tagged with its index."""
+    exploratory); every sample is a row, tagged with its index. `loader` = "unsloth_4bit" applies the adapter to the
+    4-bit base through the training loader instead of merging it into the bf16 base (D65, exploratory)."""
     e1 = _config()
-    mode = read_meta(run_dir / "rollouts.jsonl")["train_config"]["e1_mode"]
+    train_cfg = read_meta(run_dir / "rollouts.jsonl")["train_config"]
+    mode = train_cfg["e1_mode"]
     rows = read_rows("eval")
     gen_cfg = {**e1["eval"]["generation"], "num_samples": 1} if samples <= 0 else \
         {**e1["eval"]["generation"], "do_sample": True, "num_samples": samples}
     if backend is None:
         from physcal.eval.run_eval import HFBackend
 
-        backend = HFBackend(str(REPO_ROOT / e1["model_id"]),
-                            {"id": str(REPO_ROOT / e1["model_id"]), "dtype": "bfloat16", "model_class": "causal_lm",
-                             "lora": str(run_dir / adapter), "chat_template_kwargs": e1.get("chat_template_kwargs", {})},
-                            gen_cfg)
+        model_cfg = {"id": str(REPO_ROOT / e1["model_id"]), "dtype": "bfloat16", "model_class": "causal_lm",
+                     "lora": str(run_dir / adapter), "chat_template_kwargs": e1.get("chat_template_kwargs", {})}
+        if loader != "transformers":  # D65: the training run's own loader settings
+            model_cfg.update(loader=loader, max_seq_length=train_cfg["model"]["max_seq_length"],
+                             text_only=train_cfg["model"].get("text_only", False))
+        backend = HFBackend(model_cfg["id"], model_cfg, gen_cfg)
     rw_cfg = reward_config()
     rw_cfg["scoring"]["rule"] = e1["reward_rule"]
     out = run_dir / "e1_eval" / out_name
@@ -300,6 +305,9 @@ def evaluate(run_dir: Path, adapter: str, out_name: str, backend=None, samples: 
             "adapter": str(run_dir / adapter), "eval_tapes": e1["eval_tapes"]}
     if samples > 0:
         meta["sampled"] = {"num_samples": samples, "generation": gen_cfg}
+    if loader != "transformers":
+        meta["loader"] = loader
+        meta["loader_check"] = getattr(backend, "loader_check", None)
     (out / "rollouts.jsonl").unlink(missing_ok=True)
     scored = []
     with TapeWriter(out / "rollouts.jsonl", f"{run_dir.name}-e1-eval-{out_name}", meta) as tape:
@@ -347,6 +355,8 @@ def main() -> None:
     ap.add_argument("--adapter", default="final_adapter")
     ap.add_argument("--out-name", default="final")
     ap.add_argument("--samples", type=int, default=0, help="eval: K > 0 sampled σ suffixes per prefix (D62)")
+    ap.add_argument("--loader", default="transformers", choices=["transformers", "unsloth_4bit"],
+                    help="eval: unsloth_4bit applies the adapter to the 4-bit base, as in training (D65)")
     args = ap.parse_args()
     if args.action == "data":
         print(json.dumps(build_data(), indent=2))
@@ -356,7 +366,8 @@ def main() -> None:
                          indent=2, default=str))
     elif args.action == "eval":
         run_dir = Path(args.run) if Path(args.run).is_absolute() else REPO_ROOT / args.run
-        print(json.dumps(evaluate(run_dir, args.adapter, args.out_name, samples=args.samples), indent=2))
+        print(json.dumps(evaluate(run_dir, args.adapter, args.out_name, samples=args.samples, loader=args.loader),
+                         indent=2))
     else:
         from physcal.train.e1_compare import compare
 

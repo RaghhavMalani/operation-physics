@@ -141,16 +141,70 @@ class GpuMemoryPoller:
         self._thread.join()
 
 
+LOADERS = ("transformers", "unsloth_4bit")
+
+
+def load_unsloth_4bit(model_id: str, model_cfg: dict, tok) -> tuple[Any, dict]:
+    """The RL trainers' loader (physcal/train/grpo.py, e1.py): Unsloth, bitsandbytes 4-bit base, the LoRA attached
+    unmerged (Unsloth loads the adapter dir and the base it names), then Unsloth's inference mode. Model config keys
+    used: lora (optional), max_seq_length, text_only. Returns the model and a check dict: the adapter's base is
+    `model_id`, the adapter moves the logits, and whether Unsloth's tokenizer matches `tok` (the eval's tokenizer,
+    which still builds every prompt)."""
+    import torch
+    from unsloth import FastLanguageModel
+
+    lora = model_cfg.get("lora")
+    check: dict[str, Any] = {"loader": "unsloth_4bit"}
+    if lora:
+        base = json.loads((Path(lora) / "adapter_config.json").read_text())["base_model_name_or_path"]
+        if Path(base).resolve() != Path(model_id).resolve():  # Unsloth resolves `base` against the cwd
+            raise RuntimeError(f"adapter {lora} names base {base!r} (cwd {os.getcwd()}), expected {model_id}")
+        check["adapter_base"] = base
+    model, utok = FastLanguageModel.from_pretrained(
+        model_name=lora or model_id, max_seq_length=model_cfg["max_seq_length"], load_in_4bit=True,
+        fast_inference=False, dtype=None, text_only=model_cfg.get("text_only", False),
+    )
+    FastLanguageModel.for_inference(model)
+    check["tokenizer_matches"] = {
+        "vocab": utok.get_vocab() == tok.get_vocab(), "chat_template": utok.chat_template == tok.chat_template,
+        "eos_token_id": utok.eos_token_id == tok.eos_token_id,
+        "backend": utok.backend_tokenizer.to_str() == tok.backend_tokenizer.to_str(),
+    }
+    check["bnb_4bit_linear_modules"] = sum(type(m).__module__.startswith("bitsandbytes") and "4bit" in type(m).__name__
+                                           for m in model.modules())
+    if lora:
+        enc = tok(tok.apply_chat_template([{"role": "user", "content": "1 + 1 = ?"}], tokenize=False,
+                                          add_generation_prompt=True), return_tensors="pt").to("cuda")
+        with torch.inference_mode():
+            on = model(**enc).logits[0, -1].float()
+            with model.disable_adapter():
+                off = model(**enc).logits[0, -1].float()
+        check["adapter_max_abs_logit_delta"] = float((on - off).abs().max())
+        if check["adapter_max_abs_logit_delta"] == 0:
+            raise RuntimeError(f"adapter {lora} does not change the logits")
+    print(f"unsloth_4bit loader check: {check}", flush=True)
+    return model, check
+
+
 class HFBackend:
     """Plain transformers inference: bf16, left padding, batched decoding with explicit parameters.
 
     Model config keys: id, revision (exact commit; pinned), dtype, chat_template_kwargs (e.g.
-    {enable_thinking: false}), model_class ("causal_lm" or "image_text_to_text" for VL checkpoints).
+    {enable_thinking: false}), model_class ("causal_lm" or "image_text_to_text" for VL checkpoints), loader
+    ("transformers", the default: bf16 base, LoRA merged; or "unsloth_4bit": the RL training loader, 4-bit base and
+    LoRA unmerged, see `load_unsloth_4bit`; dtype and model_class are then not used).
     """
 
     def __init__(self, model_id: str, model_cfg: dict, gen_cfg: dict):
         os.environ.setdefault("HF_HOME", str(REPO_ROOT / ".cache" / "huggingface"))
+        loader = model_cfg.get("loader", "transformers")
+        if loader not in LOADERS:
+            raise ValueError(f"unknown loader {loader!r}; expected one of {LOADERS}")
+        if loader == "unsloth_4bit" and model_cfg.get("device", "cuda") != "cuda":
+            raise ValueError("the unsloth_4bit loader needs CUDA")
         import torch
+        if loader == "unsloth_4bit":
+            import unsloth  # noqa: F401  (before transformers, as in training)
         import transformers
 
         self.torch = torch
@@ -163,26 +217,33 @@ class HFBackend:
             torch.cuda.reset_peak_memory_stats()
         self.tok = transformers.AutoTokenizer.from_pretrained(model_id, revision=revision)
         self.tok.padding_side = "left"
-        model_class = {
-            "causal_lm": transformers.AutoModelForCausalLM,
-            "image_text_to_text": transformers.AutoModelForImageTextToText,
-        }[model_cfg.get("model_class", "causal_lm")]
-        self.model = model_class.from_pretrained(
-            model_id, revision=revision, dtype=getattr(torch, model_cfg["dtype"]), device_map=self.device
-        ).eval()
+        self.loader_check = None
+        if loader == "unsloth_4bit":
+            if revision:
+                raise ValueError("the unsloth_4bit loader takes local models only (no pinned revision)")
+            self.model, self.loader_check = load_unsloth_4bit(model_id, model_cfg, self.tok)
+        else:
+            model_class = {
+                "causal_lm": transformers.AutoModelForCausalLM,
+                "image_text_to_text": transformers.AutoModelForImageTextToText,
+            }[model_cfg.get("model_class", "causal_lm")]
+            self.model = model_class.from_pretrained(
+                model_id, revision=revision, dtype=getattr(torch, model_cfg["dtype"]), device_map=self.device
+            ).eval()
         self.revision = getattr(self.model.config, "_commit_hash", None) or revision
         if revision and self.revision != revision:
             raise RuntimeError(f"{model_id}: loaded revision {self.revision}, expected {revision}")
         self.lora_hash = None
-        if model_cfg.get("lora"):  # trained adapter: merge into the bf16 base before eval
+        if model_cfg.get("lora"):  # trained adapter: merged into the bf16 base (unsloth_4bit: attached unmerged)
             import hashlib
-
-            from peft import PeftModel
 
             lora_dir = Path(model_cfg["lora"])
             weights = sorted(lora_dir.glob("adapter_model*.safetensors"))
             self.lora_hash = hashlib.sha256(b"".join(w.read_bytes() for w in weights)).hexdigest()[:16]
-            self.model = PeftModel.from_pretrained(self.model, str(lora_dir)).merge_and_unload().eval()
+            if loader == "transformers":
+                from peft import PeftModel
+
+                self.model = PeftModel.from_pretrained(self.model, str(lora_dir)).merge_and_unload().eval()
         # Stop on the model's EOS ids *and* the tokenizer's end-of-turn token. Qwen3.5-2B ships no
         # generation_config.json, and its config.json names <|endoftext|> while chat turns end with <|im_end|>.
         eos = self.model.generation_config.eos_token_id
@@ -334,6 +395,7 @@ def run(
     model_revision = getattr(backend, "revision", None)
     oom_backoffs = getattr(backend, "oom_backoffs", 0)
     lora_hash = getattr(backend, "lora_hash", None)
+    loader_check = getattr(backend, "loader_check", None)
     if poller.peak_mib:
         memory["nvidia_smi_peak_used_gib_device_wide"] = poller.peak_mib / 1024
 
@@ -351,6 +413,8 @@ def run(
         "system_prompt": SYSTEM_PROMPTS[eval_cfg["prompt"]],
         "git_commit": _git_commit(),
     }
+    if loader_check is not None:
+        meta["loader_check"] = loader_check
     tape_path = out / "rollouts.jsonl"
     tape_path.unlink(missing_ok=True)
     records: dict[str, list[dict]] = {name: [] for name in splits}
@@ -371,6 +435,8 @@ def run(
         "model_revision": model_revision,
         "lora": eval_cfg["model"].get("lora"),
         "lora_hash": lora_hash,
+        "loader": eval_cfg["model"].get("loader", "transformers"),
+        "loader_check": loader_check,
         "oom_backoffs": oom_backoffs,
         "oom_fallback": oom_fallback,
         "oom_error": oom_error,
