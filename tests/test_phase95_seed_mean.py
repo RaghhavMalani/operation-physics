@@ -52,3 +52,20 @@ def test_a_dominating_arm_is_supported_and_a_null_arm_is_not():
     same = sm.seed_mean_tests([ctrl, ctrl, ctrl], ctrl, ctrl, KEYS, n_boot=200)
     assert same["S1a"]["p_one_sided"] == 1.0 and not same["holm"]["S1a"]["supported"]
     assert same["S3"]["p_one_sided"] == 0.0  # identical accuracy is non-inferior at a 5-point margin
+
+
+def test_corrected_mode_changes_only_the_input_and_output_paths():
+    """D67: --corrected reads the 4-bit unmerged evals and their controls on the same base, writes results/corrected."""
+    import phase95_compare as pc
+    import phase95_seed_mean as sm
+
+    run = pc.ROOT / "results/train/some-run"
+    old, new = pc.paths(run, False), pc.paths(run, True)
+    assert set(old) == set(new)
+    assert old["split"] == run / "compare/rl287/rollouts.jsonl" and old["sft"] == pc.OLD / "sft/rollouts.jsonl"
+    assert old["out"] == run / "compare/phase95_family_S" and old["family_a"] is True
+    assert new["split"] == run / "compare/rl287_4bit/rollouts.jsonl"
+    assert new["sft"] == pc.UNIFORM / "sft_4bit/rollouts.jsonl" and new["uniform"] == pc.UNIFORM / "rl287_4bit/rollouts.jsonl"
+    assert all(str(new[k]).startswith(str(pc.CORRECTED)) for k in ("posthoc", "sft_a5", "a5_out", "out"))
+    assert sm.CORRECTED_INPUTS["eval_tape"] == "compare/rl287_4bit/rollouts.jsonl"
+    assert sm.CORRECTED_INPUTS["controls"] == (new["sft"], new["uniform"])

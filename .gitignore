@@ -28,3 +28,4 @@ results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-5
 results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2/rollouts.jsonl
 results/queue_split_seeds/*.pid
 results/discarded/
+results/queue_corrected/*.pid

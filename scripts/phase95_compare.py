@@ -26,6 +26,14 @@ calibration split) applied to the SAME split-credit completions, so μ is identi
 - N1: |1σ coverage − 68.27%| smaller; N2: Spearman ρ(σ, |error|) higher; N3: mean crps_log higher.
 Holm over {N1, N2, N3}; "RL σ beats the baseline" = N2 and N3 supported (N1 reported).
 Writes <run>/compare/phase95_family_S.json and .md.
+
+`--corrected` (DECISIONS.md D67): the same analysis on the corrected evals, every adapter unmerged on its 4-bit
+training base: <run>/compare/rl287_4bit, the SFT-only control and uniform credit @287 on the same base
+(overnight2…/compare/{sft_4bit,rl287_4bit}). Only the inputs and outputs change:
+- the A5 σ is the same fitted model, applied to the corrected completions;
+- the standing post-hoc scale (c from posthoc_fit.json, not re-fitted) is applied to the 4-bit SFT answers;
+- D49's superseded family A is not re-run.
+Writes results/corrected/family_S/<run name>.{json,md}; derived tapes go to results/corrected/derived/.
 """
 
 import json
@@ -45,6 +53,24 @@ COND = {"text_scale": ROOT / "results/posthoc_calibration/sft_eval_text_scale.js
         "oracle_cell": ROOT / "results/posthoc_calibration/sft_eval_oracle_cell.jsonl"}  # (b), upper bound only
 N_BOOT, SEED, ALPHA, MARGIN = 10_000, 0, 0.05, 0.05
 COVERAGE_TARGET = 0.6827
+CORRECTED = ROOT / "results/corrected"
+POSTHOC_FIT = ROOT / "results/posthoc_calibration/posthoc_fit.json"
+
+
+def paths(run: Path, corrected: bool) -> dict:
+    """Inputs and outputs of one analysis: the superseded (bf16-merged) evals, or the corrected ones (D67)."""
+    if not corrected:
+        return {"split": run / "compare/rl287/rollouts.jsonl", "sft": OLD / "sft/rollouts.jsonl",
+                "uniform": UNIFORM / "rl287/rollouts.jsonl", "posthoc": POSTHOC,
+                "sft_a5": ROOT / "results/a5_baselines/sft_eval_a5_sigma.jsonl", "sft_a5_from": None,
+                "a5_out": run / "compare/rl287_a5_sigma.jsonl", "final": run / "compare/rlfinal/rollouts.jsonl",
+                "out": run / "compare/phase95_family_S", "family_a": True}
+    d = CORRECTED / "derived"
+    return {"split": run / "compare/rl287_4bit/rollouts.jsonl", "sft": UNIFORM / "sft_4bit/rollouts.jsonl",
+            "uniform": UNIFORM / "rl287_4bit/rollouts.jsonl", "posthoc": d / "sft_4bit_posthoc_crps_fit.jsonl",
+            "sft_a5": d / "sft_4bit_a5_sigma.jsonl", "sft_a5_from": UNIFORM / "sft_4bit/rollouts.jsonl",
+            "a5_out": d / f"{run.name}_rl287_4bit_a5_sigma.jsonl", "final": run / "compare/rlfinal_4bit/rollouts.jsonl",
+            "out": CORRECTED / "family_S" / run.name, "family_a": False}
 
 
 def load(path: Path) -> dict:
@@ -116,9 +142,20 @@ def headline(d: dict, keys: list) -> dict:
             "mean_crps_log": st.mean(d[k]["crps_log"] for k in keys)}
 
 
-def main(run: Path) -> None:
-    split = load(run / "compare/rl287/rollouts.jsonl")
-    sft, uni, post = load(OLD / "sft/rollouts.jsonl"), load(UNIFORM / "rl287/rollouts.jsonl"), load(POSTHOC)
+def main(run: Path, corrected: bool = False) -> None:
+    P = paths(run, corrected)
+    from physcal.eval.nested_baselines import load_models, write_scaled_tape
+
+    models, sel = load_models()
+    if corrected:  # derived inputs on the 4-bit SFT answers: the standing post-hoc scale and the A5 σ
+        from physcal.eval.posthoc import scaled_tape
+
+        P["posthoc"].parent.mkdir(parents=True, exist_ok=True)
+        c = json.loads(POSTHOC_FIT.read_text())["scales"]["crps_fit"]
+        scaled_tape(P["sft"], c, P["posthoc"])
+        write_scaled_tape(P["sft_a5_from"], models["sigma"][sel["strongest"]["sigma"]], P["sft_a5"])
+    split = load(P["split"])
+    sft, uni, post = load(P["sft"]), load(P["uniform"]), load(P["posthoc"])
     keys = sorted(split)
     assert set(keys) == set(sft) == set(uni) == set(post), "different eval problems"
     acc = lambda d, ks: float(np.mean([d[k]["correct"] for k in ks]))
@@ -135,27 +172,27 @@ def main(run: Path) -> None:
                       "S2": t["S2_rho_vs_uniform"]["p_one_sided"], "S3": t["S3_accuracy_noninferiority"]["p_one_sided"]})
     diffs = [split[k]["crps_log"] - post[k]["crps_log"] for k in keys]
     reported = {"crps_log_vs_posthoc": {"mean_diff": st.mean(diffs), "wilcoxon_p_two_sided": float(wilcoxon(diffs).pvalue)}}
-    cond = {name: load(path) for name, path in COND.items()}
+    cond = {name: load(path) for name, path in COND.items()} if P["family_a"] else {}
     assert all(set(keys) == set(c) for c in cond.values()), "different eval problems (conditional post-hoc)"
-    from physcal.eval.nested_baselines import load_models, write_scaled_tape
-
-    models, sel = load_models()
-    a5_tape = run / "compare/rl287_a5_sigma.jsonl"
-    write_scaled_tape(run / "compare/rl287/rollouts.jsonl", models["sigma"][sel["strongest"]["sigma"]], a5_tape)
+    a5_tape = P["a5_out"]
+    write_scaled_tape(P["split"], models["sigma"][sel["strongest"]["sigma"]], a5_tape)
     a5_same = load(a5_tape)
-    amendment = {"N_vs_A5_strongest_same_completions": family_a(split, a5_same, keys, "N", ("2", "3")),
-                 "superseded_D49_A_vs_text_scale": family_a(split, cond["text_scale"], keys),
-                 "superseded_D49_sensitivity_A_vs_text_direct": family_a(split, cond["text_direct"], keys)}
+    amendment = {"N_vs_A5_strongest_same_completions": family_a(split, a5_same, keys, "N", ("2", "3"))}
+    if P["family_a"]:
+        amendment |= {"superseded_D49_A_vs_text_scale": family_a(split, cond["text_scale"], keys),
+                      "superseded_D49_sensitivity_A_vs_text_direct": family_a(split, cond["text_direct"], keys)}
     rows = {"sft": sft, "posthoc": post, **{f"sft_{k}": v for k, v in cond.items()},
-            "sft_a5_strongest": load(ROOT / "results/a5_baselines/sft_eval_a5_sigma.jsonl"), "uniform_rl287": uni,
+            "sft_a5_strongest": load(P["sft_a5"]), "uniform_rl287": uni,
             "split_rl287": split, "split_rl287_a5_strongest": a5_same}
-    final = run / "compare/rlfinal/rollouts.jsonl"
+    final = P["final"]
     if final.exists():
         rows["split_final"] = load(final)
     head = {name: {s: headline(d, [k for k in keys if k[0] == s]) for s in ("id", "depth_extrapolation")} | {"pooled": headline(d, keys)}
             for name, d in rows.items()}
-    out = {"tests": t, "amendment_D49": amendment, "reported": reported, "headline": head}
-    (run / "compare/phase95_family_S.json").write_text(json.dumps(out, indent=2, default=float))
+    out = {"tests": t, "amendment_D49": amendment, "reported": reported, "headline": head,
+           "inputs": {k: str(v) for k, v in P.items() if isinstance(v, Path)}, "corrected_D67": corrected}
+    P["out"].parent.mkdir(parents=True, exist_ok=True)
+    P["out"].with_suffix(".json").write_text(json.dumps(out, indent=2, default=float))
     lines = ["| model | split | acc ≤1% | 1σ cov | 2σ cov | σ = 0 | median rel. σ | ρ(σ, err) | mean crps_log |",
              "|---|---|---|---|---|---|---|---|---|"]
     for name, h in head.items():
@@ -174,9 +211,10 @@ def main(run: Path) -> None:
                 h = a["holm"][k.split("_")[0]]
                 lines.append(f"| {k} | {v['rl']:.4f} | {v['control']:.4f} | [{v['diff_ci'][0]:.4f}, {v['diff_ci'][1]:.4f}] "
                              f"| {h['p']:.3g} | {h['holm_threshold']:.3g} | {h['supported']} |")
-    (run / "compare/phase95_family_S.md").write_text("\n".join(lines) + "\n")
+    P["out"].with_suffix(".md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]) if Path(sys.argv[1]).is_absolute() else ROOT / sys.argv[1])
+    args = [a for a in sys.argv[1:] if a != "--corrected"]
+    main(Path(args[0]) if Path(args[0]).is_absolute() else ROOT / args[0], corrected="--corrected" in sys.argv[1:])

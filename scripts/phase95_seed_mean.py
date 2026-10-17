@@ -13,6 +13,10 @@ A hypothesis is supported iff it is supported here (PREREGISTRATION.md family S)
 S1, bootstrap for S2/S3, exactly as phase95_compare.py) and the range across seeds are reported alongside; the
 per-seed p-values also sit beside each seed-mean verdict. `REPORTED_AS` holds the wording your review of D62 fixed.
 Writes results/split_credit_seed_mean/family_S_seed_mean.{json,md}.
+
+`--corrected` (DECISIONS.md D67): the same test on the corrected evals (adapters unmerged on the 4-bit training
+base): <run>/compare/rl287_4bit, and the SFT-only and uniform-credit controls on the same base. Writes
+results/corrected/split_credit_seed_mean/. Nothing else changes.
 """
 
 import json
@@ -22,10 +26,17 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from phase95_compare import MARGIN, N_BOOT, OLD, ROOT, SEED, UNIFORM, bootstrap, holm, load, mcnemar_greater, rho  # noqa: E402
+from phase95_compare import (CORRECTED, MARGIN, N_BOOT, OLD, ROOT, SEED, UNIFORM, bootstrap, holm, load,  # noqa: E402
+                             mcnemar_greater, rho)
 
 OUT = ROOT / "results/split_credit_seed_mean"
 EVAL_TAPE = "compare/rl287/rollouts.jsonl"
+CONTROLS = (OLD / "sft/rollouts.jsonl", UNIFORM / "rl287/rollouts.jsonl")
+TITLE = "# Family S on the seed mean (D62)"
+# D67: the corrected evals (adapters unmerged on the 4-bit training base) and their controls on the same base
+CORRECTED_INPUTS = {"out": CORRECTED / "split_credit_seed_mean", "eval_tape": "compare/rl287_4bit/rollouts.jsonl",
+                    "controls": (UNIFORM / "sft_4bit/rollouts.jsonl", UNIFORM / "rl287_4bit/rollouts.jsonl"),
+                    "title": "# Family S on the seed mean (D62), corrected evals: 4-bit training base, adapters unmerged (D67)"}
 TESTS = ("S1a", "S1b", "S2", "S3")
 # Your review of D62 (2026-10-17, after the results): how a seed-mean verdict is worded wherever it is reported.
 REPORTED_AS = {"S2": "narrowly supported; sensitive to the seed-mean definition"}
@@ -75,7 +86,7 @@ def main(runs: list[Path]) -> dict:
     if len(runs) != 3:
         raise SystemExit("family S on the seed mean needs exactly 3 split-credit runs (seeds 0, 1, 2)")
     seeds = [load(r / EVAL_TAPE) for r in runs]
-    sft, uni = load(OLD / "sft/rollouts.jsonl"), load(UNIFORM / "rl287/rollouts.jsonl")
+    sft, uni = (load(c) for c in CONTROLS)
     keys = sorted(seeds[0])
     assert all(set(keys) == set(d) for d in seeds + [sft, uni]), "different eval problems"
     sanity = [json.loads((r / "sanity.json").read_text()) if (r / "sanity.json").exists() else None for r in runs]
@@ -86,10 +97,11 @@ def main(runs: list[Path]) -> dict:
            "range_across_seeds": {k: [min(v), max(v)] for k, v in point.items()}, "per_seed_point": point,
            "per_seed_p": {k: [s[k]["p_one_sided"] for s in per_seed.values()] for k in TESTS}}
     out["reported_as"] = {k: reported_as(k, out["seed_mean"]["holm"][k]["supported"]) for k in TESTS}
+    out["inputs"] = {"eval_tape": EVAL_TAPE, "sft": str(CONTROLS[0]), "uniform": str(CONTROLS[1])}
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "family_S_seed_mean.json").write_text(json.dumps(out, indent=2, default=float))
     t = out["seed_mean"]
-    lines = ["# Family S on the seed mean (D62)", "", f"Runs: {', '.join(out['runs'])}; sanity: {out['sanity']}", "",
+    lines = [TITLE, "", f"Runs: {', '.join(out['runs'])}; sanity: {out['sanity']}", "",
              "| test | split credit, seed mean | control | difference | 95% CI | p (one-sided) | Holm threshold | supported "
              "| reported as | per-seed p (runs in the order listed) |",
              "|---|---|---|---|---|---|---|---|---|---|"]
@@ -116,4 +128,7 @@ def main(runs: list[Path]) -> dict:
 
 
 if __name__ == "__main__":
-    main([Path(a) if Path(a).is_absolute() else ROOT / a for a in sys.argv[1:]])
+    if "--corrected" in sys.argv[1:]:
+        OUT, EVAL_TAPE, CONTROLS, TITLE = (CORRECTED_INPUTS[k] for k in ("out", "eval_tape", "controls", "title"))
+        REPORTED_AS = {}  # the approved S2 wording belongs to the superseded result; corrected verdicts are plain
+    main([Path(a) if Path(a).is_absolute() else ROOT / a for a in sys.argv[1:] if a != "--corrected"])
