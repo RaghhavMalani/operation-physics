@@ -1,0 +1,251 @@
+{
+  "split-credit seed 0 @287": {
+    "describe": {
+      "bf16 greedy": {
+        "n": 400,
+        "fail_rate": 0.0,
+        "median_rel_sigma": 0.002442496185397238,
+        "sigma_zero": 0.0225,
+        "cov1": 0.225,
+        "cov2": 0.29,
+        "mean_crps_log": -0.3253055578004721,
+        "rho_sigma_err": 0.07776136082381441,
+        "accuracy": 0.345
+      },
+      "bf16 sampled": {
+        "n": 1600,
+        "fail_rate": 0.00875,
+        "median_rel_sigma": 0.0036724740283226253,
+        "sigma_zero": 0.05548549810844893,
+        "cov1": 0.19875,
+        "cov2": 0.256875,
+        "mean_crps_log": -0.516762218033496,
+        "rho_sigma_err": 0.08042936734735447,
+        "accuracy": 0.29625
+      },
+      "4bit greedy": {
+        "n": 400,
+        "fail_rate": 0.0025,
+        "median_rel_sigma": 0.016136518902482595,
+        "sigma_zero": 0.0,
+        "cov1": 0.4175,
+        "cov2": 0.4975,
+        "mean_crps_log": -0.3162704112072915,
+        "rho_sigma_err": 0.07687510316816443,
+        "accuracy": 0.3775
+      },
+      "4bit sampled": {
+        "n": 1600,
+        "fail_rate": 0.006875,
+        "median_rel_sigma": 0.017315868702986098,
+        "sigma_zero": 0.003775959723096287,
+        "cov1": 0.345,
+        "cov2": 0.430625,
+        "mean_crps_log": -0.4117240044246629,
+        "rho_sigma_err": 0.12143857445673151,
+        "accuracy": 0.28875
+      }
+    },
+    "paired_greedy": {
+      "n_pairs": 400,
+      "identical_completion": 0.0175,
+      "n_both_answered": 399,
+      "median_ln_sigma_ratio_4bit_over_bf16": 2.302585092994046,
+      "share_4bit_sigma_wider": 0.7543859649122807,
+      "share_4bit_sigma_narrower": 0.03007518796992481,
+      "same_mu": 0.1275
+    },
+    "within_problem": {
+      "bf16": {
+        "problems_with_2plus_samples": 400,
+        "median_sd_ln_sigma": 1.008241973152882,
+        "greedy_mean_midrank": 0.42635416666666665,
+        "greedy_below_all_samples": 0.075
+      },
+      "4bit": {
+        "problems_with_2plus_samples": 400,
+        "median_sd_ln_sigma": 0.8457018138163145,
+        "greedy_mean_midrank": 0.4981203007518797,
+        "greedy_below_all_samples": 0.045112781954887216
+      }
+    },
+    "training": {
+      "steps": [
+        263,
+        287
+      ],
+      "n": 800,
+      "fail_rate": 0.00625,
+      "median_rel_sigma": 0.01341151910127342
+    },
+    "median_rel_sigma_by_depth": {
+      "training": {
+        "1": 0.012727504136438843,
+        "2": 0.013973103892144576,
+        "3": 0.011627347521370268,
+        "4": 0.017102003827308216
+      },
+      "bf16 greedy": {
+        "1": 0.0012377723100748385,
+        "2": 0.00225933190207328,
+        "3": 0.0018718414506393264,
+        "4": 0.003387454432872761,
+        "5": 0.0024846303732835155
+      },
+      "bf16 sampled": {
+        "1": 0.0027427693742371672,
+        "2": 0.0037016989373738402,
+        "3": 0.0028471494205967824,
+        "4": 0.003943482990582355,
+        "5": 0.00419161079241186
+      },
+      "4bit greedy": {
+        "1": 0.013205254997212605,
+        "2": 0.014052477255066136,
+        "3": 0.01602082155071282,
+        "4": 0.018002348585139036,
+        "5": 0.016703164457070707
+      },
+      "4bit sampled": {
+        "1": 0.016088579246400076,
+        "2": 0.01988123695751759,
+        "3": 0.0162432042133877,
+        "4": 0.01833672956884398,
+        "5": 0.016913789776757206
+      }
+    },
+    "gap": {
+      "g": 1.1972666957749611,
+      "label": "precision explains most of the gap",
+      "sigma_bf16_sampled": 0.0036724740283226253,
+      "sigma_4bit_sampled": 0.017315868702986098,
+      "sigma_train": 0.01341151910127342
+    },
+    "gap_greedy_descriptive": {
+      "g": 1.1086088308179574,
+      "label": "precision explains most of the gap"
+    }
+  },
+  "E1a final": {
+    "describe": {
+      "bf16 greedy": {
+        "n": 400,
+        "fail_rate": 0.0,
+        "median_rel_sigma": 0.0056657223796034,
+        "sigma_zero": 0.01,
+        "cov1": 0.2925,
+        "cov2": 0.3575,
+        "mean_crps_log": -0.3361705501606924,
+        "rho_sigma_err": 0.0627674515902993
+      },
+      "bf16 sampled": {
+        "n": 1600,
+        "fail_rate": 0.001875,
+        "median_rel_sigma": 0.007727975270479135,
+        "sigma_zero": 0.026925485284909206,
+        "cov1": 0.32625,
+        "cov2": 0.390625,
+        "mean_crps_log": -0.3426404729796008,
+        "rho_sigma_err": 0.032926710582079535
+      },
+      "4bit greedy": {
+        "n": 400,
+        "fail_rate": 0.0,
+        "median_rel_sigma": 0.03227894341786708,
+        "sigma_zero": 0.0,
+        "cov1": 0.485,
+        "cov2": 0.5825,
+        "mean_crps_log": -0.33088592765343305,
+        "rho_sigma_err": 0.012674069264585797
+      },
+      "4bit sampled": {
+        "n": 1600,
+        "fail_rate": 0.0025,
+        "median_rel_sigma": 0.03546101074443476,
+        "sigma_zero": 0.0006265664160401002,
+        "cov1": 0.499375,
+        "cov2": 0.595,
+        "mean_crps_log": -0.3425555927715391,
+        "rho_sigma_err": 0.007635457898553114
+      }
+    },
+    "paired_greedy": {
+      "n_pairs": 400,
+      "identical_completion": 0.2175,
+      "n_both_answered": 400,
+      "median_ln_sigma_ratio_4bit_over_bf16": 2.302585092994046,
+      "share_4bit_sigma_wider": 0.7775,
+      "share_4bit_sigma_narrower": 0.005
+    },
+    "within_problem": {
+      "bf16": {
+        "problems_with_2plus_samples": 400,
+        "median_sd_ln_sigma": 0.9405780351323009,
+        "greedy_mean_midrank": 0.4496875,
+        "greedy_below_all_samples": 0.035
+      },
+      "4bit": {
+        "problems_with_2plus_samples": 400,
+        "median_sd_ln_sigma": 0.3465735902799727,
+        "greedy_mean_midrank": 0.4546875,
+        "greedy_below_all_samples": 0.0225
+      }
+    },
+    "training": {
+      "steps": [
+        276,
+        300
+      ],
+      "n": 800,
+      "fail_rate": 0.00125,
+      "median_rel_sigma": 0.03556187766714083
+    },
+    "median_rel_sigma_by_depth": {
+      "training": {
+        "1": 0.029164115125535822,
+        "2": 0.031113876789047916,
+        "3": 0.03556187766714083,
+        "4": 0.04164931278633902
+      },
+      "bf16 greedy": {
+        "1": 0.004044679175298951,
+        "2": 0.006273565226973969,
+        "3": 0.005149359252702719,
+        "4": 0.004912299365896759,
+        "5": 0.00659196067593452
+      },
+      "bf16 sampled": {
+        "1": 0.005313496280552604,
+        "2": 0.009488105780792132,
+        "3": 0.0071484887767704255,
+        "4": 0.0058167926746289095,
+        "5": 0.008598452278589854
+      },
+      "4bit greedy": {
+        "1": 0.030631384488870896,
+        "2": 0.027112294193039534,
+        "3": 0.038622172094850506,
+        "4": 0.03344247848968153,
+        "5": 0.03298753100708217
+      },
+      "4bit sampled": {
+        "1": 0.0316906987799081,
+        "2": 0.033818058843422386,
+        "3": 0.039889556188925084,
+        "4": 0.03628658349467043,
+        "5": 0.036223498350666385
+      }
+    },
+    "gap": {
+      "g": 0.9981391789962574,
+      "label": "precision explains most of the gap",
+      "sigma_bf16_sampled": 0.007727975270479135,
+      "sigma_4bit_sampled": 0.03546101074443476,
+      "sigma_train": 0.03556187766714083
+    },
+    "gap_greedy_descriptive": {
+      "g": 0.9472686183820591,
+      "label": "precision explains most of the gap"
+    }
+  }
+}

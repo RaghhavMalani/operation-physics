@@ -1,0 +1,242 @@
+{
+  "n": 3,
+  "rows": [
+    {
+      "key": [
+        "kinematics",
+        1,
+        1000000000
+      ],
+      "bf16_eval": " 0.0003 min</answer>",
+      "4bit_eval": " 0.001 min</answer>",
+      "top_base": [
+        [
+          " ",
+          0.9999
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " .",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " zero",
+          0.0
+        ]
+      ],
+      "top_unmerged": [
+        [
+          " ",
+          1.0
+        ],
+        [
+          " .",
+          0.0
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " etc",
+          0.0
+        ]
+      ],
+      "greedy_unmerged": " 0.001 min</answer>",
+      "top_merged": [
+        [
+          " ",
+          1.0
+        ],
+        [
+          " .",
+          0.0
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " etc",
+          0.0
+        ]
+      ],
+      "max_abs_prob_diff_merged_vs_unmerged": 1.823902130126953e-05,
+      "greedy_merged": " 0.0003 min</answer>"
+    },
+    {
+      "key": [
+        "kinematics",
+        2,
+        1000000001
+      ],
+      "bf16_eval": " 0.0003 km</answer>",
+      "4bit_eval": " 0.0002 km</answer>",
+      "top_base": [
+        [
+          " ",
+          1.0
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " -",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " .",
+          0.0
+        ]
+      ],
+      "top_unmerged": [
+        [
+          " ",
+          1.0
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " .",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " -",
+          0.0
+        ]
+      ],
+      "greedy_unmerged": " 0.0002 km</answer>",
+      "top_merged": [
+        [
+          " ",
+          1.0
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " .",
+          0.0
+        ],
+        [
+          " -",
+          0.0
+        ]
+      ],
+      "max_abs_prob_diff_merged_vs_unmerged": 9.5367431640625e-07,
+      "greedy_merged": " 0.0001 km</answer>"
+    },
+    {
+      "key": [
+        "kinematics",
+        3,
+        1000000002
+      ],
+      "bf16_eval": " 10 ms</answer>",
+      "4bit_eval": " 100 ms</answer>",
+      "top_base": [
+        [
+          " ",
+          1.0
+        ],
+        [
+          " -",
+          0.0
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " not",
+          0.0
+        ]
+      ],
+      "top_unmerged": [
+        [
+          " ",
+          1.0
+        ],
+        [
+          " -",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " (-",
+          0.0
+        ]
+      ],
+      "greedy_unmerged": " 100 ms</answer>",
+      "top_merged": [
+        [
+          " ",
+          1.0
+        ],
+        [
+          " -",
+          0.0
+        ],
+        [
+          " same",
+          0.0
+        ],
+        [
+          " <",
+          0.0
+        ],
+        [
+          " (-",
+          0.0
+        ]
+      ],
+      "max_abs_prob_diff_merged_vs_unmerged": 4.291534423828125e-06,
+      "greedy_merged": " 100 ms</answer>"
+    }
+  ],
+  "greedy_unmerged_equals_merged": 1,
+  "greedy_merged_equals_bf16_eval": 1,
+  "greedy_unmerged_equals_4bit_eval": 3
+}

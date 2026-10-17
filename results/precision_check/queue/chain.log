@@ -1,0 +1,14 @@
+[22:07:35] queue start (pid 7616)
+[22:07:35] GPU at 53C
+[22:07:35] start e1a_4bit_greedy: uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter final_adapter --loader unsloth_4bit --out-name final_4bit
+[22:11:19] end e1a_4bit_greedy: exit 0
+[22:11:19] GPU at 62C
+[22:11:19] start split0_4bit_greedy: uv run python -m physcal.train.compare --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 --label qwen2.5-math-1.5b-instruct --budget 512 --adapter permanent_checkpoints/checkpoint-287 --loader unsloth_4bit --out-name rl287_4bit
+[22:19:46] end split0_4bit_greedy: exit 0
+[22:19:47] GPU at 64C
+[22:19:47] start e1a_4bit_sampled: uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter final_adapter --loader unsloth_4bit --out-name final_4bit_sampled --samples 4
+[22:38:18] end e1a_4bit_sampled: exit 0
+[22:38:19] GPU at 62C
+[22:38:19] start split0_4bit_sampled: uv run python -m physcal.train.compare --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 --label qwen2.5-math-1.5b-instruct --budget 512 --adapter permanent_checkpoints/checkpoint-287 --loader unsloth_4bit --out-name rl287_4bit_sampled --samples 4
+[23:11:25] end split0_4bit_sampled: exit 0
+[23:11:25] queue done
