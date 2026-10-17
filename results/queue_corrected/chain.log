@@ -6,3 +6,7 @@
 [00:25:23] GPU at 62C
 [00:25:23] start e1_sft_4bit (est 300s, timeout 29077s): uv run python -m physcal.train.e1 eval --sft
 [00:27:16] end e1_sft_4bit: exit 0
+[00:27:18] commit 'Corrected eval (D67): SFT-only sigma suffix on the E1 eval prefixes, 4-bit base': pushed
+[00:27:19] GPU at 65C
+[00:27:19] start split0_rerun (est 600s, timeout 28961s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit_rerun
+[00:36:04] end split0_rerun: exit 0
