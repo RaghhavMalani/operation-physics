@@ -22,3 +22,7 @@
 [00:53:42] GPU at 63C
 [00:53:42] start uniform287 (est 600s, timeout 27378s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part rl --run results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit
 [01:02:18] end uniform287: exit 0
+[01:02:21] commit 'Corrected eval (D67): uniform credit @287, 4-bit unmerged, greedy': pushed
+[01:02:21] GPU at 63C
+[01:02:21] start e1a_final_rerun (est 300s, timeout 26859s): uv run python -m physcal.train.e1 eval --run results/train/e1a-sigma-only-free-seed0 --adapter final_adapter --out-name final_4bit_rerun
+[01:04:34] end e1a_final_rerun: exit 0
