@@ -1,0 +1,4 @@
+[00:17:46] queue start (pid 10244), GPU deadline 2026-10-18 08:30 IST
+[00:17:46] GPU at 48C
+[00:17:46] start sft_4bit (est 620s, timeout 29534s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part sft --run results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512 --out-name sft_4bit
+[00:25:17] end sft_4bit: exit 0
