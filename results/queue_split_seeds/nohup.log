@@ -23,3 +23,7 @@ SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step"
 SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step": true, "parse_fail_below_5pct": true}, "peak_reserved_gib": 6.974609375, "num_ooms": 0, "eval_parse_fail_rate": 0.0, "sane": true}
 [06:03:21] start seed2_compare (timeout 1800s): uv run python scripts/phase95_compare.py results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2
 [06:04:15] end seed2_compare: exit 0
+[06:04:18] commit 'Split-credit seed 2: step-287 eval, sanity, per-seed family S/N': pushed
+[06:04:18] GPU at 57C
+[06:04:18] start split0_sampled (timeout 8742s): uv run python -m physcal.train.compare --part rl --run results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 --label qwen2.5-math-1.5b-instruct --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_sampled --samples 4
+[06:45:18] end split0_sampled: exit 0
