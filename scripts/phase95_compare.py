@@ -192,7 +192,7 @@ def main(run: Path, corrected: bool = False) -> None:
     out = {"tests": t, "amendment_D49": amendment, "reported": reported, "headline": head,
            "inputs": {k: str(v) for k, v in P.items() if isinstance(v, Path)}, "corrected_D67": corrected}
     P["out"].parent.mkdir(parents=True, exist_ok=True)
-    P["out"].with_suffix(".json").write_text(json.dumps(out, indent=2, default=float))
+    Path(f"{P['out']}.json").write_text(json.dumps(out, indent=2, default=float))  # run names contain dots
     lines = ["| model | split | acc ≤1% | 1σ cov | 2σ cov | σ = 0 | median rel. σ | ρ(σ, err) | mean crps_log |",
              "|---|---|---|---|---|---|---|---|---|"]
     for name, h in head.items():
@@ -211,7 +211,7 @@ def main(run: Path, corrected: bool = False) -> None:
                 h = a["holm"][k.split("_")[0]]
                 lines.append(f"| {k} | {v['rl']:.4f} | {v['control']:.4f} | [{v['diff_ci'][0]:.4f}, {v['diff_ci'][1]:.4f}] "
                              f"| {h['p']:.3g} | {h['holm_threshold']:.3g} | {h['supported']} |")
-    P["out"].with_suffix(".md").write_text("\n".join(lines) + "\n")
+    Path(f"{P['out']}.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
 
 

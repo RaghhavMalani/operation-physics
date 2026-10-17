@@ -69,3 +69,11 @@ def test_corrected_mode_changes_only_the_input_and_output_paths():
     assert all(str(new[k]).startswith(str(pc.CORRECTED)) for k in ("posthoc", "sft_a5", "a5_out", "out"))
     assert sm.CORRECTED_INPUTS["eval_tape"] == "compare/rl287_4bit/rollouts.jsonl"
     assert sm.CORRECTED_INPUTS["controls"] == (new["sft"], new["uniform"])
+
+
+def test_per_seed_output_names_keep_the_dotted_run_name():
+    """Run names contain dots (v1.1.0): the per-seed outputs must not collapse into one file (bug found 2026-10-18)."""
+    import phase95_compare as pc
+
+    outs = {f"{pc.paths(pc.ROOT / f'results/train/x-v1.1.0-512-seed{s}', True)['out']}.json" for s in (0, 1, 2)}
+    assert len(outs) == 3 and all(o.endswith(f"seed{s}.json") for s, o in zip((0, 1, 2), sorted(outs)))

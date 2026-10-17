@@ -14,11 +14,11 @@
 | seed | eval | S1a | S1b | S2 | S3 | N1 (RL vs A5) | N2 | N3 |
 |---|---|---|---|---|---|---|---|---|
 | 0 | superseded | p 4.67e-09 ✓ | p 8.02e-12 ✓ | p 0.0608 ✗ | p 0 ✓ | 0.458 vs 0.025, p 1 ✗ | 0.078 vs 0.696, p 1 ✗ | -0.325 vs -0.292, p 1 ✗ |
-| 0 | corrected | missing | | | | | | |
+| 0 | corrected | p 7.17e-34 ✓ | p 7.52e-37 ✓ | p 0.207 ✗ | p 0 ✓ | 0.265 vs 0.005, p 1 ✗ | 0.077 vs 0.676, p 1 ✗ | -0.316 vs -0.289, p 1 ✗ |
 | 1 | superseded | p 6.17e-08 ✓ | p 7.28e-11 ✓ | p 0.0202 ✓ | p 0 ✓ | 0.473 vs 0.003, p 1 ✗ | 0.099 vs 0.686, p 1 ✗ | -0.302 vs -0.269, p 1 ✗ |
-| 1 | corrected | missing | | | | | | |
+| 1 | corrected | p 2.92e-32 ✓ | p 4.78e-35 ✓ | p 0.396 ✗ | p 0 ✓ | 0.270 vs 0.002, p 1 ✗ | 0.034 vs 0.674, p 1 ✗ | -0.317 vs -0.290, p 1 ✗ |
 | 2 | superseded | p 1.8e-08 ✓ | p 1.08e-10 ✓ | p 0.0919 ✗ | p 0 ✓ | 0.468 vs 0.013, p 1 ✗ | 0.066 vs 0.661, p 1 ✗ | -0.336 vs -0.300, p 1 ✗ |
-| 2 | corrected | missing | | | | | | |
+| 2 | corrected | p 9.41e-35 ✓ | p 9.62e-38 ✓ | p 0.225 ✗ | p 0 ✓ | 0.258 vs 0.003, p 1 ✗ | 0.071 vs 0.644, p 1 ✗ | -0.307 vs -0.283, p 1 ✗ |
 
 N1 = |1σ coverage − 68.3%| (lower is better), N2 = ρ(σ, err), N3 = mean crps_log; ✓ = supported (RL σ better than the A5 σ on the same answers).
 
@@ -27,15 +27,25 @@ N1 = |1σ coverage − 68.3%| (lower is better), N2 = ρ(σ, err), N3 = mean crp
 | arm | eval | acc ≤ 1% | 1σ cov | 2σ cov | σ = 0 | median rel. σ | ρ(σ, err) | mean crps_log |
 |---|---|---|---|---|---|---|---|---|
 | sft | superseded | 34.5% | 13.2% | 18.2% | 18.8% | 0.063% | 0.02 | -0.3386 |
+| sft | corrected | 36.8% | 12.0% | 17.0% | 16.8% | 0.063% | 0.05 | -0.3332 |
 | posthoc | superseded | 34.5% | 34.2% | 39.2% | 18.8% | 1.140% | 0.02 | -0.3361 |
+| posthoc | corrected | 36.8% | 34.2% | 42.2% | 16.8% | 1.145% | 0.05 | -0.3286 |
 | sft_a5_strongest | superseded | 34.5% | 66.8% | 76.8% | 0.0% | 6.765% | 0.69 | -0.3051 |
+| sft_a5_strongest | corrected | 36.8% | 67.8% | 78.2% | 0.0% | 6.181% | 0.68 | -0.3020 |
 | uniform_rl287 | superseded | 34.2% | 11.8% | 16.2% | 21.0% | 0.050% | -0.02 | -0.3594 |
+| uniform_rl287 | corrected | 37.2% | 10.5% | 15.0% | 19.5% | 0.052% | 0.01 | -0.3244 |
 | split_rl287 (seed 0) | superseded | 34.5% | 22.5% | 29.0% | 2.2% | 0.244% | 0.08 | -0.3253 |
+| split_rl287 (seed 0) | corrected | 37.8% | 41.8% | 49.8% | 0.0% | 1.614% | 0.08 | -0.3163 |
 | split_rl287 (seed 1) | superseded | 36.2% | 21.0% | 27.5% | 6.5% | 0.209% | 0.10 | -0.3022 |
+| split_rl287 (seed 1) | corrected | 36.8% | 41.2% | 51.2% | 0.0% | 1.642% | 0.03 | -0.3171 |
 | split_rl287 (seed 2) | superseded | 36.2% | 21.5% | 29.2% | 3.5% | 0.233% | 0.07 | -0.3361 |
+| split_rl287 (seed 2) | corrected | 38.5% | 42.5% | 51.5% | 0.3% | 1.587% | 0.07 | -0.3065 |
 | split_rl287_a5_strongest (seed 0) | superseded | 34.5% | 65.8% | 76.5% | 0.0% | 6.516% | 0.70 | -0.2918 |
+| split_rl287_a5_strongest (seed 0) | corrected | 37.8% | 68.8% | 78.5% | 0.0% | 6.421% | 0.68 | -0.2885 |
 | split_rl287_a5_strongest (seed 1) | superseded | 36.2% | 68.0% | 78.0% | 0.0% | 6.858% | 0.69 | -0.2691 |
+| split_rl287_a5_strongest (seed 1) | corrected | 36.8% | 68.5% | 79.5% | 0.0% | 6.232% | 0.67 | -0.2895 |
 | split_rl287_a5_strongest (seed 2) | superseded | 36.2% | 67.0% | 77.2% | 0.0% | 6.083% | 0.66 | -0.3005 |
+| split_rl287_a5_strongest (seed 2) | corrected | 38.5% | 68.0% | 77.8% | 0.3% | 6.415% | 0.64 | -0.2828 |
 | #5 overnight RL, final (step 287) | superseded | 35.5% | 12.8% | 17.5% | 20.2% | 0.050% | -0.01 | -0.3178 |
 | #6 overnight2 (uniform), final (step 759) | superseded | 36.0% | 9.8% | 14.5% | 43.2% | 0.017% | -0.04 | -0.2913 |
 
