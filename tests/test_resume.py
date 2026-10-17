@@ -242,3 +242,10 @@ def test_resumed_cpu_run_equals_the_uninterrupted_run_and_a_naive_resume_does_no
     assert [r["step"] for r in naive_cur] == [5, 6, 7, 8]
     assert [r["cells"] for r in naive_cur] != [r["cells"] for r in full_cur]
     assert naive_cur[-1]["unlocked"] != full_cur[-1]["unlocked"]
+
+
+def test_resume_smoke_config_differs_from_split_credit_only_in_length_and_checkpointing():
+    a, b = load_config("grpo_split_credit"), load_config("grpo_resume_smoke")
+    assert {k for k in a if a[k] != b.get(k)} == {"run_id", "grpo"} and set(a) == set(b)
+    assert {k for k in a["grpo"] if a["grpo"][k] != b["grpo"][k]} == {"max_steps", "save_steps", "permanent_save_steps"}
+    assert b["grpo"]["max_steps"] == 4 and b["grpo"]["save_steps"] == 2
