@@ -39,3 +39,6 @@ SANITY PASS: {"training_exit_code": 0, "checks": {"no_oom": true, "reached_step"
 [07:11:00] GPU work done
 [07:11:00] start seed_mean (timeout 3600s): uv run python scripts/phase95_seed_mean.py results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0 results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1 results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2
 [07:11:52] end seed_mean: exit 0
+[07:11:54] commit 'Family S on the seed mean (D62)': pushed
+[07:11:54] start greedy_vs_sampled (timeout 1800s): uv run python scripts/sigma_greedy_vs_sampled.py
+[07:11:56] end greedy_vs_sampled: exit 0

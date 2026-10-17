@@ -1,0 +1,86 @@
+{
+  "split-credit seed 0 @287": {
+    "greedy": {
+      "n": 400,
+      "fail_rate": 0.0,
+      "median_rel_sigma": 0.002442496185397238,
+      "sigma_zero": 0.0225,
+      "cov1": 0.225,
+      "cov2": 0.29,
+      "mean_crps_log": -0.3253055578004721,
+      "rho_sigma_err": 0.07776136082381441
+    },
+    "sampled": {
+      "n": 1600,
+      "fail_rate": 0.00875,
+      "median_rel_sigma": 0.0036724740283226253,
+      "sigma_zero": 0.05548549810844893,
+      "cov1": 0.19875,
+      "cov2": 0.256875,
+      "mean_crps_log": -0.516762218033496,
+      "rho_sigma_err": 0.08042936734735447
+    },
+    "within_problem": {
+      "problems_with_2plus_samples": 400,
+      "median_sd_ln_sigma": 1.008241973152882,
+      "greedy_mean_midrank": 0.42635416666666665,
+      "greedy_below_all_samples": 0.075
+    }
+  },
+  "E1a": {
+    "greedy": {
+      "n": 400,
+      "fail_rate": 0.0,
+      "median_rel_sigma": 0.0056657223796034,
+      "sigma_zero": 0.01,
+      "cov1": 0.2925,
+      "cov2": 0.3575,
+      "mean_crps_log": -0.3361705501606924,
+      "rho_sigma_err": 0.0627674515902993
+    },
+    "sampled": {
+      "n": 1600,
+      "fail_rate": 0.001875,
+      "median_rel_sigma": 0.007727975270479135,
+      "sigma_zero": 0.026925485284909206,
+      "cov1": 0.32625,
+      "cov2": 0.390625,
+      "mean_crps_log": -0.3426404729796008,
+      "rho_sigma_err": 0.032926710582079535
+    },
+    "within_problem": {
+      "problems_with_2plus_samples": 400,
+      "median_sd_ln_sigma": 0.9405780351323009,
+      "greedy_mean_midrank": 0.4496875,
+      "greedy_below_all_samples": 0.035
+    }
+  },
+  "E1b": {
+    "greedy": {
+      "n": 400,
+      "fail_rate": 0.0,
+      "median_rel_sigma": 0.005,
+      "sigma_zero": 0.0,
+      "cov1": 0.2825,
+      "cov2": 0.33,
+      "mean_crps_log": -0.33657785263911116,
+      "rho_sigma_err": 0.08260044626613973
+    },
+    "sampled": {
+      "n": 1600,
+      "fail_rate": 0.001875,
+      "median_rel_sigma": 0.005,
+      "sigma_zero": 0.0,
+      "cov1": 0.30625,
+      "cov2": 0.38,
+      "mean_crps_log": -0.34288695046950723,
+      "rho_sigma_err": 0.0285146790524379
+    },
+    "within_problem": {
+      "problems_with_2plus_samples": 400,
+      "median_sd_ln_sigma": 0.8225227820728188,
+      "greedy_mean_midrank": 0.4290625,
+      "greedy_below_all_samples": 0.0275
+    }
+  }
+}
