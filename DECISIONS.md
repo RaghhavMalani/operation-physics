@@ -1258,6 +1258,7 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - A6 label is full / partial / over, and A6b is equivalent to 0 → the A6 label itself.
   `joint` writes this as `labelled_verdict`, next to the unchanged D59 `verdict`, the `A6_label`, and the label CI
   in the table.
+  **Confirmed by you on 2026-10-17 (night), before any A6/A6b model result.**
 - **Consistency with D59:** with a percentile bootstrap, a 90% CI whose lower end is above 0 is (up to ties) the same
   event as D58's one-sided p < 0.05. So "A6 fails" under D59 and "no / anti-propagation" under the labels agree on
   the same bootstrap draws.
@@ -1426,3 +1427,65 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     - **Self-consistent:** SFT-only results are on the merged SFT model, which is also the start of every RL run.
       The SFT merge itself rounds away 41% of its entries (relative error 0.28), so "the SFT model" means the
       merged one throughout.
+
+### D67. The bf16 merge was an implementation bug: corrected evals (4-bit training base, adapter unmerged) are the PRIMARY results for families S, N and E (your decision, 2026-10-18 00:00 IST; written before any corrected family S/N/E result)
+- **Decision (yours):** merging RL adapters into the bf16 SFT model before eval was an implementation bug (FINDINGS
+  #15).
+  - **Primary results:** the pre-registered analyses of families S, N and E are re-run on corrected evals, and those
+    are the primary results.
+  - **Merged-eval results:** reported as **superseded**, side by side with the corrected ones. They are not deleted.
+- **This is a deviation from the implemented eval path, not from PREREGISTRATION.md.** The hypotheses, tests,
+  controls, thresholds, the Holm families and D62's seed-mean rule are unchanged. What changes is the model that is
+  evaluated: the policy that was trained, instead of a merge that rounds away 91–96% of its update (FINDINGS #15).
+- **What is already known at the time of writing:**
+  - D65's descriptive numbers for split credit seed 0 @287 and E1a final on the 4-bit base, greedy and k = 4
+    sampled (FINDINGS #15).
+  - **Not computed yet:** any corrected family S, N or E test; and any corrected eval of split credit seeds 1 and 2,
+    uniform credit, E1a step 150, E1b, or the SFT-only model on the 4-bit base.
+- **The corrected eval:**
+  - **Loader:** D65's `unsloth_4bit`. The base the adapter names, i.e. the merged SFT model, is quantized as at
+    training start, and the LoRA is attached unmerged. `max_seq_length` and `text_only` come from each run's own
+    training config.
+  - **Everything else as in the superseded evals:** greedy decoding, prompt v4, the frozen 1.1.0 sets (200 ID + 200
+    depth 5), a 512-token budget; for E1, the 400 frozen eval prefixes and 24 tokens.
+- **Controls on the same 4-bit base:**
+  - **SFT-only, full completions:** the merged SFT model on the frozen sets, no adapter (`compare --part sft`). This
+    is family S's S1a control. Output: `overnight2…/compare/sft_4bit`, the matched uniform run's dir.
+  - **SFT-only, σ suffixes on the E1 eval prefixes:** this is family E's "SFT stated σ" control. Output:
+    `results/e1/sft_4bit/`. The prefixes are fixed data (SFT completions truncated after ±), so μ is unchanged.
+  - **Uniform credit @287:** `overnight2…/compare/rl287_4bit`. This is the S1b / S2 / S3 control.
+- **The baselines:**
+  - **Family N:** the same fitted A5 strongest σ (`results/a5_baselines`, unchanged), applied to the corrected
+    split-credit completions (`compare/rl287_4bit_a5_sigma.jsonl`).
+  - **Family E:** the A5 σ on the fixed prefixes, unchanged.
+  - **The standing post-hoc baseline** (one σ scale, c = 18.1, fitted on the calibration split's SFT completions):
+    applied to the 4-bit SFT answers, reported and not tested, and labelled as not re-fitted.
+  - **D49's family A:** already superseded by D50, so it is not re-run.
+- **Which tape is primary when two exist:**
+  - The split credit seed 0 @287 and E1a final greedy 4-bit evals already exist from D65, with the identical loader
+    and settings, committed before D67. **The D65 tapes are the primary ones.**
+  - Tonight's queue reruns both into `*_rerun` dirs as a determinism check. Any difference is reported. The choice
+    is fixed here, before either rerun exists.
+- **Tonight's queue (your order; GPU deadline 08:30 IST; temp > 87 °C → 10-min pause; commit + push after every
+  stage):**
+  1. **Greedy:**
+     - SFT-only 4-bit (both controls above);
+     - split credit seeds 0 (rerun), 1, 2 @287;
+     - uniform credit @287;
+     - E1a final (rerun) and step 150;
+     - E1b final and step 150.
+  2. **If time remains,** the adapters of FINDINGS #5 and #6:
+     - #5 = the overnight run's `final_adapter` (step 287; that run ended at 287);
+     - #6 = overnight2's `final_adapter` (step 759; its step-287 checkpoint is the uniform control in tier 1).
+  3. **Then sampled k = 4** for split credit seed 0 and E1a, at the D62 settings. D65 already ran exactly these on
+     the 4-bit base, so tonight's runs go to `*_sampled_rerun`. Both are reported, together with the within-problem
+     σ spread ("σ instability").
+  4. **Then the GPU check of `--resume`** (D66): a 4-step smoke config.
+- **Analyses after the evals (CPU):**
+  - `phase95_compare.py` per seed (families S and N) and `phase95_seed_mean.py` (family S, D62) on the corrected
+    tapes and controls;
+  - `e1 compare` (family E) with the 4-bit SFT σ control and the corrected E1 rows.
+  - Code is identical apart from the input paths. Outputs go to new `…_corrected` files, and every superseded file
+    is kept.
+  - A side-by-side table (corrected vs superseded) goes in FINDINGS and MORNING.md.
+- **Also decided (yours):** RL adapters are never merged. This becomes the eval default, with a guard (D68).
