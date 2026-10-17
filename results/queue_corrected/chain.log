@@ -41,3 +41,7 @@
 [01:11:15] commit 'Corrected eval (D67): E1b step 150, 4-bit unmerged': pushed
 [01:11:15] start analyses_tier1: scripts/corrected_analyses.sh
 [01:13:36] end analyses_tier1: exit 0
+[01:13:39] commit 'Corrected analyses (tier1): families S, N, E on the 4-bit unmerged evals (D67)': pushed
+[01:13:39] GPU at 54C
+[01:13:39] start n5_final (est 600s, timeout 26181s): uv run python -m physcal.train.compare --label qwen2.5-math-1.5b-instruct --budget 512 --part rl --run results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512 --adapter final_adapter --out-name rl_4bit
+[01:22:08] end n5_final: exit 0
