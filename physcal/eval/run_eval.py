@@ -187,6 +187,10 @@ def load_unsloth_4bit(model_id: str, model_cfg: dict, tok) -> tuple[Any, dict]:
         check["adapter_max_abs_logit_delta"] = float((on - off).abs().max())
         if check["adapter_max_abs_logit_delta"] == 0:
             raise RuntimeError(f"adapter {lora} does not change the logits")
+        from physcal.eval.fingerprint import check_adapter  # R2-1 / D72: the training-time fingerprint, if recorded
+
+        check["fingerprint"] = check_adapter(model, tok, model_id, lora, model_cfg.get("chat_template_kwargs") or {})
+        print(f"unsloth_4bit fingerprint check: {check['fingerprint']['status']}", flush=True)
     print(f"unsloth_4bit loader check: {check}", flush=True)
     return model, check
 
@@ -256,6 +260,16 @@ class HFBackend:
                 from peft import PeftModel
 
                 self.model = PeftModel.from_pretrained(self.model, str(lora_dir)).merge_and_unload().eval()
+        # R2-1 / D72: what was actually loaded (base, quantization, compute dtype, versions, adapter hashes)
+        fp_check = (self.loader_check or {}).get("fingerprint") or {}
+        if "provenance" in fp_check:
+            self.provenance = fp_check["provenance"]
+        else:
+            from physcal.eval.fingerprint import provenance
+
+            self.provenance = provenance(self.model, model_id, model_cfg.get("lora"))
+        self.provenance["loader"] = loader
+        self.provenance["adapter_merged"] = loader == "transformers" and bool(model_cfg.get("lora"))
         # Stop on the model's EOS ids *and* the tokenizer's end-of-turn token. Qwen3.5-2B ships no
         # generation_config.json, and its config.json names <|endoftext|> while chat turns end with <|im_end|>.
         eos = self.model.generation_config.eos_token_id
@@ -427,6 +441,7 @@ def run(
     }
     if loader_check is not None:
         meta["loader_check"] = loader_check
+    meta["provenance"] = getattr(backend, "provenance", None)  # R2-1 / D72
     tape_path = out / "rollouts.jsonl"
     tape_path.unlink(missing_ok=True)
     records: dict[str, list[dict]] = {name: [] for name in splits}
@@ -449,6 +464,7 @@ def run(
         "lora_hash": lora_hash,
         "loader": getattr(backend, "loader", None) or eval_cfg["model"].get("loader"),
         "loader_check": loader_check,
+        "provenance": meta["provenance"],
         "oom_backoffs": oom_backoffs,
         "oom_fallback": oom_fallback,
         "oom_error": oom_error,

@@ -1,0 +1,31 @@
+# R2-1 / D72: the training-time fingerprint of a trained adapter and the regression check a reloaded model must pass.
+# Recorded by the trainers right after the final adapter is saved; checked by the eval's adapter loader.
+prompts:
+  env_config: env                  # generator config of the fixed prompts (1.1.0, every Phase 9.5 run)
+  n: 16                            # round-robin over the training cells
+  seed_offset: 40000000            # training split; disjoint from GRPO (0..), SFT (1e7..), calibration (2e7..2e7+1999)
+                                   # and X2 (3e7.., D74)
+  prompt_id: v4_worked_example     # the GRPO / eval system prompt
+  sigma_rel: 0.02                  # σ written in the fixed continuations (the SFT data's value, D35)
+logits:
+  top_k_sigma: 64                  # next-token distribution stored at the first σ token (top-k + the rest's mass)
+sampling:                          # the training decoding (T = 1, no truncation), a fixed torch seed
+  k: 4
+  max_new_tokens: 512
+  temperature: 1.0
+  top_p: 1.0
+  top_k: 0
+  seed: 0
+  batch_size: 16                   # sequences per generate call (prompts x samples); the same on both sides
+  sigma_floor_rel: 1.0e-6          # stated σ = 0 -> this relative floor (the PREREGISTRATION convention)
+  min_parsed: 16                   # fewer parsed σ on either side: the σ-distribution criterion is not evaluable
+tolerances:                        # fixed before the first real fingerprint exists (D72)
+  max_logprob_ratio: 0.25          # mean |Δ log p| (reloaded vs training) / mean |Δ log p| (adapter on vs off)
+  max_sigma_tv_ratio: 0.25         # TV(reloaded, training) / TV(adapter on, adapter off) at the first σ token
+  min_adapter_effect: 0.005        # mean |Δ log p| of the adapter itself below this (nats/token): "inconclusive"
+  max_abs_dlog_median_sigma: 0.693 # |median ln σ_rel, reloaded − training| over the sampled completions (ln 2)
+must_match: [base_identity, quantization_config, compute_dtype, bitsandbytes]   # provenance fields; others are
+                                   # reported. base_identity: a local base's content hash, or repo@commit
+enforce: false                     # true: a FAIL raises in the eval loader. D72: false until the tolerances have
+                                   # been seen on real adapters (tonight's uniform-credit seeds 1 and 2)
+file_name: physcal_fingerprint.json

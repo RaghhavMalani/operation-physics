@@ -260,6 +260,12 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
                              "num_ooms": torch.cuda.memory_stats().get("num_ooms", 0)},
                "grpo_config_dropped_keys": dropped, "train_loss": getattr(result, "training_loss", None),
                "final_adapter": str(out / "final_adapter")}
+    from physcal.eval.fingerprint import record_after_training  # R2-1 / D72: after the save and the memory stats
+
+    fingerprint = record_after_training(model, tok, m["id"], out / "final_adapter", m.get("chat_template_kwargs", {}),
+                                        {"run_id": run_id, "step": trainer.state.global_step}, out / "events.jsonl",
+                                        prepare=FastLanguageModel.for_inference)
+    summary["fingerprint"] = {k: v for k, v in fingerprint.items() if k != "traceback"}
     (out / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
     return summary
 
@@ -318,7 +324,8 @@ def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settin
     model_id = lora or str(REPO_ROOT / e1["model_id"])
     meta = {"env_config": env_config(), "reward_config": rw_cfg, "e1": e1, "e1_mode": mode,
             "adapter": lora, "eval_tapes": e1["eval_tapes"], "loader": getattr(backend, "loader", loader),
-            "loader_check": getattr(backend, "loader_check", None)}
+            "loader_check": getattr(backend, "loader_check", None),
+            "provenance": getattr(backend, "provenance", None)}  # R2-1 / D72
     if samples > 0:
         meta["sampled"] = {"num_samples": samples, "generation": gen_cfg}
     (out / "rollouts.jsonl").unlink(missing_ok=True)

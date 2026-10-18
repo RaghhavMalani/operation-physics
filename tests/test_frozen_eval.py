@@ -71,6 +71,12 @@ def test_frozen_sets_run_end_to_end_on_cpu(tiny_model, tmp_path):
     assert analyze(out / "rollouts.jsonl", "a6_pairs")["kind"] == "sensitivity"
     assert analyze(out / "rollouts.jsonl", "a6b_pairs")["kind"] == "invariance"
     assert "by noise level" in (out / "summary.md").read_text()
+    from physcal.tape.tape import read_meta  # R2-1 / D72: every eval tape records what was loaded
+
+    prov = read_meta(out / "rollouts.jsonl")["provenance"]
+    assert prov == m["provenance"] and prov["loader"] == "transformers" and prov["adapter_merged"] is False
+    assert prov["base_identity"].startswith("sha256:") and prov["versions"]["bitsandbytes"] == prov["bitsandbytes"]
+    assert set(prov) >= {"quantization_config", "compute_dtype", "adapter"}
 
 
 def test_frozen_split_refuses_a_version_mismatch():

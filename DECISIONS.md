@@ -1714,3 +1714,80 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Framing:** the world-versus-reasoning uncertainty decomposition is the headline. Credit assignment and the
     merge bug are supporting results.
   - **Distillation (X3):** secondary.
+
+### D72. R2-1 implemented: the training-time fingerprint, the reloaded-model regression check, and provenance in every eval tape (tolerances fixed before any real fingerprint exists)
+- **Code:** `physcal/eval/fingerprint.py` and `configs/fingerprint.yaml`; the tests are `tests/test_fingerprint.py`
+  (CPU, tiny random Qwen2 + LoRA).
+- **What a fingerprint holds.** The trainers record it right after the final adapter is saved and after the summary's
+  memory stats are taken. They use the in-memory policy, put in Unsloth's inference mode as the eval loader does.
+  It is written to `final_adapter/physcal_fingerprint.json` (`grpo.train`, `e1.train`).
+  - **Fixed prompts:** 16 generator-1.1.0 problems, round-robin over the 12 training cells. They use training-split
+    seeds 40,000,000+, a range no other set uses (X2 takes 30,000,000+, D74). Prompt v4.
+  - **Teacher-forced log-probs:** for each prompt, every token of a fixed continuation. The continuation is the
+    generator-written solution in the output format with σ = 2% (the SFT target format), scored with the adapter on
+    and off.
+    - **"Off"** measures the adapter's own effect: the mean |Δ log p| between on and off. It is the scale of the
+      tolerances.
+  - **The first σ token:** the next-token distribution there, as top-64 plus the rest's mass, adapter on and off.
+  - **Sampled σ:** k = 4 completions per prompt at the training decoding (T = 1, top_p 1, top_k off, 512 tokens,
+    torch seed 0), scored by the verifier for the stated relative σ.
+  - **Provenance:** see below.
+  - **Cost:** about 32 forward passes and 64 completions, a few GPU-minutes per run.
+- **The check.** The eval's adapter loader (`load_unsloth_4bit`) runs `check_adapter` on every adapter.
+  - **Lookup:** it finds the fingerprint for those exact weights, matched by a tensor-content hash. It looks in the
+    adapter dir and in its run's `final_adapter`, so the step-287 permanent checkpoint of a run that ended at 287
+    finds it.
+  - **Measurement:** the reloaded model is measured with the same functions, so only the loader differs.
+  - **Pass iff all four hold:**
+    1. mean |Δ log p| (reloaded vs training) ≤ **0.25** × the adapter's own mean |Δ log p|;
+    2. TV distance at the first σ token ≤ **0.25** × the adapter's own TV distance;
+    3. |median ln σ_rel, reloaded − training| ≤ **ln 2** over the sampled completions. This is evaluated only when
+       both sides parse ≥ 16 σ; otherwise the criterion is "not evaluable" and is ignored;
+    4. the provenance fields `base_identity`, `quantization_config`, `compute_dtype` and `bitsandbytes` are equal.
+       Other library versions are reported, not failed.
+  - **Outcomes:** "pass" or "fail". **"Inconclusive"** if the adapter's own effect is below 0.005 nats/token, because
+    then a loader that drops the adapter cannot be told apart. **"no_fingerprint"** for adapters trained before D72
+    (every existing adapter).
+  - **The thresholds and their reasoning:**
+    - **A faithful reload** should reproduce the training-time numbers up to kernel differences. Training-mode and
+      inference-mode Unsloth kernels in bf16 give a ratio near 0.
+    - **FINDINGS #15's merge** erased > 90% of the update, which gives a ratio near 1.
+    - **0.25** sits between the two. **ln 2** is about 3 standard errors of a median over 64 completions, and well
+      below the merge's factor of ~5 in σ.
+- **Enforcement:** `enforce: false` for now.
+  - **Meaning:** a FAIL is recorded in the eval's `loader_check.fingerprint` (tape meta and metrics.json) and
+    printed. It does not stop the eval.
+  - **Why:** tonight's uniform-credit seeds 1 and 2 are the first real fingerprints. Their eval loader is D67's
+    unchanged, already validated loader (byte-identical reruns, g ≈ 1). The check's own tolerances have not yet been
+    seen on a real adapter.
+  - **From then on:** any change to an eval loader must pass with `enforce: true` (R2-1). The tolerances are not
+    tuned after seeing tonight's numbers without a new DECISIONS entry.
+- **Provenance in every eval tape (R2-1).** `run_eval`'s meta and `metrics.json`, and the E1 eval's meta, now hold
+  `provenance`:
+  - `base_identity`: the content hash of a local base, or repo@commit for a hub model;
+  - the quantization config and compute dtype (`bnb_4bit_compute_dtype`, the model dtype);
+  - bitsandbytes / torch / transformers / peft / trl / accelerate / unsloth / unsloth-zoo versions;
+  - the adapter's file hash and tensor hash, the base it names, and r / α / target modules;
+  - the loader, and whether the adapter was merged.
+- **CPU tests (`tests/test_fingerprint.py`, 8 tests):**
+  - **A faithful reload passes.** This is the adapter attached unmerged to the same base: ratio 0, and the samples
+    are byte-identical.
+  - **A dropped adapter fails,** with ratio 1.0.
+  - **The merge case.** The tiny base's weights are bf16-representable, as a fixed low-precision base is.
+    - **An update below half a bf16 step** (B ~ N(0, 2e-5), like the RL updates): the bf16 merge rounds it away.
+      Ratio 1.09, FAIL. With the configured effect floor the verdict is "inconclusive", which is also tested.
+    - **A large update** (B ~ N(0, 0.05)) survives the merge (ratio 0.003). The check judges a loader by its
+      outcome, not by the word "merge".
+  - **Also tested:** lookup by tensor hash (a permanent checkpoint finds its run's final_adapter; other weights do
+    not); the tensor hash ignores file metadata; the σ-distribution and provenance criteria on synthetic inputs
+    (5× σ fails; a quantization-config change fails; a version change is reported only); `enforce` raises.
+  - **The frozen-set eval test** now also asserts the provenance block in the tape meta.
+- **Not tested: the GPU path.** That is Unsloth's inference mode for the teacher-forced forward and for generation,
+  the 4-bit provenance fields, and the `UNSLOTH_RETURN_HIDDEN_STATES` guard.
+  - **The guard:** GRPO sets this variable for its log-prob pass and does not always reset it. With it on, a forward
+    returns hidden states instead of logits. The fingerprint code forces it off and checks the logits' shape.
+  - **When it gets tested:** the first GPU use is tonight's two training runs and their evals.
+  - **If recording fails:** `record_after_training` logs the error to `events.jsonl` and `summary.json` and never
+    fails the run, since the adapter is already saved. The eval then reports "no_fingerprint".
+- **Also changed:** `scripts/queue_sanity.py` takes an optional eval dir name (default `rl287`; the corrected evals
+  use `rl287_4bit`).

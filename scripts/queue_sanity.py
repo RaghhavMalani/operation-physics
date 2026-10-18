@@ -1,6 +1,8 @@
 """Sanity check after the split-credit seed-0 run (tonight's queue): no OOM and eval parse failure < 5%.
 
-    uv run python scripts/queue_sanity.py <run dir> <training exit code>
+    uv run python scripts/queue_sanity.py <run dir> <training exit code> [<eval dir name under compare/>]
+
+The eval dir defaults to rl287 (the bf16-merged evals); the corrected evals (D67) are rl287_4bit.
 
 Writes <run dir>/sanity.json and prints the verdict. Thresholds are the brief's (PREREGISTRATION.md family S:
 "no OOM, no parse collapse"; the brief fixed parse collapse as >= 5% parse failures on the eval).
@@ -15,8 +17,8 @@ MAX_PARSE_FAIL = 0.05
 STEP = 287
 
 
-def check(run: Path, train_rc: int) -> dict:
-    out = {"training_exit_code": train_rc, "checks": {}}
+def check(run: Path, train_rc: int, eval_name: str = "rl287") -> dict:
+    out = {"training_exit_code": train_rc, "eval": eval_name, "checks": {}}
     summary = run / "summary.json"
     s = json.loads(summary.read_text()) if summary.exists() else {}
     ooms = s.get("peak_vram", {}).get("num_ooms")
@@ -28,7 +30,7 @@ def check(run: Path, train_rc: int) -> dict:
     out["checks"]["no_oom"] = ooms == 0 and train_rc == 0
     out["num_ooms"] = ooms
     out["checks"]["reached_step"] = (run / "permanent_checkpoints" / f"checkpoint-{STEP}").is_dir()
-    metrics = run / "compare" / "rl287" / "metrics.json"
+    metrics = run / "compare" / eval_name / "metrics.json"
     if metrics.exists():
         m = json.loads(metrics.read_text())["splits"]
         n = sum(v["n"] for v in m.values())
@@ -44,5 +46,5 @@ def check(run: Path, train_rc: int) -> dict:
 
 if __name__ == "__main__":
     run = Path(sys.argv[1]) if Path(sys.argv[1]).is_absolute() else ROOT / sys.argv[1]
-    res = check(run, int(sys.argv[2]))
+    res = check(run, int(sys.argv[2]), *sys.argv[3:4])
     print(f"SANITY {'PASS' if res['sane'] else 'FAIL'}: {json.dumps(res)}")

@@ -171,3 +171,12 @@ def test_verifier_reward_logs_sigma_zero_share_and_alert(tmp_path):
     stats = json.loads((tmp_path / "m.jsonl").read_text().splitlines()[0])
     assert stats["sigma_zero_share"] == pytest.approx(0.75) and stats["sigma_zero_alert"] is True
     assert "ALERT" in (tmp_path / "events.jsonl").read_text()
+
+
+@pytest.mark.parametrize("seed", [1, 2])
+def test_uniform_credit_seed_configs_differ_from_seed_0_only_in_seed_and_run_id(seed):
+    """R2-6 (D71): uniform-credit seeds 1 and 2 change cfg["seed"] (LoRA init, sampling, curriculum) and the run id."""
+    base, new = load_config("grpo_overnight2"), load_config(f"grpo_overnight2_seed{seed}")
+    assert (base.pop("seed"), new.pop("seed")) == (0, seed)
+    assert new.pop("run_id") == base.pop("run_id") + f"-seed{seed}"
+    assert new == base
