@@ -575,7 +575,7 @@ run D57 declared final. Phase 10+ work resumes with A6.
   - #11: the share-rule design error.
   - D57: the rule was replaced before this final run.
 
-## #13. Split credit (Phase 9.5 step 3), 3 seeds: S1a, S1b and S3 supported on the seed mean, S2 narrowly supported (sensitive to the seed-mean definition); σ still does not track the error (2026-10-17)
+## #13 (evaluated on merged models; superseded by #16; S2 withdrawn). Split credit (Phase 9.5 step 3), 3 seeds: S1a, S1b and S3 supported on the seed mean, S2 narrowly supported (sensitive to the seed-mean definition); σ still does not track the error (2026-10-17)
 
 > **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy. **Corrected results: #16.**
 

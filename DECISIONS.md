@@ -1527,3 +1527,95 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     evals, so tonight's runs went to `*_rerun` dirs as D67 planned. They are byte-identical to D65's, and both are
     reported.
 
+
+## Decisions on the 2026-10-18 morning report (2026-10-18, daytime; CPU only)
+
+### D69. Both post-hoc baselines are re-fitted on 4-bit SFT completions of the calibration split (your decision, 2026-10-18; written before any 4-bit calibration completion exists)
+- **Origin:** MORNING.md §5.3 (2026-10-18). Both baselines were fitted on completions of the bf16 merged SFT model:
+  the standing post-hoc scale (×18.1, D40 / D44) and the A5 σ (D50/A5). Every corrected eval (D67) runs that SFT model
+  quantized to 4 bits. So the fitted model and the evaluated model differ in one thing, the base precision.
+- **GPU, the first stage of tonight's queue:**
+  - **Model:** the SFT-only model through the corrected loader. This is D67's SFT control: the merged SFT model,
+    quantized to 4 bits at load (`unsloth_4bit`), with no adapter.
+  - **Settings:** greedy, prompt v4, a 512-token budget. These are the bf16 fits' settings.
+  - **Problems:** the bf16 fits' calibration problems. That is `posthoc.yaml: calibration_split` (400; seeds
+    20,000,000–20,000,399) and `probe_sft.yaml: calibration_ext_split` (1,600; seeds 20,000,400–20,001,999).
+  - **Outputs:** `results/posthoc_calibration_4bit/sft_calibration_{set,ext}/`. Nothing that exists is overwritten.
+- **CPU fits** (nice, n_jobs ≤ 4). The code is unchanged; only the input and output paths change.
+  - **Global scale (D40):** c = argmax of mean crps_log on the 400-problem tape, plus the coverage-matched variant,
+    exactly as in D40.
+    - **Applied to:** the 4-bit SFT frozen eval (`overnight2…/compare/sft_4bit`).
+    - **Sensitivity:** the same fit on all 2,000 completions (reported, not used).
+  - **A5 (D50/A5):** `nested_baselines fit` on the two 4-bit tapes, with the same feature sets, grids, grouped CV
+    and seed.
+    - **Order:** `selection.json` (the strongest σ and p) is written before any eval use, as before.
+    - **Eval tape:** the 4-bit SFT frozen eval. **Output:** `results/a5_baselines_4bit/`.
+- **How the re-fits are used (fixed now, before any result):**
+  - **From now on** (corrected evals, X2, Phase 12): the re-fitted global scale is the standing post-hoc baseline
+    (D44), and the re-fitted A5 is "the A5 baseline".
+  - **FINDINGS #16 (families N and E): the recorded verdicts stand,** because D67 fixed them on the bf16-fitted A5.
+    - **Sensitivity rerun:** both families are rerun with the re-fitted A5, reported side by side.
+    - **If a verdict changes,** MORNING.md reports it as a flipped verdict for your decision. Nothing is overwritten.
+      **[REVIEW]**
+  - **The bf16-fitted baselines:** they stay on disk and in FINDINGS #10, labelled "fitted on the bf16 merged SFT".
+    The ×18.1 row in FINDINGS #16 keeps its "not re-fitted" label, and the re-fitted row goes next to it.
+
+### D70. Phase 12 trains on the 4-bit base; new SFT is one LoRA adapter that RL keeps training; never merged (your decision, 2026-10-18)
+- **Decision (yours):**
+  - **Phase 12 RL** runs on the 4-bit base, so training and eval use the same base (D67 / D68).
+  - **New SFT (Phase 12, R2-2):** one LoRA adapter on the 4-bit base. SFT trains it first, then RL continues
+    training the same adapter. Nothing is ever merged.
+- **The Unsloth check: supported, by construction.** This is a reading of the installed sources; nothing was run on
+  the GPU today. Versions: unsloth / unsloth-zoo 2026.10.3, peft 0.21.2, trl 1.13.0, transformers 5.17.0,
+  bitsandbytes 0.50.2.
+  1. **Loading.** `FastLanguageModel.from_pretrained(<adapter dir>, load_in_4bit=True)` reads `adapter_config.json`
+     and loads the 4-bit base it names.
+     - **Attaching:** it attaches the adapter with `PeftModel.from_pretrained(..., is_trainable=True)`.
+     - **Patching:** it then runs `patch_peft_model(model, use_gradient_checkpointing="unsloth")`. That gives the same
+       LoRA kernels and gradient checkpointing a fresh adapter gets (`unsloth/models/loader.py`, about L1586–1645).
+  2. **`get_peft_model` on that model.** It compares r, α, dropout, bias, target modules, rsLoRA, init and LoftQ
+     with the stored config.
+     - **If all match,** it logs "Already have LoRA adapters! We shall skip this step." and returns the model
+       unchanged. It still re-arms the hooks the RL trainer needs.
+     - **If any differs,** it raises TypeError (`llama.py`, about L3724–3840).
+     - **For us:** `physcal/train/grpo.py` works unchanged with `model.id` set to the SFT adapter dir, and a LoRA
+       config mismatch fails loudly. Our SFT and RL LoRA settings are identical (r 16, α 16, dropout 0, the same 7
+       modules).
+  3. **TRL `GRPOTrainer`.** A pre-wrapped PEFT model passed with no `peft_config` is trained as it is.
+     - **β = 0 (every GRPO config so far):** there is no reference model.
+     - **β ≠ 0:** TRL 1.13 copies the loaded adapter into a "ref" adapter (`grpo_trainer.py`, about L448), so the
+       reference is the SFT policy. A plain `disable_adapter()` would instead give the pre-SFT base. We do not use
+       β ≠ 0; this is noted for completeness.
+  4. **dtype.** The SFT adapter and the RL adapters both store fp32 LoRA weights (392 tensors each). The continued
+     adapter therefore trains in the same dtype as a fresh RL adapter.
+- **Two findings from the check (relevant to Phase 12; no existing result changes):**
+  1. **An adapter load does not pin the base revision.** For a PEFT load, Unsloth loads the base with
+     `revision=None` (`model_revision = base_revision if not is_peft else None`), i.e. whatever `main` resolves to.
+  2. **The existing SFT adapter was trained on Unsloth's pre-quantized mirror, not on the pinned Qwen revision.**
+     - **What happened:** `configs/sft.yaml` asks for `Qwen/Qwen2.5-Math-1.5B-Instruct@aafeb0f` with
+       `load_in_4bit=True`. Unsloth's name mapper substituted `unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit` and
+       dropped the revision (`_revision_for_resolved_repo`: "Ignoring revision"). The adapter config names that
+       mirror, and the cache holds one snapshot of it, `e24e953`.
+     - **Then the merge:** `train.merge` added the adapter to bf16 `Qwen/…@aafeb0f`. So the SFT update was learned
+       against the mirror's 4-bit weights and merged into the full-precision ones.
+     - **Effect:** this is a second train/merge mismatch on top of FINDINGS #15's rounding. It changes no result.
+       Every existing RL run starts from the merged model and is self-consistent (R2-2).
+  - **Proposed for Phase 12** (to be built with the Phase 12 SFT, not now):
+    - pin the 4-bit base explicitly, either as the mirror's commit (`use_exact_model_name` + revision) or as a local
+      snapshot path;
+    - assert the loaded base's commit in both trainers and in the eval loader. R2-1's provenance fields (D71) make
+      it visible in every tape.
+- **The plan (pre-registered with Phase 12):**
+  - **SFT:** `physcal.train.sft` as now (4-bit base, LoRA r 16), saving `adapter/`. There is no merge step.
+  - **RL:** `model.id` is that adapter dir, and `get_peft_model` skips (identical LoRA config). The optimizer and
+    the LR schedule start fresh; β = 0.
+  - **Eval:** the corrected loader with `lora` set to the RL adapter. The SFT-only control is the SFT adapter on the
+    same base, so both arms are adapters on one base.
+    - **Code to adapt:** `load_unsloth_4bit`'s base check compares local paths today. It must accept a hub id plus a
+      revision.
+- **Suggested GPU smoke test (about 5 min; not in tonight's queue).** Run SFT for 5 steps, then RL for 2 steps from
+  that adapter. Check:
+  1. the "skip this step" path is taken;
+  2. at RL step 0 the LoRA weights equal the SFT adapter;
+  3. they change after the RL steps;
+  4. the eval loader passes the training-time fingerprint check (R2-1, D71).
