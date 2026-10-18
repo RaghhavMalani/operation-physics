@@ -1,0 +1,4 @@
+[22:50:23] queue start; GPU deadline 08:30 IST; queue PID 13725
+[22:50:23] GPU at 49C
+[22:50:23] start calib_set (timeout 5400s): uv run python -m physcal.eval.posthoc generate-4bit --part set
+[22:57:51] end calib_set: exit 0
