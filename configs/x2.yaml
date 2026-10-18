@@ -1,0 +1,29 @@
+# X2 (REVIEW_SYNTHESIS_ROUND2_2026-10-17, pre-registered in DECISIONS.md D74): within-problem correctness pairs.
+# Does any confidence source rank a correct answer above an incorrect one to the SAME problem (difficulty fixed)?
+env_config: env                        # generator 1.1.0 (noise-free: the SFT model's domain and the frozen eval sets)
+candidates:                            # frozen pool, training split, round-robin over the 12 training cells
+  families: [kinematics, dynamics, energy]
+  depths: [1, 2, 3, 4]
+  n: 1200                              # 100 per cell. Mixed rate at k = 8 was 21/48 = 44% (bf16 SFT, model_probe_sft):
+                                       # ~530 mixed problems expected
+  seed_offset: 30000000                # unused elsewhere (GRPO 0..4799, SFT 1e7.., calibration 2e7..2e7+1999,
+                                       # fingerprint prompts 4e7.., X1 5e7..5.2e7)
+  file: data/eval_sets/1.1.0+c735a0d4/x2_candidates.jsonl
+sampling:                              # GPU, a later night: the corrected SFT model (4-bit, no adapter), the training
+  k: 8                                 # decoding (T = 1, no truncation), the candidates in their frozen order
+  temperature: 1.0
+  top_p: 1.0
+  top_k: 0
+  max_new_tokens: 512
+  seed: 0
+  batch_size: 16                       # sequences per generate call (2 problems x 8)
+selection:
+  tolerance: 0.01                      # correct = |relative error| <= 1% (the verifier's binary tolerance)
+  min_correct: 1                       # a problem is kept iff >= 1 correct and >= 1 incorrect parsed answer
+  min_incorrect: 1
+analysis:
+  sigma_floor_rel: 1.0e-6              # stated σ = 0 -> this relative floor (the PREREGISTRATION convention)
+  bootstrap: 10000                     # over problems
+  seed: 0
+  alpha: 0.05                          # Holm over the primary methods (D74)
+output_dir: results/x2

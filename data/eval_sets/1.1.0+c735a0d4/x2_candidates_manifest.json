@@ -1,0 +1,25 @@
+{
+ "decision": "D74 (X2)",
+ "generator_version": "1.1.0+c735a0d4",
+ "n_problems": 1200,
+ "seeds": [
+  30000000,
+  30001199
+ ],
+ "split": "train",
+ "cells": {
+  "kinematics/1": 100,
+  "kinematics/2": 100,
+  "kinematics/3": 100,
+  "kinematics/4": 100,
+  "dynamics/1": 100,
+  "dynamics/2": 100,
+  "dynamics/3": 100,
+  "dynamics/4": 100,
+  "energy/1": 100,
+  "energy/2": 100,
+  "energy/3": 100,
+  "energy/4": 100
+ },
+ "sha256": "cd703f0d15cd69e4514b8bf04b6c7113c33c34cd6a8540824dee4cef481fff07"
+}
