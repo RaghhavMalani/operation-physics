@@ -1904,3 +1904,83 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Not checked: any GPU stage.**
 - **Launch command:**
   `nohup scripts/queue_uniform_seeds.sh > results/queue_uniform_seeds/nohup.log 2>&1 &`
+
+### D74. Pre-registration of X2: within-problem correctness pairs (written before any X2 sample, selection or score exists)
+- **Origin:** REVIEW_SYNTHESIS_ROUND2 X2 (ChatGPT), "the decisive epistemic test".
+- **Question:** does any confidence source rank a *correct* answer above an *incorrect* answer **to the same
+  problem**, with difficulty held fixed?
+- **Today (CPU):** this entry; the frozen candidate pool; the selection rule and the metric (`physcal/eval/x2_pairs.py`,
+  `configs/x2.yaml`, `tests/test_x2_pairs.py`). Everything else is GPU work for a later night (the schedule says
+  Monday).
+- **Candidate pool (frozen; `data/eval_sets/1.1.0+c735a0d4/x2_candidates.jsonl` + manifest, SHA-256):**
+  - **Problems:** 1,200 generator-1.1.0 problems from the training split, 100 per training cell (round-robin).
+  - **Seeds:** 30,000,000 + i. No other set uses them: GRPO uses 0–4,799, SFT 1e7+, calibration 2e7–2e7+1,999, the
+    fingerprint prompts 4e7+, X1 5e7–5.2e7.
+  - **Sizing:** the mixed rate at k = 8 was 21 / 48 = 44% for the bf16 SFT model (`model_probe_sft`), so about 530
+    mixed problems are expected.
+- **Sampling (GPU, later):** k = 8 per candidate from the corrected SFT model (D67's SFT control: the merged SFT model
+  quantized to 4 bits, no adapter), at the training decoding.
+  - **Settings:** T = 1, top_p 1, top_k off, 512 tokens, torch seed 0, prompt v4.
+  - **Order:** the frozen order. If the night ends early, the sampled prefix (still stratified, since the order is
+    round-robin) is used and its size reported.
+  - **Cost:** about 9,600 completions, roughly 4 GPU-hours at the D62/D65 sampled speed.
+- **Selection rule.**
+  - **Answers:** an answer is a completion with a parsed μ in the right dimension. Parse failures and unit mismatches
+    are not answers.
+  - **Correct:** |relative error| ≤ 1% (the verifier's binary tolerance); otherwise incorrect.
+  - **Kept:** a problem is kept iff it has ≥ 1 correct and ≥ 1 incorrect answer. Every (correct, incorrect) pair
+    within a kept problem is formed.
+- **Metric: pairwise accuracy.**
+  - **Per problem:** the share of its pairs in which the correct answer gets more confidence. Ties, and a missing
+    confidence on either side, count 0.5.
+  - **Headline:** the mean over kept problems; each problem weighs the same, whatever its number of pairs.
+  - **Inference:** a bootstrap over problems (B = 10,000, seed 0) gives the 95% CI and a one-sided p for
+    "pairwise accuracy > 0.5".
+  - **Holm** at α = 0.05 over the five primary methods.
+- **Methods and their confidence.** All are scored on the same answers.
+  1. **Stated σ, SFT (primary):** the σ in each sampled completion; confidence = −ln max(σ/|μ|, 1e-6).
+  2. **Stated σ, split credit seed 0 @287 (primary).**
+     - **The answer is held fixed:** each answer's SFT completion is truncated after "±". Split credit, loaded with
+       the corrected loader, then writes a greedy σ suffix (24 tokens, the E1 eval machinery).
+     - **Confidence:** as in 1. A suffix that does not parse or that changes μ counts as a tie.
+  3. **A5, p channel (primary).** This is the A5 strongest p model, re-fitted on 4-bit SFT completions (D69), using
+     problem + answer + reasoning of each sampled completion. Confidence = p(correct). **Secondary:** A5's strongest σ,
+     confidence = −ln σ̂.
+  4. **Problem-text-only baseline (a sanity check, not tested).** It is a function of the problem text alone (A5's
+     "problem" p model), so it is identical within a problem and must give exactly 0.5. Anything else is a pipeline
+     bug.
+  5. **Answer-conditioned hidden-state probe (primary).** A logistic regression (L2) on the hidden state at the first
+     token of "±" in `<answer>`. That position's input contains the complete numeric answer.
+     - **Model:** the corrected SFT model (4-bit, as loaded by `unsloth_4bit`). If Unsloth's inference forward does
+       not return hidden states, the same merged SFT is quantized by transformers + bitsandbytes with the same
+       quantization config, recorded in provenance.
+     - **Fit set:** separate training seeds, namely D69's 4-bit SFT greedy calibration completions (2,000, seeds
+       2e7+), labelled correct within 1%. Completions without a parsed "±" are dropped.
+     - **Fitting:** C from `probe_sft.yaml`'s grid, by 5-fold CV grouped by template. The layer is the one with the
+       best CV AUROC on the fit set. Standardization is fitted on the fit set.
+     - **Order:** all of this is fixed before any X2 answer is scored.
+     - **Confidence:** the predicted P(correct).
+  6. **Random-init control (primary; in the Holm family, so that its "success" is tested too):** the same
+     architecture with random weights (seed 0), the same extraction, fitting and layer selection.
+- **Secondary (reported, no verdict):**
+  - A5 σ.
+  - **A cross-fitted, answer-specific probe** (exploratory): 5-fold grouped by problem over the kept X2 problems. It is
+    fitted on the sampled answers of 4/5 of the problems and scored on the held-out fifth, with the layer chosen by
+    inner CV.
+  - **Paired differences** with 95% bootstrap CIs over problems: probe − SFT σ, probe − random-init, A5-p − probe.
+  - Per-depth pairwise accuracy; the number of pairs; the distribution of correct counts per kept problem.
+- **Reading rules (from the synthesis, made concrete; fixed now).**
+  - **Definitions:**
+    - **"Probe succeeds":** the probe is Holm-supported and probe − random-init has a CI above 0.
+    - **"Stated σ fails":** SFT stated σ is not Holm-supported.
+  - **The outcomes:**
+    - **The probe succeeds and stated σ fails:** the information exists, and the readout or training is deficient.
+    - **Only A5 succeeds** (the probe fails, or does not beat random-init): the signal is in the text, not accessible
+      to this hidden-state readout.
+    - **Every primary method fails:** the earlier baseline advantages (FINDINGS #10, #16) were mostly difficulty
+      prediction, not answer-specific awareness.
+    - **Any other combination** is reported as observed.
+- **Dependencies:**
+  - **Fit data:** A5-p and the probe both use tonight's D69 4-bit calibration completions.
+  - **GPU parts, in order:** sampling (~4 h); split-credit σ suffixes (~15 min); hidden states for the fit set and
+    the X2 answers, for both models (~40 min).
