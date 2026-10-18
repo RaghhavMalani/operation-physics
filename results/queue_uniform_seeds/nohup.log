@@ -11,3 +11,5 @@
 [23:25:41] GPU at 60C
 [23:25:41] start uniform1_train (timeout 32059s): uv run python -m physcal.train.grpo --config grpo_overnight2_seed1 --max-steps 287 --stop-at 2026-10-19T08:00:00+05:30
 [23:29:54] end D69 re-fits: posthoc exit 0, A5 exit 0
+[23:29:58] commit 'D69: global post-hoc scale and A5 re-fitted on 4-bit SFT calibration completions': pushed
+[02:43:17] end uniform1_train: exit 0
