@@ -1791,3 +1791,72 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     fails the run, since the adapter is already saved. The eval then reports "no_fingerprint".
 - **Also changed:** `scripts/queue_sanity.py` takes an optional eval dir name (default `rl287`; the corrected evals
   use `rl287_4bit`).
+
+### D73. Pre-registration of X1: a shallow text model of σ\* on the A6 / A6b pairs (written before any X1 model is fitted or any X1 prediction exists)
+- **Origin:** REVIEW_SYNTHESIS_ROUND2 X1 (Gemini). CPU only.
+- **Question:** can surface features of the problem text propagate measurement uncertainty? The answer sets the bar
+  the LLM's σ must clear on A6 / A6b in Phase 12.
+- **State of the data:** no model of any kind has been evaluated on A6 or A6b. The only A6/A6b output is D60's
+  tiny-random-model pipeline check.
+  - **One check before this entry:** the regex parser below was checked on 360 dev problems (seeds 52,000,000+,
+    used by no set below). It recovered 100% of the shown measurements with the right symbols, converted 100% of
+    the units, and gave values identical to the displayed SI values. That is a property of the parser, not an
+    outcome.
+- **Fit set (`configs/x1_text_sigma.yaml`):**
+  - **Problems:** generator 2.0.0 (`env_v2`), split "train". That is the training families, depths 1–4 (depth 5 is
+    held out of every training split, so X1 extrapolates to A6/A6b's depth 5, as any trained model would), and
+    noise 1 / 2 / 5% (A6's levels).
+  - **Size and order:** 12,024 problems, round-robin over 12 cells × 3 levels; seeds 50,000,000 + i.
+  - **Test set (descriptive accuracy only):** 1,224 problems, seeds 51,000,000 + i.
+  - **Overlap check:** the code refuses any seed overlap between fit, test and the pair sets.
+  - **Target:** y = ln σ\*_log, the stored Monte Carlo σ\* in log space (A2).
+- **Inputs: the problem text only.** No metadata and no generator field is used.
+  - **TF-IDF:** whitespace tokens, A5's settings (unigrams, min_df 3, sublinear tf), the top 1,000 by document
+    frequency.
+  - **Numeric features parsed from the text:** every measurement "<symbol> = <number> <unit> ± <p>%" (or ",
+    equals"), converted to SI with the project's pint registry.
+    - **Statistics of p:** the count, max, mean and root-sum-square.
+    - **Statistics of the magnitudes:** min, max, mean and SD of ln|SI value|.
+    - **Per symbol:** ln|value| in a column for each symbol seen in ≥ 20 fit problems. A missing symbol is NaN,
+      which the GBT handles natively.
+  - **Exact values are not parsed.** These are the ones shown without ±, e.g. "g = 9.81 m/s^2".
+- **Feature sets, nested:**
+  1. noise (the p statistics only);
+  2. noise_text (+ TF-IDF);
+  3. **noise_text_magnitudes (+ the magnitude features): the PRIMARY.** Sets 1 and 2 are descriptive.
+- **Model:** sklearn `HistGradientBoostingRegressor` (squared error), from A5's 4-point GBT grid.
+  - **Selection:** per feature set, by 5-fold CV grouped by template (family | target | set of givens, as A5),
+    minimizing CV MSE of ln σ\*. Then the model is refit on the whole fit set.
+  - **Settings:** seed 0; at most 4 threads / workers; nice.
+- **Primary analysis.** It uses the D58 / D59 / D61 / D64 pair analysis, unchanged (`a6_pairs.analyze_rows`,
+  `joint`), on the frozen A6 (510 pairs) and A6b (510 pairs) sets, checked against their manifests' SHA-256.
+  - **Stated σ:** X1's σ̂ = exp(ŷ) is each member's stated σ.
+  - **Membership:** X1 states no answer, so every member counts as computation-correct and all 510 pairs enter
+    each primary analysis. This is the one difference from how an LLM's answers enter it.
+  - **Reported for the primary set:**
+    - A6's slope, its 90% CI and D61/D64 label, and the one-sided test (D58);
+    - A6b's slope, 90% CI and TOST equivalence (margin 0.3, D59);
+    - D59's verdict and the labelled joint verdict (D64).
+- **Pipeline references** (same analysis; sanity checks, not results):
+  - **σ̂ = σ\* itself** must give slope 1 on A6 ("full propagation") and be equivalent to 0 on A6b ("propagates").
+  - **The noise-only set** is constant within a pair, so it must give slope 0 ("no propagation").
+- **Descriptive:**
+  - for every feature set: test-set R², median |ŷ − y| and Spearman, and the same on the A6/A6b members;
+  - within-pair corr(Δ ln σ̂, Δ ln σ\*), the share with the same sign, and A6b's mean Δ ln σ̂;
+  - the primary analysis per depth.
+- **Reading rules (fixed now).** These are bars for Phase 12, not hypotheses tested here. X1 is a single descriptive
+  fit; no multiplicity correction applies.
+  - **X1's labelled verdict is full or partial propagation (A6b equivalent to 0):**
+    - **Reading:** surface features can propagate.
+    - **The bar:** any claim that the LLM propagates beyond surface features needs its A6 slope to beat X1's on the
+      same pairs (a paired bootstrap; specified in Phase 12's pre-registration).
+  - **"Magnitude-driven":**
+    - **Reading:** text features follow σ\* through the magnitudes, in a way that breaks invariance.
+    - **The bar:** the LLM must pass both halves.
+  - **"No propagation" or "anti-propagation":**
+    - **Reading:** surface features do not propagate.
+    - **The bar:** any LLM label of partial propagation or better, with A6b equivalent to 0, is beyond this
+      baseline.
+- **Code:** `physcal/eval/x1_text_sigma.py`, with tests of the parser, the features and the references in
+  `tests/test_x1_text_sigma.py`. Outputs: `results/x1_text_sigma/{selection.json, results.json, summary.md}`.
+  `selection.json` (CV table and parse coverage) is written before any prediction on the pairs.
