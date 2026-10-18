@@ -1,0 +1,185 @@
+{
+ "decision": "D73 (X1)",
+ "n_fit": 12024,
+ "n_templates": 1349,
+ "parse_coverage": {
+  "fit": {
+   "share_problems_all_parsed": 1.0,
+   "share_problems_over": 0.0,
+   "mean_parsed": 4.485113107119095,
+   "mean_shown": 4.485113107119095,
+   "share_units_converted": 1.0
+  },
+  "test": {
+   "share_problems_all_parsed": 1.0,
+   "share_problems_over": 0.0,
+   "mean_parsed": 4.4640522875816995,
+   "mean_shown": 4.4640522875816995,
+   "share_units_converted": 1.0
+  }
+ },
+ "cv": {
+  "noise": {
+   "grid": [
+    {
+     "hp": {
+      "max_iter": 100,
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.2657407926928145,
+     "cv_median_abs_log_error": 0.3422353322187113
+    },
+    {
+     "hp": {
+      "max_iter": 300,
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.2656754856834562,
+     "cv_median_abs_log_error": 0.34217150161602605
+    },
+    {
+     "hp": {
+      "max_iter": 100,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.26573348753840703,
+     "cv_median_abs_log_error": 0.34206114701684687
+    },
+    {
+     "hp": {
+      "max_iter": 300,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.26567810885193,
+     "cv_median_abs_log_error": 0.3424217692544098
+    }
+   ],
+   "best": {
+    "hp": {
+     "max_iter": 300,
+     "max_depth": 2,
+     "learning_rate": 0.05,
+     "min_samples_leaf": 20
+    },
+    "cv_mse": 0.2656754856834562,
+    "cv_median_abs_log_error": 0.34217150161602605
+   }
+  },
+  "noise_text": {
+   "grid": [
+    {
+     "hp": {
+      "max_iter": 100,
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.23612057284063814,
+     "cv_median_abs_log_error": 0.3108718752776398
+    },
+    {
+     "hp": {
+      "max_iter": 300,
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.18959045805900668,
+     "cv_median_abs_log_error": 0.2691945700915974
+    },
+    {
+     "hp": {
+      "max_iter": 100,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.2166058979042368,
+     "cv_median_abs_log_error": 0.2953641441090331
+    },
+    {
+     "hp": {
+      "max_iter": 300,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.17109230349538374,
+     "cv_median_abs_log_error": 0.2523345997177622
+    }
+   ],
+   "best": {
+    "hp": {
+     "max_iter": 300,
+     "max_depth": 3,
+     "learning_rate": 0.05,
+     "min_samples_leaf": 20
+    },
+    "cv_mse": 0.17109230349538374,
+    "cv_median_abs_log_error": 0.2523345997177622
+   }
+  },
+  "noise_text_magnitudes": {
+   "grid": [
+    {
+     "hp": {
+      "max_iter": 100,
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.22277661738612592,
+     "cv_median_abs_log_error": 0.3025123284628488
+    },
+    {
+     "hp": {
+      "max_iter": 300,
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.1676735060470006,
+     "cv_median_abs_log_error": 0.25583482685711556
+    },
+    {
+     "hp": {
+      "max_iter": 100,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.19799149447481593,
+     "cv_median_abs_log_error": 0.28452394216709975
+    },
+    {
+     "hp": {
+      "max_iter": 300,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "min_samples_leaf": 20
+     },
+     "cv_mse": 0.14172635405389483,
+     "cv_median_abs_log_error": 0.22716164725546595
+    }
+   ],
+   "best": {
+    "hp": {
+     "max_iter": 300,
+     "max_depth": 3,
+     "learning_rate": 0.05,
+     "min_samples_leaf": 20
+    },
+    "cv_mse": 0.14172635405389483,
+    "cv_median_abs_log_error": 0.22716164725546595
+   }
+  }
+ }
+}

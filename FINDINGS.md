@@ -812,3 +812,38 @@ All nine tests go the wrong way (p = 1).
 - analysis code `d80ee83`, plus the per-seed output-name fix `20ec565`;
 - eval tapes `…/compare/{sft_4bit,rl287_4bit}`, `…/e1_eval/{final_4bit,step150_4bit}`, `results/e1/sft_4bit`;
 - analyses in `results/corrected/`.
+
+## #17. X1: a shallow text model of σ\* reaches "partial propagation" on A6, but its slope is 0.06 against an ideal 1 (D73, 2026-10-18)
+
+**Claim.** A gradient-boosted model trained on problem text alone (TF-IDF plus the measurements parsed from the text)
+predicts σ\* well *across* problems: test R² 0.83 on ln σ\*. *Within* A6 pairs, where only the values change, it barely
+moves its σ: slope +0.063 (90% CI [+0.03, +0.10]) against an ideal of 1. That is D61's "partial propagation".
+
+**What this means.** Its A6b slope is equivalent to 0, so the labelled joint verdict is "partial propagation" (D59's
+verdict: "propagates"). This is the bar the Phase 12 LLM must clear (D73's reading rules). Most of what a text model
+knows about σ\* is the noise level and the template, which do not vary within a pair.
+
+| σ source (problem text only) | test R² (ln σ\*) | A6 slope [90% CI] | A6 label | A6b slope [90% CI] | labelled verdict |
+|---|---|---|---|---|---|
+| noise (stated p only) | 0.62 | 0.000 [0.00, 0.00] | no propagation | 0.000 [0.00, 0.00] | no propagation |
+| + TF-IDF | 0.79 | +0.002 [−0.00, +0.00] | no propagation | 0.000 [−0.00, +0.00] | no propagation |
+| **+ parsed magnitudes (primary)** | **0.83** | **+0.063 [+0.03, +0.10]** | **partial propagation** | −0.000 [−0.00, +0.00] | **partial propagation** |
+| reference: σ̂ = σ\* (exact) | – | +1.000 | full propagation | 0.000 | full propagation |
+
+- **One-sided test:** the A6 slope is > 0 at p = 0.0008 (D58).
+- **Within pairs:** the primary model's Δ ln σ̂ correlates with Δ ln σ\* at only 0.16, and has the right sign in 48.6%
+  of pairs (Δ ln σ\* averages 1.08 within a pair).
+- **By depth:** the slope's CI excludes 0 only at depth 2 (+0.11 [+0.04, +0.18]). At depth 5, outside the fit set's
+  depths, it is −0.01 [−0.05, +0.03].
+- **Nesting:** the noise level explains R² 0.62 of ln σ\* across problems, and the text adds 0.17. Only the parsed
+  magnitudes give any within-pair movement.
+- **Pipeline references behave as specified:** σ̂ = σ\* gives slope 1 / "full propagation"; the noise-only model is
+  constant within pairs (slope 0).
+- **Caveats:**
+  - **No answers:** X1 states no answer, so all 510 pairs of each set enter its primary analysis. An LLM's analysis
+    keeps only pairs where both answers are computation-correct.
+  - **One fit:** it is a single fit (seed 0, one grid selection by grouped CV); there is no seed variability.
+- **Provenance:** `physcal/eval/x1_text_sigma.py`, `configs/x1_text_sigma.yaml` → `results/x1_text_sigma/`
+  (`selection.json`, CV table and parse coverage, written before any pair prediction; `results.json`; `summary.md`).
+  Fit set: 12,024 generator-2.0.0 training-split problems (1,349 templates, seeds 50,000,000+). Test set: 1,224
+  (51,000,000+).

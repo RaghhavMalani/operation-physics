@@ -1,0 +1,1733 @@
+{
+ "decision": "D73 (X1)",
+ "primary": "noise_text_magnitudes",
+ "parse_coverage": {
+  "fit": {
+   "share_problems_all_parsed": 1.0,
+   "share_problems_over": 0.0,
+   "mean_parsed": 4.485113107119095,
+   "mean_shown": 4.485113107119095,
+   "share_units_converted": 1.0
+  },
+  "test": {
+   "share_problems_all_parsed": 1.0,
+   "share_problems_over": 0.0,
+   "mean_parsed": 4.4640522875816995,
+   "mean_shown": 4.4640522875816995,
+   "share_units_converted": 1.0
+  }
+ },
+ "feature_sets": {
+  "noise": {
+   "cv_best": {
+    "hp": {
+     "max_iter": 300,
+     "max_depth": 2,
+     "learning_rate": 0.05,
+     "min_samples_leaf": 20
+    },
+    "cv_mse": 0.2656754856834562,
+    "cv_median_abs_log_error": 0.34217150161602605
+   },
+   "test_accuracy": {
+    "n": 1224,
+    "r2": 0.6227277465303518,
+    "median_abs_log_error": 0.3529226327582069,
+    "spearman": 0.7935184106683981
+   },
+   "a6_member_accuracy": {
+    "n": 1020,
+    "r2": 0.27251506842963147,
+    "median_abs_log_error": 0.5479048793220105,
+    "spearman": 0.6199000591281846
+   },
+   "a6b_member_accuracy": {
+    "n": 1020,
+    "r2": 0.7609591843550465,
+    "median_abs_log_error": 0.26071463917768956,
+    "spearman": 0.8661920168978107
+   },
+   "within_pair_a6": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 1.0832283693764138,
+    "mean_d_ln_sigma_hat": 0.0,
+    "corr": null,
+    "share_same_sign": 0.0
+   },
+   "within_pair_a6b": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 1.571146454767479e-10,
+    "mean_d_ln_sigma_hat": 0.0,
+    "corr": null,
+    "share_same_sign": 0.0058823529411764705
+   },
+   "pairs": {
+    "A6": {
+     "kind": "sensitivity",
+     "n_pairs_total": 510,
+     "n_pairs_both_answered": 510,
+     "primary_computation_correct": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "label": "no propagation",
+     "supported": false,
+     "secondary_all_answered": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.95,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "sensitivity_no_sigma_zero": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.95,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     }
+    },
+    "A6b": {
+     "kind": "invariance",
+     "n_pairs_total": 510,
+     "n_pairs_both_answered": 510,
+     "primary_computation_correct": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "equivalence_margin": 0.3,
+     "equivalent_to_zero": true,
+     "secondary_all_answered": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "sensitivity_no_sigma_zero": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     }
+    },
+    "joint": {
+     "verdict": "no propagation (lookup-like)",
+     "labelled_verdict": "no propagation",
+     "A6_label": "no propagation",
+     "A6_supported": false,
+     "A6b_equivalent_to_zero": true,
+     "table": [
+      {
+       "set": "A6 (sensitivity)",
+       "ideal_slope": 1.0,
+       "slope": 0.0,
+       "ci95": [
+        0.0,
+        0.0
+       ],
+       "label_ci": [
+        0.0,
+        0.0
+       ],
+       "label_ci_level": 0.9,
+       "label": "no propagation",
+       "n_pairs": 510,
+       "test": "slope > 0 (one-sided)",
+       "p": 1.0
+      },
+      {
+       "set": "A6b (invariance)",
+       "ideal_slope": 0.0,
+       "slope": 0.0,
+       "ci": [
+        0.0,
+        0.0
+       ],
+       "n_pairs": 510,
+       "test": "TOST |slope| < 0.3",
+       "p_two_sided_vs_0": 1.0
+      }
+     ]
+    }
+   }
+  },
+  "noise_text": {
+   "cv_best": {
+    "hp": {
+     "max_iter": 300,
+     "max_depth": 3,
+     "learning_rate": 0.05,
+     "min_samples_leaf": 20
+    },
+    "cv_mse": 0.17109230349538374,
+    "cv_median_abs_log_error": 0.2523345997177622
+   },
+   "test_accuracy": {
+    "n": 1224,
+    "r2": 0.7894679659359871,
+    "median_abs_log_error": 0.22524739395002014,
+    "spearman": 0.893908163081776
+   },
+   "a6_member_accuracy": {
+    "n": 1020,
+    "r2": 0.3711020077953162,
+    "median_abs_log_error": 0.5508266815900362,
+    "spearman": 0.6760387069494396
+   },
+   "a6b_member_accuracy": {
+    "n": 1020,
+    "r2": 0.8661734806589477,
+    "median_abs_log_error": 0.17003029868474906,
+    "spearman": 0.9308270737406421
+   },
+   "within_pair_a6": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 1.0832283693764138,
+    "mean_d_ln_sigma_hat": 6.922684240000227e-06,
+    "corr": 0.07402903209542053,
+    "share_same_sign": 0.01764705882352941
+   },
+   "within_pair_a6b": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 1.571146454767479e-10,
+    "mean_d_ln_sigma_hat": 0.0001437358751143278,
+    "corr": -0.0010645924942775703,
+    "share_same_sign": 0.01764705882352941
+   },
+   "pairs": {
+    "A6": {
+     "kind": "sensitivity",
+     "n_pairs_total": 510,
+     "n_pairs_both_answered": 510,
+     "primary_computation_correct": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.002089043836826273,
+      "ci95": [
+       -0.0003143660775678605,
+       0.005271661215034057
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -5.106378033777631e-05,
+       0.00462775063299243
+      ],
+      "p_one_sided": 0.0555,
+      "p_two_sided": 0.111,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 6.922684240000227e-06,
+      "mean_abs_dy": 0.0010930315215220685,
+      "share_dy_positive": 0.01764705882352941
+     },
+     "label": "no propagation",
+     "supported": false,
+     "secondary_all_answered": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.002089043836826273,
+      "ci95": [
+       -0.0003143660775678605,
+       0.005271661215034057
+      ],
+      "ci_level": 0.95,
+      "ci": [
+       -0.0003143660775678604,
+       0.005271661215034057
+      ],
+      "p_one_sided": 0.0555,
+      "p_two_sided": 0.111,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 6.922684240000227e-06,
+      "mean_abs_dy": 0.0010930315215220685,
+      "share_dy_positive": 0.01764705882352941
+     },
+     "sensitivity_no_sigma_zero": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.002089043836826273,
+      "ci95": [
+       -0.0003143660775678605,
+       0.005271661215034057
+      ],
+      "ci_level": 0.95,
+      "ci": [
+       -0.0003143660775678604,
+       0.005271661215034057
+      ],
+      "p_one_sided": 0.0555,
+      "p_two_sided": 0.111,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 6.922684240000227e-06,
+      "mean_abs_dy": 0.0010930315215220685,
+      "share_dy_positive": 0.01764705882352941
+     }
+    },
+    "A6b": {
+     "kind": "invariance",
+     "n_pairs_total": 510,
+     "n_pairs_both_answered": 510,
+     "primary_computation_correct": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": 5.436124717206139e-05,
+      "ci95": [
+       -0.00020064543068445116,
+       0.00029084676751521196
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.00015451877564970424,
+       0.0002546610583577965
+      ],
+      "p_one_sided": 0.3194,
+      "p_two_sided": 0.6388,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0001437358751143278,
+      "mean_abs_dy": 0.0005017941060476104,
+      "share_dy_positive": 0.011764705882352941
+     },
+     "equivalence_margin": 0.3,
+     "equivalent_to_zero": true,
+     "secondary_all_answered": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": 5.436124717206139e-05,
+      "ci95": [
+       -0.00020064543068445116,
+       0.00029084676751521196
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.00015451877564970424,
+       0.0002546610583577965
+      ],
+      "p_one_sided": 0.3194,
+      "p_two_sided": 0.6388,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0001437358751143278,
+      "mean_abs_dy": 0.0005017941060476104,
+      "share_dy_positive": 0.011764705882352941
+     },
+     "sensitivity_no_sigma_zero": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": 5.436124717206139e-05,
+      "ci95": [
+       -0.00020064543068445116,
+       0.00029084676751521196
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.00015451877564970424,
+       0.0002546610583577965
+      ],
+      "p_one_sided": 0.3194,
+      "p_two_sided": 0.6388,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0001437358751143278,
+      "mean_abs_dy": 0.0005017941060476104,
+      "share_dy_positive": 0.011764705882352941
+     }
+    },
+    "joint": {
+     "verdict": "no propagation (lookup-like)",
+     "labelled_verdict": "no propagation",
+     "A6_label": "no propagation",
+     "A6_supported": false,
+     "A6b_equivalent_to_zero": true,
+     "table": [
+      {
+       "set": "A6 (sensitivity)",
+       "ideal_slope": 1.0,
+       "slope": 0.002089043836826273,
+       "ci95": [
+        -0.0003143660775678605,
+        0.005271661215034057
+       ],
+       "label_ci": [
+        -5.106378033777631e-05,
+        0.00462775063299243
+       ],
+       "label_ci_level": 0.9,
+       "label": "no propagation",
+       "n_pairs": 510,
+       "test": "slope > 0 (one-sided)",
+       "p": 0.0555
+      },
+      {
+       "set": "A6b (invariance)",
+       "ideal_slope": 0.0,
+       "slope": 5.436124717206139e-05,
+       "ci": [
+        -0.00015451877564970424,
+        0.0002546610583577965
+       ],
+       "n_pairs": 510,
+       "test": "TOST |slope| < 0.3",
+       "p_two_sided_vs_0": 0.6388
+      }
+     ]
+    }
+   }
+  },
+  "noise_text_magnitudes": {
+   "cv_best": {
+    "hp": {
+     "max_iter": 300,
+     "max_depth": 3,
+     "learning_rate": 0.05,
+     "min_samples_leaf": 20
+    },
+    "cv_mse": 0.14172635405389483,
+    "cv_median_abs_log_error": 0.22716164725546595
+   },
+   "test_accuracy": {
+    "n": 1224,
+    "r2": 0.8308488477602385,
+    "median_abs_log_error": 0.20013109705987808,
+    "spearman": 0.9160345619526188
+   },
+   "a6_member_accuracy": {
+    "n": 1020,
+    "r2": 0.42336987655151603,
+    "median_abs_log_error": 0.5390972641630856,
+    "spearman": 0.6928253062431833
+   },
+   "a6b_member_accuracy": {
+    "n": 1020,
+    "r2": 0.877484430116203,
+    "median_abs_log_error": 0.15704955288500333,
+    "spearman": 0.9364852878968509
+   },
+   "within_pair_a6": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 1.0832283693764138,
+    "mean_d_ln_sigma_hat": 0.022844313539097647,
+    "corr": 0.16132456641365486,
+    "share_same_sign": 0.48627450980392156
+   },
+   "within_pair_a6b": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 1.571146454767479e-10,
+    "mean_d_ln_sigma_hat": 0.0048326082110978705,
+    "corr": -0.028347711048034546,
+    "share_same_sign": 0.4176470588235294
+   },
+   "pairs": {
+    "A6": {
+     "kind": "sensitivity",
+     "n_pairs_total": 510,
+     "n_pairs_both_answered": 510,
+     "primary_computation_correct": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.06345098136887775,
+      "ci95": [
+       0.025473728175195283,
+       0.1035126938041103
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0311097649734361,
+       0.09723545394743963
+      ],
+      "p_one_sided": 0.0008,
+      "p_two_sided": 0.0016,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 0.022844313539097647,
+      "mean_abs_dy": 0.06010179270638158,
+      "share_dy_positive": 0.48627450980392156
+     },
+     "label": "partial propagation",
+     "supported": true,
+     "secondary_all_answered": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.06345098136887775,
+      "ci95": [
+       0.025473728175195283,
+       0.1035126938041103
+      ],
+      "ci_level": 0.95,
+      "ci": [
+       0.025473728175195283,
+       0.1035126938041103
+      ],
+      "p_one_sided": 0.0008,
+      "p_two_sided": 0.0016,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 0.022844313539097647,
+      "mean_abs_dy": 0.06010179270638158,
+      "share_dy_positive": 0.48627450980392156
+     },
+     "sensitivity_no_sigma_zero": {
+      "n_pairs": 510,
+      "regressor": "sigma_star",
+      "slope": 0.06345098136887775,
+      "ci95": [
+       0.025473728175195283,
+       0.1035126938041103
+      ],
+      "ci_level": 0.95,
+      "ci": [
+       0.025473728175195283,
+       0.1035126938041103
+      ],
+      "p_one_sided": 0.0008,
+      "p_two_sided": 0.0016,
+      "mean_dx": 1.0832283693764133,
+      "mean_dy": 0.022844313539097647,
+      "mean_abs_dy": 0.06010179270638158,
+      "share_dy_positive": 0.48627450980392156
+     }
+    },
+    "A6b": {
+     "kind": "invariance",
+     "n_pairs_total": 510,
+     "n_pairs_both_answered": 510,
+     "primary_computation_correct": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": -0.00041296101834935263,
+      "ci95": [
+       -0.002731491700814138,
+       0.0017208053359784438
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.002371168442226444,
+       0.0013892539107489145
+      ],
+      "p_one_sided": 0.6466,
+      "p_two_sided": 0.7068,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0048326082110978705,
+      "mean_abs_dy": 0.02679730970965944,
+      "share_dy_positive": 0.45294117647058824
+     },
+     "equivalence_margin": 0.3,
+     "equivalent_to_zero": true,
+     "secondary_all_answered": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": -0.00041296101834935263,
+      "ci95": [
+       -0.002731491700814138,
+       0.0017208053359784438
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.002371168442226444,
+       0.0013892539107489145
+      ],
+      "p_one_sided": 0.6466,
+      "p_two_sided": 0.7068,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0048326082110978705,
+      "mean_abs_dy": 0.02679730970965944,
+      "share_dy_positive": 0.45294117647058824
+     },
+     "sensitivity_no_sigma_zero": {
+      "n_pairs": 510,
+      "regressor": "truth",
+      "slope": -0.00041296101834935263,
+      "ci95": [
+       -0.002731491700814138,
+       0.0017208053359784438
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.002371168442226444,
+       0.0013892539107489145
+      ],
+      "p_one_sided": 0.6466,
+      "p_two_sided": 0.7068,
+      "mean_dx": 4.629244212465011,
+      "mean_dy": 0.0048326082110978705,
+      "mean_abs_dy": 0.02679730970965944,
+      "share_dy_positive": 0.45294117647058824
+     }
+    },
+    "joint": {
+     "verdict": "propagates",
+     "labelled_verdict": "partial propagation",
+     "A6_label": "partial propagation",
+     "A6_supported": true,
+     "A6b_equivalent_to_zero": true,
+     "table": [
+      {
+       "set": "A6 (sensitivity)",
+       "ideal_slope": 1.0,
+       "slope": 0.06345098136887775,
+       "ci95": [
+        0.025473728175195283,
+        0.1035126938041103
+       ],
+       "label_ci": [
+        0.0311097649734361,
+        0.09723545394743963
+       ],
+       "label_ci_level": 0.9,
+       "label": "partial propagation",
+       "n_pairs": 510,
+       "test": "slope > 0 (one-sided)",
+       "p": 0.0008
+      },
+      {
+       "set": "A6b (invariance)",
+       "ideal_slope": 0.0,
+       "slope": -0.00041296101834935263,
+       "ci": [
+        -0.002371168442226444,
+        0.0013892539107489145
+       ],
+       "n_pairs": 510,
+       "test": "TOST |slope| < 0.3",
+       "p_two_sided_vs_0": 0.7068
+      }
+     ]
+    }
+   }
+  }
+ },
+ "reference_exact_sigma_star": {
+  "pairs": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 1.0832283693764133,
+     "mean_abs_dy": 1.0832283693764133,
+     "share_dy_positive": 1.0
+    },
+    "label": "full propagation",
+    "supported": true,
+    "secondary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 1.0832283693764133,
+     "mean_abs_dy": 1.0832283693764133,
+     "share_dy_positive": 1.0
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 1.0832283693764133,
+     "mean_abs_dy": 1.0832283693764133,
+     "share_dy_positive": 1.0
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 2.242339027571924e-10,
+     "ci95": [
+      -1.274354613203345e-11,
+      4.8477191493734e-10
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      2.2208627311505225e-11,
+      4.418592165782957e-10
+     ],
+     "p_one_sided": 0.0317,
+     "p_two_sided": 0.0634,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 1.571146454767479e-10,
+     "mean_abs_dy": 8.810817173893531e-10,
+     "share_dy_positive": 0.48627450980392156
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 2.242339027571924e-10,
+     "ci95": [
+      -1.274354613203345e-11,
+      4.8477191493734e-10
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      2.2208627311505225e-11,
+      4.418592165782957e-10
+     ],
+     "p_one_sided": 0.0317,
+     "p_two_sided": 0.0634,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 1.571146454767479e-10,
+     "mean_abs_dy": 8.810817173893531e-10,
+     "share_dy_positive": 0.48627450980392156
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 2.242339027571924e-10,
+     "ci95": [
+      -1.274354613203345e-11,
+      4.8477191493734e-10
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      2.2208627311505225e-11,
+      4.418592165782957e-10
+     ],
+     "p_one_sided": 0.0317,
+     "p_two_sided": 0.0634,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 1.571146454767479e-10,
+     "mean_abs_dy": 8.810817173893531e-10,
+     "share_dy_positive": 0.48627450980392156
+    }
+   },
+   "joint": {
+    "verdict": "propagates",
+    "labelled_verdict": "full propagation",
+    "A6_label": "full propagation",
+    "A6_supported": true,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": 1.0,
+      "ci95": [
+       1.0,
+       1.0
+      ],
+      "label_ci": [
+       1.0,
+       1.0
+      ],
+      "label_ci_level": 0.9,
+      "label": "full propagation",
+      "n_pairs": 510,
+      "test": "slope > 0 (one-sided)",
+      "p": 0.0
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": 2.242339027571924e-10,
+      "ci": [
+       2.2208627311505225e-11,
+       4.418592165782957e-10
+      ],
+      "n_pairs": 510,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 0.0634
+     }
+    ]
+   }
+  }
+ },
+ "primary_by_depth": {
+  "1": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.06294120139899398,
+     "ci95": [
+      -0.040736805852152974,
+      0.16651980315321574
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.022799174671978895,
+      0.14946093410649425
+     ],
+     "p_one_sided": 0.1195,
+     "p_two_sided": 0.239,
+     "mean_dx": 1.2136363994456314,
+     "mean_dy": 0.03051652856987024,
+     "mean_abs_dy": 0.06578558214852008,
+     "share_dy_positive": 0.5882352941176471
+    },
+    "label": "no propagation",
+    "supported": false,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.06294120139899398,
+     "ci95": [
+      -0.040736805852152974,
+      0.16651980315321574
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.04073680585215296,
+      0.16651980315321574
+     ],
+     "p_one_sided": 0.1195,
+     "p_two_sided": 0.239,
+     "mean_dx": 1.2136363994456314,
+     "mean_dy": 0.03051652856987024,
+     "mean_abs_dy": 0.06578558214852008,
+     "share_dy_positive": 0.5882352941176471
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.06294120139899398,
+     "ci95": [
+      -0.040736805852152974,
+      0.16651980315321574
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.04073680585215296,
+      0.16651980315321574
+     ],
+     "p_one_sided": 0.1195,
+     "p_two_sided": 0.239,
+     "mean_dx": 1.2136363994456314,
+     "mean_dy": 0.03051652856987024,
+     "mean_abs_dy": 0.06578558214852008,
+     "share_dy_positive": 0.5882352941176471
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.002571289273193231,
+     "ci95": [
+      -0.0027650069589218542,
+      0.008680803441624883
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0019977506690023617,
+      0.007549008923410612
+     ],
+     "p_one_sided": 0.1845,
+     "p_two_sided": 0.369,
+     "mean_dx": 4.321668222329973,
+     "mean_dy": 0.01789677832937361,
+     "mean_abs_dy": 0.034651342425456075,
+     "share_dy_positive": 0.5588235294117647
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.002571289273193231,
+     "ci95": [
+      -0.0027650069589218542,
+      0.008680803441624883
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0019977506690023617,
+      0.007549008923410612
+     ],
+     "p_one_sided": 0.1845,
+     "p_two_sided": 0.369,
+     "mean_dx": 4.321668222329973,
+     "mean_dy": 0.01789677832937361,
+     "mean_abs_dy": 0.034651342425456075,
+     "share_dy_positive": 0.5588235294117647
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.002571289273193231,
+     "ci95": [
+      -0.0027650069589218542,
+      0.008680803441624883
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0019977506690023617,
+      0.007549008923410612
+     ],
+     "p_one_sided": 0.1845,
+     "p_two_sided": 0.369,
+     "mean_dx": 4.321668222329973,
+     "mean_dy": 0.01789677832937361,
+     "mean_abs_dy": 0.034651342425456075,
+     "share_dy_positive": 0.5588235294117647
+    }
+   },
+   "joint": {
+    "verdict": "no propagation (lookup-like)",
+    "labelled_verdict": "no propagation",
+    "A6_label": "no propagation",
+    "A6_supported": false,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": 0.06294120139899398,
+      "ci95": [
+       -0.040736805852152974,
+       0.16651980315321574
+      ],
+      "label_ci": [
+       -0.022799174671978895,
+       0.14946093410649425
+      ],
+      "label_ci_level": 0.9,
+      "label": "no propagation",
+      "n_pairs": 102,
+      "test": "slope > 0 (one-sided)",
+      "p": 0.1195
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": 0.002571289273193231,
+      "ci": [
+       -0.0019977506690023617,
+       0.007549008923410612
+      ],
+      "n_pairs": 102,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 0.369
+     }
+    ]
+   }
+  },
+  "2": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.10963374401726034,
+     "ci95": [
+      0.03163257647451843,
+      0.19357082153481042
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.04417691599567832,
+      0.17982759339293208
+     ],
+     "p_one_sided": 0.0034,
+     "p_two_sided": 0.0068,
+     "mean_dx": 1.1096084434760378,
+     "mean_dy": 0.03422239026189738,
+     "mean_abs_dy": 0.06099054099777248,
+     "share_dy_positive": 0.49019607843137253
+    },
+    "label": "partial propagation",
+    "supported": true,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.10963374401726034,
+     "ci95": [
+      0.03163257647451843,
+      0.19357082153481042
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      0.03163257647451843,
+      0.19357082153481042
+     ],
+     "p_one_sided": 0.0034,
+     "p_two_sided": 0.0068,
+     "mean_dx": 1.1096084434760378,
+     "mean_dy": 0.03422239026189738,
+     "mean_abs_dy": 0.06099054099777248,
+     "share_dy_positive": 0.49019607843137253
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.10963374401726034,
+     "ci95": [
+      0.03163257647451843,
+      0.19357082153481042
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      0.03163257647451843,
+      0.19357082153481042
+     ],
+     "p_one_sided": 0.0034,
+     "p_two_sided": 0.0068,
+     "mean_dx": 1.1096084434760378,
+     "mean_dy": 0.03422239026189738,
+     "mean_abs_dy": 0.06099054099777248,
+     "share_dy_positive": 0.49019607843137253
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.0010136578933198095,
+     "ci95": [
+      -0.003911109334274236,
+      0.00533034220304184
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0030903169498488997,
+      0.00467735045849649
+     ],
+     "p_one_sided": 0.3165,
+     "p_two_sided": 0.633,
+     "mean_dx": 4.425001709913605,
+     "mean_dy": 0.010641705856406893,
+     "mean_abs_dy": 0.02936700419450137,
+     "share_dy_positive": 0.5196078431372549
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.0010136578933198095,
+     "ci95": [
+      -0.003911109334274236,
+      0.00533034220304184
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0030903169498488997,
+      0.00467735045849649
+     ],
+     "p_one_sided": 0.3165,
+     "p_two_sided": 0.633,
+     "mean_dx": 4.425001709913605,
+     "mean_dy": 0.010641705856406893,
+     "mean_abs_dy": 0.02936700419450137,
+     "share_dy_positive": 0.5196078431372549
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.0010136578933198095,
+     "ci95": [
+      -0.003911109334274236,
+      0.00533034220304184
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0030903169498488997,
+      0.00467735045849649
+     ],
+     "p_one_sided": 0.3165,
+     "p_two_sided": 0.633,
+     "mean_dx": 4.425001709913605,
+     "mean_dy": 0.010641705856406893,
+     "mean_abs_dy": 0.02936700419450137,
+     "share_dy_positive": 0.5196078431372549
+    }
+   },
+   "joint": {
+    "verdict": "propagates",
+    "labelled_verdict": "partial propagation",
+    "A6_label": "partial propagation",
+    "A6_supported": true,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": 0.10963374401726034,
+      "ci95": [
+       0.03163257647451843,
+       0.19357082153481042
+      ],
+      "label_ci": [
+       0.04417691599567832,
+       0.17982759339293208
+      ],
+      "label_ci_level": 0.9,
+      "label": "partial propagation",
+      "n_pairs": 102,
+      "test": "slope > 0 (one-sided)",
+      "p": 0.0034
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": 0.0010136578933198095,
+      "ci": [
+       -0.0030903169498488997,
+       0.00467735045849649
+      ],
+      "n_pairs": 102,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 0.633
+     }
+    ]
+   }
+  },
+  "3": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.07432321930306843,
+     "ci95": [
+      -0.014313368198061503,
+      0.19320763903199922
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.003664108232545223,
+      0.17036362803726812
+     ],
+     "p_one_sided": 0.0621,
+     "p_two_sided": 0.1242,
+     "mean_dx": 1.022718156775796,
+     "mean_dy": -0.0019090010594983273,
+     "mean_abs_dy": 0.050905527850293224,
+     "share_dy_positive": 0.3627450980392157
+    },
+    "label": "no propagation",
+    "supported": false,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.07432321930306843,
+     "ci95": [
+      -0.014313368198061503,
+      0.19320763903199922
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.014313368198061501,
+      0.19320763903199922
+     ],
+     "p_one_sided": 0.0621,
+     "p_two_sided": 0.1242,
+     "mean_dx": 1.022718156775796,
+     "mean_dy": -0.0019090010594983273,
+     "mean_abs_dy": 0.050905527850293224,
+     "share_dy_positive": 0.3627450980392157
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.07432321930306843,
+     "ci95": [
+      -0.014313368198061503,
+      0.19320763903199922
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.014313368198061501,
+      0.19320763903199922
+     ],
+     "p_one_sided": 0.0621,
+     "p_two_sided": 0.1242,
+     "mean_dx": 1.022718156775796,
+     "mean_dy": -0.0019090010594983273,
+     "mean_abs_dy": 0.050905527850293224,
+     "share_dy_positive": 0.3627450980392157
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": -0.0013977801547121597,
+     "ci95": [
+      -0.007139385948103149,
+      0.003288793704001285
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.006094734253573518,
+      0.0026340842857357724
+     ],
+     "p_one_sided": 0.6911,
+     "p_two_sided": 0.6178,
+     "mean_dx": 4.715292059894308,
+     "mean_dy": -0.003155681953607995,
+     "mean_abs_dy": 0.023734089951281248,
+     "share_dy_positive": 0.4117647058823529
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": -0.0013977801547121597,
+     "ci95": [
+      -0.007139385948103149,
+      0.003288793704001285
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.006094734253573518,
+      0.0026340842857357724
+     ],
+     "p_one_sided": 0.6911,
+     "p_two_sided": 0.6178,
+     "mean_dx": 4.715292059894308,
+     "mean_dy": -0.003155681953607995,
+     "mean_abs_dy": 0.023734089951281248,
+     "share_dy_positive": 0.4117647058823529
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": -0.0013977801547121597,
+     "ci95": [
+      -0.007139385948103149,
+      0.003288793704001285
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.006094734253573518,
+      0.0026340842857357724
+     ],
+     "p_one_sided": 0.6911,
+     "p_two_sided": 0.6178,
+     "mean_dx": 4.715292059894308,
+     "mean_dy": -0.003155681953607995,
+     "mean_abs_dy": 0.023734089951281248,
+     "share_dy_positive": 0.4117647058823529
+    }
+   },
+   "joint": {
+    "verdict": "no propagation (lookup-like)",
+    "labelled_verdict": "no propagation",
+    "A6_label": "no propagation",
+    "A6_supported": false,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": 0.07432321930306843,
+      "ci95": [
+       -0.014313368198061503,
+       0.19320763903199922
+      ],
+      "label_ci": [
+       -0.003664108232545223,
+       0.17036362803726812
+      ],
+      "label_ci_level": 0.9,
+      "label": "no propagation",
+      "n_pairs": 102,
+      "test": "slope > 0 (one-sided)",
+      "p": 0.0621
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": -0.0013977801547121597,
+      "ci": [
+       -0.006094734253573518,
+       0.0026340842857357724
+      ],
+      "n_pairs": 102,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 0.6178
+     }
+    ]
+   }
+  },
+  "4": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.05056798191132443,
+     "ci95": [
+      -0.04065772990434729,
+      0.15809118365309408
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.025590206297077953,
+      0.13843577011393635
+     ],
+     "p_one_sided": 0.1389,
+     "p_two_sided": 0.2778,
+     "mean_dx": 1.0334963011582408,
+     "mean_dy": 0.04417257895738609,
+     "mean_abs_dy": 0.07939915656970406,
+     "share_dy_positive": 0.5098039215686274
+    },
+    "label": "no propagation",
+    "supported": false,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.05056798191132443,
+     "ci95": [
+      -0.04065772990434729,
+      0.15809118365309408
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.040657729904347226,
+      0.15809118365309408
+     ],
+     "p_one_sided": 0.1389,
+     "p_two_sided": 0.2778,
+     "mean_dx": 1.0334963011582408,
+     "mean_dy": 0.04417257895738609,
+     "mean_abs_dy": 0.07939915656970406,
+     "share_dy_positive": 0.5098039215686274
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.05056798191132443,
+     "ci95": [
+      -0.04065772990434729,
+      0.15809118365309408
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.040657729904347226,
+      0.15809118365309408
+     ],
+     "p_one_sided": 0.1389,
+     "p_two_sided": 0.2778,
+     "mean_dx": 1.0334963011582408,
+     "mean_dy": 0.04417257895738609,
+     "mean_abs_dy": 0.07939915656970406,
+     "share_dy_positive": 0.5098039215686274
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.0022707854881354518,
+     "ci95": [
+      -0.0007164610713472221,
+      0.005435725904981679
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0002038656261142323,
+      0.0048649973997353
+     ],
+     "p_one_sided": 0.0679,
+     "p_two_sided": 0.1358,
+     "mean_dx": 4.934651320142136,
+     "mean_dy": -0.0018239198037681332,
+     "mean_abs_dy": 0.01986336215372502,
+     "share_dy_positive": 0.4215686274509804
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.0022707854881354518,
+     "ci95": [
+      -0.0007164610713472221,
+      0.005435725904981679
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0002038656261142323,
+      0.0048649973997353
+     ],
+     "p_one_sided": 0.0679,
+     "p_two_sided": 0.1358,
+     "mean_dx": 4.934651320142136,
+     "mean_dy": -0.0018239198037681332,
+     "mean_abs_dy": 0.01986336215372502,
+     "share_dy_positive": 0.4215686274509804
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": 0.0022707854881354518,
+     "ci95": [
+      -0.0007164610713472221,
+      0.005435725904981679
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0002038656261142323,
+      0.0048649973997353
+     ],
+     "p_one_sided": 0.0679,
+     "p_two_sided": 0.1358,
+     "mean_dx": 4.934651320142136,
+     "mean_dy": -0.0018239198037681332,
+     "mean_abs_dy": 0.01986336215372502,
+     "share_dy_positive": 0.4215686274509804
+    }
+   },
+   "joint": {
+    "verdict": "no propagation (lookup-like)",
+    "labelled_verdict": "no propagation",
+    "A6_label": "no propagation",
+    "A6_supported": false,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": 0.05056798191132443,
+      "ci95": [
+       -0.04065772990434729,
+       0.15809118365309408
+      ],
+      "label_ci": [
+       -0.025590206297077953,
+       0.13843577011393635
+      ],
+      "label_ci_level": 0.9,
+      "label": "no propagation",
+      "n_pairs": 102,
+      "test": "slope > 0 (one-sided)",
+      "p": 0.1389
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": 0.0022707854881354518,
+      "ci": [
+       -0.0002038656261142323,
+       0.0048649973997353
+      ],
+      "n_pairs": 102,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 0.1358
+     }
+    ]
+   }
+  },
+  "5": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": -0.011094221123598267,
+     "ci95": [
+      -0.05334344951778533,
+      0.033138119203117475
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.04644140935914498,
+      0.025639667615114558
+     ],
+     "p_one_sided": 0.6899,
+     "p_two_sided": 0.6202,
+     "mean_dx": 1.0366825460263625,
+     "mean_dy": 0.0072190709658328436,
+     "mean_abs_dy": 0.04342815596561804,
+     "share_dy_positive": 0.4803921568627451
+    },
+    "label": "no propagation",
+    "supported": false,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": -0.011094221123598267,
+     "ci95": [
+      -0.05334344951778533,
+      0.033138119203117475
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.053343449517785316,
+      0.033138119203117475
+     ],
+     "p_one_sided": 0.6899,
+     "p_two_sided": 0.6202,
+     "mean_dx": 1.0366825460263625,
+     "mean_dy": 0.0072190709658328436,
+     "mean_abs_dy": 0.04342815596561804,
+     "share_dy_positive": 0.4803921568627451
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": -0.011094221123598267,
+     "ci95": [
+      -0.05334344951778533,
+      0.033138119203117475
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.053343449517785316,
+      0.033138119203117475
+     ],
+     "p_one_sided": 0.6899,
+     "p_two_sided": 0.6202,
+     "mean_dx": 1.0366825460263625,
+     "mean_dy": 0.0072190709658328436,
+     "mean_abs_dy": 0.04342815596561804,
+     "share_dy_positive": 0.4803921568627451
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 102,
+    "n_pairs_both_answered": 102,
+    "primary_computation_correct": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": -0.004700574912128431,
+     "ci95": [
+      -0.01068390765739236,
+      0.00023373052414826158
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.009514718061931746,
+      -0.00046025229758660534
+     ],
+     "p_one_sided": 0.9685,
+     "p_two_sided": 0.063,
+     "mean_dx": 4.749607750045036,
+     "mean_dy": 0.0006041586270849804,
+     "mean_abs_dy": 0.0263707498233335,
+     "share_dy_positive": 0.35294117647058826
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": -0.004700574912128431,
+     "ci95": [
+      -0.01068390765739236,
+      0.00023373052414826158
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.009514718061931746,
+      -0.00046025229758660534
+     ],
+     "p_one_sided": 0.9685,
+     "p_two_sided": 0.063,
+     "mean_dx": 4.749607750045036,
+     "mean_dy": 0.0006041586270849804,
+     "mean_abs_dy": 0.0263707498233335,
+     "share_dy_positive": 0.35294117647058826
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 102,
+     "regressor": "truth",
+     "slope": -0.004700574912128431,
+     "ci95": [
+      -0.01068390765739236,
+      0.00023373052414826158
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.009514718061931746,
+      -0.00046025229758660534
+     ],
+     "p_one_sided": 0.9685,
+     "p_two_sided": 0.063,
+     "mean_dx": 4.749607750045036,
+     "mean_dy": 0.0006041586270849804,
+     "mean_abs_dy": 0.0263707498233335,
+     "share_dy_positive": 0.35294117647058826
+    }
+   },
+   "joint": {
+    "verdict": "no propagation (lookup-like)",
+    "labelled_verdict": "no propagation",
+    "A6_label": "no propagation",
+    "A6_supported": false,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": -0.011094221123598267,
+      "ci95": [
+       -0.05334344951778533,
+       0.033138119203117475
+      ],
+      "label_ci": [
+       -0.04644140935914498,
+       0.025639667615114558
+      ],
+      "label_ci_level": 0.9,
+      "label": "no propagation",
+      "n_pairs": 102,
+      "test": "slope > 0 (one-sided)",
+      "p": 0.6899
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": -0.004700574912128431,
+      "ci": [
+       -0.009514718061931746,
+       -0.00046025229758660534
+      ],
+      "n_pairs": 102,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 0.063
+     }
+    ]
+   }
+  }
+ }
+}

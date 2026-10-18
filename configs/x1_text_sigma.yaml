@@ -1,0 +1,36 @@
+# X1 (REVIEW_SYNTHESIS_ROUND2_2026-10-17, pre-registered in DECISIONS.md D73): a shallow text model of sigma* run on the
+# frozen A6 / A6b propagation pairs. Can surface features of the problem text propagate measurement uncertainty?
+# CPU only. physcal/eval/x1_text_sigma.py.
+env_config: env_v2                     # generator 2.0.0 (the noise mode, D51)
+train:                                 # fit set: training split, round-robin over cells x levels
+  families: [kinematics, dynamics, energy]
+  depths: [1, 2, 3, 4]                 # the training depths (5 is held out of every training split)
+  levels: [0.01, 0.02, 0.05]           # A6's noise levels (D54 main-experiment levels)
+  n: 12024                             # 12 cells x 3 levels x 334
+  seed_offset: 50000000                # a seed range no other set uses
+test:                                  # held-out problems for descriptive accuracy (same cells and levels)
+  n: 1224                              # 12 x 3 x 34
+  seed_offset: 51000000
+pairs:                                 # the frozen sets (D58 / D59), read with their manifests' checksums
+  a6: data/eval_sets/2.0.0+bdbb2279/a6_pairs.jsonl
+  a6b: data/eval_sets/2.0.0+bdbb2279/a6b_pairs.jsonl
+text:                                  # A5's text settings (configs/nested_baselines.yaml), problem text only
+  token_pattern: "\\S+"
+  ngram_range: [1, 1]
+  min_df: 3
+  sublinear_tf: true
+  max_features: 1000                   # by document frequency (the GBT needs dense input), as A5's gbt_max_features
+symbols_min_count: 20                  # a parsed symbol gets its own ln|value| column if it occurs in >= 20 fit problems
+feature_sets: [noise, noise_text, noise_text_magnitudes]   # nested; descriptive except the primary
+primary: noise_text_magnitudes
+cv:
+  folds: 5
+  group_by: template                   # family | target | set of givens, as A5
+gbt_grid:                              # A5's GBT grid (sklearn HistGradientBoostingRegressor, squared error)
+  - {max_iter: 100, max_depth: 2, learning_rate: 0.05, min_samples_leaf: 20}
+  - {max_iter: 300, max_depth: 2, learning_rate: 0.05, min_samples_leaf: 20}
+  - {max_iter: 100, max_depth: 3, learning_rate: 0.05, min_samples_leaf: 20}
+  - {max_iter: 300, max_depth: 3, learning_rate: 0.05, min_samples_leaf: 20}
+seed: 0
+n_jobs: 4                              # problem generation workers; the GBT is limited by OMP_NUM_THREADS
+output_dir: results/x1_text_sigma
