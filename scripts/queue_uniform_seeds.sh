@@ -4,8 +4,10 @@
 #   2. CPU, in the background while the GPU trains: re-fit the global post-hoc scale and A5 on them (D69)
 #   3. GPU: uniform-credit seed 1 to step 287 (records the R2-1 fingerprint) -> corrected eval (4-bit, unmerged,
 #      greedy, frozen 1.1.0 sets; runs the fingerprint check) -> sanity
-#   4. GPU: uniform-credit seed 2, the same, ONLY if seed 1 is sane (as D62) and a full run still fits the deadline
+#   4. GPU: uniform-credit seed 2, the same, if a full run still fits the deadline. D76 (your instruction at launch):
+#      it no longer waits for seed 1's sanity; a failed stage is logged BLOCKED and independent stages continue
 #   5. CPU: the 3-vs-3 robustness analysis (D71: R2-4 / R2-6), with whatever uniform seeds reached step 287
+#   6. GPU, only if >= SMOKE_MIN_S remain: the D70 smoke test (SFT adapter loaded and trainable on the 4-bit base)
 # Every stage is a child whose PID goes to $LOG/<stage>.pid and is waited on with `wait` (never pgrep -f). GPU work
 # ends at GPU_DEADLINE (default 08:30 IST, next occurrence). GPU temp > 87 C before a stage -> pause 10 min (the
 # trainer pauses itself too). After every stage the queue commits and pushes its outputs (tapes gzipped), under a
@@ -24,6 +26,7 @@ EVAL_RESERVE_S=${EVAL_RESERVE_S:-1800}      # kept back after each training run 
 MIN_TRAIN_S=${MIN_TRAIN_S:-10800}           # start a seed only if this much training time is left (287 steps ~ 2.8-3.2 h)
 FINGERPRINT_SLACK_S=${FINGERPRINT_SLACK_S:-1200}  # after --stop-at: final save + the R2-1 fingerprint (~5 min)
 CALIB_TIMEOUT_S=${CALIB_TIMEOUT_S:-5400}    # per calibration tape (400: ~8 min, 1,600: ~30 min at 4-bit speed)
+SMOKE_MIN_S=${SMOKE_MIN_S:-1500}           # D76: the D70 smoke test (~5-10 min) starts only with this much left
 DRY_RUN=${DRY_RUN:-0}
 CO_AUTHOR="Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 mkdir -p "$LOG"
@@ -84,7 +87,8 @@ CALIB_OK=1
 for part in set ext; do
   cool
   lim=$(left); [ "$lim" -gt "$CALIB_TIMEOUT_S" ] && lim=$CALIB_TIMEOUT_S
-  run_stage "calib_$part" "$lim" uv run python -m physcal.eval.posthoc generate-4bit --part "$part" || CALIB_OK=0
+  run_stage "calib_$part" "$lim" uv run python -m physcal.eval.posthoc generate-4bit --part "$part" \
+    || { CALIB_OK=0; log "BLOCKED calib_$part (see $LOG/calib_$part.log); the D69 re-fits are skipped, the seeds go on"; }
   commit_stage "D69: 4-bit SFT-only completions, calibration $part (corrected loader, greedy)" "$CALIB/sft_calibration_$part"
 done
 
@@ -116,6 +120,7 @@ seed_stage() {  # seed_stage SEED: train, eval, sanity; returns 0 iff sane
   cool
   run_stage "uniform${s}_train" $((stop - $(date +%s) + FINGERPRINT_SLACK_S)) uv run python -m physcal.train.grpo \
     --config "grpo_overnight2_seed$s" --max-steps 287 --stop-at "$(iso "$stop")"; rc=$?
+  [ "$rc" != 0 ] && log "BLOCKED? uniform seed $s training exit $rc (see $LOG/uniform${s}_train.log)"
   [ "$DRY_RUN" != 1 ] && [ -f "$run/final_adapter/physcal_fingerprint.json" ] && cp "$run/final_adapter/physcal_fingerprint.json" "$run/"
   commit_stage "Uniform-credit seed $s (R2-6): training to step 287 (exit $rc); tape gzipped; R2-1 fingerprint" $(train_paths "$run")
   if [ "$DRY_RUN" != 1 ] && [ ! -d "$run/permanent_checkpoints/checkpoint-287" ]; then
@@ -126,7 +131,8 @@ seed_stage() {  # seed_stage SEED: train, eval, sanity; returns 0 iff sane
   fi
   cool
   run_stage "uniform${s}_eval287" "$(left)" uv run python -m physcal.train.compare --part rl --run "$run" \
-    --label "$LABEL" --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit
+    --label "$LABEL" --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit \
+    || log "BLOCKED uniform seed $s corrected eval (see $LOG/uniform${s}_eval287.log)"
   if [ "$DRY_RUN" = 1 ]; then log "DRY sanity for uniform seed $s"; return 0; fi
   uv run python scripts/queue_sanity.py "$run" "$rc" rl287_4bit > "$LOG/uniform${s}_sanity.log" 2>&1
   tee -a "$LOG/chain.log" < "$LOG/uniform${s}_sanity.log"
@@ -138,11 +144,8 @@ seed_stage() {  # seed_stage SEED: train, eval, sanity; returns 0 iff sane
 }
 
 seed_stage 1; S1=$?
-if [ "$S1" = 0 ]; then
-  seed_stage 2; S2=$?
-else
-  log "uniform seed 1 not sane (code $S1): seed 2 not started (as D62)"; S2=97
-fi
+[ "$S1" != 0 ] && log "uniform seed 1 not sane (code $S1): BLOCKED; seed 2 still runs (D76: it does not depend on seed 1)"
+seed_stage 2; S2=$?
 log "GPU work done: seed 1 code $S1, seed 2 code $S2"
 
 # ---- 5. CPU: the 3-vs-3 robustness analysis (D71) ----------------------------------------------------------------
@@ -151,4 +154,17 @@ wait "$REFIT_PID"
 run_stage robustness_3v3 3600 env CUDA_VISIBLE_DEVICES="" nice -n 10 uv run python scripts/robustness_3v3.py
 commit_stage "R2-4 / R2-6 (D71): split vs uniform credit, 3 vs N seeds, robustness analysis (corrected evals)" \
   results/corrected/robustness_3v3
+
+# ---- 6. GPU, if time remains: the D70 smoke test (D76) -------------------------------------------------------------
+if [ "$(left)" -ge "$SMOKE_MIN_S" ] || [ "$DRY_RUN" = 1 ]; then
+  cool
+  lim=$(( $(left) - 120 )); [ "$lim" -gt 1800 ] && lim=1800
+  run_stage d70_smoke "$lim" env HF_HUB_OFFLINE=1 uv run python scripts/sft_continue_smoke.py \
+    || log "BLOCKED? D70 smoke test exit nonzero (see $LOG/d70_smoke.log)"
+  commit_stage "D70 smoke test (D76): SFT adapter loaded and trained by GRPO on the 4-bit base" \
+    results/sft_continue_smoke results/train/sft-continue-smoke/summary.json \
+    results/train/sft-continue-smoke/train_metrics.jsonl results/train/sft-continue-smoke/events.jsonl
+else
+  log "skip the D70 smoke test: $(left)s left < SMOKE_MIN_S=${SMOKE_MIN_S}s"
+fi
 log "queue done"

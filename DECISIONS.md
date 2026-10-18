@@ -1984,3 +1984,32 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Fit data:** A5-p and the probe both use tonight's D69 4-bit calibration completions.
   - **GPU parts, in order:** sampling (~4 h); split-credit σ suffixes (~15 min); hidden states for the fit set and
     the X2 answers, for both models (~40 min).
+
+## Night of 2026-10-18/19 (unattended; your instructions at launch, 22:47 IST)
+
+### D76. Changes to tonight's queue at launch (your instructions; recorded before the queue starts)
+- **Your instructions:** launch the queue now. A failed stage is logged BLOCKED, and the queue continues with the next
+  stage that does not depend on it (the uniform seeds do not depend on the calibration completions or re-fits). If
+  time remains after the 3-vs-3 analysis, run the ~5-min D70 smoke test. The usual rules apply (PID watchers, 87 °C
+  pause, GPU done by 08:30 IST, commit + push after every stage, MORNING.md at the end).
+- **Changes to D75 (`scripts/queue_uniform_seeds.sh`):**
+  1. **Seed 2 no longer waits for seed 1's sanity check** (D75 took that gate from D62). Seed 2 does not depend on
+     seed 1's outputs, so by your instruction it runs whenever a full run still fits: ≥ 3.0 h of training time
+     before the deadline minus the eval reserve.
+  2. **Failed stages are logged as BLOCKED** in the chain log. A failed calibration stage skips the D69 re-fits; the
+     seeds go on.
+  3. **Stage 6, the D70 smoke test** (`scripts/sft_continue_smoke.py`, `HF_HUB_OFFLINE=1`). It runs only if ≥ 25 min
+     remain after stage 5, with a timeout of at most 30 min.
+     - **Loading checks:** it loads the existing SFT adapter on its 4-bit base. The loaded model must be a PEFT
+       model; its trainable tensors must be exactly the LoRA tensors; the loaded weights must equal the saved
+       adapter; and `get_peft_model` with the RL LoRA config must take the skip path.
+     - **Training checks:** it then runs 2 GRPO steps from that adapter with the real trainer (grpo_overnight2's
+       config). Both steps must complete with a finite loss, and the final adapter must have the same tensors and
+       base, with changed values.
+     - **Status:** a capability check, not a result.
+- **Hardening of the eval loader (`run_eval.py`):** the R2-1 check and the provenance block are new and untested on
+  the GPU. An exception in either was fatal to the whole eval.
+  - **Now:** while `enforce: false`, an exception in the check is recorded as `fingerprint.status = "error"` with its
+    traceback, and the eval goes on. With `enforce: true` it raises, as before. A provenance error is recorded in
+    `provenance.error`.
+  - **Effect on outputs:** none on any eval output. Only a crash of the check itself is caught.

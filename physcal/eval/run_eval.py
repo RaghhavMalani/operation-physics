@@ -187,9 +187,17 @@ def load_unsloth_4bit(model_id: str, model_cfg: dict, tok) -> tuple[Any, dict]:
         check["adapter_max_abs_logit_delta"] = float((on - off).abs().max())
         if check["adapter_max_abs_logit_delta"] == 0:
             raise RuntimeError(f"adapter {lora} does not change the logits")
-        from physcal.eval.fingerprint import check_adapter  # R2-1 / D72: the training-time fingerprint, if recorded
+        from physcal.eval.fingerprint import _config as fp_config, check_adapter  # R2-1 / D72
 
-        check["fingerprint"] = check_adapter(model, tok, model_id, lora, model_cfg.get("chat_template_kwargs") or {})
+        try:
+            check["fingerprint"] = check_adapter(model, tok, model_id, lora, model_cfg.get("chat_template_kwargs") or {})
+        except Exception as exc:  # D76: while the check only records (enforce: false), its own failure is logged,
+            if fp_config()["enforce"]:  # never fatal to the eval; with enforce: true it raises as before
+                raise
+            import traceback
+
+            check["fingerprint"] = {"status": "error", "error": f"{type(exc).__name__}: {exc}"[:1000],
+                                    "traceback": traceback.format_exc()[-3000:]}
         print(f"unsloth_4bit fingerprint check: {check['fingerprint']['status']}", flush=True)
     print(f"unsloth_4bit loader check: {check}", flush=True)
     return model, check
@@ -267,7 +275,10 @@ class HFBackend:
         else:
             from physcal.eval.fingerprint import provenance
 
-            self.provenance = provenance(self.model, model_id, model_cfg.get("lora"))
+            try:
+                self.provenance = provenance(self.model, model_id, model_cfg.get("lora"))
+            except Exception as exc:  # D76: provenance is recorded, never fatal to an eval
+                self.provenance = {"error": f"{type(exc).__name__}: {exc}"[:1000]}
         self.provenance["loader"] = loader
         self.provenance["adapter_merged"] = loader == "transformers" and bool(model_cfg.get("lora"))
         # Stop on the model's EOS ids *and* the tokenizer's end-of-turn token. Qwen3.5-2B ships no
