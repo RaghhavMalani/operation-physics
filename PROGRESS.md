@@ -567,3 +567,26 @@ Progress:
 - [ ] Next (your call, MORNING §7): Phase 11/12 noise mode. Decide the training base (4-bit vs bf16) before
   Phase 12.
 
+
+## 2026-10-18 day: decisions on the morning report, round-2 review, CPU work (D69–D75)
+
+- [x] FINDINGS #13's heading annotated: "(evaluated on merged models; superseded by #16; S2 withdrawn)".
+- [x] **D69:** both post-hoc baselines are to be re-fitted on 4-bit SFT calibration completions (the GPU part is
+  first in tonight's queue). Families N/E get a sensitivity rerun with the re-fitted A5 (CPU, next).
+- [x] **D70:** Phase 12 on the 4-bit base, with one SFT → RL adapter that is never merged.
+  - **Unsloth check:** supported, from a reading of the installed sources.
+  - **Two findings:** an adapter load does not pin the base revision; and the existing SFT adapter was trained on
+    Unsloth's pre-quantized mirror, then merged into bf16 Qwen.
+- [x] Review synthesis committed. **D71** records R2-1 to R2-7, including the 3-vs-3 robustness analysis.
+- [x] **R2-1 (D72):** the training-time fingerprint, the reloaded-model regression check, and provenance in every
+  eval tape. 8 CPU tests; the bf16 merge of an RL-sized update fails the check.
+- [x] **X1 (D73 → FINDINGS #17):** the text-only σ\* model is "partial propagation". A6 slope +0.063 [+0.03, +0.10]
+  against an ideal 1; A6b equivalent to 0.
+- [x] **X2 (D74):** pre-registered; the candidate pool is frozen (1,200 problems, seeds 3e7+); selection rule,
+  metric and sampling config are done. The GPU parts are for a later night.
+- [x] **Tonight's queue (D75):** prepared, dry-run, not launched (`scripts/queue_uniform_seeds.sh`).
+- [ ] **Next:**
+  - launch the queue (by about 00:45 IST for both seeds);
+  - the D69 family N/E sensitivity reruns (CPU);
+  - the X2 GPU parts;
+  - the Phase 12 pre-registration after X1 / X2.
