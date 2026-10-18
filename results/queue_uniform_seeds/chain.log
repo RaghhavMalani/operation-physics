@@ -6,3 +6,8 @@
 [22:57:54] GPU at 63C
 [22:57:54] start calib_ext (timeout 5400s): uv run python -m physcal.eval.posthoc generate-4bit --part ext
 [23:25:37] end calib_ext: exit 0
+[23:25:41] commit 'D69: 4-bit SFT-only completions, calibration ext (corrected loader, greedy)': pushed
+[23:25:41] start D69 re-fits (CPU, nice, 4 threads)
+[23:25:41] GPU at 60C
+[23:25:41] start uniform1_train (timeout 32059s): uv run python -m physcal.train.grpo --config grpo_overnight2_seed1 --max-steps 287 --stop-at 2026-10-19T08:00:00+05:30
+[23:29:54] end D69 re-fits: posthoc exit 0, A5 exit 0

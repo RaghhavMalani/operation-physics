@@ -1,0 +1,56 @@
+# A5 nested baselines (D50)
+
+Calibration split: 2000 completions (1998 answered), 865 templates; 5-fold CV grouped by template. Strongest σ: **problem_answer_reasoning/gbt**; strongest p: **problem_answer_reasoning/gbt** (chosen on CV before any eval use).
+
+| baseline | CV crps_log (σ) | CV 1σ cov | CV ρ(σ, err) | CV Brier (p) | CV AUROC (p) |
+|---|---|---|---|---|---|
+| metadata/linear | -0.2049 | 69.1% | 0.43 | 0.1977 | 0.737 |
+| metadata/gbt | -0.2051 | 65.8% | 0.42 | 0.1973 | 0.734 |
+| problem/linear | -0.2024 | 72.1% | 0.53 | 0.1648 | 0.825 |
+| problem/gbt | -0.2008 | 69.8% | 0.58 | 0.1544 | 0.844 |
+| problem_answer/linear | -0.2050 | 67.1% | 0.51 | 0.1681 | 0.820 |
+| problem_answer/gbt | -0.2008 | 70.0% | 0.58 | 0.1562 | 0.840 |
+| problem_answer_reasoning/linear | -0.2024 | 65.8% | 0.61 | 0.1553 | 0.844 |
+| problem_answer_reasoning/gbt | -0.1972 | 69.2% | 0.65 | 0.1414 | 0.869 |
+
+## SFT-only frozen eval, depth_extrapolation (n = 200, answered 198; answered rows only)
+
+| σ source | mean crps_log | 1σ cov | 2σ cov | ρ(σ, err) | Brier (p) | AUROC (p) |
+|---|---|---|---|---|---|---|
+| stated σ | -0.3832 | 10.1% | 15.7% | 0.01 | – | – |
+| metadata/linear | -0.3652 | 57.6% | 67.2% | 0.46 | 0.1909 | 0.728 |
+| metadata/gbt | -0.3605 | 65.7% | 74.7% | 0.46 | 0.1925 | 0.728 |
+| problem/linear | -0.3498 | 68.7% | 78.8% | 0.58 | 0.1436 | 0.859 |
+| problem/gbt | -0.3526 | 67.2% | 76.3% | 0.62 | 0.1422 | 0.86 |
+| problem_answer/linear | -0.3523 | 67.7% | 76.8% | 0.56 | 0.1548 | 0.839 |
+| problem_answer/gbt | -0.3531 | 66.7% | 75.8% | 0.61 | 0.1424 | 0.859 |
+| problem_answer_reasoning/linear | -0.3500 | 64.1% | 78.3% | 0.65 | 0.1518 | 0.854 |
+| problem_answer_reasoning/gbt (strongest σ) | -0.3504 | 66.2% | 73.7% | 0.60 | 0.1498 | 0.845 |
+
+## SFT-only frozen eval, id (n = 200, answered 200; answered rows only)
+
+| σ source | mean crps_log | 1σ cov | 2σ cov | ρ(σ, err) | Brier (p) | AUROC (p) |
+|---|---|---|---|---|---|---|
+| stated σ | -0.2371 | 14.0% | 18.5% | 0.05 | – | – |
+| metadata/linear | -0.2191 | 63.0% | 78.0% | 0.55 | 0.1795 | 0.797 |
+| metadata/gbt | -0.2200 | 60.5% | 75.0% | 0.55 | 0.1739 | 0.814 |
+| problem/linear | -0.2121 | 71.0% | 79.5% | 0.65 | 0.1319 | 0.887 |
+| problem/gbt | -0.2136 | 67.5% | 82.0% | 0.68 | 0.1197 | 0.905 |
+| problem_answer/linear | -0.2147 | 64.5% | 74.5% | 0.64 | 0.1336 | 0.886 |
+| problem_answer/gbt | -0.2144 | 67.5% | 81.0% | 0.67 | 0.1172 | 0.91 |
+| problem_answer_reasoning/linear | -0.2120 | 65.5% | 77.5% | 0.70 | 0.1216 | 0.909 |
+| problem_answer_reasoning/gbt (strongest σ) | -0.2088 | 67.0% | 80.0% | 0.72 | 0.1133 | 0.916 |
+
+## SFT-only frozen eval, pooled (n = 400, answered 398; answered rows only)
+
+| σ source | mean crps_log | 1σ cov | 2σ cov | ρ(σ, err) | Brier (p) | AUROC (p) |
+|---|---|---|---|---|---|---|
+| stated σ | -0.3098 | 12.1% | 17.1% | 0.04 | – | – |
+| metadata/linear | -0.2918 | 60.3% | 72.6% | 0.50 | 0.1852 | 0.767 |
+| metadata/gbt | -0.2899 | 63.1% | 74.9% | 0.49 | 0.1832 | 0.777 |
+| problem/linear | -0.2806 | 69.8% | 79.1% | 0.62 | 0.1377 | 0.874 |
+| problem/gbt | -0.2828 | 67.3% | 79.1% | 0.65 | 0.1310 | 0.886 |
+| problem_answer/linear | -0.2832 | 66.1% | 75.6% | 0.61 | 0.1442 | 0.865 |
+| problem_answer/gbt | -0.2834 | 67.1% | 78.4% | 0.65 | 0.1298 | 0.889 |
+| problem_answer_reasoning/linear | -0.2807 | 64.8% | 77.9% | 0.68 | 0.1367 | 0.886 |
+| problem_answer_reasoning/gbt (strongest σ) | -0.2793 | 66.6% | 76.9% | 0.66 | 0.1316 | 0.884 |

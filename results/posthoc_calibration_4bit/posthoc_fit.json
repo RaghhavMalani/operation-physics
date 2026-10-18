@@ -1,0 +1,89 @@
+{
+  "verifier_version": "1.1.0",
+  "calibration_tape": "results/posthoc_calibration_4bit/sft_calibration_set/rollouts.jsonl",
+  "calibration_tapes": [
+    "results/posthoc_calibration_4bit/sft_calibration_set/rollouts.jsonl"
+  ],
+  "n_calibration": 400,
+  "eval_tape": "results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare/sft_4bit/rollouts.jsonl",
+  "calibration_seeds": [
+    20000000,
+    20000399
+  ],
+  "scales": {
+    "crps_fit": 22.14400051388264,
+    "coverage_matched": 305.5867354527244
+  },
+  "primary": "crps_fit",
+  "calibration_set": {
+    "unscaled": {
+      "n": 400,
+      "n_with_sigma": 400,
+      "coverage_1sigma": 0.1425,
+      "coverage_2sigma": 0.175,
+      "mean_crps_log": -0.19379285981194258
+    },
+    "crps_fit": {
+      "n": 400,
+      "n_with_sigma": 400,
+      "coverage_1sigma": 0.4125,
+      "coverage_2sigma": 0.505,
+      "mean_crps_log": -0.18983369189192664
+    },
+    "coverage_matched": {
+      "n": 400,
+      "n_with_sigma": 400,
+      "coverage_1sigma": 0.685,
+      "coverage_2sigma": 0.7325,
+      "mean_crps_log": -0.27162558371182177
+    }
+  },
+  "eval": {
+    "depth_extrapolation": {
+      "unscaled": {
+        "n": 200,
+        "n_with_sigma": 199,
+        "coverage_1sigma": 0.10050251256281408,
+        "coverage_2sigma": 0.15577889447236182,
+        "mean_crps_log": -0.4293532683514587
+      },
+      "crps_fit": {
+        "n": 200,
+        "n_with_sigma": 199,
+        "coverage_1sigma": 0.37185929648241206,
+        "coverage_2sigma": 0.45226130653266333,
+        "mean_crps_log": -0.42288800290734146
+      },
+      "coverage_matched": {
+        "n": 200,
+        "n_with_sigma": 199,
+        "coverage_1sigma": 0.6331658291457286,
+        "coverage_2sigma": 0.7085427135678392,
+        "mean_crps_log": -0.46409904748592923
+      }
+    },
+    "id": {
+      "unscaled": {
+        "n": 200,
+        "n_with_sigma": 200,
+        "coverage_1sigma": 0.14,
+        "coverage_2sigma": 0.185,
+        "mean_crps_log": -0.23707067156140782
+      },
+      "crps_fit": {
+        "n": 200,
+        "n_with_sigma": 200,
+        "coverage_1sigma": 0.35,
+        "coverage_2sigma": 0.42,
+        "mean_crps_log": -0.23338013549852588
+      },
+      "coverage_matched": {
+        "n": 200,
+        "n_with_sigma": 200,
+        "coverage_1sigma": 0.635,
+        "coverage_2sigma": 0.695,
+        "mean_crps_log": -0.29894872281804447
+      }
+    }
+  }
+}

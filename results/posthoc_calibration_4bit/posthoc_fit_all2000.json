@@ -1,0 +1,90 @@
+{
+  "verifier_version": "1.1.0",
+  "calibration_tape": "results/posthoc_calibration_4bit/sft_calibration_set/rollouts.jsonl",
+  "calibration_tapes": [
+    "results/posthoc_calibration_4bit/sft_calibration_set/rollouts.jsonl",
+    "results/posthoc_calibration_4bit/sft_calibration_ext/rollouts.jsonl"
+  ],
+  "n_calibration": 2000,
+  "eval_tape": "results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare/sft_4bit/rollouts.jsonl",
+  "calibration_seeds": [
+    20000000,
+    20001999
+  ],
+  "scales": {
+    "crps_fit": 26.7871011742058,
+    "coverage_matched": 332.82674580563486
+  },
+  "primary": "crps_fit",
+  "calibration_set": {
+    "unscaled": {
+      "n": 2000,
+      "n_with_sigma": 1999,
+      "coverage_1sigma": 0.1325662831415708,
+      "coverage_2sigma": 0.17208604302151076,
+      "mean_crps_log": -0.22150603131054886
+    },
+    "crps_fit": {
+      "n": 2000,
+      "n_with_sigma": 1999,
+      "coverage_1sigma": 0.41720860430215106,
+      "coverage_2sigma": 0.49524762381190596,
+      "mean_crps_log": -0.2176494667059165
+    },
+    "coverage_matched": {
+      "n": 2000,
+      "n_with_sigma": 1999,
+      "coverage_1sigma": 0.6828414207103551,
+      "coverage_2sigma": 0.7363681840920461,
+      "mean_crps_log": -0.29651819305383315
+    }
+  },
+  "eval": {
+    "depth_extrapolation": {
+      "unscaled": {
+        "n": 200,
+        "n_with_sigma": 199,
+        "coverage_1sigma": 0.10050251256281408,
+        "coverage_2sigma": 0.15577889447236182,
+        "mean_crps_log": -0.4293532683514587
+      },
+      "crps_fit": {
+        "n": 200,
+        "n_with_sigma": 199,
+        "coverage_1sigma": 0.40703517587939697,
+        "coverage_2sigma": 0.48743718592964824,
+        "mean_crps_log": -0.42226473257900027
+      },
+      "coverage_matched": {
+        "n": 200,
+        "n_with_sigma": 199,
+        "coverage_1sigma": 0.6482412060301508,
+        "coverage_2sigma": 0.7135678391959799,
+        "mean_crps_log": -0.4716986409978044
+      }
+    },
+    "id": {
+      "unscaled": {
+        "n": 200,
+        "n_with_sigma": 200,
+        "coverage_1sigma": 0.14,
+        "coverage_2sigma": 0.185,
+        "mean_crps_log": -0.23707067156140782
+      },
+      "crps_fit": {
+        "n": 200,
+        "n_with_sigma": 200,
+        "coverage_1sigma": 0.37,
+        "coverage_2sigma": 0.45,
+        "mean_crps_log": -0.23322119652424522
+      },
+      "coverage_matched": {
+        "n": 200,
+        "n_with_sigma": 200,
+        "coverage_1sigma": 0.645,
+        "coverage_2sigma": 0.7,
+        "mean_crps_log": -0.30791205854212705
+      }
+    }
+  }
+}

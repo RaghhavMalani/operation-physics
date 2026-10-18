@@ -1,0 +1,110 @@
+{
+  "primary": {
+    "scales": {
+      "crps_fit": 22.14400051388264,
+      "coverage_matched": 305.5867354527244
+    },
+    "eval": {
+      "depth_extrapolation": {
+        "unscaled": {
+          "n": 200,
+          "n_with_sigma": 199,
+          "coverage_1sigma": 0.10050251256281408,
+          "coverage_2sigma": 0.15577889447236182,
+          "mean_crps_log": -0.4293532683514587
+        },
+        "crps_fit": {
+          "n": 200,
+          "n_with_sigma": 199,
+          "coverage_1sigma": 0.37185929648241206,
+          "coverage_2sigma": 0.45226130653266333,
+          "mean_crps_log": -0.42288800290734146
+        },
+        "coverage_matched": {
+          "n": 200,
+          "n_with_sigma": 199,
+          "coverage_1sigma": 0.6331658291457286,
+          "coverage_2sigma": 0.7085427135678392,
+          "mean_crps_log": -0.46409904748592923
+        }
+      },
+      "id": {
+        "unscaled": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.14,
+          "coverage_2sigma": 0.185,
+          "mean_crps_log": -0.23707067156140782
+        },
+        "crps_fit": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.35,
+          "coverage_2sigma": 0.42,
+          "mean_crps_log": -0.23338013549852588
+        },
+        "coverage_matched": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.635,
+          "coverage_2sigma": 0.695,
+          "mean_crps_log": -0.29894872281804447
+        }
+      }
+    }
+  },
+  "all2000": {
+    "scales": {
+      "crps_fit": 26.7871011742058,
+      "coverage_matched": 332.82674580563486
+    },
+    "eval": {
+      "depth_extrapolation": {
+        "unscaled": {
+          "n": 200,
+          "n_with_sigma": 199,
+          "coverage_1sigma": 0.10050251256281408,
+          "coverage_2sigma": 0.15577889447236182,
+          "mean_crps_log": -0.4293532683514587
+        },
+        "crps_fit": {
+          "n": 200,
+          "n_with_sigma": 199,
+          "coverage_1sigma": 0.40703517587939697,
+          "coverage_2sigma": 0.48743718592964824,
+          "mean_crps_log": -0.42226473257900027
+        },
+        "coverage_matched": {
+          "n": 200,
+          "n_with_sigma": 199,
+          "coverage_1sigma": 0.6482412060301508,
+          "coverage_2sigma": 0.7135678391959799,
+          "mean_crps_log": -0.4716986409978044
+        }
+      },
+      "id": {
+        "unscaled": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.14,
+          "coverage_2sigma": 0.185,
+          "mean_crps_log": -0.23707067156140782
+        },
+        "crps_fit": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.37,
+          "coverage_2sigma": 0.45,
+          "mean_crps_log": -0.23322119652424522
+        },
+        "coverage_matched": {
+          "n": 200,
+          "n_with_sigma": 200,
+          "coverage_1sigma": 0.645,
+          "coverage_2sigma": 0.7,
+          "mean_crps_log": -0.30791205854212705
+        }
+      }
+    }
+  }
+}
