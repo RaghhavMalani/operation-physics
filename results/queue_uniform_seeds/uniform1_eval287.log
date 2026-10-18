@@ -1,0 +1,70 @@
+eval: 400 problems x 1 samples in splits ['id', 'depth_extrapolation']; skipped []
+W1018 21:13:31.524000 46839 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1018 21:13:31.570000 46839 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   1%|          | 3/338 [00:00<00:12, 26.04it/s]Loading weights:  15%|█▌        | 52/338 [00:00<00:01, 280.92it/s]Loading weights:  33%|███▎      | 113/338 [00:00<00:00, 420.86it/s]Loading weights:  54%|█████▍    | 184/338 [00:00<00:00, 531.26it/s]Loading weights:  75%|███████▌  | 255/338 [00:00<00:00, 589.87it/s]Loading weights:  96%|█████████▌| 325/338 [00:00<00:00, 626.47it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 528.93it/s]
+Unsloth 2026.10.3 patched 28 layers with 28 QKV layers, 28 O layers and 28 MLP layers.
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+unsloth_4bit fingerprint check: inconclusive
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'adapter_base': 'results/sft/qwen2.5-math-1.5b-instruct/merged', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': True}, 'bnb_4bit_linear_modules': 196, 'adapter_max_abs_logit_delta': 0.1484375, 'fingerprint': {'status': 'inconclusive', 'criteria': {'logprob': {'mean_abs_dlogp': 0.0, 'adapter_effect': 0.004652953276056451, 'ratio': 0.0, 'max_ratio': 0.25, 'pass': True}, 'sigma_token': {'mean_tv': 0.0, 'adapter_effect': 0.018122072118276763, 'ratio': 0.0, 'max_ratio': 0.25, 'pass': True}, 'sigma_samples': {'n_parsed_reloaded': 64, 'n_parsed_training': 64, 'median_ln_sigma_reloaded': -7.532623475498642, 'median_ln_sigma_training': -7.532623475498642, 'evaluable': True, 'abs_dlog_median': 0.0, 'max_abs_dlog_median': 0.693, 'share_identical_texts': 1.0, 'pass': True}, 'provenance': {'must_match': ['base_identity', 'quantization_config', 'compute_dtype', 'bitsandbytes'], 'mismatches': {}, 'pass': True, 'other_differences': []}}, 'fingerprint': '/home/flash2404/operation-physics/results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1/final_adapter/physcal_fingerprint.json', 'provenance': {'base': {'model_id': '/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged', 'name_or_path': 'results/sft/qwen2.5-math-1.5b-instruct/merged', 'commit': None, 'content_sha256': '0b435c0ebaed36e2'}, 'quantization_config': {'bnb_4bit_compute_dtype': 'torch.bfloat16', 'bnb_4bit_quant_type': 'nf4', 'bnb_4bit_use_double_quant': True, 'llm_int8_enable_fp32_cpu_offload': False, 'llm_int8_has_fp16_weight': False, 'llm_int8_skip_modules': ['lm_head', 'multi_modal_projector', 'merger', 'modality_projection', 'mm_projector', 'router', 'mlp.gate', 'block_sparse_moe.gate', 'moe.gate', 'mamba', 'audio_tower', 'vision_tower', 'vision_embedder', 'embed_vision', 'embed_audio', 'score', 'classifier', 'qa_outputs'], 'llm_int8_threshold': 6.0, 'load_in_4bit': True, 'load_in_8bit': False, 'quant_method': 'bitsandbytes'}, 'compute_dtype': {'bnb_4bit_compute_dtype': 'torch.bfloat16', 'model_dtype': 'torch.bfloat16'}, 'versions': {'torch': '2.14.1', 'transformers': '5.17.0', 'peft': '0.21.2', 'trl': '1.13.0', 'accelerate': '1.15.0', 'bitsandbytes': '0.50.2', 'unsloth': '2026.10.3', 'unsloth_zoo': '2026.10.3'}, 'adapter': {'dir': '/home/flash2404/operation-physics/results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1/permanent_checkpoints/checkpoint-287', 'file': '86dd7e90eb3365b1', 'tensors': '169cd9b076722f2b', 'base_model_name_or_path': 'results/sft/qwen2.5-math-1.5b-instruct/merged', 'r': 16, 'lora_alpha': 16, 'target_modules': ['down_proj', 'gate_proj', 'k_proj', 'o_proj', 'q_proj', 'up_proj', 'v_proj']}, 'base_identity': 'sha256:0b435c0ebaed36e2', 'bitsandbytes': '0.50.2'}}}
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 16/400  (24s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 32/400  (48s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 48/400  (74s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 64/400  (99s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 80/400  (123s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 96/400  (145s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 112/400  (168s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 128/400  (191s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 144/400  (211s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 160/400  (232s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 176/400  (256s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 192/400  (277s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 208/400  (307s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 224/400  (325s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 240/400  (346s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 256/400  (363s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 272/400  (385s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 288/400  (407s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 304/400  (423s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 320/400  (444s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 336/400  (461s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 352/400  (484s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 368/400  (503s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 384/400  (524s)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 400/400  (541s)
+eval done in 647s; results in /home/flash2404/operation-physics/results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1/compare/rl287_4bit

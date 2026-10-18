@@ -1,0 +1,13 @@
+{
+  "training_exit_code": 0,
+  "eval": "rl287_4bit",
+  "checks": {
+    "no_oom": true,
+    "reached_step": true,
+    "parse_fail_below_5pct": true
+  },
+  "peak_reserved_gib": 7.42578125,
+  "num_ooms": 0,
+  "eval_parse_fail_rate": 0.005,
+  "sane": true
+}
