@@ -1,0 +1,120 @@
+{
+ "decision": "D52",
+ "n_problems": 400,
+ "tests": {
+  "E1a-P": {
+   "mean_diff": 0.007671939282960144,
+   "ci95": [
+    0.006186812921729608,
+    0.009197655639582749
+   ],
+   "p_one_sided": 0.0
+  },
+  "E1a-N": {
+   "mean_diff": -0.025537876907963185,
+   "ci95": [
+    -0.034928154980549755,
+    -0.01695520100173733
+   ],
+   "p_one_sided": 1.0
+  },
+  "E1b-P": {
+   "mean_diff": 0.007527348866607645,
+   "ci95": [
+    0.006054735712180564,
+    0.00901282199949382
+   ],
+   "p_one_sided": 0.0
+  },
+  "E1b-N": {
+   "mean_diff": -0.02568246732431569,
+   "ci95": [
+    -0.035063647506303176,
+    -0.017007332822368052
+   ],
+   "p_one_sided": 1.0
+  }
+ },
+ "holm": {
+  "E1a-P": {
+   "p": 0.0,
+   "threshold": 0.0125,
+   "rejected": true
+  },
+  "E1b-P": {
+   "p": 0.0,
+   "threshold": 0.016666666666666666,
+   "rejected": true
+  },
+  "E1a-N": {
+   "p": 1.0,
+   "threshold": 0.025,
+   "rejected": false
+  },
+  "E1b-N": {
+   "p": 1.0,
+   "threshold": 0.05,
+   "rejected": false
+  }
+ },
+ "describe": {
+  "SFT stated \u03c3": {
+   "n": 400,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.3385578669363932,
+   "coverage_1sigma": 0.1225,
+   "coverage_1sigma_error": 0.5602,
+   "coverage_2sigma": 0.1725,
+   "spearman_sigma_error": 0.0012854236564616025,
+   "median_rel_sigma": 0.00056657223796034,
+   "sigma_zero_share": 0.16290726817042606,
+   "bin_entropy_bits": 1.3934822507244626
+  },
+  "A5 strongest \u03c3": {
+   "n": 400,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.3053480507454699,
+   "coverage_1sigma": 0.6725,
+   "coverage_1sigma_error": 0.010199999999999987,
+   "coverage_2sigma": 0.7625,
+   "spearman_sigma_error": 0.6810026504963556,
+   "median_rel_sigma": 0.06951393400393072,
+   "sigma_zero_share": 0.0,
+   "bin_entropy_bits": 2.8289546784290627
+  },
+  "E1a": {
+   "n": 400,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.33088592765343305,
+   "coverage_1sigma": 0.485,
+   "coverage_1sigma_error": 0.1977,
+   "coverage_2sigma": 0.5825,
+   "spearman_sigma_error": 0.012674069264585797,
+   "median_rel_sigma": 0.032237266279819474,
+   "sigma_zero_share": 0.0,
+   "bin_entropy_bits": 2.0149271784444505
+  },
+  "E1b": {
+   "n": 400,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.33103051806978556,
+   "coverage_1sigma": 0.455,
+   "coverage_1sigma_error": 0.22769999999999996,
+   "coverage_2sigma": 0.5675,
+   "spearman_sigma_error": 0.01435387937541461,
+   "median_rel_sigma": 0.02,
+   "sigma_zero_share": 0.0,
+   "bin_entropy_bits": 2.003741557785759
+  },
+  "SFT stated \u03c3, binned (descriptive)": {
+   "bin_entropy_bits": 1.3934822507244626
+  }
+ },
+ "corrected_D67": true,
+ "eval_name": "final_4bit",
+ "a5_sigma_tape": "results/corrected/d69_sensitivity/e1_sft_eval_a5_4bit_sigma.jsonl"
+}

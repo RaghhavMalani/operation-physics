@@ -85,13 +85,16 @@ CORRECTED = {"eval_name": "final_4bit", "sft_rows": "results/e1/sft_4bit/rows.js
              "title": " — corrected evals: 4-bit training base, adapters unmerged (D67)"}
 
 
-def compare(corrected: bool = False) -> str:
+def compare(corrected: bool = False, a5_tape: str | None = None, output_dir: str | None = None) -> str:
+    """`a5_tape` / `output_dir`: D69's sensitivity rerun with the A5 re-fitted on 4-bit SFT (defaults: as before)."""
     e1 = load_config("e1")
     cc = e1["compare"]
     keys = [tuple(r["key"]) for r in read_rows("eval")]
     eval_name, title = (CORRECTED["eval_name"], CORRECTED["title"]) if corrected else ("final", "")
     sft = rows_arm(REPO_ROOT / CORRECTED["sft_rows"]) if corrected else tape_arm(REPO_ROOT / e1["eval_tapes"][0])
-    a5 = tape_arm(REPO_ROOT / cc["a5_sigma_tape"])
+    a5 = tape_arm(REPO_ROOT / (a5_tape or cc["a5_sigma_tape"]))
+    if a5_tape:
+        title += " — A5 re-fitted on 4-bit SFT completions (D69 sensitivity)"
     arms = {"SFT stated σ": sft, "A5 strongest σ": a5}
     tests, p = {}, {}
     for name, run in cc["runs"].items():
@@ -116,8 +119,8 @@ def compare(corrected: bool = False) -> str:
     desc["SFT stated σ, binned (descriptive)"] = {"bin_entropy_bits": describe(sft_binned, keys, e1["bins"],
                                                                               cc["coverage_target"])["bin_entropy_bits"]}
     out = {"decision": "D52", "n_problems": len(keys), "tests": tests, "holm": h, "describe": desc,
-           "corrected_D67": corrected, "eval_name": eval_name}
-    od = REPO_ROOT / (CORRECTED["output_dir"] if corrected else cc["output_dir"])
+           "corrected_D67": corrected, "eval_name": eval_name, "a5_sigma_tape": a5_tape or cc["a5_sigma_tape"]}
+    od = REPO_ROOT / (output_dir or (CORRECTED["output_dir"] if corrected else cc["output_dir"]))
     od.mkdir(parents=True, exist_ok=True)
     (od / "family_E.json").write_text(json.dumps(out, indent=1, default=float))
     lines = [f"# E1 family E (D52), {len(keys)} eval prefixes{title}", "",

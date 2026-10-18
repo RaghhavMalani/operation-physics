@@ -1,0 +1,536 @@
+{
+ "decision": "D69 sensitivity (not the primary verdict)",
+ "a5_strongest_sigma": "problem_answer_reasoning/gbt",
+ "family_N": {
+  "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0": {
+   "primary_bf16_a5": {
+    "N1_cov1_error": {
+     "rl": 0.2652,
+     "control": 0.0048000000000000265,
+     "diff_ci": [
+      0.18289999999999995,
+      0.29789999999999994
+     ],
+     "p_one_sided": 1.0
+    },
+    "N2_rho": {
+     "rl": 0.07687510316816443,
+     "control": 0.676410700504423,
+     "diff_ci": [
+      -0.7038599789528893,
+      -0.4950378440517694
+     ],
+     "p_one_sided": 1.0
+    },
+    "N3_crps_log": {
+     "rl": -0.31627041120729155,
+     "control": -0.2885206770941772,
+     "diff_ci": [
+      -0.03675023697784994,
+      -0.019507239601987532
+     ],
+     "p_one_sided": 1.0
+    },
+    "holm": {
+     "N1": {
+      "p": 1.0,
+      "holm_threshold": 0.016666666666666666,
+      "supported": false
+     },
+     "N2": {
+      "p": 1.0,
+      "holm_threshold": 0.025,
+      "supported": false
+     },
+     "N3": {
+      "p": 1.0,
+      "holm_threshold": 0.05,
+      "supported": false
+     }
+    },
+    "rl_calibration_beats_posthoc": false
+   },
+   "sensitivity_4bit_a5": {
+    "N1_cov1_error": {
+     "rl": 0.2652,
+     "control": 0.027699999999999947,
+     "diff_ci": [
+      0.1875,
+      0.28000999999999987
+     ],
+     "p_one_sided": 1.0
+    },
+    "N2_rho": {
+     "rl": 0.07687510316816443,
+     "control": 0.6522261503822748,
+     "diff_ci": [
+      -0.67698666985341,
+      -0.4722416255582482
+     ],
+     "p_one_sided": 1.0
+    },
+    "N3_crps_log": {
+     "rl": -0.31627041120729155,
+     "control": -0.28902707914296266,
+     "diff_ci": [
+      -0.036241815167160685,
+      -0.019110175270522983
+     ],
+     "p_one_sided": 1.0
+    },
+    "holm": {
+     "N1": {
+      "p": 1.0,
+      "holm_threshold": 0.016666666666666666,
+      "supported": false
+     },
+     "N2": {
+      "p": 1.0,
+      "holm_threshold": 0.025,
+      "supported": false
+     },
+     "N3": {
+      "p": 1.0,
+      "holm_threshold": 0.05,
+      "supported": false
+     }
+    },
+    "rl_calibration_beats_posthoc": false
+   }
+  },
+  "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed1": {
+   "primary_bf16_a5": {
+    "N1_cov1_error": {
+     "rl": 0.2702,
+     "control": 0.0023000000000000798,
+     "diff_ci": [
+      0.18789999999999996,
+      0.3025
+     ],
+     "p_one_sided": 1.0
+    },
+    "N2_rho": {
+     "rl": 0.03400401996180597,
+     "control": 0.6735853060311033,
+     "diff_ci": [
+      -0.7401572304900246,
+      -0.5385295965751911
+     ],
+     "p_one_sided": 1.0
+    },
+    "N3_crps_log": {
+     "rl": -0.31713325632296036,
+     "control": -0.28952349143427575,
+     "diff_ci": [
+      -0.03619442983707482,
+      -0.019844668686635196
+     ],
+     "p_one_sided": 1.0
+    },
+    "holm": {
+     "N1": {
+      "p": 1.0,
+      "holm_threshold": 0.016666666666666666,
+      "supported": false
+     },
+     "N2": {
+      "p": 1.0,
+      "holm_threshold": 0.025,
+      "supported": false
+     },
+     "N3": {
+      "p": 1.0,
+      "holm_threshold": 0.05,
+      "supported": false
+     }
+    },
+    "rl_calibration_beats_posthoc": false
+   },
+   "sensitivity_4bit_a5": {
+    "N1_cov1_error": {
+     "rl": 0.2702,
+     "control": 0.022699999999999942,
+     "diff_ci": [
+      0.1953999999999999,
+      0.29
+     ],
+     "p_one_sided": 1.0
+    },
+    "N2_rho": {
+     "rl": 0.03400401996180597,
+     "control": 0.6507111497222677,
+     "diff_ci": [
+      -0.7175310364594129,
+      -0.5133326913884837
+     ],
+     "p_one_sided": 1.0
+    },
+    "N3_crps_log": {
+     "rl": -0.31713325632296036,
+     "control": -0.28984323842661225,
+     "diff_ci": [
+      -0.036224969627348697,
+      -0.019009305847571677
+     ],
+     "p_one_sided": 1.0
+    },
+    "holm": {
+     "N1": {
+      "p": 1.0,
+      "holm_threshold": 0.016666666666666666,
+      "supported": false
+     },
+     "N2": {
+      "p": 1.0,
+      "holm_threshold": 0.025,
+      "supported": false
+     },
+     "N3": {
+      "p": 1.0,
+      "holm_threshold": 0.05,
+      "supported": false
+     }
+    },
+    "rl_calibration_beats_posthoc": false
+   }
+  },
+  "split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2": {
+   "primary_bf16_a5": {
+    "N1_cov1_error": {
+     "rl": 0.2577,
+     "control": 0.0026999999999999247,
+     "diff_ci": [
+      0.18039999999999995,
+      0.2879
+     ],
+     "p_one_sided": 1.0
+    },
+    "N2_rho": {
+     "rl": 0.07120309010067458,
+     "control": 0.6444243931329189,
+     "diff_ci": [
+      -0.6790578441338333,
+      -0.46733916530652264
+     ],
+     "p_one_sided": 1.0
+    },
+    "N3_crps_log": {
+     "rl": -0.3065036072110864,
+     "control": -0.2828246385467987,
+     "diff_ci": [
+      -0.031015573469940022,
+      -0.01684636785881305
+     ],
+     "p_one_sided": 1.0
+    },
+    "holm": {
+     "N1": {
+      "p": 1.0,
+      "holm_threshold": 0.016666666666666666,
+      "supported": false
+     },
+     "N2": {
+      "p": 1.0,
+      "holm_threshold": 0.025,
+      "supported": false
+     },
+     "N3": {
+      "p": 1.0,
+      "holm_threshold": 0.05,
+      "supported": false
+     }
+    },
+    "rl_calibration_beats_posthoc": false
+   },
+   "sensitivity_4bit_a5": {
+    "N1_cov1_error": {
+     "rl": 0.2577,
+     "control": 0.030200000000000005,
+     "diff_ci": [
+      0.17999999999999994,
+      0.27249999999999996
+     ],
+     "p_one_sided": 1.0
+    },
+    "N2_rho": {
+     "rl": 0.07120309010067458,
+     "control": 0.6371935399433135,
+     "diff_ci": [
+      -0.6695554667899954,
+      -0.46426130716266445
+     ],
+     "p_one_sided": 1.0
+    },
+    "N3_crps_log": {
+     "rl": -0.3065036072110864,
+     "control": -0.2824231854892333,
+     "diff_ci": [
+      -0.03210658892197587,
+      -0.016261145630179514
+     ],
+     "p_one_sided": 1.0
+    },
+    "holm": {
+     "N1": {
+      "p": 1.0,
+      "holm_threshold": 0.016666666666666666,
+      "supported": false
+     },
+     "N2": {
+      "p": 1.0,
+      "holm_threshold": 0.025,
+      "supported": false
+     },
+     "N3": {
+      "p": 1.0,
+      "holm_threshold": 0.05,
+      "supported": false
+     }
+    },
+    "rl_calibration_beats_posthoc": false
+   }
+  }
+ },
+ "family_E": {
+  "primary_bf16_a5": {
+   "decision": "D52",
+   "n_problems": 400,
+   "tests": {
+    "E1a-P": {
+     "mean_diff": 0.007671939282960144,
+     "ci95": [
+      0.006186812921729608,
+      0.009197655639582749
+     ],
+     "p_one_sided": 0.0
+    },
+    "E1a-N": {
+     "mean_diff": -0.02575754241361891,
+     "ci95": [
+      -0.03423583811173813,
+      -0.018084424193149186
+     ],
+     "p_one_sided": 1.0
+    },
+    "E1b-P": {
+     "mean_diff": 0.007527348866607645,
+     "ci95": [
+      0.006054735712180564,
+      0.00901282199949382
+     ],
+     "p_one_sided": 0.0
+    },
+    "E1b-N": {
+     "mean_diff": -0.025902132829971405,
+     "ci95": [
+      -0.03449589609617032,
+      -0.018132513057276315
+     ],
+     "p_one_sided": 1.0
+    }
+   },
+   "holm": {
+    "E1a-P": {
+     "p": 0.0,
+     "threshold": 0.0125,
+     "rejected": true
+    },
+    "E1b-P": {
+     "p": 0.0,
+     "threshold": 0.016666666666666666,
+     "rejected": true
+    },
+    "E1a-N": {
+     "p": 1.0,
+     "threshold": 0.025,
+     "rejected": false
+    },
+    "E1b-N": {
+     "p": 1.0,
+     "threshold": 0.05,
+     "rejected": false
+    }
+   },
+   "describe": {
+    "SFT stated \u03c3": {
+     "n": 400,
+     "n_failed": 0,
+     "mu_changed": 0,
+     "mean_crps_log": -0.3385578669363932,
+     "coverage_1sigma": 0.1225,
+     "coverage_1sigma_error": 0.5602,
+     "coverage_2sigma": 0.1725,
+     "spearman_sigma_error": 0.0012854236564616025,
+     "median_rel_sigma": 0.00056657223796034,
+     "sigma_zero_share": 0.16290726817042606,
+     "bin_entropy_bits": 1.3934822507244626
+    },
+    "A5 strongest \u03c3": {
+     "n": 400,
+     "n_failed": 0,
+     "mu_changed": 0,
+     "mean_crps_log": -0.3051283852398141,
+     "coverage_1sigma": 0.6675,
+     "coverage_1sigma_error": 0.015199999999999991,
+     "coverage_2sigma": 0.7675,
+     "spearman_sigma_error": 0.6993563646711741,
+     "median_rel_sigma": 0.07985474761120157,
+     "sigma_zero_share": 0.0,
+     "bin_entropy_bits": 2.904124623696668
+    },
+    "E1a": {
+     "n": 400,
+     "n_failed": 0,
+     "mu_changed": 0,
+     "mean_crps_log": -0.33088592765343305,
+     "coverage_1sigma": 0.485,
+     "coverage_1sigma_error": 0.1977,
+     "coverage_2sigma": 0.5825,
+     "spearman_sigma_error": 0.012674069264585797,
+     "median_rel_sigma": 0.032237266279819474,
+     "sigma_zero_share": 0.0,
+     "bin_entropy_bits": 2.0149271784444505
+    },
+    "E1b": {
+     "n": 400,
+     "n_failed": 0,
+     "mu_changed": 0,
+     "mean_crps_log": -0.33103051806978556,
+     "coverage_1sigma": 0.455,
+     "coverage_1sigma_error": 0.22769999999999996,
+     "coverage_2sigma": 0.5675,
+     "spearman_sigma_error": 0.01435387937541461,
+     "median_rel_sigma": 0.02,
+     "sigma_zero_share": 0.0,
+     "bin_entropy_bits": 2.003741557785759
+    },
+    "SFT stated \u03c3, binned (descriptive)": {
+     "bin_entropy_bits": 1.3934822507244626
+    }
+   },
+   "corrected_D67": true,
+   "eval_name": "final_4bit"
+  },
+  "sensitivity_4bit_a5": {
+   "decision": "D52",
+   "n_problems": 400,
+   "tests": {
+    "E1a-P": {
+     "mean_diff": 0.007671939282960144,
+     "ci95": [
+      0.006186812921729608,
+      0.009197655639582749
+     ],
+     "p_one_sided": 0.0
+    },
+    "E1a-N": {
+     "mean_diff": -0.025537876907963185,
+     "ci95": [
+      -0.034928154980549755,
+      -0.01695520100173733
+     ],
+     "p_one_sided": 1.0
+    },
+    "E1b-P": {
+     "mean_diff": 0.007527348866607645,
+     "ci95": [
+      0.006054735712180564,
+      0.00901282199949382
+     ],
+     "p_one_sided": 0.0
+    },
+    "E1b-N": {
+     "mean_diff": -0.02568246732431569,
+     "ci95": [
+      -0.035063647506303176,
+      -0.017007332822368052
+     ],
+     "p_one_sided": 1.0
+    }
+   },
+   "holm": {
+    "E1a-P": {
+     "p": 0.0,
+     "threshold": 0.0125,
+     "rejected": true
+    },
+    "E1b-P": {
+     "p": 0.0,
+     "threshold": 0.016666666666666666,
+     "rejected": true
+    },
+    "E1a-N": {
+     "p": 1.0,
+     "threshold": 0.025,
+     "rejected": false
+    },
+    "E1b-N": {
+     "p": 1.0,
+     "threshold": 0.05,
+     "rejected": false
+    }
+   },
+   "describe": {
+    "SFT stated \u03c3": {
+     "n": 400,
+     "n_failed": 0,
+     "mu_changed": 0,
+     "mean_crps_log": -0.3385578669363932,
+     "coverage_1sigma": 0.1225,
+     "coverage_1sigma_error": 0.5602,
+     "coverage_2sigma": 0.1725,
+     "spearman_sigma_error": 0.0012854236564616025,
+     "median_rel_sigma": 0.00056657223796034,
+     "sigma_zero_share": 0.16290726817042606,
+     "bin_entropy_bits": 1.3934822507244626
+    },
+    "A5 strongest \u03c3": {
+     "n": 400,
+     "n_failed": 0,
+     "mu_changed": 0,
+     "mean_crps_log": -0.3053480507454699,
+     "coverage_1sigma": 0.6725,
+     "coverage_1sigma_error": 0.010199999999999987,
+     "coverage_2sigma": 0.7625,
+     "spearman_sigma_error": 0.6810026504963556,
+     "median_rel_sigma": 0.06951393400393072,
+     "sigma_zero_share": 0.0,
+     "bin_entropy_bits": 2.8289546784290627
+    },
+    "E1a": {
+     "n": 400,
+     "n_failed": 0,
+     "mu_changed": 0,
+     "mean_crps_log": -0.33088592765343305,
+     "coverage_1sigma": 0.485,
+     "coverage_1sigma_error": 0.1977,
+     "coverage_2sigma": 0.5825,
+     "spearman_sigma_error": 0.012674069264585797,
+     "median_rel_sigma": 0.032237266279819474,
+     "sigma_zero_share": 0.0,
+     "bin_entropy_bits": 2.0149271784444505
+    },
+    "E1b": {
+     "n": 400,
+     "n_failed": 0,
+     "mu_changed": 0,
+     "mean_crps_log": -0.33103051806978556,
+     "coverage_1sigma": 0.455,
+     "coverage_1sigma_error": 0.22769999999999996,
+     "coverage_2sigma": 0.5675,
+     "spearman_sigma_error": 0.01435387937541461,
+     "median_rel_sigma": 0.02,
+     "sigma_zero_share": 0.0,
+     "bin_entropy_bits": 2.003741557785759
+    },
+    "SFT stated \u03c3, binned (descriptive)": {
+     "bin_entropy_bits": 1.3934822507244626
+    }
+   },
+   "corrected_D67": true,
+   "eval_name": "final_4bit",
+   "a5_sigma_tape": "results/corrected/d69_sensitivity/e1_sft_eval_a5_4bit_sigma.jsonl"
+  }
+ },
+ "changed_verdicts": []
+}
