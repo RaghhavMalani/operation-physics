@@ -1619,3 +1619,98 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   2. at RL step 0 the LoRA weights equal the SFT adapter;
   3. they change after the RL steps;
   4. the eval loader passes the training-time fingerprint check (R2-1, D71).
+
+## Round-2 review (REVIEW_SYNTHESIS_ROUND2_2026-10-17.md, committed with this entry)
+
+### D71. Amendments R2-1 to R2-7 (recorded 2026-10-18, before any result they affect)
+- **Source:** `REVIEW_SYNTHESIS_ROUND2_2026-10-17.md` (Gemini and ChatGPT). Its header says "R2-1 to R2-9", but it
+  numbers seven amendments, R2-1 to R2-7. The experiments X1–X3 are not amendments; each is pre-registered in its
+  own entry before its first result (X1: D73, X2: D74; X3 later).
+- **State of the data when this is written:**
+  - **Exists:** every corrected eval and analysis of D67 (FINDINGS #16).
+  - **Does not exist yet:** the uniform-credit seeds 1 and 2; any 4-bit SFT calibration completion (D69); any X1 or
+    X2 result; any training-time fingerprint (R2-1).
+- **R2-1. Evaluation hygiene.**
+  - **The test:** for a fixed set of prompts, the reloaded model must reproduce the training-time logits and the
+    training-time σ distribution within tolerance. Any eval loader change must pass it.
+  - **Provenance in every eval tape:** base revision, bitsandbytes version, compute dtype, quantization config and
+    adapter hash.
+  - **Implementation and tolerances:** D72. They are fixed before the first training-time fingerprint exists.
+  - **First real use:** tonight's uniform-credit seeds 1 and 2.
+- **R2-2. SFT pipeline revalidation.**
+  - **Background:** merging the SFT adapter into bf16 rounded away 41% of its entries.
+  - **Existing comparisons:** the merged SFT model is the start of every existing RL run, so these comparisons stay
+    internally consistent. FINDINGS #4 / #5's SFT numbers describe an attenuated SFT. D70 adds a second mismatch:
+    the update was learned on Unsloth's 4-bit mirror and merged into the bf16 Qwen weights.
+  - **New SFT (Phase 12):** it is never merged into bf16. D70 chose the second option of R2-2: RL continues training
+    the unmerged SFT adapter.
+- **R2-3. What σ should and should not predict.**
+  - **The rule:** under the A1 decomposition, σ on noise-free problems is not judged by its correlation with total
+    error. That is the epistemic channel's job (p).
+  - **Family N, reframed:** "a single σ asked to carry epistemic uncertainty fails to rank errors". This motivates
+    two channels. It is not a claim that small models cannot express epistemic uncertainty; that claim is
+    unsupported.
+  - **Where it applies:** the write-up and every new FINDINGS text. FINDINGS #16's numbers do not change.
+- **R2-4. Seed-level statistics.** With 3 vs 3 seeds, the smallest exact two-sided permutation p is 0.10 (one-sided:
+  0.05).
+  - **What is reported:** seed-wise effect sizes and matched-step trajectories, alongside the pre-registered
+    problem-level tests.
+  - **The wording rule:** pooled problem-level significance is never described as seed-level significance.
+  - **The analysis:** fixed below, under R2-6.
+- **R2-5. Publication criterion (stated now).**
+  - **The positive claim** requires a reproducible, baseline-beating advantage on at least one *conditional,
+    held-out* uncertainty task. Pooled coverage alone does not count.
+  - **If that fails,** the controlled negative result is the paper.
+- **R2-6. Uniform-credit seeds 1 and 2 (tonight's queue, D75).**
+  - **Configs:** `configs/grpo_overnight2_seed{1,2}.yaml` are copies of `grpo_overnight2.yaml`. Only `seed` and
+    `run_id` differ (a test checks this).
+  - **Protocol:** the same SFT start, hyperparameters, problem pool and step 287 as the split-credit seeds. The LR is
+    constant after warmup, so a run stopped at 287 matches the seed-0 control's step-287 checkpoint.
+  - **Run:** to step 287 (permanent checkpoint), then the corrected eval (`compare --part rl`, `unsloth_4bit`,
+    greedy, frozen 1.1.0 sets) and `queue_sanity.py`.
+  - **Gate:** seed 2 starts only if seed 1 is sane, as in D62.
+  - **One known difference from the seed-0 control:** these runs also write the training-time fingerprint after
+    training ends (D72). It runs after the last optimizer step and after the adapter is saved, so it cannot change
+    the trained adapter.
+- **R2-6 / R2-4: the 3-vs-3 robustness analysis (fixed now; `scripts/robustness_3v3.py`, written before any seed-1/2
+  data).**
+  - **Status:** a robustness analysis reported next to the pre-registered verdicts. It does not replace them. The
+    FINDINGS #16 verdicts (S1b / S2 / S3 against the single uniform seed) stay the pre-registered result.
+  - **(A) Problem-level, both arms as seed means.** This is D62's construction with the uniform arm also averaged
+    over its 3 seeds.
+    - **S1b:** mean over problems of (c̄_i^split − c̄_i^uniform), where c̄_i is the mean over seeds of the 1σ-coverage
+      indicator.
+    - **S2:** mean over seeds of ρ_s (split) minus the same for uniform.
+    - **S3:** seed-mean accuracy difference, with the −5-point margin.
+    - **S1a** is unchanged (its control, SFT-only, has no seed).
+    - **Inference:** a one-sided paired bootstrap over problems (B = 10,000, seed 0; one index set per resample
+      for all arms), with Holm over {S1a, S1b, S2, S3} at α = 0.05, as in D62.
+    - **Wording:** "conditional on these 3 + 3 seeds".
+  - **(B) Seed-level, descriptive.** For each metric (1σ coverage, ρ(σ, err), accuracy, σ = 0 share, median
+    relative σ), the per-run value for all 6 runs.
+    - **Effect:** Δ = mean(split) − mean(uniform).
+    - **Exact permutation test:** over the 20 ways to split the 6 runs 3 + 3. The one-sided p is the share of
+      relabellings with Δ at least as large as observed (in the hypothesis's direction; minimum 0.05). The
+      two-sided p is computed the same way on |Δ| (minimum 0.10).
+    - **Also reported:** Hedges' g, and the 9 cross-seed differences split_i − uniform_j with the share that has
+      the hypothesis's sign.
+    - **No verdict is drawn from (B).**
+  - **(C) Matched-step trajectories, descriptive.** These come from the training logs of all 6 runs (the
+    training-tape σ is the unmerged 4-bit policy's own σ).
+    - **Per 25-step window up to 287:** median relative σ of training samples, σ = 0 share, mean reward, binary
+      pass rate, and the zero-variance group fraction.
+    - **Output:** a table plus one figure.
+  - **If only one new uniform seed reaches step 287:** the analysis runs as 3 vs 2 and says so (10 relabellings;
+    minimum one-sided p 0.10).
+- **R2-7. Citations to verify before use** (not verified yet):
+  - Zeng, Xuan, Cui & Voigt, "Thinking Out Loud: Do Reasoning Models Know When They're Right?" (EMNLP 2025,
+    arXiv 2504.06564);
+  - Leng, Huang, Zhu & Huang, "Taming Overconfidence in LLMs: Reward Calibration in RLHF" (ICLR 2025);
+  - Dettmers et al., QLoRA (arXiv 2305.14314);
+  - Gneiting, Balabdaoui & Raftery (2007), "Probabilistic forecasts, calibration and sharpness", JRSS-B 69(2).
+- **Also adopted from the synthesis's agreed points:**
+  - **Merged results:** superseded and kept in a methodology / reproducibility section. They are never called a
+    "control", because rounding is a structured perturbation, not controlled noise.
+  - **Framing:** the world-versus-reasoning uncertainty decomposition is the headline. Credit assignment and the
+    merge bug are supporting results.
+  - **Distillation (X3):** secondary.
