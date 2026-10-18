@@ -1860,3 +1860,47 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Code:** `physcal/eval/x1_text_sigma.py`, with tests of the parser, the features and the references in
   `tests/test_x1_text_sigma.py`. Outputs: `results/x1_text_sigma/{selection.json, results.json, summary.md}`.
   `selection.json` (CV table and parse coverage) is written before any prediction on the pairs.
+
+### D75. Tonight's GPU queue, 2026-10-18/19 (prepared, not launched; `scripts/queue_uniform_seeds.sh`)
+- **Order:** the GPU part of D69 first, as you asked, then R2-6.
+  1. **GPU, 4-bit SFT-only calibration completions (D69).** `posthoc generate-4bit --part set` (400), then
+     `--part ext` (1,600).
+     - **Settings:** greedy, prompt v4, 512 tokens, batch 16, repetition penalty 1. These are the bf16 tapes' settings.
+     - **Model:** the merged SFT model through `unsloth_4bit` with no adapter. `max_seq_length` and `text_only` come
+       from the uniform-credit run's training config, exactly as D67's `compare/sft_4bit` control (checked: the
+       same model config).
+     - **Timing:** about 40 min at D67's 4-bit speed (1.1 s/problem).
+  2. **CPU, in the background (nice, 4 threads):** `posthoc refit-4bit` (the D40 fit on the 400, the all-2,000
+     sensitivity fit, the scaled eval tapes), then `nested_baselines fit --config nested_baselines_4bit` (A5).
+     - **Code change:** the fit functions take paths or a config name. The defaults reproduce every existing number
+       (checked: the bf16 re-run gives ×18.1425 exactly).
+     - **Not in the queue:** D69's family N/E sensitivity reruns (CPU, tomorrow).
+  3. **GPU, uniform-credit seed 1 (R2-6).**
+     - **Training:** `grpo --config grpo_overnight2_seed1 --max-steps 287 --stop-at <deadline − 30 min>`. It writes
+       the R2-1 fingerprint after the save (D72), and the queue copies it to the run dir for the commit.
+     - **Eval:** `compare --part rl --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit` (the
+       corrected loader, greedy, frozen 1.1.0 sets), which runs the fingerprint check. Then `queue_sanity.py …
+       rl287_4bit`.
+  4. **GPU, uniform-credit seed 2:** the same.
+     - **Gate:** it starts only if seed 1 is sane (as D62) and at least 3.0 h of training time remain before the
+       deadline minus the eval reserve. A run that cannot reach 287 is useless for the 3-vs-3 analysis.
+  5. **CPU, after the re-fits finish:** `scripts/robustness_3v3.py` (D71 A/B/C) with whatever uniform seeds reached
+     a corrected step-287 eval. With one missing, it runs 3 vs 2 (D71).
+- **Guards (as in earlier queues):**
+  - GPU deadline 08:30 IST;
+  - GPU > 87 °C before a stage → 10-min pause (the trainer also pauses itself);
+  - every stage is a child process waited on by PID;
+  - commit + push after every stage under a flock, with training tapes gzipped.
+- **Time budget:** about 0.7 h calibration + 2 × (2.9–3.2 h training + about 10 min eval + about 5 min fingerprint)
+  ≈ 7.2 h.
+  - **Launch time:** both seeds fit only if the queue starts by about **00:45 IST**. Started later, seed 2 is skipped
+    by the 3.0-h gate and the analysis runs 3 vs 2.
+- **Checked on CPU:**
+  - `DRY_RUN=1` prints the plan above, and `bash -n` passes;
+  - the seed configs equal `grpo_overnight2` apart from seed and run_id (test);
+  - the calibration eval config equals D67's SFT control;
+  - `robustness_3v3.py` runs end to end on the real corrected evals with a stand-in uniform arm (test). Its (A)
+    reproduces D62's statistics when the uniform arm is the single control.
+- **Not checked: any GPU stage.**
+- **Launch command:**
+  `nohup scripts/queue_uniform_seeds.sh > results/queue_uniform_seeds/nohup.log 2>&1 &`

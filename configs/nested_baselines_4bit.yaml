@@ -1,0 +1,30 @@
+# D69: A5 re-fitted on 4-bit SFT completions; everything else identical to nested_baselines.yaml.
+# D50/A5: nested surface-feature baselines for stated uncertainty, fitted on the calibration split only.
+# Feature sets (nested): 1 metadata (family, depth); 2 problem text; 3 + <answer> block; 4 + reasoning (completion
+# text before <answer>). Models: linear (ridge for sigma, logistic for p) and a small GBT. No verifier-derived
+# features: parsed mu only centres the forecast and converts a relative sigma to absolute units.
+fit_tapes:                            # D69: the same problems, SFT-only greedy on the 4-bit base (corrected loader)
+  - results/posthoc_calibration_4bit/sft_calibration_set/rollouts.jsonl
+  - results/posthoc_calibration_4bit/sft_calibration_ext/rollouts.jsonl
+eval_tape: results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare/sft_4bit/rollouts.jsonl
+output_dir: results/a5_baselines_4bit
+feature_sets: [metadata, problem, problem_answer, problem_answer_reasoning]
+text:
+  token_pattern: "\\S+"
+  ngram_range: [1, 1]
+  min_df: 3
+  sublinear_tf: true
+  gbt_max_features: 1000              # per text field, by document frequency (GBT needs dense input)
+log_error_floor: 1.0e-6               # sigma target: ln max(|ln(mu / truth)|, floor), crps_log space
+cv:
+  folds: 5
+  group_by: template                  # family | target | set of givens: templates held out within the split
+grids:                                # the same grid for every feature set (matched selection budget)
+  ridge_alpha: [0.1, 1.0, 10.0, 100.0, 1000.0]
+  logistic_C: [0.01, 0.1, 1.0, 10.0, 100.0]
+  gbt:                                # sklearn HistGradientBoosting
+    - {max_iter: 100, max_depth: 2, learning_rate: 0.05, min_samples_leaf: 20}
+    - {max_iter: 300, max_depth: 2, learning_rate: 0.05, min_samples_leaf: 20}
+    - {max_iter: 100, max_depth: 3, learning_rate: 0.05, min_samples_leaf: 20}
+    - {max_iter: 300, max_depth: 3, learning_rate: 0.05, min_samples_leaf: 20}
+seed: 0

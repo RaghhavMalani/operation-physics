@@ -44,8 +44,8 @@ FIELDS = {"metadata": (), "problem": ("problem",), "problem_answer": ("problem",
           "problem_answer_reasoning": ("problem", "answer", "reasoning")}
 
 
-def _config() -> dict:
-    return load_config("nested_baselines")
+def _config(name: str = "nested_baselines") -> dict:
+    return load_config(name)
 
 
 def record(problem: dict, completion: str, b: dict, tolerance: float, split: str = "all") -> dict:
@@ -206,8 +206,9 @@ def refit_all(recs: list[dict], table: dict, cfg: dict) -> dict[str, dict[str, C
     return out
 
 
-def load_models() -> tuple[dict, dict]:
-    out = REPO_ROOT / _config()["output_dir"]
+def load_models(config_name: str = "nested_baselines") -> tuple[dict, dict]:
+    """The fitted baselines of a config: `nested_baselines` (bf16 SFT fit) or `nested_baselines_4bit` (D69)."""
+    out = REPO_ROOT / _config(config_name)["output_dir"]
     return joblib.load(out / "models.joblib"), json.loads((out / "selection.json").read_text())
 
 
@@ -283,8 +284,8 @@ def write_scaled_tape(eval_tape: Path, cand: Candidate, out_path: Path) -> None:
     posthoc.scaled_tape(eval_tape, scales, out_path, anchor="answer")
 
 
-def fit() -> dict:
-    cfg = _config()
+def fit(config_name: str = "nested_baselines") -> dict:
+    cfg = _config(config_name)
     fit_cfg = load_config("posthoc")["fit"]
     tapes = [REPO_ROOT / p for p in cfg["fit_tapes"]]
     metas = [read_meta(t) for t in tapes]
@@ -345,11 +346,12 @@ def render(selection: dict, report: dict) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("action", choices=["fit"])
-    ap.parse_args()
+    ap.add_argument("--config", default="nested_baselines", help="nested_baselines_4bit: the D69 re-fit")
+    args = ap.parse_args()
     # Call through the package so pickled classes are importable outside `python -m` (not as __main__.Candidate).
     from physcal.eval import nested_baselines
 
-    res = nested_baselines.fit()
+    res = nested_baselines.fit(args.config)
     print(render(res["selection"], res["report"]))
 
 

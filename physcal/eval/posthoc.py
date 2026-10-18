@@ -125,16 +125,47 @@ def coverage_scale(records: list[dict], target: float) -> float:
     return float(c)
 
 
-def fit(eval_tape: Path) -> dict:
+def generate_sft_completions_4bit(label: str, budget: int, split_cfg: dict, out: Path, run_id: str,
+                                  settings_run: Path) -> dict:
+    """D69: the same SFT-only greedy completions through the corrected loader (the merged SFT model quantized to 4
+    bits at load, no adapter; D67's SFT control). Loader settings (max_seq_length, text_only) come from
+    `settings_run`'s training config, as `compare --part sft --run <that run>` takes them."""
+    from physcal.eval.run_eval import run
+    from physcal.train.compare import eval_config
+
+    sft_dir = REPO_ROOT / "results" / "sft" / label / "merged"
+    cfg = eval_config("sft", label, budget, settings_run, sft_dir, loader="unsloth_4bit")
+    cfg["output_dir"] = str(out)
+    cfg["run_id"] = run_id
+    cfg["splits"] = {"calibration": copy.deepcopy(split_cfg)}
+    return run(cfg)
+
+
+def generate_4bit(part: str) -> dict:
+    """D69: one of the two calibration tapes ("set": the 400 of D40; "ext": the 1,600 of probe_sft) on the 4-bit base."""
     cfg_ph = _config()
-    out_dir = REPO_ROOT / cfg_ph["output_dir"]
-    calib_tape = out_dir / "sft_calibration_set" / "rollouts.jsonl"
-    meta = read_meta(calib_tape)
+    r = cfg_ph["refit_4bit"]
+    split = cfg_ph["calibration_split"] if part == "set" else load_config("probe_sft")["calibration_ext_split"]
+    return generate_sft_completions_4bit(cfg_ph["label"], cfg_ph["budget"], split,
+                                         REPO_ROOT / r["output_dir"] / f"sft_calibration_{part}",
+                                         f"posthoc-sft-4bit-calibration-{part}", REPO_ROOT / r["settings_run"])
+
+
+def fit(eval_tape: Path, calib_tapes: list[Path] | None = None, out_dir: Path | None = None,
+        out_name: str = "posthoc_fit.json") -> dict:
+    """The D40 fit: by default the 400-problem bf16 calibration tape, written to the config's output dir. D69 passes
+    the 4-bit tapes and its own output dir; several tapes are pooled (D69's all-2,000 sensitivity fit)."""
+    cfg_ph = _config()
+    out_dir = out_dir or REPO_ROOT / cfg_ph["output_dir"]
+    calib_tapes = calib_tapes or [out_dir / "sft_calibration_set" / "rollouts.jsonl"]
+    calib_tape = calib_tapes[0]
+    metas = [read_meta(t) for t in calib_tapes]
+    meta = metas[0]
     sc = meta["reward_config"]["scoring"]
     eval_meta = read_meta(eval_tape)
-    if verifier_version(meta["reward_config"]) != verifier_version(eval_meta["reward_config"]):
+    if len({verifier_version(m["reward_config"]) for m in metas + [eval_meta]}) != 1:
         raise ValueError("calibration and eval tapes were scored by different verifier versions")
-    calib = _records(calib_tape)
+    calib = [r for t in calib_tapes for r in _records(t)]
     seeds = [r["key"][2] for r in calib]
     eval_offset = meta["env_config"]["splits"]["eval_seed_offset"]
     if max(seeds) >= eval_offset:
@@ -145,6 +176,8 @@ def fit(eval_tape: Path) -> dict:
     result = {
         "verifier_version": verifier_version(meta["reward_config"]),
         "calibration_tape": str(calib_tape.relative_to(REPO_ROOT)),
+        "calibration_tapes": [str(Path(x).resolve().relative_to(REPO_ROOT)) for x in calib_tapes],
+        "n_calibration": len(calib),
         "eval_tape": str(Path(eval_tape).resolve().relative_to(REPO_ROOT)),
         "calibration_seeds": [min(seeds), max(seeds)],
         "scales": scales,
@@ -155,8 +188,22 @@ def fit(eval_tape: Path) -> dict:
     for split in sorted({r["split"] for r in evals}):
         recs = [r for r in evals if r["split"] == split]
         result["eval"][split] = {name: summary(recs, c, sc) for name, c in {"unscaled": 1.0, **scales}.items()}
-    (out_dir / "posthoc_fit.json").write_text(json.dumps(result, indent=2))
+    (out_dir / out_name).write_text(json.dumps(result, indent=2))
     return result
+
+
+def refit_4bit() -> dict:
+    """D69: the primary re-fit on the 400-problem 4-bit tape, the all-2,000 sensitivity fit, and the scaled eval tapes."""
+    cfg_ph = _config()
+    r = cfg_ph["refit_4bit"]
+    out_dir = REPO_ROOT / r["output_dir"]
+    eval_tape = REPO_ROOT / r["eval_tape"]
+    tapes = [out_dir / f"sft_calibration_{p}" / "rollouts.jsonl" for p in ("set", "ext")]
+    primary = fit(eval_tape, tapes[:1], out_dir, "posthoc_fit.json")
+    sens = fit(eval_tape, tapes, out_dir, "posthoc_fit_all2000.json")
+    for name, c in primary["scales"].items():
+        scaled_tape(eval_tape, c, out_dir / f"sft_eval_scaled_{name}.jsonl")
+    return {"primary": primary, "all2000": sens}
 
 
 def baseline_report(records_by_split: dict[str, list[dict]], scoring_cfg: dict, generator_version: str,
@@ -219,11 +266,19 @@ def scaled_tape(eval_tape: Path, c, out_path: Path, rel_floor: float = 0.0, anch
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("action", choices=["generate", "fit"])
+    ap.add_argument("action", choices=["generate", "fit", "generate-4bit", "refit-4bit"])
     ap.add_argument("--eval", default=None, help="SFT-only eval tape scored by the same verifier version")
+    ap.add_argument("--part", choices=["set", "ext"], default=None, help="generate-4bit: which calibration tape (D69)")
     args = ap.parse_args()
     if args.action == "generate":
         generate()
+        return
+    if args.action == "generate-4bit":
+        generate_4bit(args.part)
+        return
+    if args.action == "refit-4bit":
+        res = refit_4bit()
+        print(json.dumps({k: {"scales": v["scales"], "eval": v["eval"]} for k, v in res.items()}, indent=2))
         return
     res = fit(REPO_ROOT / args.eval)
     out_dir = REPO_ROOT / _config()["output_dir"]
