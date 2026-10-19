@@ -29,7 +29,7 @@ In min: t2 = 0.4573 min
 <confidence>10%</confidence>
 ```
 
-**explicit** (masked: [])
+**explicit** (masked: [[201, 202], [229, 230]])
 
 ```
 SI values: t1 = 11.5 s; t3 = 0.337 min = 20.22 s; t_tot = 0.986 min = 59.16 s.
@@ -89,7 +89,7 @@ v2 = 3.442 m/s
 <confidence>90%</confidence>
 ```
 
-**explicit** (masked: [])
+**explicit** (masked: [[304, 308], [309, 313], [320, 324], [325, 329], [336, 337], [338, 342], [349, 352], [353, 357], [364, 368], [396, 402]])
 
 ```
 SI values: K2 = 0.099033 kJ = 99.03 J; m = 16.717 kg; mu = 0.12930; v1 = 7.0978 m/s.
@@ -156,7 +156,7 @@ m = 44.16 kg
 <confidence>40%</confidence>
 ```
 
-**explicit** (masked: [])
+**explicit** (masked: [[384, 385], [386, 390], [397, 398], [399, 403], [410, 411], [412, 416], [423, 424], [425, 429], [436, 441], [467, 470]])
 
 ```
 SI values: F_net = 52.891 N; a2 = 0.89937 m/s^2; s1 = 1.6275 m; s2 = 216.74 cm = 2.167 m.
@@ -220,7 +220,7 @@ a2 = 2.252 m/s^2
 <confidence>70%</confidence>
 ```
 
-**explicit** (masked: [])
+**explicit** (masked: [[171, 172], [173, 177], [184, 185], [186, 190], [197, 202], [228, 233]])
 
 ```
 SI values: mu = 0.22953; t2 = 0.019895 min = 1.194 s.
@@ -285,7 +285,7 @@ t2 = 37.22 s
 <confidence>30%</confidence>
 ```
 
-**explicit** (masked: [])
+**explicit** (masked: [[474, 475], [501, 502]])
 
 ```
 SI values: a1 = 21.4 cm/s^2 = 0.214 m/s^2; s1 = 0.0182 km = 18.2 m; t3 = 0.992 s; t_tot = 42.6 s; v = 4.62 m/s.
@@ -354,7 +354,7 @@ In cm/s: v = 693.1 cm/s
 <confidence>90%</confidence>
 ```
 
-**explicit** (masked: [])
+**explicit** (masked: [[205, 208], [209, 213], [220, 223], [224, 228], [235, 240], [266, 268]])
 
 ```
 SI values: b = 195.62 cm/s^2 = 1.956 m/s^2; s3 = 12.279 m.
@@ -417,7 +417,7 @@ K2 = 8.554 J
 <confidence>40%</confidence>
 ```
 
-**explicit** (masked: [])
+**explicit** (masked: [[316, 320], [321, 325], [332, 336], [337, 341], [348, 351], [352, 356], [363, 368], [393, 395]])
 
 ```
 SI values: U = 0.011092 kJ = 11.09 J; W_f = 2.5379 J; m = 118.27 g = 0.1183 kg.
@@ -478,7 +478,7 @@ In mJ: W_f = 518.3 mJ
 <confidence>70%</confidence>
 ```
 
-**explicit** (masked: [])
+**explicit** (masked: [[131, 132], [133, 137], [144, 145], [146, 150], [157, 162], [188, 190]])
 
 ```
 SI values: K1 = 1.5522 J; K2 = 1.0339 J.

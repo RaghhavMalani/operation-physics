@@ -37,8 +37,8 @@
    },
    "explicit": {
     "explicit_line": true,
-    "train_sigma": true,
-    "train_line_numbers": true
+    "train_sigma": false,
+    "train_line_numbers": false
    },
    "supervised": {
     "explicit_line": false,
@@ -128,7 +128,18 @@
  "sha256": {
   "problems.jsonl": "d8b5d552dc20e0c212e19e4e3029e0446b4d1a63a2f3ab0d9d875c29214b4460",
   "implicit.jsonl": "a431db0845cfcda3406cb723a85b2804011a73906ead98559ce074f8c267e124",
-  "explicit.jsonl": "a94eef76d9bc9fefb2f9a8c9e6c22ab9a1112cf010b1bb2f80bb0d05de5b96b5",
+  "explicit.jsonl": "bc9861ea7286417b0aa3bd6b8feacedeefd3f3cb6d14bcdc685e9844aef4bd20",
   "supervised.jsonl": "a6adeb9d1238b3b8c077126e0433d1c487cc4b6085f3c3e63a3677e318c6b9c2"
+ },
+ "built": {
+  "problems.jsonl": "D80",
+  "implicit.jsonl": "D80",
+  "explicit.jsonl": "D84 (rebuilt: explicit)",
+  "supervised.jsonl": "D80"
+ },
+ "masked_spans_per_example": {
+  "implicit": 1.0,
+  "explicit": 7.216666666666667,
+  "supervised": 0.0
  }
 }

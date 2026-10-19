@@ -22,9 +22,9 @@ arms:
     train_sigma: false
   explicit:                        # one propagation line in <steps> before the answer; the answer's sigma = the line
     explicit_line: true            # (first-order propagation with the chain's log-sensitivities)
-    train_sigma: true
-    train_line_numbers: true       # [REVIEW] true: SFT teaches the propagation values; false: format only (the
-                                   # line's numbers and the answer's sigma masked; RL learns them)
+    train_sigma: false             # D84 (your decision): format only, consistent with the implicit arm's masked sigma:
+    train_line_numbers: false      # the line's numbers and the answer's sigma are masked; RL learns them (the ^2
+                                   # exponents and the line's structure stay trained)
   supervised:                      # supervised sigma* baseline (no RL): sigma* written and trained; token cross-entropy
     explicit_line: false           # on a 2-significant-figure sigma approximates a log-scale loss [REVIEW]
     train_sigma: true

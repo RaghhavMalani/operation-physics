@@ -2437,3 +2437,30 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - every Phase 12 data arm scores "ok" under 1.2.0, with c parsed and the event true (4-significant-figure answers).
 - **Not done (as you said):** no Phase 12 training, and no eval report fields for c (calibration of c, Brier
   decomposition). Those come with the Phase 12 pre-registration.
+
+### D84. Phase 12 explicit arm: the propagation numbers are masked in SFT, format only (your decision, 2026-10-19; resolves D80's `train_line_numbers`)
+- **Your decision:** mask the propagation numbers in SFT (format only), consistent with the implicit arm's masked σ.
+  Rebuild that arm's data.
+- **Config (`configs/sft_phase12.yaml`):** the explicit arm gets `train_sigma: false` and `train_line_numbers:
+  false`.
+  - **Masked:** every number on the `sigma_rel` line, i.e. the sensitivities a_i, the levels s_i and the result X,
+    plus the answer's σ.
+  - **Still trained:** the line's structure (`sigma_rel = sqrt((`, `*`, `)^2 + (`, `) =`) and the `^2` exponents. The
+    exponent regex already excluded them (D80).
+  - **The text is unchanged:** the line still shows the correct first-order values, and the answer's σ still equals
+    X·|μ|. Only the loss mask changed, so SFT teaches the format and RL must supply the values, as it must for σ in
+    the implicit arm.
+- **The rebuild:** `python -m physcal.train.sft_phase12 build --arms explicit`.
+  - **Rows now carry their loss masks** (`masked`, character spans), so the built data records the decision, and
+    `tokenize` refuses a config whose masks differ from the data's.
+  - **Only `explicit.jsonl` was rewritten** (sha256 `bc9861ea…`). The other files were checked against the manifest
+    and left as built under D80. Their rows carry no `masked` field; their masks come from the config, as before.
+  - **The manifest records** which decision built each file, and the mean masked spans per example: implicit 1.0,
+    explicit 7.2, supervised 0.
+- **Tests:** `tests/test_sft_phase12.py` (7).
+  - **Masks with the real tokenizer:** the explicit arm masks every line number and the answer's σ, but never `sqrt`,
+    `^` or `)`; D80's trained variant masks nothing.
+  - **Consistency:** stale masks are refused.
+  - **The rebuilt file:** its row masks match the config.
+- **Still open for Round 3 (D80):** uniform trained c, the supervised arm's token loss, n and the noise mix, and symbol
+  names in the line.

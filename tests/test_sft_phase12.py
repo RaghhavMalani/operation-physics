@@ -104,6 +104,9 @@ def test_confidence_parser_refuses_malformed_blocks():
 
 
 def test_masking_per_arm(made):
+    """implicit masks σ; supervised masks nothing; explicit (D84) masks the line's numbers and the answer's σ, keeping
+    the line's structure (sqrt, the ^2 exponents) trained. Rows built since D84 carry their masks; a config that
+    disagrees with them is refused."""
     if not (TOKENIZER_DIR / "tokenizer.json").exists():
         pytest.skip("local tokenizer not available")
     from transformers import AutoTokenizer
@@ -111,21 +114,31 @@ def test_masking_per_arm(made):
     tok = AutoTokenizer.from_pretrained(str(TOKENIZER_DIR))
     cfg, _, out = made
     prob, rows = out[1]  # energy, depth 3, 5% noise
-    masked_text = {}
-    for arm, cfg_arm in (("implicit", cfg), ("supervised", cfg), ("explicit", cfg)):
-        t = p12.tokenize(rows[arm], prob.text, tok, cfg_arm)
-        n_prompt = len(t["input_ids"]) - len(tok(rows[arm]["completion"], add_special_tokens=False)["input_ids"]) - 1
+
+    def masked_text(row, c):
+        t = p12.tokenize(row, prob.text, tok, c)
+        n_prompt = len(t["input_ids"]) - len(tok(row["completion"], add_special_tokens=False)["input_ids"]) - 1
         comp = t["input_ids"][n_prompt:-1]
-        masked_text[arm] = tok.decode([i for i, l in zip(comp, t["labels"][n_prompt:-1]) if l == -100])
+        return [tok.decode([i]) for i, l in zip(comp, t["labels"][n_prompt:-1]) if l == -100]
+
     sigma = rows["implicit"]["completion"][slice(*rows["implicit"]["spans"]["sigma"])]
-    assert masked_text["implicit"].strip() == sigma and masked_text["supervised"] == "" and masked_text["explicit"] == ""
-    fmt_only = copy.deepcopy(cfg)
-    fmt_only["arms"]["explicit"]["train_line_numbers"] = False
-    t = p12.tokenize(rows["explicit"], prob.text, tok, fmt_only)
-    assert t["n_masked"] >= len(rows["explicit"]["spans"]["line_numbers"])
+    assert "".join(masked_text(rows["implicit"], cfg)).strip() == sigma
+    assert masked_text(rows["supervised"], cfg) == []
+    ex = rows["explicit"]
+    got = "".join(masked_text(ex, cfg))
+    nums = [ex["completion"][a:b] for a, b in ex["spans"]["line_numbers"]]
+    assert all(n in got for n in nums) and ex["completion"][slice(*ex["spans"]["sigma"])] in got
+    assert "sqrt" not in got and "^" not in got and ")" not in got  # the format stays trained
+    assert p12.masked_spans(ex, cfg) == sorted(ex["spans"]["line_numbers"] + [ex["spans"]["sigma"]])
+    trained = copy.deepcopy(cfg)
+    trained["arms"]["explicit"].update(train_sigma=True, train_line_numbers=True)  # D80's original default
+    assert masked_text(ex, trained) == []
     no_c = copy.deepcopy(cfg)
     no_c["confidence"]["train"] = False
     assert p12.masked_spans(rows["supervised"], no_c) == [rows["supervised"]["spans"]["confidence"]]
+    stale = dict(ex, masked=p12.masked_spans(ex, trained))  # data built under another config
+    with pytest.raises(ValueError, match="rebuild"):
+        p12.tokenize(stale, prob.text, tok, cfg)
 
 
 def test_built_data_manifest():
@@ -141,3 +154,9 @@ def test_built_data_manifest():
     for name, sha in m["sha256"].items():
         if (out / name).exists():
             assert hashlib.sha256((out / name).read_bytes()).hexdigest() == sha
+    assert m["built"]["explicit.jsonl"].startswith("D84")  # rebuilt with the format-only masks (your decision)
+    assert m["config"]["arms"]["explicit"] == cfg["arms"]["explicit"]
+    if (out / "explicit.jsonl").exists():
+        with (out / "explicit.jsonl").open() as f:
+            row = json.loads(f.readline())
+        assert row["masked"] == p12.masked_spans(row, cfg) and len(row["masked"]) >= 2

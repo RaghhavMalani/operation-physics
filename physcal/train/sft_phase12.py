@@ -104,7 +104,7 @@ def build_example(problem, arm: str, cfg: dict, env_cfg: dict, c: int) -> dict:
 
 
 def masked_spans(row: dict, cfg: dict) -> list[list[int]]:
-    """The character spans an arm masks from the loss."""
+    """The character spans an arm masks from the loss (sorted, no duplicates)."""
     acfg, spans = cfg["arms"][row["arm"]], row["spans"]
     masked = []
     if not acfg["train_sigma"]:
@@ -113,7 +113,7 @@ def masked_spans(row: dict, cfg: dict) -> list[list[int]]:
         masked += spans["line_numbers"] + [spans["sigma"]]
     if not cfg["confidence"]["train"]:
         masked.append(spans["confidence"])
-    return masked
+    return [list(m) for m in sorted({tuple(m) for m in masked})]
 
 
 def tokenize(row: dict, problem_text: str, tok, cfg: dict, chat_template_kwargs: dict | None = None) -> dict:
@@ -125,6 +125,8 @@ def tokenize(row: dict, problem_text: str, tok, cfg: dict, chat_template_kwargs:
     prompt_ids = tok(prompt, add_special_tokens=False)["input_ids"]
     enc = tok(row["completion"], add_special_tokens=False, return_offsets_mapping=True)
     spans = masked_spans(row, cfg)
+    if "masked" in row and row["masked"] != spans:  # rows built since D84 record their masks; the config must agree
+        raise ValueError(f"seed {row['seed']} ({row['arm']}): the config's masks differ from the built data's; rebuild")
     hit = lambda s, e: any(s < hi and e > lo for lo, hi in spans)
     labels = [-100 if hit(s, e) else t for t, (s, e) in zip(enc["input_ids"], enc["offset_mapping"])]
     eos = tok.convert_tokens_to_ids("<|im_end|>")
@@ -144,7 +146,9 @@ def problems(cfg: dict) -> list:
                              noise=combos[i % len(combos)][2]) for i in range(cfg["n_examples"])]
 
 
-def build() -> dict:
+def build(arms: list[str] | None = None) -> dict:
+    """Build every arm (default), or rebuild only `arms`: then problems.jsonl and the other arms' files are left as
+    they are (and must still match the manifest's sha256), and the manifest is updated for the rebuilt ones."""
     from physcal.env.generator import generator_version
 
     cfg = _config()
@@ -157,9 +161,18 @@ def build() -> dict:
     rows = {}
     for arm in cfg["arms"]:
         rows[arm] = [build_example(p, arm, cfg, env_cfg, confidence_draw(p.seed, bins)) for p in probs]
+        for r in rows[arm]:
+            r["masked"] = masked_spans(r, cfg)  # since D84: the loss masks are part of the data
         files[f"{arm}.jsonl"] = "".join(json.dumps(r) + "\n" for r in rows[arm])
-    for name, blob in files.items():
-        (out / name).write_text(blob)
+    old = json.loads((out / "manifest.json").read_text()) if arms else None
+    write = list(files) if not arms else [f"{a}.jsonl" for a in arms]
+    for name in files:
+        if name in write:
+            (out / name).write_text(files[name])
+        elif hashlib.sha256((out / name).read_bytes()).hexdigest() != old["sha256"][name]:
+            raise ValueError(f"{name} no longer matches its manifest; rebuild every arm")
+        elif name == "problems.jsonl" and hashlib.sha256(files[name].encode()).hexdigest() != old["sha256"][name]:
+            raise ValueError("the problems no longer regenerate identically; rebuild every arm")
     expl = rows.get("explicit", [])
     manifest = {
         "decision": "D80 (Phase 12 SFT data, prep; not pre-registered)", "config": cfg,
@@ -173,7 +186,11 @@ def build() -> dict:
         "explicit_line_vs_sigma_star": None if not expl else {
             "median_abs_log_ratio_noisy": float(np.median([abs(np.log(r["sigma_log_answer"] / r["sigma_star_log"]))
                                                            for r in expl if r["noise"] > 0]))},
-        "sha256": {name: hashlib.sha256(blob.encode()).hexdigest() for name, blob in files.items()},
+        "sha256": {name: (hashlib.sha256(blob.encode()).hexdigest() if name in write else old["sha256"][name])
+                   for name, blob in files.items()},
+        "built": {**((old or {}).get("built") or {n: "D80" for n in files}),
+                  **{n: ("D84 (rebuilt: " + ", ".join(arms) + ")" if arms else "D84") for n in write}},
+        "masked_spans_per_example": {arm: float(np.mean([len(r["masked"]) for r in rows[arm]])) for arm in rows},
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1))
     sample = ["# Phase 12 SFT data: examples (D80, prep)", ""]
@@ -190,8 +207,9 @@ def build() -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("action", choices=["build"])
-    ap.parse_args()
-    m = build()
+    ap.add_argument("--arms", nargs="+", default=None, help="rebuild only these arms (D84: explicit)")
+    args = ap.parse_args()
+    m = build(args.arms)
     print(json.dumps({k: v for k, v in m.items() if k not in ("config", "sha256")}, indent=1))
 
 
