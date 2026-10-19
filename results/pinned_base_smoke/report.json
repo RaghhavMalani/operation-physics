@@ -1,0 +1,24 @@
+{
+ "decision": "D78 smoke",
+ "checks": {
+  "loaded_base_is_pinned": true,
+  "is_4bit": true,
+  "adapter_names_pinned_dir": true,
+  "reloaded_adapter_base_is_pinned": true,
+  "provenance_base_identity": true
+ },
+ "pin": {
+  "dir": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+  "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+  "revision": "e24e9530845f4e3a6648343796883cb509935039",
+  "content_sha256": "9939448b3a0fbe45",
+  "adapter": null,
+  "config": "base_4bit"
+ },
+ "n_bnb_4bit_linear": 196,
+ "generation": "The sum of 1 and 1",
+ "adapter_base_model_name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+ "base_identity": "sha256:9939448b3a0fbe45",
+ "seconds": 14.196254014968872,
+ "status": "PASS"
+}
