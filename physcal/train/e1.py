@@ -54,23 +54,28 @@ def truncate_after_pm(completion: str) -> str | None:
 
 def build_rows(tapes: list[Path], tokenizer, prompt_id: str, chat_template_kwargs: dict) -> tuple[list[dict], dict]:
     """One row per SFT completion with a parsed answer (reason ok) and a ± marker; plus exclusion counts."""
+    return rows_from_records((r for tape in tapes for r in read_tape(tape)), tokenizer, prompt_id, chat_template_kwargs)
+
+
+def rows_from_records(records, tokenizer, prompt_id: str, chat_template_kwargs: dict) -> tuple[list[dict], dict]:
+    """`build_rows` on tape records already read (and possibly filtered, e.g. X2's kept answers, D81)."""
     rows, excluded = [], {"no_marker": 0, "not_ok": 0}
-    for tape in tapes:
-        for r in read_tape(tape):
-            prefix = truncate_after_pm(r["completion"])
-            if prefix is None:
-                excluded["no_marker"] += 1
-                continue
-            b = r["breakdown"]
-            if b["reason"] != "ok":
-                excluded["not_ok"] += 1
-                continue
-            p = r["problem"]
-            prompt = tokenizer.apply_chat_template(build_messages(p["text"], prompt_id), tokenize=False,
-                                                   add_generation_prompt=True, **chat_template_kwargs)
-            rows.append({"key": [p["family"], p["depth"], p["seed"]], "split": r.get("split", "all"),
-                         "prompt": prompt + prefix, "prefix": prefix, "problem_json": json.dumps(p),
-                         "orig_mu": b["mu_si"], "orig_sigma": b["sigma_si"], "orig_completion": r["completion"]})
+    for r in records:
+        prefix = truncate_after_pm(r["completion"])
+        if prefix is None:
+            excluded["no_marker"] += 1
+            continue
+        b = r["breakdown"]
+        if b["reason"] != "ok":
+            excluded["not_ok"] += 1
+            continue
+        p = r["problem"]
+        prompt = tokenizer.apply_chat_template(build_messages(p["text"], prompt_id), tokenize=False,
+                                               add_generation_prompt=True, **chat_template_kwargs)
+        rows.append({"key": [p["family"], p["depth"], p["seed"]], "split": r.get("split", "all"),
+                     "prompt": prompt + prefix, "prefix": prefix, "problem_json": json.dumps(p),
+                     "orig_mu": b["mu_si"], "orig_sigma": b["sigma_si"], "orig_completion": r["completion"],
+                     "source_sample": r.get("sample")})  # a sampled source tape's sample index (X2, D81)
     return rows, excluded
 
 
@@ -292,11 +297,16 @@ def evaluate_sft(out: Path | None = None, backend=None, samples: int = 0, loader
 
 
 def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settings: dict, backend, samples: int,
-              loader: str) -> dict:
+              loader: str, rows: list[dict] | None = None, source_tapes: list[str] | None = None,
+              batch_size: int | None = None) -> dict:
+    """`rows` (default: E1's eval prefixes) are `build_rows` rows; X2 and X3 pass their own (D79 / D81), with the
+    tapes they came from in `source_tapes` and optionally a larger `batch_size`."""
     e1 = _config()
-    rows = read_rows("eval")
+    rows = read_rows("eval") if rows is None else rows
     gen_cfg = {**e1["eval"]["generation"], "num_samples": 1} if samples <= 0 else \
         {**e1["eval"]["generation"], "do_sample": True, "num_samples": samples}
+    if batch_size:
+        gen_cfg["batch_size"] = batch_size
     if backend is None:
         from physcal.eval.run_eval import HFBackend
 
@@ -310,7 +320,7 @@ def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settin
     rw_cfg["scoring"]["rule"] = e1["reward_rule"]
     out.mkdir(parents=True, exist_ok=True)
     gens = []
-    bs = e1["eval"]["generation"]["batch_size"]
+    bs = gen_cfg["batch_size"]
     if samples <= 0:
         for start in range(0, len(rows), bs):
             gens += [g[0] for g in backend._generate([r["prompt"] for r in rows[start:start + bs]], 1)]
@@ -323,7 +333,7 @@ def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settin
             gens += backend._generate([r["prompt"] for r in rows[start:start + per_batch]], samples)
     model_id = lora or str(REPO_ROOT / e1["model_id"])
     meta = {"env_config": env_config(), "reward_config": rw_cfg, "e1": e1, "e1_mode": mode,
-            "adapter": lora, "eval_tapes": e1["eval_tapes"], "loader": getattr(backend, "loader", loader),
+            "adapter": lora, "eval_tapes": source_tapes or e1["eval_tapes"], "loader": getattr(backend, "loader", loader),
             "loader_check": getattr(backend, "loader_check", None),
             "provenance": getattr(backend, "provenance", None)}  # R2-1 / D72
     if samples > 0:
@@ -339,6 +349,8 @@ def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settin
                 extra = {"split": r["split"], "n_tokens": g.n_tokens, "truncated": g.truncated, "e1_mode": mode,
                          "suffix": g.text, "sigma_used_rel": s["sigma_used_rel"], "mu_changed": s["mu_changed"]}
                 row = e1_row(r, s, rw_cfg["scoring"])
+                if r.get("source_sample") is not None:
+                    extra["source_sample"] = row["source_sample"] = r["source_sample"]
                 if samples > 0:
                     extra["sample"] = row["sample"] = j
                 tape.log(0, problem, s["full"], s["verifier_reward"], s["breakdown"], model_id,

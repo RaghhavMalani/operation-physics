@@ -1,0 +1,38 @@
+# X3 (DECISIONS.md D79, pre-registered): the distillation capacity pilot. Students are the RL runs' start (merged SFT,
+# 4-bit) with a fresh LoRA (the RL runs' settings), SFT on the sigma suffix only (mu and the reasoning are context).
+model_dir: results/sft/qwen2.5-math-1.5b-instruct/merged   # content hash 0b435c0ebaed36e2 (R2-1 provenance)
+loader_settings_from: grpo_overnight2   # max_seq_length / text_only / LoRA config of the RL runs (split / uniform)
+prompt: v4_worked_example
+chat_template_kwargs: {}
+a5_config: nested_baselines_4bit        # (a) teacher: the strongest 4-bit A5 sigma, out of fold (A5's own CV folds)
+oracle_floor: 1.0e-6                    # (b) control: sigma_log = max(|ln(mu / truth)|, floor) / sqrt(ln 2)
+sigma_format: ".2g"                     # the SFT data's sigma format
+target_check_rtol: 0.06                 # the verifier must read back each target's sigma_log within this (.2g rounds
+                                        # by <= 5%); larger misses are excluded and counted
+data_dir: results/x3/data
+arms: [a, b]
+train:                                  # configs/sft.yaml's optimizer settings; 2 epochs (D79)
+  epochs: 2
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4
+  lr_scheduler_type: constant_with_warmup
+  warmup_steps: 10
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optim: adamw_8bit
+  logging_steps: 10
+  seed: 0
+guards:
+  max_gpu_temp_c: 87
+  pause_seconds: 600
+  check_every_steps: 10
+eval:
+  eval_tape: results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare/sft_4bit/rollouts.jsonl
+  a5_sigma_tape: results/a5_baselines_4bit/sft_eval_a5_sigma.jsonl   # the teacher's sigma on the same 400 answers
+  batch_size: 32                        # sigma suffixes per generate call (24 new tokens; OOM backoff halves it)
+analysis:
+  bootstrap: 10000
+  seed: 0
+  rho_bar: 0.5                          # the synthesis's capacity bar (D79 reading rules)
+output_dir: results/x3
