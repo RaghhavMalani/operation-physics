@@ -2464,3 +2464,13 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **The rebuilt file:** its row masks match the config.
 - **Still open for Round 3 (D80):** uniform trained c, the supervised arm's token loss, n and the noise mix, and symbol
   names in the line.
+
+### D85. Draft prompt v5: the worked example shows a placeholder for c, not 90% (your decision, 2026-10-19)
+- **The change:** the example's last line is now `<confidence>c%</confidence>`, the same placeholder as the format
+  block. It was `<confidence>90%</confidence>` (D80).
+  - **Why:** a value in the example is a cue for c, as the old example's "about 1%" was for σ (Phase 3.5).
+- **Unchanged:** the rest of v5, and every other prompt. v1–v4's hashes are tested.
+- **Data:** no rebuild is needed; the prompt is applied at tokenization.
+- **Still a draft:** v5 is part of the Phase 12 pre-registration (Round 3).
+- **Test:** `tests/test_sft_phase12.py` checks that the example ends with the placeholder and that no c value appears
+  in the prompt.

@@ -88,7 +88,8 @@ SYSTEM_PROMPT_WORKED_EXAMPLE_NO_SIGMA_HINT = SYSTEM_PROMPT_WORKED_EXAMPLE.replac
 # Phase 12 DRAFT (D80, not yet pre-registered; [REVIEW]): the two-channel format of the round-2 synthesis. σ is the
 # aleatoric channel (the spread that the measurement uncertainties of the givens imply; 0 when every given is exact),
 # c the epistemic one (p in the synthesis: the probability that the calculation is right given the stated measurements), restricted to
-# discrete values. v4's worked example, with its answer in the new format (exact givens: σ = 0).
+# discrete values. v4's worked example, with its answer in the new format (exact givens: σ = 0) and the confidence
+# as the placeholder c% (D85).
 CONFIDENCE_BINS = (10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99)
 
 
@@ -112,7 +113,8 @@ for _old, _new in (
      + ", ".join(f"{b}%" for b in CONFIDENCE_BINS) + "."),
     ("- Write exactly one <answer> block, and nothing after it.",
      "- Write exactly one <answer> block, then exactly one <confidence> block, and nothing after it."),
-    ("<answer>0.02882 ± 0.0003 km</answer>", "<answer>0.02882 ± 0 km</answer>\n<confidence>90%</confidence>"),
+    # D85 (your decision): the example shows the placeholder, not a value, so it gives no cue for c
+    ("<answer>0.02882 ± 0.0003 km</answer>", "<answer>0.02882 ± 0 km</answer>\n<confidence>c%</confidence>"),
 ):
     SYSTEM_PROMPT_TWO_CHANNEL = _replace_once(SYSTEM_PROMPT_TWO_CHANNEL, _old, _new)
 

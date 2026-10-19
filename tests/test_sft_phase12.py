@@ -36,6 +36,8 @@ def test_existing_prompts_are_unchanged():
     assert h["v4_worked_example"] == "c73d5a99d2c7cf47" and h["v1"] == "3834502c46e5629c"
     v5 = SYSTEM_PROMPTS["v5_two_channel"]
     assert "<confidence>c%</confidence>" in v5 and "99%" in v5 and "nothing after it" in v5
+    assert v5.endswith("<answer>0.02882 ± 0 km</answer>\n<confidence>c%</confidence>")  # D85: a placeholder
+    assert "<confidence>9" not in v5 and v5.count("<confidence>c%</confidence>") == 2  # format block + example
 
 
 def test_answers_are_the_point_estimate_and_sigma_reads_back(made):
