@@ -37,6 +37,7 @@ results/queue_uniform_seeds/*.pid
 results/phase12_sft_data/*.jsonl
 results/x3/*/final_adapter/
 results/x3/*/checkpoints/
-results/x2/hidden/
+results/x2/hidden/**/*.npy
 results/x2/random_init_model/
 results/queue_x2_x3/*.pid
+results/pinned_base_smoke/adapter/

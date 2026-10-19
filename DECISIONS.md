@@ -2259,3 +2259,100 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - explicit-arm supervision (`train_line_numbers`) and symbol names;
   - whether the supervised arm's token loss is acceptable as the "log-scale" baseline;
   - n = 3,000 and the noise mix (25% exact problems).
+
+### D81. Tonight's GPU queue, 2026-10-19/20: X2, then the X3 pilot (prepared, NOT launched; `scripts/queue_x2_x3.sh`)
+- **Your instructions (2026-10-19):** prepare, do not launch.
+  - **X2 sampling** on all 1,200 candidates, at the largest batch that fits;
+  - **hidden-state extraction** for the X2 probe;
+  - **the X2 analysis** on CPU;
+  - **then the X3 distillation pilot,** only if ≥ 2 h remain;
+  - **deadline** 08:30 IST.
+- **Stages:**
+  1. **Batch-size probe** (`scripts/x2_batch_probe.py`).
+     - **The model:** X2's exact model and decoding.
+     - **The test:** the pool's longest prompts, every sequence forced to the full 512 new tokens (the worst case).
+     - **Choice:** candidate sizes 128 / 96 / 64 / 48 / 32 / 16 sequences per call, largest first; the first that runs
+       without OOM is the night's size.
+     - **Fallback:** D74's 16, if the probe fails.
+  2. **X2 sampling:** 6 chunks of 200 candidates in the frozen order. Each chunk is its own committed tape.
+     - **Start gate:** a chunk starts only if its worst-case time (the probe's, × 1.3) still leaves 1 h for the
+       downstream X2 stages.
+     - **If the night ends early,** the sampled prefix is used, as D74 allows (it is round-robin, so stratified).
+  3. **Selection** (CPU, seconds).
+  4. **Method 2:** split credit seed 0's σ suffixes on the kept answers.
+  5. **Hidden states:** SFT and random init × fit set and X2 answers.
+  6. **The X2 analysis** (CPU), in the background while the GPU goes on.
+  7. **The X3 pilot (D79),** if ≥ 2 h remain after stage 5.
+  8. **The D78 pinned-base GPU check** (about 2 min), if ≥ 10 min remain.
+- **Guards** (as every queue so far):
+  - every stage is a child waited on by PID;
+  - GPU > 87 °C before a stage → a 10-minute pause;
+  - commit + push after every stage, under a flock;
+  - a failed stage is logged BLOCKED, and the stages that do not depend on it go on;
+  - `HF_HUB_OFFLINE=1`.
+- **How this implements D74 (stated now, before any X2 sample exists):**
+  1. **Batch size:** the probe's choice replaces D74's 16, as you asked, and is recorded in every chunk's tape.
+     - **Effect:** a different batch draws different random numbers. Every size gives valid samples at the same
+       decoding.
+  2. **Chunks:** chunk i uses torch seed 0 + i (D74: seed 0); each chunk's call re-seeds.
+     - **The prefix check:** `x2_pairs.sampled_chunks` refuses chunks that are not a contiguous prefix of the pool.
+       `sampled_records` checks that the sampled seeds are the pool's first candidates.
+  3. **Memory cap:** the sampling run caps the allocator at 7.5 GiB, the training runs' value. Past it, torch raises
+     OOM; the eval's backoff then halves the batch and retries, instead of spilling into WSL shared memory, which
+     only slows. Backoffs are counted in the tape.
+  4. **Method 2 is in the queue** although your list did not name it. D74 makes it a primary method, and it costs
+     about 15 minutes.
+     - **The adapter:** `permanent_checkpoints/checkpoint-287`, the corrected eval's.
+     - **R2-1:** it was trained before D72 and has no fingerprint, so the check warns ("no_fingerprint") and does not
+       block (D77).
+  5. **Hidden states:**
+     - **The position:** the token containing the first character of the "±" in `<answer>`. Qwen's tokenizer merges
+       it with the preceding space (" ±"); checked on the calibration completions.
+     - **The SFT path:** the merged SFT dir loaded 4-bit by Unsloth.
+       - **A check on the first sequence:** lm_head of the last returned state, as returned or after the final norm,
+         must reproduce the model's own logits within 2% of the largest logit.
+       - **Otherwise:** D74's fallback, transformers + bitsandbytes with the same quantization config, recorded in
+         `info.json`.
+     - **The random-init control:** built today on CPU (seed 0, bf16, `results/x2/random_init_model`, content hash
+       `13ededef3f3acbd4`, not committed). It is loaded exactly the same way, so "the same extraction" includes the
+       4-bit quantization.
+  6. **Method 4's model:** D74 named A5's "problem" p model without its kind. It is `problem/gbt`, the lower CV Brier
+     of the two (0.1544 vs 0.1648, `results/a5_baselines_4bit/selection.json`).
+  7. **The probe:**
+     - **Inside the CV folds:** standardization is fitted on each training fold. The final scaler is fitted on the
+       whole fit set (D74).
+     - **Selection:** layer and C by CV AUROC; ties go to the earlier layer, then the smaller C.
+     - **The cross-fitted secondary:** inner CV (grouped by problem) chooses both layer and C from the same grid
+       (D74 named the layer only).
+  8. **Missing inputs:** a primary method whose inputs are missing counts as p = 1 in Holm (as E1's compare does),
+     so the correction is never weaker than pre-registered.
+  9. **Reading rules:** "every primary method fails" means methods 1, 2, 3 and 5 are all unsupported. Method 6 is the
+     control.
+- **The X3 pilot in the queue (D79):**
+  - **Student (a)'s cap:** (time left − 50 min for evals − 2 × 15 min slack) / 2. Two epochs (about 500 steps at
+    about 5.5 s/step, about 46 min) fit well inside it if X2 ends on time.
+  - **Student (b):** `--max-steps` = (a)'s completed steps.
+  - **Each student's evals:** the frozen sets and the X2 answers. The frozen sets give 399 prefixes: one of the 400
+    4-bit SFT answers has no "±", so that problem drops out of every arm alike.
+  - **The analysis** runs after the X2 analysis has finished.
+  - **R2-1 enforced (D77):** each student records a fingerprint, so a failing reload blocks its eval.
+- **Time budget (estimates; nothing here has run on the GPU):**
+  - **Fixed parts:** probe ≤ 10 min; downstream X2 about 45 min; X3 about 2 h.
+  - **Sampling:** about 3.3 h at batch 16 (D62/D65's 1.2 s per completion). With a larger batch it is shorter, by an
+    amount the probe will measure.
+  - **Launch time:** launched by about 23:00, everything fits.
+- **Checked on CPU:**
+  - `bash -n`; `DRY_RUN=1` prints the plan above.
+  - **New tests:**
+    - `tests/test_x2_night.py` (6): the chunk-prefix rules; the per-chunk sample config; the whole D74 analysis end to
+      end on synthetic chunks, suffixes and hidden states with the real 4-bit A5 models; missing inputs count as
+      p = 1; the reading rules; the hidden-state helpers on a tiny CPU model (positions, states, logit check).
+    - `tests/test_x3.py` (10).
+  - **Inputs present:** the X3 data and the random-init weights; the X3 eval rows build (399).
+- **Not checked: any GPU stage.** That covers:
+  - the probe;
+  - `min_new_tokens` under Unsloth's generate;
+  - Unsloth returning every layer's states;
+  - X3 training and its fingerprint;
+  - the D78 snapshot load.
+- **Launch command:** `nohup scripts/queue_x2_x3.sh > results/queue_x2_x3/nohup.log 2>&1 &`

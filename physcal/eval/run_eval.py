@@ -85,6 +85,7 @@ def load_frozen_split(split_cfg: dict, env_cfg: dict, limit: int | None = None) 
     if expected is not None and hashlib.sha256(blob.encode()).hexdigest() != expected:
         raise ValueError(f"{path}: checksum mismatch")
     dicts = [json.loads(line) for line in blob.splitlines() if line.strip()]
+    dicts = dicts[split_cfg.get("start", 0):]  # a chunk of the frozen order (X2 sampling, D81); default: all
     if limit is not None:
         dicts = dicts[:limit]
     version = generator_version(env_cfg)
@@ -241,6 +242,9 @@ class HFBackend:
         self.device = model_cfg.get("device", "cuda")  # "cpu" for CPU-only checks (tiny models)
         if self.device == "cuda":
             torch.cuda.reset_peak_memory_stats()
+            if model_cfg.get("max_reserved_gib"):  # D81: past the cap torch raises OOM (the backoff halves the batch)
+                total = torch.cuda.get_device_properties(0).total_memory  # instead of spilling into WSL shared memory
+                torch.cuda.set_per_process_memory_fraction(min(1.0, model_cfg["max_reserved_gib"] * 1024**3 / total))
         pin_cfg = None
         if model_cfg.get("pinned_base"):  # D78: Phase 12 evals run on the pinned snapshot dir, with or without adapter
             from physcal.base import base_config, check_model_source

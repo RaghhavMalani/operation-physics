@@ -607,3 +607,30 @@ Progress:
   steps move all 392 LoRA tensors.
 - [ ] **Next:** the X2 GPU parts; Phase 12 SFT/RL code per D70 (pin the base revision); your call on the R2-1 effect
   floor and on enforcement.
+
+## 2026-10-19 day: decisions on the morning report (D77, D78), X3 and Phase 12 prep, tonight's queue (CPU only)
+
+- [x] **Full test suite first:** 405 / 405 passed, nothing to fix (one third-party DeprecationWarning, torchao).
+- [x] **D77 (R2-1):**
+  - **Below the 0.005 log-prob floor the σ-token criterion decides.** The rule travels with each new fingerprint, so
+    it is not retroactive: seed 1 stays "inconclusive".
+  - **`enforce: true`:** a fail or an error in the check blocks the eval; "inconclusive" and "no_fingerprint" warn.
+- [x] **FINDINGS #16:** the re-fitted post-hoc row (c = 22.1: 1σ / 2σ 36.0 / 43.5%, median σ 1.40%, crps_log −0.328)
+  next to the ×18.1 row.
+- [x] **FINDINGS #4 / #5:** the R2-2 pointers (the SFT numbers describe an SFT attenuated by the bf16 merge).
+- [x] **D78:** the Phase 12 base is pinned.
+  - **Base:** `unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit@e24e953`, weights hash `9939448b3a0fbe45`.
+  - **How:** loaders get the snapshot dir, checked before and after every load (SFT, GRPO, eval). Tests run on CPU;
+    the GPU check is tonight's last stage.
+- [x] **X3:** pre-registered (D79) before any X3 data.
+  - **The out-of-fold A5 teacher σ** reproduces A5's CV metrics exactly. The true-error-label control (the per-answer
+    CRPS-optimal σ) is built too: 1,998 rows, every target read back by the verifier.
+  - **Also built:** student SFT, eval and analysis code, with tests.
+- [x] **Phase 12 SFT data (D80, prep, not pre-registered):** 3,000 generator-2.0.0 problems × 3 arms (implicit /
+  explicit propagation line / supervised σ\*), a `<confidence>` block in discrete bins, and a draft prompt v5. Several
+  [REVIEW] items.
+- [x] **Tonight's queue (D81):** prepared, dry-run, NOT launched (`scripts/queue_x2_x3.sh`).
+  - **Order:** batch probe → X2 sampling in 6 chunks → selection → split-credit σ suffixes → hidden states → X2
+    analysis (CPU) → X3 pilot if ≥ 2 h remain → D78 GPU check.
+- [ ] **Next:** launch the queue; then the Phase 12 pre-registration after X2 reports (it needs your [REVIEW] calls in
+  D80).

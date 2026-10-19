@@ -15,8 +15,36 @@ sampling:                              # GPU, a later night: the corrected SFT m
   top_p: 1.0
   top_k: 0
   max_new_tokens: 512
-  seed: 0
-  batch_size: 16                       # sequences per generate call (2 problems x 8)
+  seed: 0                              # chunk i uses torch seed seed + i (D81)
+  batch_size: 16                       # sequences per generate call (2 problems x 8). D81: overridden by the largest
+                                       # batch the night's probe finds (scripts/x2_batch_probe.py), recorded in each tape
+  chunk_size: 200                      # D81: candidates per chunk (each chunk is its own tape, committed; the chunks
+                                       # form a prefix of the frozen order, so a partial night is still stratified)
+  max_reserved_gib: 7.5                # D81: allocator cap (the training runs' value): past it torch raises OOM, which
+                                       # the eval's backoff handles, instead of spilling into WSL shared memory
+  output_dir: results/x2/sft_k8        # chunk_<start>/ per chunk
+batch_probe:                           # D81: the largest batch (sequences per call, a multiple of k) that fits
+  candidates: [128, 96, 64, 48, 32, 16]
+  min_new_tokens: 512                  # every sequence forced to the full budget: the worst case
+  output: results/x2/batch_probe.json
+suffix:                                # method 2 (D74): split credit's greedy sigma suffix on each kept answer
+  run: results/train/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed0
+  adapter: permanent_checkpoints/checkpoint-287   # the corrected eval's adapter (FINDINGS #16)
+  batch_size: 32
+  output_dir: results/x2/split_seed0_suffix
+hidden:                                # methods 5 / 6 (D74): hidden state at the first token of "±" in <answer>
+  fit_tapes:                           # D69's 4-bit SFT greedy calibration completions (seeds 2e7..2e7+1999)
+    - results/posthoc_calibration_4bit/sft_calibration_set/rollouts.jsonl
+    - results/posthoc_calibration_4bit/sft_calibration_ext/rollouts.jsonl
+  model_dir: results/sft/qwen2.5-math-1.5b-instruct/merged   # the corrected SFT model: this dir, 4-bit at load
+  random_init_dir: results/x2/random_init_model   # same architecture, random weights (seed 0), loaded the same way
+  random_init_seed: 0
+  max_seq_length: 2048
+  batch_size: 8                        # sequences per forward (every layer's states are returned)
+  logit_check_rtol: 0.02               # Unsloth-path check on the first batch: lm_head(last state) (with or without
+                                       # the final norm) vs the model's own logits at the position, max |diff| / max
+                                       # |logit| (bf16 logits); a larger gap -> transformers + bitsandbytes (D74)
+  output_dir: results/x2/hidden
 selection:
   tolerance: 0.01                      # correct = |relative error| <= 1% (the verifier's binary tolerance)
   min_correct: 1                       # a problem is kept iff >= 1 correct and >= 1 incorrect parsed answer
@@ -26,4 +54,11 @@ analysis:
   bootstrap: 10000                     # over problems
   seed: 0
   alpha: 0.05                          # Holm over the primary methods (D74)
+  a5_config: nested_baselines_4bit     # D69: the A5 re-fitted on 4-bit SFT completions
+  problem_only_p: problem/gbt          # method 4: A5's "problem" p model (the lower CV Brier of problem/linear, /gbt)
+  probe:                               # methods 5 / 6 and the cross-fitted secondary (D74)
+    C: [0.001, 0.01, 0.1, 1.0]         # probe_sft.yaml's logistic grid
+    folds: 5                           # grouped by template (fit set) / by problem (cross-fitted)
+    max_iter: 2000
+    n_jobs: 4
 output_dir: results/x2

@@ -1,8 +1,14 @@
 """X2 (D74): within-problem correctness pairs, the decisive test of answer-specific confidence.
 
     uv run python -m physcal.eval.x2_pairs build            # CPU: freeze the candidate pool (done 2026-10-18)
-    uv run python -m physcal.eval.x2_pairs sample [--limit N]  # GPU (a later night): k = 8 SFT samples per candidate
-    uv run python -m physcal.eval.x2_pairs select <tape>    # CPU: the mixed problems, from the k = 8 sampled tape
+    uv run python -m physcal.eval.x2_pairs sample --start S --count N [--batch-size B] [--chunk I]   # GPU (D81)
+    uv run python -m physcal.eval.x2_pairs select           # CPU: the mixed problems, from the sampled chunks
+    uv run python -m physcal.eval.x2_pairs suffix [--batch-size B]   # GPU: method 2, split credit's σ suffixes
+    uv run python -m physcal.eval.x2_analysis analyze       # CPU: the D74 analysis (physcal/eval/x2_analysis.py)
+
+Sampling runs in chunks of the frozen order (D81): chunk i covers candidates [start, start + count) with torch seed
+seed + i and is its own tape (`<sampling.output_dir>/chunk_<start>/`). The chunks present must form a prefix of the
+pool (checked), so a night that ends early still yields a round-robin-stratified prefix (D74).
 
 A candidate problem is kept iff the k sampled answers of the corrected SFT model include at least one correct
 (|relative error| <= 1%) and at least one incorrect parsed answer (parse failures and unit mismatches are not
@@ -50,22 +56,114 @@ def build() -> dict:
     return manifest
 
 
-def sample_config() -> dict:
+def sample_config(start: int = 0, batch_size: int | None = None, chunk: int = 0) -> dict:
     """The k = 8 sampled eval of the corrected SFT model on the frozen pool (D74): D67's SFT control (merged SFT, 4-bit,
-    no adapter; loader settings from the uniform-credit run, as posthoc.refit_4bit) at the training decoding."""
+    no adapter; loader settings from the uniform-credit run, as posthoc.refit_4bit) at the training decoding. D81: one
+    chunk of the frozen order from `start`, torch seed + `chunk`, the night's batch size, the allocator cap."""
     from physcal.train.compare import eval_config
 
     cfg, ph = _config(), load_config("posthoc")
     s = cfg["sampling"]
     ev = eval_config("sft", ph["label"], s["max_new_tokens"], REPO_ROOT / ph["refit_4bit"]["settings_run"],
                      REPO_ROOT / "results" / "sft" / ph["label"] / "merged", samples=s["k"], loader="unsloth_4bit")
-    ev["generation"].update(temperature=s["temperature"], top_p=s["top_p"], top_k=s["top_k"], seed=s["seed"],
-                            batch_size=s["batch_size"], max_new_tokens=s["max_new_tokens"])
+    bs = batch_size or s["batch_size"]
+    if bs % s["k"]:
+        raise ValueError(f"batch size {bs} is not a multiple of k = {s['k']}")
+    ev["generation"].update(temperature=s["temperature"], top_p=s["top_p"], top_k=s["top_k"], seed=s["seed"] + chunk,
+                            batch_size=bs, max_new_tokens=s["max_new_tokens"])
+    ev["model"]["max_reserved_gib"] = s["max_reserved_gib"]
     ev["env_config"] = cfg["env_config"]
-    ev["splits"] = {"x2": {"file": cfg["candidates"]["file"], "verify_regenerate": -1}}
-    ev["output_dir"] = str(REPO_ROOT / cfg["output_dir"] / "sft_k8")
-    ev["run_id"] = "x2-sft-4bit-k8"
+    ev["splits"] = {"x2": {"file": cfg["candidates"]["file"], "verify_regenerate": -1, "start": start}}
+    ev["output_dir"] = str(chunk_dir(start))
+    ev["run_id"] = f"x2-sft-4bit-k8-chunk{chunk}"
     return ev
+
+
+def chunk_dir(start: int) -> Path:
+    return REPO_ROOT / _config()["sampling"]["output_dir"] / f"chunk_{start:05d}"
+
+
+def sampled_chunks(cfg: dict | None = None) -> list[tuple[int, Path]]:
+    """(start, tape) of every finished chunk, in order; raises unless they form a prefix of the pool, each chunk
+    complete (k rows per candidate, consecutive candidates)."""
+    from physcal.tape.tape import read_meta
+
+    cfg = cfg or _config()
+    root = REPO_ROOT / cfg["sampling"]["output_dir"]
+    out, expect = [], 0
+    for d in sorted(root.glob("chunk_*")):
+        tape = d / "rollouts.jsonl"
+        if not tape.exists():
+            continue
+        start = int(d.name.split("_")[1])
+        if start != expect:
+            raise ValueError(f"X2 chunks are not a prefix of the pool: {d.name} starts at {start}, expected {expect}")
+        n = sum(1 for _ in tape.open())
+        k = read_meta(tape)["generation"]["num_samples"]
+        if n % k:
+            raise ValueError(f"{tape}: {n} rows is not a multiple of k = {k}")
+        out.append((start, tape))
+        expect = start + n // k
+    return out
+
+
+def sampled_records(cfg: dict | None = None) -> tuple[list[dict], int]:
+    """Every sampled record of the chunk prefix, in pool order, and the number of candidates sampled. The records'
+    seeds must be exactly the pool's first candidates (checked)."""
+    from physcal.tape.tape import read_tape
+
+    cfg = cfg or _config()
+    recs = [r for _, tape in sampled_chunks(cfg) for r in read_tape(tape)]
+    pool = [json.loads(line)["seed"] for line in (REPO_ROOT / cfg["candidates"]["file"]).open()]
+    seeds = list(dict.fromkeys(r["problem"]["seed"] for r in recs))
+    if sorted(seeds) != sorted(pool[:len(seeds)]):
+        raise ValueError("the sampled problems are not the pool's first candidates")
+    return recs, len(seeds)
+
+
+def kept_groups(cfg: dict | None = None) -> tuple[dict, list]:
+    """(groups, kept keys) of the sampled prefix; must agree with selected.json when that exists."""
+    cfg = cfg or _config()
+    recs, _ = sampled_records(cfg)
+    g = group(recs, cfg)
+    keys = select(g, cfg)
+    sel = REPO_ROOT / cfg["output_dir"] / "selected.json"
+    if sel.exists() and [list(k) for k in keys] != json.loads(sel.read_text())["keys"]:
+        raise ValueError("the kept problems differ from selected.json")
+    return g, keys
+
+
+def kept_records(cfg: dict | None = None) -> tuple[list[dict], str]:
+    """Every sampled record (answered or not) of the kept problems, and a description of the source tapes."""
+    cfg = cfg or _config()
+    recs, n = sampled_records(cfg)
+    g = group(recs, cfg)
+    kept = set(select(g, cfg))
+    keep = [r for r in recs if (r["problem"]["family"], r["problem"]["depth"], r["problem"]["seed"]) in kept]
+    return keep, f"{cfg['sampling']['output_dir']}/chunk_* ({n} candidates)"
+
+
+def suffix(batch_size: int | None = None, backend=None) -> dict:
+    """Method 2 (D74): each kept answer truncated after "±"; split credit seed 0 @287 (corrected loader, unmerged)
+    writes a greedy σ suffix (E1's eval machinery). Rows carry (key, source_sample)."""
+    from transformers import AutoTokenizer
+
+    from physcal.tape.tape import read_meta
+    from physcal.train import e1
+
+    cfg = _config()
+    sc = cfg["suffix"]
+    run = REPO_ROOT / sc["run"]
+    e1cfg = e1._config()
+    tok = AutoTokenizer.from_pretrained(str(REPO_ROOT / e1cfg["model_id"]))
+    recs, source = kept_records(cfg)
+    rows, excluded = e1.rows_from_records(recs, tok, e1cfg["prompt"], e1cfg.get("chat_template_kwargs", {}))
+    model = read_meta(run / "rollouts.jsonl")["train_config"]["model"]
+    out = REPO_ROOT / sc["output_dir"]
+    res = e1._evaluate(out, "x2-split-seed0-287-suffix", "free", str(run / sc["adapter"]), model, backend, 0,
+                       "unsloth_4bit", rows=rows, source_tapes=[source], batch_size=batch_size or sc["batch_size"])
+    (out / "excluded.json").write_text(json.dumps(excluded))
+    return {**res, "excluded": excluded}
 
 
 def answer(b: dict, tolerance: float, floor: float) -> dict | None:
@@ -125,9 +223,11 @@ def stated_sigma_conf(key, a):
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("action", choices=["build", "sample", "select"])
-    ap.add_argument("tape", nargs="?")
-    ap.add_argument("--limit", type=int, default=None, help="sample: the first N candidates (a smoke test)")
+    ap.add_argument("action", choices=["build", "sample", "select", "suffix"])
+    ap.add_argument("--start", type=int, default=0, help="sample: first candidate of the chunk")
+    ap.add_argument("--count", type=int, default=None, help="sample: candidates in the chunk")
+    ap.add_argument("--chunk", type=int, default=0, help="sample: chunk index (torch seed = seed + chunk)")
+    ap.add_argument("--batch-size", type=int, default=None, help="sample / suffix: sequences per generate call")
     args = ap.parse_args()
     if args.action == "build":
         print(json.dumps(build(), indent=1))
@@ -135,18 +235,24 @@ def main() -> None:
     if args.action == "sample":
         from physcal.eval.run_eval import run
 
-        run(sample_config(), limit=args.limit)
+        run(sample_config(args.start, args.batch_size, args.chunk), limit=args.count)
         return
-    from physcal.tape.tape import read_tape
-
+    if args.action == "suffix":
+        print(json.dumps(suffix(args.batch_size), indent=1))
+        return
     cfg = _config()
-    g = group(list(read_tape(Path(args.tape))), cfg)
+    recs, n = sampled_records(cfg)
+    g = group(recs, cfg)
     keys = select(g, cfg)
     out = REPO_ROOT / cfg["output_dir"]
     out.mkdir(parents=True, exist_ok=True)
-    (out / "selected.json").write_text(json.dumps({"tape": args.tape, "n_candidates_sampled": len(g),
-                                                   "n_selected": len(keys), "keys": keys}, indent=1))
-    print(f"{len(keys)} of {len(g)} sampled candidates have mixed outcomes")
+    counts = [sum(a["correct"] for a in g[k]) for k in keys]
+    (out / "selected.json").write_text(json.dumps({
+        "chunks": [str(t.relative_to(REPO_ROOT)) for _, t in sampled_chunks(cfg)], "n_candidates_sampled": n,
+        "n_selected": len(keys), "n_pairs": int(sum(c * (len(g[k]) - c) for c, k in zip(counts, keys))),
+        "correct_count_distribution": {str(c): counts.count(c) for c in sorted(set(counts))},
+        "keys": [list(k) for k in keys]}, indent=1))
+    print(f"{len(keys)} of {n} sampled candidates have mixed outcomes")
 
 
 if __name__ == "__main__":
