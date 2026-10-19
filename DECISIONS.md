@@ -2474,3 +2474,30 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Still a draft:** v5 is part of the Phase 12 pre-registration (Round 3).
 - **Test:** `tests/test_sft_phase12.py` checks that the example ends with the placeholder and that no c value appears
   in the prompt.
+
+## Night of 2026-10-19/20 (unattended; your instructions at launch, ~23:05 IST)
+
+### D86. Launch checks after the WSL restart; X2's allocator cap lowered to 5.75 GiB (decided at launch)
+- **Your instructions:**
+  - **Before launch** (WSL needed a service restart tonight after a disk access error): check that git status is clean,
+    local matches origin/main, and there is no stale `.git/index.lock`.
+  - **Then launch** `scripts/queue_x2_x3.sh`. The time gates decide what fits.
+  - **Usual rules:** a failed stage is logged BLOCKED, and the next independent stage goes on; PID watchers; 87 °C → a
+    10-minute pause; GPU done by 08:30 IST; commit + push after every stage; MORNING.md at the end.
+- **Checks (23:04 IST): all passed.**
+  - **Git:** clean, apart from the long-untracked `PHASES_10-15.md`; HEAD = origin/main = `971ffc4`; no
+    `.git/index.lock`; `git fsck` reports nothing. `.git/queue-commit.lock` is the queue's flock target, an empty
+    file that holds no lock.
+  - **Tonight's local, untracked inputs:** intact. Content hashes: random-init `13ededef3f3acbd4`, merged SFT
+    `0b435c0ebaed36e2`, pinned snapshot `9939448b3a0fbe45`. The X3 rows equal the committed file.
+  - **Disk:** 913 GB free.
+- **One change, to `configs/x2.yaml` only: `sampling.max_reserved_gib` 7.5 → 5.75.** The queue script is unchanged.
+  - **What happened:** a host-side (Windows) process holds about 1.65 GB of VRAM, steady over three readings; this
+    morning it was 0.34 GB. WSL cannot see the process.
+  - **Why it matters:** D81's cap exists so that an oversized batch raises OOM, which the backoff halves, instead of
+    spilling into WSL shared memory, which is only slow. With 6.3 GiB physically free, a 7.5 GiB cap would allow the
+    spill. The batch probe could then pick a batch that only "fits" by spilling.
+  - **The new value:** 8.0 − 1.65 − a 0.5 GiB margin, rounded down.
+  - **Effect:** the probe and the sampling run see the same cap. The likely choice falls to 32; batch 16 peaked at
+    3.5 GiB reserved on earlier nights.
+  - **Not affected:** the other stages (suffixes, extraction, X3 SFT) need far less memory and set no cap.

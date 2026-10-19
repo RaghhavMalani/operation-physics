@@ -20,8 +20,9 @@ sampling:                              # GPU, a later night: the corrected SFT m
                                        # batch the night's probe finds (scripts/x2_batch_probe.py), recorded in each tape
   chunk_size: 200                      # D81: candidates per chunk (each chunk is its own tape, committed; the chunks
                                        # form a prefix of the frozen order, so a partial night is still stratified)
-  max_reserved_gib: 7.5                # D81: allocator cap (the training runs' value): past it torch raises OOM, which
-                                       # the eval's backoff handles, instead of spilling into WSL shared memory
+  max_reserved_gib: 5.75               # D81: allocator cap: past it torch raises OOM, which the eval's backoff handles,
+                                       # instead of spilling into WSL shared memory. D86 (launch, 2026-10-19 23:06): 7.5 ->
+                                       # 5.75, because a host process holds ~1.65 GB of VRAM tonight (8.0 - 1.65 - 0.5 margin)
   output_dir: results/x2/sft_k8        # chunk_<start>/ per chunk
 batch_probe:                           # D81: the largest batch (sequences per call, a multiple of k) that fits
   candidates: [128, 96, 64, 48, 32, 16]
