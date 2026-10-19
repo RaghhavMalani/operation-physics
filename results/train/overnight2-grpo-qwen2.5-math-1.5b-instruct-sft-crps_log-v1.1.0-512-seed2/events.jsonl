@@ -1,0 +1,1 @@
+{"event": "fingerprint", "time": 1792370462.5517478, "status": "recorded", "file": "/home/flash2404/operation-physics/results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2/final_adapter/physcal_fingerprint.json", "adapter_effect": {"mean_abs_dlogp": 0.007569211369009465, "mean_sigma_tv": 0.05065990142139909}, "seconds": 79.94766163825989}

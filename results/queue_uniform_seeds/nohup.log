@@ -19,3 +19,7 @@
 [02:54:23] end uniform1_eval287: exit 0
 SANITY PASS: {"training_exit_code": 0, "eval": "rl287_4bit", "checks": {"no_oom": true, "reached_step": true, "parse_fail_below_5pct": true}, "peak_reserved_gib": 7.42578125, "num_ooms": 0, "eval_parse_fail_rate": 0.005, "sane": true}
 R2-1 fingerprint check: inconclusive {"logprob": 0.0, "sigma_token": 0.0, "sigma_samples": 0.0, "provenance": true}
+[02:54:26] commit 'Uniform-credit seed 1: corrected step-287 eval (4-bit, unmerged, greedy; R2-1 check), sanity': pushed
+[02:54:26] GPU at 62C
+[02:54:26] start uniform2_train (timeout 19534s): uv run python -m physcal.train.grpo --config grpo_overnight2_seed2 --max-steps 287 --stop-at 2026-10-19T08:00:00+05:30
+[06:11:04] end uniform2_train: exit 0
