@@ -127,7 +127,8 @@ def score_suffix(problem, prefix: str, suffix: str, orig_mu: float, rw_cfg: dict
     full = prefix + suffix
     r, bd = reward(problem, full, rw_cfg)
     ok = bd["reason"] == "ok"
-    mu_changed = ok and abs(bd["mu_si"] / orig_mu - 1.0) > load_config("e1")["mu_changed_rtol"]
+    rtol = load_config("e1")["mu_changed_rtol"]  # D88: an answer of μ = 0 (X2's samples have one) compares directly
+    mu_changed = ok and (bd["mu_si"] != 0.0 if orig_mu == 0 else abs(bd["mu_si"] / orig_mu - 1.0) > rtol)
     rel = bd["sigma_si"] / abs(bd["mu_si"]) if ok and bd["mu_si"] else None
     out = {"full": full, "verifier_reward": r, "breakdown": bd, "ok": ok, "mu_changed": bool(mu_changed),
            "rel_sigma": rel, "train_reward": r, "sigma_used_rel": rel, "score_final_used": bd["score_final"]}
@@ -370,7 +371,7 @@ def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settin
 def e1_row(r: dict, s: dict, sc: dict) -> dict:
     """Per-problem outcome of an E1 σ: failures (parse, units, μ changed) score the floor and are not covered."""
     bd = s["breakdown"]
-    fail = (not s["ok"]) or s["mu_changed"]
+    fail = (not s["ok"]) or s["mu_changed"] or s["sigma_used_rel"] is None  # D88: μ = 0 has no relative σ
     sig = None if fail else s["sigma_used_rel"] * abs(bd["mu_si"])
     err = None if fail else abs(bd["mu_si"] - bd["truth_si"])
     return {"key": r["key"], "split": r["split"], "fail": fail, "reason": bd["reason"], "mu_changed": s["mu_changed"],

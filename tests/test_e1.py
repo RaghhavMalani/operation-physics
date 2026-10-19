@@ -160,3 +160,22 @@ def test_sampled_eval_logs_k_rows_per_prefix_and_replays(tmp_path, monkeypatch):
     for i, g in enumerate(greedy):
         assert all({k: v for k, v in s.items() if k != "sample"} == g for s in sampled[3 * i:3 * i + 3])
     assert replay(run / "e1_eval" / "sampled" / "rollouts.jsonl").ok
+
+
+def test_a_zero_answer_is_scored_as_a_failed_suffix_not_a_crash():
+    """D88: an X2 sample answered μ = 0; the μ-changed check divided by it. Now: no crash, the suffix fails (no
+    relative σ exists for μ = 0), and a moved μ is still caught."""
+    from physcal.env.generator import generate_problem
+    from physcal.train.e1 import e1_row, score_suffix
+    from physcal.verify.reward import reward_config
+
+    p = generate_problem("kinematics", 1, 10_000_321, split="train")
+    prefix = f"x\n<steps>\n</steps>\n<answer>0 ±"
+    cfg = reward_config()
+    s = score_suffix(p, prefix, f" 0.1 {p.target_unit}</answer>", 0.0, cfg, "free", [0.01])
+    assert s["ok"] and not s["mu_changed"] and s["sigma_used_rel"] is None
+    row = e1_row({"key": ["kinematics", 1, 10_000_321], "split": "x2"}, s, cfg["scoring"])
+    assert row["fail"] and row["rel_sigma_used"] is None and row["abs_log_error"] is None
+    moved = score_suffix(p, "x\n<steps>\n</steps>\n<answer>2 ±", f" 0.1 {p.target_unit}</answer>", 0.0, cfg, "free",
+                         [0.01])
+    assert moved["mu_changed"]

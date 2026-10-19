@@ -2532,3 +2532,20 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     (`python -m physcal.eval.x2_pairs suffix`, about 15 min expected), then rerun the X2 analysis.
   - **The queue's own X2 analysis** runs without method 2 and is superseded by the rerun. Both are committed. The
     rerun is the complete D74 analysis; Holm's family size does not depend on it.
+
+### D88. Student (a)'s X2-answer eval crashed on an answer of μ = 0 (BLOCKED); fixed before student (b)'s
+- **What happened:** `x3_eval_a_x2` generated all 4,116 σ suffixes in about 18 min (D87's fix works: no OOM backoff),
+  then crashed while scoring with a `ZeroDivisionError` (exit 1, logged BLOCKED).
+  - **The cause:** E1's μ-changed check divides by the original μ, and one of the 4,116 kept X2 answers states
+    μ = 0. Six others are negative; those already passed through safely.
+  - **Why it was never hit before:** E1's prefixes (SFT greedy answers) never contained μ = 0.
+  - **Effect:** the generated texts were lost; the stage must be rerun.
+- **Fix (`physcal/train/e1.py`; it changes nothing for any existing E1 row, which never had μ = 0):**
+  - **The μ-changed check:** when the original μ is 0, it compares directly (a suffix that moves μ is still caught).
+  - **The row:** a suffix with no relative σ (μ = 0) is a failed suffix, so a tie in X2's pairwise accuracy, as D74
+    treats an unusable suffix.
+  - **Test:** `tests/test_e1.py`.
+  - **In time for the rest of the queue:** applied while student (b) trains, so its X2 eval, the method-2 rerun
+    (D87) and student (a)'s rerun all use it.
+- **Plan:** after the queue's GPU stages, rerun `x3 eval --arm a --set x2` (about 18 min), then `x3 analyze`. The
+  queue's own X3 analysis lacks (a)'s X2 numbers and is superseded.
