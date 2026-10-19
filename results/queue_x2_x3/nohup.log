@@ -19,3 +19,7 @@
 [00:09:49] GPU at 62C
 [00:09:49] start x2_sample_chunk3 (timeout 6837s): uv run python -m physcal.eval.x2_pairs sample --start 600 --count 200 --batch-size 32 --chunk 3
 [00:30:37] end x2_sample_chunk3: exit 0
+[00:30:40] commit 'X2 (D74/D81): k=8 samples of the corrected SFT model, candidates 600-799 (chunk 3, batch 32)': pushed
+[00:30:40] GPU at 62C
+[00:30:40] start x2_sample_chunk4 (timeout 6837s): uv run python -m physcal.eval.x2_pairs sample --start 800 --count 200 --batch-size 32 --chunk 4
+[00:50:57] end x2_sample_chunk4: exit 0
