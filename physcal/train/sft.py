@@ -41,11 +41,16 @@ def main() -> None:
 
     from physcal.eval.run_eval import GpuMemoryPoller
 
+    from physcal.base import assert_loaded_base, base_config, resolve_model
+
+    model_name, revision, pin = resolve_model(m)  # D78: Phase 12 loads the pinned snapshot dir, never a hub name
     torch.cuda.reset_peak_memory_stats()
     model, tok = FastLanguageModel.from_pretrained(
-        model_name=m["id"], revision=m["revision"], max_seq_length=m["max_seq_length"], load_in_4bit=True,
+        model_name=model_name, revision=revision, max_seq_length=m["max_seq_length"], load_in_4bit=True,
         fast_inference=False, dtype=None, text_only=m["text_only"],
     )
+    if pin:
+        assert_loaded_base(model, base_config(pin["config"]))
     model = FastLanguageModel.get_peft_model(
         model, r=lora["r"], lora_alpha=lora["alpha"], lora_dropout=lora["dropout"],
         target_modules=lora["target_modules"], use_gradient_checkpointing="unsloth", random_state=cfg["seed"],
@@ -94,7 +99,7 @@ def main() -> None:
     gib = 1024**3
     steps = trainer.state.global_step
     summary = {
-        "model": args.model, "id": m["id"], "revision": m["revision"], "steps": steps,
+        "model": args.model, "id": model_name, "revision": revision, "pinned_base": pin, "steps": steps,
         "examples_seen": steps * t["per_device_train_batch_size"] * t["gradient_accumulation_steps"],
         "seconds": seconds, "seconds_per_step": seconds / max(1, steps),
         "peak_vram": {"torch_max_allocated_gib": torch.cuda.max_memory_allocated() / gib,

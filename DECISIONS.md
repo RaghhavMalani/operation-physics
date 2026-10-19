@@ -2050,3 +2050,47 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     and fails under D72. A zero σ-token effect gives "inconclusive". A provenance mismatch still fails below the
     floor. An unknown rule raises.
   - **Enforcement:** enforced "fail" raises; "no_fingerprint" warns. 25 / 25 fingerprint and eval-loader tests pass.
+
+### D78. The 4-bit base is pinned explicitly for all Phase 12 work (your decision, 2026-10-19; D70's proposal)
+- **Origin:** D70's two findings.
+  - **An adapter load does not pin the base revision:** Unsloth loads a PEFT adapter's base with `revision=None`,
+    i.e. whatever `main` is.
+  - **A hub-name load can drop the revision:** the existing SFT adapter asked for `Qwen/…@aafeb0f` but was trained
+    on Unsloth's mirror, because Unsloth remapped the name and logged "Ignoring revision".
+  - **Not affected:** existing results. Every existing RL run starts from the local merged SFT dir, which R2-1's
+    provenance pins by content hash.
+- **The pin (`configs/base_4bit.yaml`):**
+  - **Base:** `unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit` at commit `e24e9530845f4e3a6648343796883cb509935039`.
+    This is the only snapshot in the repo-local cache, and the one the existing SFT adapter was trained on (D70).
+  - **Content hash:** `9939448b3a0fbe45`. This is `fingerprint._dir_content_hash` of the snapshot's weights, so it
+    equals R2-1's `base_identity` in every Phase 12 eval tape.
+  - **Quantization:** nf4, double quant, bf16 compute (the snapshot's own config.json).
+- **How it is enforced (`physcal/base.py`):** no loader ever receives a hub name. A loader gets the **local
+  snapshot dir** of the pinned commit, named repo-relative, the same convention every RL adapter uses for its base.
+  - **Resolving:** `pinned_base_dir` resolves (repo, commit) with `huggingface_hub.snapshot_download`, offline by
+    default. A missing snapshot raises; it never falls back to `main`.
+  - **Before any load:** `verify_base_dir` checks the commit and the weights hash. `check_model_source` checks the
+    base dir, or an adapter's `base_model_name_or_path`, against the pinned dir.
+  - **After every load:** `assert_loaded_base` checks the loaded model's `_name_or_path`, or a PEFT model's base's.
+- **Where it applies:** a model entry with `pinned_base: base_4bit`, which every Phase 12 config will carry.
+  - **SFT** (`physcal.train.sft`): `id` absent means the pinned base itself. The saved SFT adapter then names the
+    pinned dir as its base.
+  - **RL** (`physcal.train.grpo`): `id` is the SFT adapter dir, which must name the pinned dir (D70: RL continues
+    that adapter). The R2-1 fingerprint records the *base* dir's identity, not the adapter's weights.
+  - **Eval** (`run_eval.HFBackend`): `id` must be the pinned dir, and any adapter must name it. Checked before
+    loading, and again after. The verified record goes into the tape's provenance (`pinned_base`).
+  - **A `revision` next to `pinned_base` is an error:** the pinned config is the only place a commit is written.
+  - **Entries without `pinned_base`:** unchanged, so every existing config and run behaves exactly as before. The
+    GRPO tape meta gains the key only when it is set, so a pre-D78 run's resume digest (D66) is unchanged.
+- **Not Phase 12 (noted for consistency): X3's students (D79)** train on the RL runs' base, the local merged SFT dir,
+  which is pinned by its content hash `0b435c0ebaed36e2` through R2-1 provenance, as in every existing run.
+- **Tests (`tests/test_base_pin.py`, CPU, a fake hub cache):**
+  - **Resolution and integrity:** the pinned dir is the commit's snapshot; tampered weights and a non-snapshot dir
+    are refused; an uncached commit raises instead of resolving `main`.
+  - **Adapters:** an adapter naming the pinned dir passes; one naming the hub name or another dir is refused.
+  - **`resolve_model`:** legacy entries unchanged; `pinned_base` + `revision` refused.
+  - **After loading:** the loaded-base assertion works for a plain model and a PEFT-like model.
+  - **The eval backend** refuses an adapter on another base before loading anything.
+  - **The real pin** matches the cached snapshot.
+- **Not tested: the GPU path** (Unsloth loading a pre-quantized snapshot from a local dir, then saving and reloading
+  an adapter that names it). Tonight's queue ends with a 2-minute GPU check of exactly that, when time allows (D81).

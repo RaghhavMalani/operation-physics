@@ -487,8 +487,16 @@ def setup_trainer(cfg: dict, run_id: str, out: Path, model, tok, steps: int, dea
                for p in problems]
     ds = Dataset.from_dict({"prompt": prompts, "problem_json": [json.dumps(p.to_dict()) for p in problems]})
 
-    meta = {"env_config": env_cfg, "reward_config": rw_cfg, "train_config": cfg, "model_id": m["id"],
-            "model_revision": m["revision"], "prompt_id": cfg["prompt"]}
+    if m.get("id"):
+        model_id = m["id"]
+    else:  # D78: the pinned base itself
+        from physcal.base import base_config, pinned_base_dir
+
+        model_id = pinned_base_dir(base_config(m["pinned_base"]))
+    meta = {"env_config": env_cfg, "reward_config": rw_cfg, "train_config": cfg, "model_id": model_id,
+            "model_revision": m.get("revision"), "prompt_id": cfg["prompt"]}
+    if m.get("pinned_base"):  # only when set: the meta digest of runs started before D78 must not change (D66)
+        meta["pinned_base"] = m["pinned_base"]
     resume_ckpt = resume_state = truncated = None
     if resume:  # before anything opens a log: truncation replaces the files
         if not cur_cfg:
@@ -503,7 +511,7 @@ def setup_trainer(cfg: dict, run_id: str, out: Path, model, tok, steps: int, dea
         print(f"resuming from {resume_ckpt} (step {resume_state['global_step']}); logs: {truncated}", flush=True)
     tape = TapeWriter(out / "rollouts.jsonl", run_id, meta)
     reward_fn = VerifierReward(rw_cfg, tape, out / "train_metrics.jsonl", g["num_generations"],
-                               g["max_completion_length"], m["id"])
+                               g["max_completion_length"], model_id)
     reward_fn.events_path = out / "events.jsonl"
 
     wanted = dict(
@@ -582,11 +590,16 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
         # no expandable_segments, so fragmentation otherwise grows reserved memory into shared system memory).
         total = torch.cuda.get_device_properties(0).total_memory
         torch.cuda.set_per_process_memory_fraction(min(1.0, max_reserved_gib * 1024**3 / total))
+    from physcal.base import assert_loaded_base, base_config, resolve_model
+
+    model_name, revision, pin = resolve_model(m)  # D78: Phase 12 loads the pinned snapshot dir, never a hub name
     torch.cuda.reset_peak_memory_stats()
     model, tok = FastLanguageModel.from_pretrained(
-        model_name=m["id"], revision=m["revision"], max_seq_length=m["max_seq_length"],
+        model_name=model_name, revision=revision, max_seq_length=m["max_seq_length"],
         load_in_4bit=True, fast_inference=False, dtype=None, text_only=m.get("text_only", False),
     )
+    if pin:
+        assert_loaded_base(model, base_config(pin["config"]))
     model = FastLanguageModel.get_peft_model(
         model, r=lora["r"], lora_alpha=lora["alpha"], lora_dropout=lora["dropout"],
         target_modules=lora["target_modules"], use_gradient_checkpointing="unsloth", random_state=cfg["seed"],
@@ -609,8 +622,9 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     gib = 1024**3
     summary = {
         "run_id": run_id,
-        "model_id": m["id"],
-        "model_revision": m["revision"],
+        "model_id": model_name,
+        "model_revision": revision,
+        "pinned_base": pin,
         "reward_rule": cfg["reward_rule"],
         "split_credit": cfg.get("split_credit"),
         "steps_completed": trainer.state.global_step,
@@ -636,7 +650,9 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     }
     from physcal.eval.fingerprint import record_after_training  # R2-1 / D72: after the save and the memory stats
 
-    fingerprint = record_after_training(model, tok, m["id"], out / "final_adapter", m.get("chat_template_kwargs", {}),
+    # the BASE's identity: with D70 / D78, model.id is the SFT adapter dir and the base is the pinned snapshot
+    fingerprint = record_after_training(model, tok, pin["dir"] if pin else m["id"], out / "final_adapter",
+                                        m.get("chat_template_kwargs", {}),
                                         {"run_id": run_id, "step": trainer.state.global_step}, out / "events.jsonl",
                                         prepare=FastLanguageModel.for_inference)
     summary["fingerprint"] = {k: v for k, v in fingerprint.items() if k != "traceback"}

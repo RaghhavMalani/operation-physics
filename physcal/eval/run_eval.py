@@ -211,7 +211,9 @@ class HFBackend:
     (default: "unsloth_4bit" with an adapter, "transformers" without, D68). "unsloth_4bit" is the RL training loader:
     4-bit base, LoRA unmerged, see `load_unsloth_4bit`; dtype and model_class are then not used. "transformers" loads
     the bf16 model; an adapter is merged into it only if `merge_adapter: true` and it is not an RL adapter
-    (`physcal.adapters.check_merge_allowed`, checked before anything is loaded).
+    (`physcal.adapters.check_merge_allowed`, checked before anything is loaded). pinned_base (D78, Phase 12): `id` must be
+    the pinned snapshot dir and any adapter must name it, both checked before loading (`physcal.base`); the loaded
+    model is checked after.
     """
 
     def __init__(self, model_id: str, model_cfg: dict, gen_cfg: dict):
@@ -239,6 +241,16 @@ class HFBackend:
         self.device = model_cfg.get("device", "cuda")  # "cpu" for CPU-only checks (tiny models)
         if self.device == "cuda":
             torch.cuda.reset_peak_memory_stats()
+        pin_cfg = None
+        if model_cfg.get("pinned_base"):  # D78: Phase 12 evals run on the pinned snapshot dir, with or without adapter
+            from physcal.base import base_config, check_model_source
+
+            pin_cfg = base_config(model_cfg["pinned_base"])
+            if revision:
+                raise ValueError("a pinned_base model takes no revision: the pinned config fixes the commit (D78)")
+            pinned = check_model_source(model_id, pin_cfg)
+            if model_cfg.get("lora"):
+                check_model_source(model_cfg["lora"], pin_cfg)
         self.tok = transformers.AutoTokenizer.from_pretrained(model_id, revision=revision)
         self.tok.padding_side = "left"
         self.loader_check = None
@@ -279,6 +291,11 @@ class HFBackend:
                 self.provenance = provenance(self.model, model_id, model_cfg.get("lora"))
             except Exception as exc:  # D76: provenance is recorded, never fatal to an eval
                 self.provenance = {"error": f"{type(exc).__name__}: {exc}"[:1000]}
+        if pin_cfg is not None:
+            from physcal.base import assert_loaded_base
+
+            assert_loaded_base(self.model, pin_cfg)
+            self.provenance["pinned_base"] = pinned
         self.provenance["loader"] = loader
         self.provenance["adapter_merged"] = loader == "transformers" and bool(model_cfg.get("lora"))
         # Stop on the model's EOS ids *and* the tokenizer's end-of-turn token. Qwen3.5-2B ships no

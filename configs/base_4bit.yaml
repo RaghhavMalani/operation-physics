@@ -1,0 +1,11 @@
+# D78 (your decision, 2026-10-19): the pinned 4-bit base for all Phase 12 work (SFT, RL, eval; D70: one SFT -> RL
+# LoRA adapter on this base, never merged). Loaders get the local snapshot dir of this commit (physcal/base.py), never
+# a hub name: Unsloth drops the revision when it remaps a hub name and loads an adapter's base at `main` (D70).
+repo_id: unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit
+revision: e24e9530845f4e3a6648343796883cb509935039   # the snapshot the existing SFT adapter was trained on (D70)
+content_sha256: 9939448b3a0fbe45   # fingerprint._dir_content_hash of the snapshot's weights = R2-1's base_identity
+# quantization: nf4, double quant, bf16 compute (in the snapshot's config.json; R2-1 provenance checks it)
+model:                             # the trainer / eval model settings for this base (as configs/sft.yaml's entry)
+  max_seq_length: 2048
+  text_only: false
+  chat_template_kwargs: {}
