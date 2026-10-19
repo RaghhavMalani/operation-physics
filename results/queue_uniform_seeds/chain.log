@@ -23,3 +23,9 @@ R2-1 fingerprint check: inconclusive {"logprob": 0.0, "sigma_token": 0.0, "sigma
 [02:54:26] GPU at 62C
 [02:54:26] start uniform2_train (timeout 19534s): uv run python -m physcal.train.grpo --config grpo_overnight2_seed2 --max-steps 287 --stop-at 2026-10-19T08:00:00+05:30
 [06:11:04] end uniform2_train: exit 0
+[06:11:12] commit 'Uniform-credit seed 2 (R2-6): training to step 287 (exit 0); tape gzipped; R2-1 fingerprint': pushed
+[06:11:12] GPU at 62C
+[06:11:12] start uniform2_eval287 (timeout 8328s): uv run python -m physcal.train.compare --part rl --run results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2 --label qwen2.5-math-1.5b-instruct --budget 512 --adapter permanent_checkpoints/checkpoint-287 --out-name rl287_4bit
+[06:22:05] end uniform2_eval287: exit 0
+SANITY PASS: {"training_exit_code": 0, "eval": "rl287_4bit", "checks": {"no_oom": true, "reached_step": true, "parse_fail_below_5pct": true}, "peak_reserved_gib": 6.935546875, "num_ooms": 0, "eval_parse_fail_rate": 0.005, "sane": true}
+R2-1 fingerprint check: pass {"logprob": 0.0, "sigma_token": 0.0, "sigma_samples": 0.0, "provenance": true}
