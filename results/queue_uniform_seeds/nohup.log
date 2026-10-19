@@ -29,3 +29,8 @@ R2-1 fingerprint check: inconclusive {"logprob": 0.0, "sigma_token": 0.0, "sigma
 [06:22:05] end uniform2_eval287: exit 0
 SANITY PASS: {"training_exit_code": 0, "eval": "rl287_4bit", "checks": {"no_oom": true, "reached_step": true, "parse_fail_below_5pct": true}, "peak_reserved_gib": 6.935546875, "num_ooms": 0, "eval_parse_fail_rate": 0.005, "sane": true}
 R2-1 fingerprint check: pass {"logprob": 0.0, "sigma_token": 0.0, "sigma_samples": 0.0, "provenance": true}
+[06:22:08] commit 'Uniform-credit seed 2: corrected step-287 eval (4-bit, unmerged, greedy; R2-1 check), sanity': pushed
+[06:22:08] GPU work done: seed 1 code 0, seed 2 code 0
+[06:22:08] waiting for the D69 re-fits (PID 18571)
+[06:22:08] start robustness_3v3 (timeout 3600s): env CUDA_VISIBLE_DEVICES= nice -n 10 uv run python scripts/robustness_3v3.py
+[06:22:42] end robustness_3v3: exit 0
