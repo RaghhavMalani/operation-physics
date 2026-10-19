@@ -111,6 +111,14 @@ the budget, not the reward's density. Every gradient flows through the few compl
 
 ## #4. 30 minutes of σ-masked SFT on generator solutions fixes format and length; the A/B is close, and Math-SFT wins by rule (2026-10-13)
 
+> **Read with R2-2 (D71, 2026-10-18; pointer added 2026-10-19):** the "+ SFT" rows here were measured on SFT
+> adapters merged into bf16. For Qwen2.5-Math (the model every later run uses), the merge rounded away 41% of the
+> adapter's entries, and the adapter had been learned on Unsloth's 4-bit mirror, not on the bf16 weights it was
+> merged into (D70); the Qwen3.5-2B adapter was not measured. These numbers describe an SFT attenuated by the bf16
+> merge. Every RL run started from this merged model, so comparisons between RL runs stay internally
+> consistent. The SFT-only model as the RL runs actually saw it (merged, then quantized to 4 bits): #16. New SFT is
+> never merged (D70).
+
 **Claim.** A 30-minute LoRA SFT on short, generator-written solutions (training seeds only; σ number masked
 from the loss) turns both models into usable GRPO starting points. Parse failures drop from 88–100% to 0.3%,
 completions shrink from ~700–900 to ~200 tokens, and crps_log zero-variance drops to 0%. On the unchanged
@@ -151,6 +159,10 @@ differ even when all 8 answers are right or all wrong.
 ## #5. Overnight GRPO on the SFT'd model: SFT did the heavy lifting; RL added a small, non-significant ID gain and no calibration (2026-10-13)
 
 > **Read with #15 (2026-10-17):** this entry's RL evals applied the adapter merged into bf16, which rounds away > 90% of the RL update. Its eval-set numbers describe that merged model, not the trained policy. **Corrected results: #16.**
+>
+> **Read with R2-2 (D71, 2026-10-18; pointer added 2026-10-19):** the "SFT only" rows describe an SFT attenuated by
+> the bf16 merge (41% of the SFT adapter's entries rounded away; see the note on #4). The corrected SFT-only rows
+> (4-bit) are in #16.
 
 **Setup.** Qwen2.5-Math-1.5B + SFT (FINDINGS #4), fresh LoRA r = 16, crps_log + 0.2·steps, 4 prompts × 8
 completions per step, 512 tokens, EMA curriculum from depths 1–2, lr 5e-6, DAPO loss, no KL. **287 steps**
@@ -773,10 +785,16 @@ All nine tests go the wrong way (p = 1).
 |---|---|---|---|---|---|---|
 | SFT-only (4-bit) | 36.8% | 12.0 / 17.0% | 16.8% | 0.063% | 0.05 | −0.333 |
 | SFT + standing post-hoc scale (c = 18.1, not re-fitted) | 36.8% | 34.2 / 42.2% | 16.8% | 1.15% | 0.05 | −0.329 |
+| SFT + post-hoc scale re-fitted on 4-bit SFT completions (c = 22.1, D69; the standing baseline from 2026-10-19) | 36.8% | 36.0 / 43.5% | 16.8% | 1.40% | 0.05 | −0.328 |
 | SFT + A5 σ | 36.8% | 67.8 / 78.2% | 0.0% | 6.2% | 0.68 | −0.302 |
 | uniform credit @287 | 37.2% | 10.5 / 15.0% | 19.5% | 0.052% | 0.01 | −0.324 |
 | split credit @287, seeds 0 / 1 / 2 | 37.8 / 36.8 / 38.5% | 41.8–42.5 / 49.8–51.5% | 0.0–0.3% | 1.59–1.64% | 0.08 / 0.03 / 0.07 | −0.316 / −0.317 / −0.307 |
 
+- **The re-fitted post-hoc row (added 2026-10-19, D69 / your decision):** the same 4-bit SFT answers with c = 22.1, the
+  D40 fit on the 400 4-bit SFT calibration completions. No verdict in this entry uses the post-hoc scale, so none
+  changes. The ×18.1 row stays as recorded
+  (fitted on bf16-merged SFT completions). Source: `results/posthoc_calibration_4bit/sft_eval_scaled_crps_fit.jsonl`,
+  metrics by `scripts/phase95_compare.headline` (the code of every other row; the ×18.1 row reproduces exactly).
 - **Accuracy:** the 4-bit SFT model is about 2 points more accurate than the bf16 merge (36.8% vs 34.5%). Most of
   RL's "as-trained accuracy" in #15 is therefore the base, not RL. S3 (split vs uniform) is unaffected.
 - **Uniform credit:** evaluated as trained, it is still collapsed (σ = 0 on 19.5% of answers, median σ 0.05%).
