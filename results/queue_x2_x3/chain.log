@@ -27,3 +27,8 @@
 [00:51:01] GPU at 62C
 [00:51:01] start x2_sample_chunk5 (timeout 6837s): uv run python -m physcal.eval.x2_pairs sample --start 1000 --count 200 --batch-size 32 --chunk 5
 [01:11:29] end x2_sample_chunk5: exit 0
+[01:11:32] commit 'X2 (D74/D81): k=8 samples of the corrected SFT model, candidates 1000-1199 (chunk 5, batch 32)': pushed
+[01:11:32] X2 sampling done: 1200 of 1200 candidates
+[01:11:32] start x2_select (timeout 900s): env CUDA_VISIBLE_DEVICES= nice -n 10 uv run python -m physcal.eval.x2_pairs select
+[01:11:35] end x2_select: exit 0
+516 of 1200 sampled candidates have mixed outcomes
