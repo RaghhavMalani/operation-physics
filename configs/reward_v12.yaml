@@ -1,0 +1,37 @@
+# Verifier 1.2.0 (D83, your approval 2026-10-19): configs/reward.yaml (1.1.0) plus the epistemic channel of the
+# two-channel format. reward.yaml stays the default for everything that exists (every 1.1.0 run, tonight's queue);
+# Phase 12 code loads this file explicitly (reward_config("reward_v12")). Tapes log the full config, so 1.0.0 / 1.1.0
+# tapes keep replaying exactly with their own settings.
+version: "1.2.0"            # 1.2.0: + the <confidence> channel scored by Brier (D83); 1.1.0: crps_log no
+                            # longer floors relative sigma at 0.1% (D37 approved, D38)
+
+scoring:
+  rule: crps_log            # main rule (D15, final): CRPS of ln y vs N(ln mu, (sigma/mu)^2), strictly proper
+                            # ablations: crps (spec's relative CRPS) | binary | log_score | abs_rel_error
+  sigma_floor: 1.0e-3       # minimum relative sigma s = max(sigma/|y|, sigma_floor) for crps and log_score
+  crps_log_sigma_floor: 1.0e-6  # crps_log only (since 1.1.0): CRPS stays finite as sigma -> 0, so this is only a
+                            # numerical guard; 1e-3 made the reward flat in sigma below 0.1% (D37)
+  crps_clip: 5.0            # score_final = max(-CRPS, -crps_clip) for crps_log and crps; failures get -5 (D13)
+  log_score_clip: 10.0      # score_final = max(-NLL, -log_score_clip)
+  abs_rel_error_clip: 5.0   # score_final = max(-|e|, -abs_rel_error_clip)
+  binary_tolerance: 0.01    # "correct" = within 1% relative; also the eval accuracy definition
+
+weights:
+  final: 1.0
+  steps: 0.2                # must satisfy steps + confidence < final * (ceiling - floor) of the rule (checked at load)
+  confidence: 0.0           # [REVIEW, Phase 12 pre-registration] weight of score_confidence in the total reward. 0: the
+                            # reward equals 1.1.0's; score_confidence is reported in the breakdown for training code
+                            # that credits the c tokens separately (split credit, D46). A positive weight couples the
+                            # channels: a wrong answer stated with low c can then outscore a right answer stated with
+                            # low c (D83)
+
+steps:
+  tolerance: 0.02           # step credit if within 2% relative of truth
+  empty_score: 0.0          # score_steps when a problem requests no intermediates (depth 1)
+
+checks:
+  copy_tolerance: 1.0e-3    # answer within this relative distance of a same-unit given counts as "copied"
+
+confidence:                 # 1.2.0 (D83): <confidence>c%</confidence> after </answer>, c in percent
+  bins: [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99]   # the only allowed values (R2 synthesis); anything else = missing
+  tau_log: 1.0e-3           # D50/A1: computation-correct iff |ln mu - ln f(x_meas)| <= tau (0.1%; see D83 on its size)

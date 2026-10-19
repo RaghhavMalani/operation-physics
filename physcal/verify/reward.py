@@ -1,7 +1,15 @@
-"""Reward = pure verifier output: parse -> units gate -> scoring rule -> step credit.
+"""Reward = pure verifier output: parse -> units gate -> scoring rule -> step credit (-> confidence, >= 1.2.0).
 
 `reward(problem, completion)` returns `(float, breakdown)`. Failures (parse_fail, unit_mismatch) get the
 rule's floor, i.e. the worst score a valid answer can get, so a malformed answer never beats a real attempt.
+
+Verifier 1.2.0 (D83) adds the epistemic channel of the two-channel format: a `<confidence>c%</confidence>` block
+after `</answer>`, c one of the configured bins, scored by the Brier score of c against the computation-correct event
+of D50/A1, |ln μ − ln f(x_meas)| <= τ, where f(x_meas) is the generator's point estimate from the displayed values
+(the truth itself for problems without measurement noise). score_confidence = −(c − 1{event})²; a missing or
+malformed block, or an answer that does not parse, gets the worst Brier score, −1. It enters the reward with
+weights.confidence. Only configs that carry a `confidence` section (version >= 1.2.0) do any of this, so older
+configs, and every tape logged with one, score exactly as before.
 """
 
 from __future__ import annotations
@@ -11,7 +19,7 @@ from typing import Any
 
 from physcal.config import load_config
 from physcal.env.units import same_dimension
-from physcal.verify.parse import ParseError, Reported, canonical_symbol, parse_completion
+from physcal.verify.parse import ParseError, Reported, canonical_symbol, parse_completion, parse_confidence
 from physcal.verify.scoring import (
     RULES,
     RULES_NEEDING_SIGMA,
@@ -25,15 +33,23 @@ from physcal.verify.scoring import (
 from physcal.verify.units import UnitMismatch, to_si_checked
 
 OK, PARSE_FAIL, UNIT_MISMATCH = "ok", "parse_fail", "unit_mismatch"
+CONFIDENCE_MISSING, ANSWER_UNPARSED = "confidence_missing", "answer_parse_fail"
 LEGACY_VERIFIER_VERSION = "1.0.0"  # reward configs logged before the version key existed
+CONFIDENCE_VERSION = (1, 2, 0)     # the first verifier with the confidence channel (D83)
+BRIER_FLOOR = -1.0                 # the worst Brier score: given to a missing block or an unparsed answer
 
 
-def reward_config() -> dict:
-    return load_config("reward")
+def reward_config(name: str = "reward") -> dict:
+    """`reward` is the default (1.1.0); `reward_v12` is verifier 1.2.0 with the confidence channel (D83)."""
+    return load_config(name)
 
 
 def verifier_version(cfg: dict) -> str:
     return cfg.get("version", LEGACY_VERIFIER_VERSION)
+
+
+def _version_tuple(v: str) -> tuple[int, ...]:
+    return tuple(int(x) for x in v.split("."))
 
 
 def validate_reward_config(cfg: dict) -> None:
@@ -41,14 +57,47 @@ def validate_reward_config(cfg: dict) -> None:
     # 1.0.0 floored crps_log at sigma_floor; later versions must say which floor crps_log uses.
     if (verifier_version(cfg) != LEGACY_VERIFIER_VERSION) != ("crps_log_sigma_floor" in sc):
         raise ValueError(f"verifier {verifier_version(cfg)}: crps_log_sigma_floor must be set iff version > 1.0.0")
+    # 1.2.0 added the confidence channel: its section and weight exist iff the version has it.
+    has_conf = _version_tuple(verifier_version(cfg)) >= CONFIDENCE_VERSION
+    if has_conf != ("confidence" in cfg) or has_conf != ("confidence" in w):
+        raise ValueError(f"verifier {verifier_version(cfg)}: the confidence section and weights.confidence must be "
+                         f"set iff version >= {'.'.join(map(str, CONFIDENCE_VERSION))}")
     if sc["rule"] not in RULES:
         raise ValueError(f"unknown scoring rule {sc['rule']!r}; expected one of {RULES}")
-    if w["final"] <= 0 or w["steps"] < 0:
-        raise ValueError("weights must satisfy final > 0 and steps >= 0")
-    # A perfect final answer with no steps must beat a failed final answer with every step right.
+    if w["final"] <= 0 or w["steps"] < 0 or w.get("confidence", 0.0) < 0:
+        raise ValueError("weights must satisfy final > 0, steps >= 0 and confidence >= 0")
+    if has_conf:
+        cc = cfg["confidence"]
+        if not cc["bins"] or any(not 0 < b < 100 for b in cc["bins"]) or cc["tau_log"] <= 0:
+            raise ValueError("confidence bins must lie strictly between 0 and 100 percent, and tau_log > 0")
+    # A perfect final answer with no steps (and the worst confidence) must beat a failed final answer with every step
+    # right (and the best confidence).
     span = ceiling(sc["rule"], sc) - floor(sc["rule"], sc)
-    if not w["steps"] < w["final"] * span:
-        raise ValueError(f"step weight {w['steps']} can outweigh the final answer (final span {w['final'] * span})")
+    side = w["steps"] + w.get("confidence", 0.0) * (0.0 - BRIER_FLOOR)
+    if not side < w["final"] * span:
+        raise ValueError(f"step + confidence weights {side} can outweigh the final answer (final span "
+                         f"{w['final'] * span})")
+
+
+def computation_reference_si(problem: dict) -> float:
+    """f(x_meas): the generator's point estimate from the displayed values (>= 2.0.0); the truth when the givens are
+    exact (generator 1.x, and noise 0 in 2.0.0, where the two coincide)."""
+    return (problem.get("noise") or {}).get("point_estimate_si", problem["target_value_si"])
+
+
+def confidence_terms(problem: dict, completion: str, mu_si: float | None, answer_ok: bool, cc: dict) -> dict:
+    """The epistemic channel (D83): c, the computation-correct event and −Brier."""
+    c = parse_confidence(completion, cc["bins"])
+    ref = computation_reference_si(problem)
+    event = bool(answer_ok and mu_si is not None and mu_si / ref > 0
+                 and abs(math.log(mu_si / ref)) <= cc["tau_log"])
+    out: dict[str, Any] = {"confidence": c, "computation_correct": event,
+                           "computation_reference_si": ref, "confidence_reason": OK}
+    if c is None:
+        out.update(score_confidence=BRIER_FLOOR, confidence_reason=CONFIDENCE_MISSING)
+    else:
+        out["score_confidence"] = -((c / 100.0 - float(event)) ** 2)
+    return out
 
 
 def _as_dict(problem: Any) -> dict:
@@ -156,6 +205,11 @@ def reward(problem: Any, completion: str, cfg: dict | None = None) -> tuple[floa
     except ParseError as exc:
         bd.update(reason=PARSE_FAIL, detail=str(exc), score_final=worst, score_steps=0.0, steps={})
         bd["reward"] = w["final"] * worst
+        if "confidence" in cfg:  # >= 1.2.0: an answer that does not parse leaves nothing to be confident about
+            bd.update(confidence=parse_confidence(completion, cfg["confidence"]["bins"]), computation_correct=False,
+                      computation_reference_si=computation_reference_si(p), confidence_reason=ANSWER_UNPARSED,
+                      score_confidence=BRIER_FLOOR, w_confidence=w["confidence"])
+            bd["reward"] += w["confidence"] * BRIER_FLOOR
         return bd["reward"], _finite_or_none(bd)
 
     bd["steps_block_found"] = parsed.steps_block_found
@@ -174,4 +228,8 @@ def reward(problem: Any, completion: str, cfg: dict | None = None) -> tuple[floa
         bd["copied_given"] = _copied_given(p, parsed.answer, mu, cfg["checks"]["copy_tolerance"])
 
     bd["reward"] = w["final"] * bd["score_final"] + w["steps"] * bd["score_steps"]
+    if "confidence" in cfg:  # >= 1.2.0 (D83)
+        bd.update(confidence_terms(p, completion, bd.get("mu_si"), bd["reason"] == OK, cfg["confidence"]),
+                  w_confidence=w["confidence"])
+        bd["reward"] += w["confidence"] * bd["score_confidence"]
     return bd["reward"], _finite_or_none(bd)

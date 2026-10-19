@@ -2365,3 +2365,75 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   unchanged.
 - **X2 method 2 in tonight's queue (D81):** the split credit seed 0 @287 σ-suffix stage is **approved**. The queue is
   unchanged.
+
+### D83. Verifier 1.2.0: the `<confidence>` channel, Brier on the computation-correct event (your approval, 2026-10-19; no Phase 12 training yet)
+- **Your decision:** approve the verifier extension of D80.
+  - **The score:** Brier on the computation-correct event.
+  - **The version:** a new verifier version, under which old tapes must replay exactly.
+  - **Scope:** implement and test, with no Phase 12 training yet.
+- **Where it lives:**
+  - **Config:** `configs/reward_v12.yaml`, version 1.2.0: 1.1.0's settings plus a `confidence` section and
+    `weights.confidence`.
+  - **The default is unchanged:** `configs/reward.yaml` stays 1.1.0 and the default of every code path. Every
+    existing run and tonight's queue are therefore untouched. Phase 12 code will load
+    `reward_config("reward_v12")`.
+  - **Code:** `physcal/verify/reward.py` (`confidence_terms`, the validation); `parse_confidence` moved from the
+    Phase 12 data module into `physcal/verify/parse.py`.
+- **The rule:**
+  - **Format:** exactly one `<confidence>c%</confidence>` block after `</answer>`, with c one of {10, 20, …, 90, 95,
+    99}.
+  - **The event (D50/A1):** computation-correct iff the answer parses, its unit has the target's dimension, and
+    |ln μ − ln f(x_meas)| ≤ τ.
+    - **f(x_meas):** the generator's point estimate from the displayed values (`noise.point_estimate_si`). For
+      problems with exact givens (generator 1.x, noise 0) it is the truth; there the two coincide.
+  - **score_confidence = −(c/100 − 1{event})²,** the negative Brier score: strictly proper over the allowed values
+    (tested).
+  - **The worst Brier score, −1,** goes to: a missing, malformed or non-bin block, two blocks, or a block before
+    `</answer>` (`confidence_reason: confidence_missing`); and a completion whose answer does not parse
+    (`answer_parse_fail`).
+  - **A unit mismatch** is scored normally, with the event false.
+  - **The answer's own scoring is unchanged:** score_final is against the realized truth, and the steps are as in
+    1.1.0.
+  - **Reward:** w_final·score_final + w_steps·score_steps + w_confidence·score_confidence.
+  - **Validation:**
+    - steps + confidence weights (× the Brier span 1) must stay below the final answer's span;
+    - the section and its weight must exist iff version ≥ 1.2.0;
+    - bins must lie strictly between 0 and 100, and τ > 0.
+- **Two values set here, both [REVIEW] for the Phase 12 pre-registration / Round 3:**
+  1. **`weights.confidence = 0`.**
+     - **Effect:** the reward value equals 1.1.0's for every completion. score_confidence is in the breakdown for
+       training code that credits the c tokens separately (split credit, D46), which is the synthesis's plan: "Brier
+       with the answer held fixed".
+     - **Why not positive:** a positive weight couples the channels. With weight 1, a wrong answer stated with
+       c = 10% (crps −0.3, Brier −0.01: total −0.31) beats a right answer stated with c = 10% (crps −0.05, Brier
+       −0.81: total −0.86).
+  2. **τ = 0.1%, A1's value. This needs a look before Phase 12.** On D69's 2,000 4-bit SFT calibration answers:
+
+     | τ | 0.05% | **0.1% (A1)** | 0.2% | 0.5% | **1% (verifier "correct")** | 2% |
+     |---|---|---|---|---|---|---|
+     | share of answers computation-correct | 10.5% | **14.5%** | 19.6% | 30.1% | **39.9%** | 48.8% |
+
+     - **What it means:** at 0.1%, about two thirds of the answers that are right within 1% count as computation-
+       incorrect. That is mostly intermediate rounding; the SFT writes 4-significant-figure intermediates.
+     - **The risk:** the c channel would then partly score numeric precision rather than correctness.
+     - **Unchanged:** A1's τ was set for comparing σ with σ\* on computation-correct answers (D58), and I have not
+       changed it. τ is one config value here.
+- **Replay (your requirement):**
+  - **Unchanged for old configs:** 1.0.0 / 1.1.0 configs carry no `confidence` section, so the scoring path, the
+    reward and the breakdown are exactly as before.
+  - **Tested:** both committed 1.1.0 tapes checked (400 + 400 rows) re-score to identical rewards **and identical
+    breakdowns** (stronger than replay's reward check). The existing 1.0.0 replay tests pass.
+  - **Under 1.1.0, a `<confidence>` block is ignored** (tested).
+- **Tests (`tests/test_verify_confidence.py`, 19):**
+  - the versions and the unchanged default;
+  - 1.1.0 ignores the block; the 1.1.0 tapes reproduce exactly;
+  - Brier values against f(x_meas), not the truth, on a 5% noisy problem;
+  - the noise-free reference is the truth (and an answer correct within 1% but not 0.1% is not computation-correct);
+  - six malformed or missing variants get −1 with the answer score untouched; a block before the answer does not
+    count;
+  - an unparsed answer gets both floors; a unit mismatch makes the event false;
+  - the weight enters the reward (0 reproduces 1.1.0's value);
+  - propriety over the bins; five invalid configs are refused;
+  - every Phase 12 data arm scores "ok" under 1.2.0, with c parsed and the event true (4-significant-figure answers).
+- **Not done (as you said):** no Phase 12 training, and no eval report fields for c (calibration of c, Brier
+  decomposition). Those come with the Phase 12 pre-registration.

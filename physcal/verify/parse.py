@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 
 ANSWER_RE = re.compile(r"<answer>(.*?)</answer>", re.S | re.I)
 STEPS_RE = re.compile(r"<steps>(.*?)</steps>", re.S | re.I)
+CONFIDENCE_RE = re.compile(r"<confidence>\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*</confidence>", re.I)
+CONFIDENCE_TAG_RE = re.compile(r"<confidence>", re.I)
 
 NUM = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?"
 SCI = r"(?:\s*(?:[x×*·])\s*10\s*(?:\^|\*\*)\s*\(?\s*([-+]?\d+)\s*\)?)?"
@@ -154,3 +156,17 @@ def parse_completion(text: str) -> ParsedCompletion:
     blocks = STEPS_RE.findall(text)
     steps = parse_steps(blocks[-1]) if blocks else {}
     return ParsedCompletion(answer=answer, steps=steps, steps_block_found=bool(blocks))
+
+
+def parse_confidence(completion: str, bins) -> int | None:
+    """Verifier >= 1.2.0 (D83): c from the `<confidence>c%</confidence>` block after `</answer>`. None unless the text
+    after `</answer>` holds exactly one confidence tag, it is well formed, and c is one of `bins` (percent)."""
+    end = completion.find("</answer>")
+    if end < 0:
+        return None
+    tail = completion[end:]
+    found = CONFIDENCE_RE.findall(tail)
+    if len(found) != 1 or len(CONFIDENCE_TAG_RE.findall(tail)) != 1:
+        return None
+    v = float(found[0])
+    return int(v) if v.is_integer() and int(v) in bins else None

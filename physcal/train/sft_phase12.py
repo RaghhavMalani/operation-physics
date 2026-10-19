@@ -29,26 +29,14 @@ from collections import Counter
 import numpy as np
 
 from physcal.config import REPO_ROOT, load_config
+from physcal.verify.parse import parse_confidence  # noqa: F401  (the verifier's parser, D83)
 
-CONFIDENCE_RE = re.compile(r"<confidence>\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*</confidence>", re.I)
 LINE_NUMBER_RE = re.compile(r"(?<![\^0-9.])[0-9]+(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?")  # not the ^2 exponents
 CONFIDENCE_STREAM = "phase12-confidence"  # the draw's own random stream, keyed by the problem seed
 
 
 def _config() -> dict:
     return load_config("sft_phase12")
-
-
-def parse_confidence(completion: str, bins) -> int | None:
-    """c from the single <confidence> block after </answer>; None unless there is exactly one and it is a bin."""
-    end = completion.find("</answer>")
-    if end < 0:
-        return None
-    found = CONFIDENCE_RE.findall(completion[end:])
-    if len(found) != 1:
-        return None
-    v = float(found[0])
-    return int(v) if v.is_integer() and int(v) in bins else None
 
 
 def confidence_draw(seed: int, bins) -> int:
