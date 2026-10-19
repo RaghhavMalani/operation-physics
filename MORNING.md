@@ -1,159 +1,148 @@
-# Report: 2026-10-18 (day, CPU only): your decisions, round-2 review, R2-1, X1, X2, tonight's queue
+# Report: 2026-10-18/19 night: uniform-credit seeds, D69 re-fits, R2-1 on the GPU, D70 smoke test (06:30 IST)
 
-The previous report (2026-10-18 night, corrected evals) is in git history: `git show 4d73548:MORNING.md`.
+The previous report (2026-10-18 day: D69–D75, X1, X2 setup) is in git history: `git show 8a01afd:MORNING.md`.
 
 **Short version.**
-1. **Tonight's GPU queue is ready and NOT launched** (D75). Launch it by about **00:45 IST** if both uniform seeds
-   should finish before 08:30:
-   `nohup scripts/queue_uniform_seeds.sh > results/queue_uniform_seeds/nohup.log 2>&1 &`
-   Order: the 4-bit SFT calibration completions → both D69 re-fits (CPU, in the background) → uniform-credit seeds 1
-   and 2 to step 287 (corrected evals) → the 3-vs-3 robustness analysis.
-2. **X1 (FINDINGS #17):** a text-only gradient-boosted model of σ\* predicts it well *across* problems (test R² 0.83).
-   *Within* A6 pairs, though, its slope is only +0.063 (90% CI [+0.03, +0.10]) against an ideal of 1. It is
-   labelled "partial propagation"; A6b is equivalent to 0. This is the bar for the Phase 12 LLM.
-3. **R2-1 is built (D72).**
-   - **What:** a training-time fingerprint (logits, the σ-token distribution, sampled σ, provenance) and the
-     reloaded-model check; provenance is recorded in every eval tape.
-   - **On CPU:** the faithful reload passes, and a dropped adapter or a bf16 merge of an RL-sized update fails.
-   - **First real use:** tonight's two training runs. It is recorded only (`enforce: false`) until you have seen
-     those numbers.
-4. **Unsloth supports the Phase 12 plan** (one SFT → RL adapter, never merged; D70), by construction. Two findings
-   for Phase 12 are in §4.
-5. **X2:** pre-registered (D74); the candidate pool is frozen; the selection rule and metric are coded and tested.
-   Its sampling needs about 4 GPU-hours on a later night.
-6. **BLOCKED:** none. **One honest note:** after X1 finished at 10:10 the session sat idle until your "Try again" at
-   about 22:00. That is why the queue was finished only at 22:10, still inside the launch window.
+1. **Everything ran.** The queue started at 22:50 and finished at 06:26, two hours inside the 08:30 cutoff. Every stage
+   exited 0 and was committed and pushed. **BLOCKED: none.** No temperature pause was needed.
+2. **The 3-vs-3 result agrees with FINDINGS #16 (FINDINGS #18, a robustness analysis).** With uniform credit also
+   averaged over 3 seeds, S1a, S1b and S3 are supported and S2 is not (p = 0.24).
+   - **Seed level:** split credit's 1σ coverage beats uniform's in 9 / 9 cross-seed pairs (+31 pts).
+   - **ρ:** split's ρ also beats uniform's in 9 / 9 pairs, but it is tiny (0.03–0.08 against 0.01).
+3. **R2-1 worked on its first GPU use.** The corrected loader reproduced the training-time fingerprint exactly on both
+   new adapters (all differences 0.0, 64 / 64 sampled completions byte-identical).
+   - **Labels:** seed 2's check is "pass". Seed 1's is "inconclusive", only because that adapter's log-prob effect
+     (0.0047 nats/token) sits just under the pre-set floor of 0.005. See §4.1.
+4. **D69 re-fits are done.** The global scale is now ×22.1 (it was ×18.1 on bf16). A5 on the 4-bit SFT model
+   reaches 66.6% 1σ coverage and ρ 0.66.
+   - **Sensitivity rerun of families N and E** with the re-fitted A5: **no verdict changes.**
+5. **D70 smoke test: PASS.** The SFT adapter loads trainable on the 4-bit base and `get_peft_model` takes the skip
+   path. Two GRPO steps moved all 392 LoRA tensors of the *same* adapter.
 
 ---
 
 ## 1. What ran (IST)
 
-| time | step | commit |
-|---|---|---|
-| 09:48 | FINDINGS #13 heading annotated; **D69** (re-fit both baselines); **D70** (Phase 12 base, Unsloth check) | `92b868d` |
-| 09:50 | Review synthesis committed; **D71** records R2-1 to R2-7, including the 3-vs-3 analysis plan | `55c8947` |
-| 10:06 | **R2-1 (D72):** fingerprint + regression check + provenance; uniform seed configs; 392 tests pass | `3f70b9a` |
-| 10:07 | **D73:** X1 pre-registered (before any fit) | `3eaab53` |
-| 10:08–10:10 | X1 run (CPU, nice, 4 threads) | – |
-| 22:00 | X1 results + FINDINGS #17 | `e8a7a62` |
-| 22:10 | **D75:** tonight's queue (4-bit calibration generation, re-fit code, robustness script + tests) | `a9fdf28` |
-| 22:12 | **D74:** X2 pre-registered (before any sample) | `d9a36c9` |
-| 22:13 | X2 CPU parts: frozen pool, selection, metric, sampling config | `8714960` |
+| time | stage | result | commit |
+|---|---|---|---|
+| 22:47 | **D76:** queue changes at launch (your instructions), loader hardening | – | `f2d4e9b` |
+| 22:50–22:58 | 4-bit SFT calibration completions, 400 | 41.5% acc, 0 parse fails | `833e850` |
+| 22:58–23:25 | the same, 1,600 | exit 0 | `dd969da` |
+| 23:25–23:30 | D69 re-fits, global scale + A5 (CPU, background) | exit 0 / 0 | `864ed5f` |
+| 23:30–23:33 | D69 sensitivity: families N / E with the re-fitted A5 (CPU) | no changes | `749ebfb` |
+| 23:25–02:43 | uniform seed 1 → step 287 (40.8 s/step, 0 OOM) + fingerprint (79 s) | exit 0 | `71d74c3` |
+| 02:43–02:54 | seed 1 corrected eval + R2-1 check + sanity | PASS; check inconclusive (exact) | `378f2a2` |
+| 02:54–06:11 | uniform seed 2 → step 287 (40.7 s/step, 0 OOM) + fingerprint | exit 0 | `c1fb07b` |
+| 06:11–06:22 | seed 2 corrected eval + R2-1 check + sanity | PASS; check **pass** (exact) | `969ba3a` |
+| 06:22 | 3-vs-3 robustness analysis (D71) | §2 | `3be48c4` |
+| 06:22–06:26 | **D70 smoke test** | **PASS** | `7e53323` |
 
-CPU only, all day. Fits ran with at most 4 threads under nice. The GPU was not used.
+- **Seed gate:** the gate for seed 2 (≥ 3.0 h left) passed with about 5 h to spare.
+- **Temperatures:** about 63 °C at every stage start and up to 82 °C during training (spot checks). Never above
+  87 °C, so no pause.
 
 ## 2. Results
 
-### X1: can surface features propagate σ\*? Barely (FINDINGS #17, D73)
+### 3 vs 3 (FINDINGS #18; robustness, not the pre-registered verdict)
 
-| σ source (problem text only) | test R² (ln σ\*) | A6 slope [90% CI] | A6 label | A6b slope [90% CI] | labelled verdict |
+| test (both arms as 3-seed means) | split | control | difference [95% CI] | p | supported |
 |---|---|---|---|---|---|
-| noise (stated p only) | 0.62 | 0.000 [0.00, 0.00] | no propagation | 0.000 | no propagation |
-| + TF-IDF | 0.79 | +0.002 [−0.00, +0.00] | no propagation | 0.000 | no propagation |
-| **+ parsed magnitudes (primary)** | **0.83** | **+0.063 [+0.03, +0.10]** | **partial propagation** | −0.000 | **partial propagation** |
-| reference: σ̂ = σ\* | – | +1.000 | full propagation | 0.000 | full propagation |
+| S1a: 1σ cov > SFT-only | 41.8% | 12.0% | +29.8 pts [+25.5, +34.2] | < 1e-4 | yes |
+| S1b: 1σ cov > uniform | 41.8% | 10.8% | +31.0 pts [+26.8, +35.3] | < 1e-4 | yes |
+| S2: ρ > uniform | 0.061 | 0.012 | +0.048 [−0.085, +0.178] | 0.241 | **no** |
+| S3: accuracy non-inferior | 37.7% | 37.2% | +0.5 pts [−0.8, +1.8] | < 1e-4 | yes |
 
-- **What it means:** what a text model knows about σ\* is mostly the noise level and the template. Neither varies
-  within a pair.
-- **Within-pair agreement:** Δ ln σ̂ correlates with Δ ln σ\* at 0.16, and has the right sign in 48.6% of pairs.
-- **By depth:** the CI excludes 0 only at depth 2. At depth 5, which is outside the fit depths, the slope is −0.01.
-- **The bar for Phase 12 (D73):** an LLM claim of "propagates beyond surface features" needs a higher A6 slope than
-  0.063 on the same pairs (paired bootstrap), with A6b equivalent to 0.
-- **Caveat:** X1 states no answer, so all 510 pairs enter its analysis. An LLM's analysis keeps only
-  computation-correct pairs.
+**Seed level** (exact permutation; one-sided p ≥ 0.05 and two-sided p ≥ 0.10 are the floors with 3 vs 3):
 
-### R2-1 regression check on CPU (D72, `tests/test_fingerprint.py`)
-
-| reload of a tiny trained LoRA | log-prob ratio (0 = identical to training, 1 = adapter gone) | verdict |
-|---|---|---|
-| unmerged, same base | 0 | pass |
-| adapter dropped | 1.00 | fail |
-| bf16 merge, update below half a bf16 step (RL-like) | 1.09 | fail |
-| bf16 merge, large update | 0.003 | pass (the update survives the merge) |
-
-## 3. Tonight's queue (D75; prepared, dry-run, not launched)
-
-| # | stage | device | estimate |
+| metric | Δ (split − uniform) | perm. p (one / two-sided) | cross-seed pairs with the expected sign |
 |---|---|---|---|
-| 1 | 4-bit SFT-only greedy completions, calibration 400 + 1,600 (D69) | GPU | ~40 min |
-| 2 | re-fit the global scale (400; all-2,000 sensitivity) and A5 (`nested_baselines_4bit`) | CPU, background | ~20 min |
-| 3 | uniform-credit seed 1 → step 287 (+ fingerprint) → corrected eval (+ fingerprint check) → sanity | GPU | ~3.3 h |
-| 4 | uniform-credit seed 2, the same. Only if seed 1 is sane **and** ≥ 3.0 h of training time remain | GPU | ~3.3 h |
-| 5 | `scripts/robustness_3v3.py`: D71 (A) problem-level seed means, (B) seed-level permutation / Hedges' g, (C) trajectories + figure | CPU | ~5 min |
+| 1σ coverage | +31.0 pts | 0.05 / 0.10 | 9 / 9 |
+| ρ(σ, err) | +0.048 | 0.05 / 0.10 | 9 / 9 |
+| accuracy | +0.5 pts | 0.25 / 0.50 | 6 / 9 |
+| σ = 0 share | −19.8 pts | – / 0.10 | – |
+| median relative σ | 1.6% vs 0.05% | – / 0.10 | – |
 
-- **Guards:** deadline 08:30 IST; > 87 °C → 10-min pause; PID-based waits; commit + push after every stage.
-- **If launched late:** seed 2 is skipped by its gate, and the analysis runs 3 vs 2 (D71).
-- **Checked on CPU:**
-  - the dry run and `bash -n`;
-  - the seed configs equal the seed-0 control apart from seed and run_id (test);
-  - the calibration eval config equals D67's SFT control;
-  - the robustness script end to end on the real evals with a stand-in uniform arm (test). Its (A) reproduces D62's
-    numbers when the uniform arm is the single control.
-- **Not checked:** any GPU stage, and in particular the fingerprint's first GPU run (Unsloth's inference-mode forward
-  and generation).
-  - **If it errors:** the training run is unaffected (the error goes to `events.jsonl` / `summary.json`), and the
-    eval reports "no_fingerprint".
+- **The new uniform seeds:** coverage 11.5 / 10.5%, accuracy 37.5 / 36.8%, σ = 0 on 17 / 23% of answers. They look
+  just like the seed-0 control.
+- **Trajectories (`results/corrected/robustness_3v3/trajectories.png`):** the split / uniform separation in σ and
+  σ = 0 starts at about step 100 and is identical across seeds. Reward and pass rate overlap.
+- **Reading:** the S1 result is seed-robust. S2 still fails at the problem level. The seed-level ρ ordering is
+  perfectly consistent but small: +0.05, against A5's ≈ 0.65.
+
+### D69 re-fits and sensitivity
+
+| baseline | bf16 fit (FINDINGS #10 / #16) | 4-bit fit (tonight) |
+|---|---|---|
+| global post-hoc scale (D40 fit, 400) | ×18.1 | **×22.1** (all-2,000 sensitivity: ×26.8) |
+| scaled 4-bit SFT eval, 1σ cov ID / depth 5 | – | 35.0% / 37.2% |
+| A5 strongest σ (same model class both times) | 66.9% cov, ρ 0.70 (bf16 SFT eval) | 66.6% cov, ρ 0.66 (4-bit SFT eval) |
+
+- **Family N (3 seeds × 3 tests) and family E (E1a-N, E1b-N):** every verdict is identical with the re-fitted A5
+  (`results/corrected/d69_sensitivity/report.md`). FINDINGS #16 stands.
+
+### R2-1 regression check, first GPU use (D72)
+
+| adapter | its own effect: log-prob (nats/token) / σ-token TV | reloaded vs training-time | samples identical | provenance | status |
+|---|---|---|---|---|---|
+| uniform seed 1 @287 | 0.0047 / 0.018 | 0.0 / 0.0 | 64 / 64 | match | inconclusive (under the 0.005 floor) |
+| uniform seed 2 @287 | 0.0076 / 0.051 | 0.0 / 0.0 | 64 / 64 | match | **pass** |
+
+- **Recording cost:** 79 s at the end of training. The training runs were otherwise unchanged.
+
+### D70 smoke test (`results/sft_continue_smoke/report.json`)
+
+- **Loading:**
+  - `FastLanguageModel.from_pretrained(results/sft/…/adapter, load_in_4bit=True)` gives a PEFT model.
+  - Its 392 trainable tensors are exactly the LoRA tensors, and they equal the saved adapter (max |Δ| = 0).
+  - `get_peft_model` logs "Already have LoRA adapters! We shall skip this step." and returns the same object,
+    untouched.
+- **Training:** 2 real GRPO steps (grpo_overnight2 config, 41.8 s/step), with a finite loss.
+  - **The final adapter:** the same 392 tensors and the same base (`unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit`). All
+    392 tensors changed (max |Δ| 2.7e-5 after 2 steps at LR 5e-6). The fingerprint was recorded.
+  - **Reading:** RL continues the SFT adapter; it does not start a new one. The Phase 12 plan (D70) works on this
+    machine.
+
+## 3. Code changes tonight
+
+- **D76 (before launch):**
+  - **Queue changes:** seed 2 is no longer gated on seed 1's sanity check (your instruction); BLOCKED logging; the
+    D70 smoke test as stage 6.
+  - **`run_eval.py`:** the R2-1 check and the provenance block are non-fatal while `enforce: false`.
+- **`physcal/train/e1_compare.compare`:** optional `a5_tape` / `output_dir` for the D69 sensitivity. The defaults are
+  unchanged.
+- **New scripts:** `scripts/d69_sensitivity.py`, `scripts/sft_continue_smoke.py`.
 
 ## 4. Decisions to review
 
-1. **D69 [REVIEW]: how the re-fitted A5 is used.** I set it up as follows; tell me if you want the re-fit to be
-   primary for #16 instead.
-   - **From now on:** the re-fitted baselines are the standing ones (X2, Phase 12).
-   - **FINDINGS #16's family N/E verdicts stand,** because D67 fixed them on the bf16-fitted A5. They get a
-     sensitivity rerun with the re-fit (CPU, next). A flipped verdict would be reported to you, not silently
-     replaced.
-2. **D70: two Unsloth findings for Phase 12.** No existing result changes.
-   1. **The base revision is not pinned:** an adapter load uses `revision=None` for its base.
-   2. **The existing SFT adapter's base:** it was trained on `unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit` (cache
-      snapshot `e24e953`). Unsloth's mapper silently dropped the pinned Qwen revision. `train.merge` then added the
-      adapter to bf16 `Qwen/…@aafeb0f`.
-   - **Proposal:** pin the 4-bit base explicitly in Phase 12, and assert its commit in both trainers and the eval
-     loader.
-   - **Optional smoke test (~5 GPU-min, not queued):** SFT 5 steps → RL 2 steps from that adapter → the fingerprint
-     check.
-3. **D72 tolerances.** They were fixed before any real fingerprint: log-prob and σ-token ratios ≤ 0.25 of the
-   adapter's own effect, median ln σ within ln 2, effect floor 0.005 nats/token.
-   - **Tonight:** `enforce: false`.
-   - **After tonight's two runs:** decide whether to switch on enforcement. The tolerances do not change without a
-     new DECISIONS entry.
-4. **X2 GPU cost (D74).** k = 8 on 1,200 candidates is about 9,600 completions, roughly 4 GPU-hours, which crowds
-   Monday's X3 pilot. The options are to sample a prefix (the frozen order is stratified) or to raise the batch size.
-   Your call.
-5. **R2 numbering:** the synthesis header says R2-1 to R2-9, but there are seven amendments. D71 records R2-1 to R2-7
-   and treats X1–X3 as experiments.
-6. **R2-2 and FINDINGS #4 / #5:** R2-2 says their SFT numbers describe an attenuated SFT. I recorded this in D71 and
-   did not edit #4 / #5. Tell me if you want a "Read with" pointer, like #3 / #5 / #6 got for #15.
+1. **R2-1's effect floor (D72).** Seed 1's check is "inconclusive" although the reload is bit-exact.
+   - **Why:** the floor (0.005 nats/token on the fixed SFT-format continuations) sits right at the size of a
+     287-step RL update. Seed 1 is 0.0047, seed 2 is 0.0076.
+   - **What still discriminates:** the σ-token TV effect (0.018 / 0.051) does so clearly.
+   - **Options:**
+     - (a) keep the floor and accept "inconclusive" for small updates;
+     - (b) judge discriminability by the σ-token criterion when the log-prob effect is small;
+     - (c) lower the floor.
+   - **Not changed:** D72 forbids changing it without a new entry. Tell me which.
+2. **Enforcing R2-1.** Both real reloads were exact, so `enforce: true` for any future loader change looks safe.
+   Approve it?
+3. **The standing post-hoc baseline is now ×22.1** (D69's rule: the re-fits are the standing baselines from now on).
+   The FINDINGS #16 tables keep ×18.1, labelled "not re-fitted". Shall I add the re-fitted row to #16, as D69 planned?
+4. **The day-report items still open:** X2's 4-GPU-hour sampling (sample a prefix, or raise the batch size); pinning
+   the 4-bit base revision for Phase 12 (D70); a "Read with" pointer on FINDINGS #4 / #5 (R2-2).
 
-## 5. Code changes
-
-- **`physcal/eval/fingerprint.py`** (new, D72):
-  - **Hooks:** called by `grpo.train` and `e1.train` after the final save, and by `load_unsloth_4bit` for every
-    adapter.
-  - **`run_eval` / E1 eval meta:** gain `provenance`.
-- **`physcal/eval/posthoc.py`:** `generate-4bit --part set|ext` and `refit-4bit`. `fit` takes paths, and its defaults
-  reproduce ×18.1425.
-- **`physcal/eval/nested_baselines.py`:** `fit --config`; new `configs/nested_baselines_4bit.yaml`.
-- **New, X1:** `physcal/eval/x1_text_sigma.py` + `configs/x1_text_sigma.yaml`.
-- **New, X2:** `physcal/eval/x2_pairs.py` + `configs/x2.yaml`; `data/eval_sets/1.1.0+c735a0d4/x2_candidates.jsonl`
-  (frozen).
-- **New scripts:** `scripts/robustness_3v3.py`, `scripts/queue_uniform_seeds.sh`.
-- **`scripts/queue_sanity.py`:** takes an optional eval dir name.
-- **Configs:** `grpo_overnight2_seed{1,2}.yaml`, `fingerprint.yaml`.
-- **Tests:** +22 (fingerprint 8, uniform seed configs 2, X1 5, X2 4, 3-vs-3 3; the frozen-eval test also checks
-  provenance). The full suite result is in §6.
-
-## 6. BLOCKED / housekeeping
+## 5. BLOCKED / housekeeping
 
 - **BLOCKED:** none.
-- **Full test suite:** 405 collected, 404 pass, 1 skipped (GPU-only), 0 fail (CPU, CUDA hidden; 383 this morning).
-- `PHASES_10-15.md` is still untracked (its content is in CLAUDE.md).
+- **Tests:** 405 collected, 404 pass, 1 skipped, as of yesterday evening. Tonight's changes are the D76 hardening
+  (eval, loader and fingerprint tests rerun: pass) and the `e1_compare` option (`test_e1` rerun: pass).
+- `PHASES_10-15.md` is still untracked.
 
-## 7. Recommendation
+## 6. Recommendation
 
-- **Tonight:** launch the queue soon. The uniform seeds settle R2-6, and the D69 re-fits feed X2 and Phase 12.
-- **Next CPU work:**
-  - the D69 family N/E sensitivity reruns;
-  - the X2 analysis code (the split-credit σ suffixes, the hidden-state extraction at "±", the probe and its
-    random-init control).
-- **Phase 12's pre-registration:** after X2 reports, as the synthesis's schedule says. X1 already sets its A6 bar at
-  a slope of 0.063.
+- **Paper framing:** the corrected split-credit story is now seed-robust on both sides. Split credit cures σ collapse
+  and widens σ about 30×, with no accuracy cost. But its σ ranks errors barely better than uniform credit's, and far
+  worse than a text-feature σ. That supports the R2-3 framing: a single σ asked to carry epistemic uncertainty fails
+  to rank errors.
+- **Next GPU nights:**
+  - X2 (the within-problem test of whether *any* source carries answer-specific information);
+  - then the Phase 12 SFT on one 4-bit adapter, which the smoke test shows works.

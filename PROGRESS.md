@@ -590,3 +590,20 @@ Progress:
   - the D69 family N/E sensitivity reruns (CPU);
   - the X2 GPU parts;
   - the Phase 12 pre-registration after X1 / X2.
+
+## 2026-10-18/19 night: the queue (D75 / D76), unattended
+
+- [x] Queue launched at 22:50 IST; every stage ran and exited 0; done at 06:26. Commit + push after every stage.
+  BLOCKED: none. No temperature pause.
+- [x] **D69:** 4-bit SFT calibration completions (400 + 1,600). Global scale re-fitted: ×22.1 (bf16 fit ×18.1).
+  A5 re-fitted.
+  - **Sensitivity rerun of families N / E with the re-fitted A5:** no verdict changes (`749ebfb`).
+- [x] **R2-6:** uniform-credit seeds 1 and 2 trained to 287 and got corrected evals. Both sanity PASS.
+  - **R2-1 fingerprint, first GPU use:** an exact reproduction on both. Seed 2 "pass"; seed 1 "inconclusive" (its
+    adapter effect is under the 0.005 floor).
+- [x] **3-vs-3 robustness (D71; FINDINGS #18):** S1a, S1b and S3 supported; S2 not supported. At the seed level, split
+  > uniform in 9 / 9 cross-seed pairs for coverage and for ρ (ρ gain +0.05).
+- [x] **D70 smoke test:** PASS. The SFT adapter loads trainable on the 4-bit base, `get_peft_model` skips, and 2 GRPO
+  steps move all 392 LoRA tensors.
+- [ ] **Next:** the X2 GPU parts; Phase 12 SFT/RL code per D70 (pin the base revision); your call on the R2-1 effect
+  floor and on enforcement.

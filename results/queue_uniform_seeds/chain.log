@@ -38,3 +38,5 @@ R2-1 fingerprint check: pass {"logprob": 0.0, "sigma_token": 0.0, "sigma_samples
 [06:22:44] GPU at 57C
 [06:22:44] start d70_smoke (timeout 1800s): env HF_HUB_OFFLINE=1 uv run python scripts/sft_continue_smoke.py
 [06:26:13] end d70_smoke: exit 0
+[06:26:14] commit 'D70 smoke test (D76): SFT adapter loaded and trained by GRPO on the 4-bit base': pushed
+[06:26:14] queue done

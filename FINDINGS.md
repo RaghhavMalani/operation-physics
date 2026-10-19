@@ -847,3 +847,51 @@ knows about σ\* is the noise level and the template, which do not vary within a
   (`selection.json`, CV table and parse coverage, written before any pair prediction; `results.json`; `summary.md`).
   Fit set: 12,024 generator-2.0.0 training-split problems (1,349 templates, seeds 50,000,000+). Test set: 1,224
   (51,000,000+).
+
+## #18. Uniform-credit seeds 1 and 2 (R2-6): the corrected family S verdicts hold 3 vs 3; split credit's coverage gain is seed-robust, its ρ gain is consistent but tiny (robustness, D71; 2026-10-19)
+
+**Claim.** With three uniform-credit seeds instead of one, the problem-level seed-mean tests give the same verdicts as
+FINDINGS #16: S1a, S1b and S3 supported, S2 not supported. Across seeds, split credit's 1σ coverage beats uniform credit's
+in all 9 cross-seed comparisons, by about 31 points. Its ρ(σ, err) is also higher in all 9, but the values are tiny:
+0.03–0.08 against 0.01. This is a robustness analysis, not the pre-registered verdict (D71); FINDINGS #16 stands.
+
+**(A) Problem level, both arms as seed means** (one-sided paired bootstrap over 400 problems, Holm; conditional on
+these seeds):
+
+| test | split (3-seed mean) | control | difference [95% CI] | p | supported |
+|---|---|---|---|---|---|
+| S1a: 1σ cov > SFT-only | 41.8% | 12.0% | +29.8 pts [+25.5, +34.2] | < 1e-4 | yes |
+| S1b: 1σ cov > uniform (3-seed mean) | 41.8% | 10.8% | +31.0 pts [+26.8, +35.3] | < 1e-4 | yes |
+| S2: ρ(σ, err) > uniform (3-seed mean) | 0.061 | 0.012 | +0.048 [−0.085, +0.178] | 0.241 | no |
+| S3: accuracy non-inferior (−5 pts) | 37.7% | 37.2% | +0.5 pts [−0.8, +1.8] | < 1e-4 | yes |
+
+**(B) Seed level** (descriptive; exact permutation over the 20 relabellings, so one-sided p ≥ 0.05 and two-sided
+p ≥ 0.10 (R2-4); no verdict):
+
+| metric | split seeds 0 / 1 / 2 | uniform seeds 0 / 1 / 2 | Δ | perm. p (one / two-sided) | cross-seed pairs with the expected sign |
+|---|---|---|---|---|---|
+| 1σ coverage | 41.8 / 41.3 / 42.5% | 10.5 / 11.5 / 10.5% | +31.0 pts | 0.05 / 0.10 | 9 / 9 |
+| ρ(σ, err) | 0.077 / 0.034 / 0.071 | 0.015 / 0.014 / 0.009 | +0.048 | 0.05 / 0.10 | 9 / 9 |
+| accuracy | 37.8 / 36.8 / 38.5% | 37.3 / 37.5 / 36.8% | +0.5 pts | 0.25 / 0.50 | 6 / 9 |
+| σ = 0 share | 0 / 0 / 0.3% | 19.5 / 17.1 / 23.1% | −19.8 pts | – / 0.10 | – |
+| median relative σ | 1.61 / 1.64 / 1.59% | 0.052 / 0.057 / 0.041% | ×31 | – / 0.10 | – |
+
+- **The new uniform seeds look like the seed-0 control:**
+  - 1σ coverage 11.5% and 10.5%; accuracy 37.5% and 36.8%;
+  - σ = 0 on 17–23% of answers; median σ about 0.05%;
+  - parse failures 0.5%; no OOM; 40.8 and 40.7 s/step.
+- **Trajectories (`results/corrected/robustness_3v3/trajectories.png`):** from about step 100, all three split-credit
+  seeds raise their training σ about 20× and drive σ = 0 to zero. All three uniform seeds stay flat at about 0.06%
+  with σ = 0 near 25%. Mean reward and pass rate overlap throughout.
+- **Reading:** the S1 effect (coverage, σ collapse) does not depend on which uniform seed is the control. S2 keeps
+  failing at the problem level. At the seed level every split seed's ρ exceeds every uniform seed's, but the gain
+  (+0.05) is a tenth of the A5 text baseline's ρ (≈ 0.65). Per R2-4, this is not a seed-level significance claim.
+- **R2-1 on its first GPU use (D72):**
+  - **The reloads:** both corrected evals reproduced the training-time fingerprint exactly. Log-prob and σ-token
+    differences were 0.0, all 64 sampled completions were byte-identical, and provenance matched.
+  - **Labels:** seed 2's check is "pass". Seed 1's is "inconclusive", only because its adapter's own log-prob effect
+    on the fixed continuations (0.0047 nats/token) is just under D72's floor of 0.005. Its σ-token effect (TV 0.018)
+    discriminates clearly.
+- **Provenance:** `results/corrected/robustness_3v3/` (`scripts/robustness_3v3.py`, written before the seed-1/2
+  data); runs `results/train/overnight2-…-seed{1,2}/`; corrected evals in `compare/rl287_4bit/`; fingerprints in
+  `physcal_fingerprint.json`.
