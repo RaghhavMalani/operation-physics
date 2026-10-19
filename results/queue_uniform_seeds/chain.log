@@ -34,3 +34,7 @@ R2-1 fingerprint check: pass {"logprob": 0.0, "sigma_token": 0.0, "sigma_samples
 [06:22:08] waiting for the D69 re-fits (PID 18571)
 [06:22:08] start robustness_3v3 (timeout 3600s): env CUDA_VISIBLE_DEVICES= nice -n 10 uv run python scripts/robustness_3v3.py
 [06:22:42] end robustness_3v3: exit 0
+[06:22:44] commit 'R2-4 / R2-6 (D71): split vs uniform credit, 3 vs N seeds, robustness analysis (corrected evals)': pushed
+[06:22:44] GPU at 57C
+[06:22:44] start d70_smoke (timeout 1800s): env HF_HUB_OFFLINE=1 uv run python scripts/sft_continue_smoke.py
+[06:26:13] end d70_smoke: exit 0

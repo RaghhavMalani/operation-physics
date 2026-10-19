@@ -1,0 +1,45 @@
+W1019 00:52:50.651000 72712 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1019 00:52:50.695000 72712 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   3%|▎         | 9/338 [00:00<00:03, 89.10it/s]Loading weights:  19%|█▊        | 63/338 [00:00<00:00, 349.16it/s]Loading weights:  33%|███▎      | 112/338 [00:00<00:00, 410.85it/s]Loading weights:  47%|████▋     | 159/338 [00:00<00:00, 427.03it/s]Loading weights:  60%|█████▉    | 202/338 [00:00<00:00, 425.20it/s]Loading weights:  73%|███████▎  | 248/338 [00:00<00:00, 434.67it/s]Loading weights:  88%|████████▊ | 296/338 [00:00<00:00, 448.57it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 426.37it/s]
+Unsloth 2026.10.3 patched 28 layers with 28 QKV layers, 28 O layers and 28 MLP layers.
+Unsloth: Already have LoRA adapters! We shall skip this step.
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  20%|██        | 69/338 [00:03<00:14, 18.74it/s]Loading weights:  44%|████▍     | 148/338 [00:03<00:03, 47.51it/s]Loading weights:  68%|██████▊   | 229/338 [00:03<00:01, 86.10it/s]Loading weights:  91%|█████████ | 308/338 [00:03<00:00, 133.53it/s]Loading weights: 100%|██████████| 338/338 [00:04<00:00, 84.09it/s] 
+Unsloth: Already have LoRA adapters! We shall skip this step.
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None}.
+==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
+   \\   /|    Num examples = 4,800 | Num Epochs = 1 | Total steps = 2
+O^O/ \_/ \    Batch size per device = 2 | Gradient accumulation steps = 16
+\        /    Data Parallel GPUs = 1 | Total batch size (2 x 16 x 1) = 32
+ "-____-"     Trainable parameters = 18,464,768 of 1,562,179,072 (1.18% trained)
+  0%|          | 0/2 [00:00<?, ?it/s]Passing `generation_config` together with generation-related arguments=({'pad_token_id', 'cache_implementation'}) is deprecated and will be removed in future versions. Please pass either a `generation_config` object OR all generation parameters explicitly, but not both.
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+ 50%|█████     | 1/2 [00:41<00:41, 41.30s/it]                                              50%|█████     | 1/2 [00:41<00:41, 41.30s/it]Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+100%|██████████| 2/2 [01:21<00:00, 40.91s/it]                                             100%|██████████| 2/2 [01:21<00:00, 40.91s/it]/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/peft/utils/save_and_load.py:313: UserWarning: Could not find a config file in unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit - will assume that the vocabulary was not modified.
+  warnings.warn(
+Unsloth: Restored added_tokens_decoder metadata in /home/flash2404/operation-physics/results/train/sft-continue-smoke/checkpoints/checkpoint-2/tokenizer_config.json.
+                                             100%|██████████| 2/2 [01:22<00:00, 40.91s/it]100%|██████████| 2/2 [01:22<00:00, 41.16s/it]
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/peft/utils/save_and_load.py:313: UserWarning: Could not find a config file in unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit - will assume that the vocabulary was not modified.
+  warnings.warn(
+Unsloth: Restored added_tokens_decoder metadata in /home/flash2404/operation-physics/results/train/sft-continue-smoke/final_adapter/tokenizer_config.json.
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Both `max_new_tokens` (=512) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Unsloth: Will smartly offload gradients to save VRAM!
+Unsloth: Double buffering enabled (parallel H2D + compute) for backward pass.
+{'loss': '0.006229', 'grad_norm': '0.128', 'learning_rate': '0', 'num_tokens': '3.633e+04', 'completions/mean_length': '133.2', 'completions/min_length': '99', 'completions/max_length': '163', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '133.2', 'completions/min_terminated_length': '99', 'completions/max_terminated_length': '163', 'rewards/verifier_reward/mean': '-0.2213', 'rewards/verifier_reward/std': '0.8882', 'reward': '-0.2213', 'reward_std': '0.8882', 'frac_reward_zero_std': '0', 'completion_length': '133.2', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '37.49', 'epoch': '0.05556'}
+{'loss': '-0.002988', 'grad_norm': '0.1389', 'learning_rate': '1e-06', 'num_tokens': '7.454e+04', 'completions/mean_length': '171.7', 'completions/min_length': '116', 'completions/max_length': '212', 'completions/clipped_ratio': '0', 'completions/mean_terminated_length': '171.7', 'completions/min_terminated_length': '116', 'completions/max_terminated_length': '212', 'rewards/verifier_reward/mean': '-0.496', 'rewards/verifier_reward/std': '0.8577', 'reward': '-0.496', 'reward_std': '0.8577', 'frac_reward_zero_std': '0', 'completion_length': '171.7', 'kl': '0', 'clip_ratio/low_mean': '0', 'clip_ratio/low_min': '0', 'clip_ratio/high_mean': '0', 'clip_ratio/high_max': '0', 'clip_ratio/region_mean': '0', 'step_time': '36.9', 'epoch': '0.1111'}
+{'train_runtime': '82.32', 'train_samples_per_second': '0.777', 'train_steps_per_second': '0.024', 'train_loss': '0.00162', 'epoch': '0.1111'}
+D70 SMOKE PASS: {"is_peft_model": true, "trainable_are_exactly_lora": true, "same_tensor_names": true, "loaded_equals_saved": true, "get_peft_model_skips": true, "two_steps": true, "finite_loss": true, "final_same_tensors": true, "rl_moved_the_sft_adapter": true, "same_base": true}
