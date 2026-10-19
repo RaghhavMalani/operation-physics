@@ -1,0 +1,209 @@
+{
+ "decision": "D79 (X3 pilot)",
+ "n_problems": 399,
+ "arms": {
+  "a": {
+   "describe": {
+    "n": 399,
+    "n_failed": 0,
+    "mu_changed": 0,
+    "mean_crps_log": -0.30561619185414163,
+    "coverage_1sigma": 0.6641604010025063,
+    "coverage_1sigma_error": 0.01853959899749369,
+    "coverage_2sigma": 0.7944862155388471,
+    "spearman_sigma_error": 0.5752645930772695,
+    "median_rel_sigma": 0.10799725750588866,
+    "sigma_zero_share": 0.0,
+    "bin_entropy_bits": 2.893795203859425
+   },
+   "rho": {
+    "value": 0.5752645930772695,
+    "ci95": [
+     0.4987434691346761,
+     0.6428904364261291
+    ]
+   },
+   "rho_minus_teacher": {
+    "value": -0.08839280527377935,
+    "ci95": [
+     -0.15506470096042366,
+     -0.023683406721744626
+    ]
+   },
+   "rho_minus_sft": {
+    "value": 0.5369294964132924,
+    "ci95": [
+     0.4020938551012145,
+     0.669457325007459
+    ]
+   },
+   "fidelity_spearman_vs_teacher": 0.7159913089865065,
+   "training": {
+    "arm": "a",
+    "n_rows": 1998,
+    "target_tokens_mean": 10.905405405405405,
+    "steps": 500,
+    "steps_per_epoch": 250,
+    "epochs_completed": 2.0,
+    "max_steps_requested": null,
+    "minutes_cap": 140.0,
+    "seconds": 2695.590905189514,
+    "train_loss": 0.508450439453125,
+    "model_dir": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+    "lora": {
+     "r": 16,
+     "alpha": 16,
+     "dropout": 0.0,
+     "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+     ]
+    },
+    "lora_seed": 0,
+    "data_sha256": "81709274f192d4b3",
+    "peak_vram": {
+     "torch_max_allocated_gib": 1.754885196685791,
+     "nvidia_smi_peak_used_gib_device_wide": 4.0849609375
+    },
+    "fingerprint": {
+     "status": "recorded",
+     "file": "/home/flash2404/operation-physics/results/x3/a/final_adapter/physcal_fingerprint.json",
+     "adapter_effect": {
+      "mean_abs_dlogp": 0.07743954082047044,
+      "mean_sigma_tv": 0.3845035390930994
+     },
+     "seconds": 87.78035068511963
+    }
+   }
+  },
+  "b": {
+   "describe": {
+    "n": 399,
+    "n_failed": 0,
+    "mu_changed": 0,
+    "mean_crps_log": -0.348144630468301,
+    "coverage_1sigma": 0.3082706766917293,
+    "coverage_1sigma_error": 0.37442932330827067,
+    "coverage_2sigma": 0.37593984962406013,
+    "spearman_sigma_error": 0.5832823807550427,
+    "median_rel_sigma": 0.0030639885288964936,
+    "sigma_zero_share": 0.0,
+    "bin_entropy_bits": 2.7023848504170327
+   },
+   "rho": {
+    "value": 0.5832823807550427,
+    "ci95": [
+     0.5086397661111045,
+     0.6499916660438316
+    ]
+   },
+   "rho_minus_teacher": {
+    "value": -0.08037501759600618,
+    "ci95": [
+     -0.1572163061804985,
+     -0.0027105277469817047
+    ]
+   },
+   "rho_minus_sft": {
+    "value": 0.5449472840910655,
+    "ci95": [
+     0.41681885618992437,
+     0.670607386564245
+    ]
+   },
+   "fidelity_spearman_vs_teacher": 0.6013830337849546,
+   "training": {
+    "arm": "b",
+    "n_rows": 1998,
+    "target_tokens_mean": 11.125125125125125,
+    "steps": 500,
+    "steps_per_epoch": 250,
+    "epochs_completed": 2.0,
+    "max_steps_requested": 500,
+    "minutes_cap": 250.0,
+    "seconds": 2574.092696428299,
+    "train_loss": 0.5581403932571412,
+    "model_dir": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+    "lora": {
+     "r": 16,
+     "alpha": 16,
+     "dropout": 0.0,
+     "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+     ]
+    },
+    "lora_seed": 0,
+    "data_sha256": "81709274f192d4b3",
+    "peak_vram": {
+     "torch_max_allocated_gib": 1.754885196685791,
+     "nvidia_smi_peak_used_gib_device_wide": 4.083984375
+    },
+    "fingerprint": {
+     "status": "recorded",
+     "file": "/home/flash2404/operation-physics/results/x3/b/final_adapter/physcal_fingerprint.json",
+     "adapter_effect": {
+      "mean_abs_dlogp": 0.0737003797180649,
+      "mean_sigma_tv": 0.32054809648179977
+     },
+     "seconds": 82.2127456665039
+    }
+   },
+   "x2": {
+    "n_problems": 516,
+    "pairwise_accuracy": 0.48836055740125506,
+    "ci95": [
+     0.459703390319306,
+     0.5172073701088962
+    ],
+    "p_one_sided_gt_half": 0.7805
+   }
+  }
+ },
+ "reference": {
+  "A5 teacher \u03c3 (4-bit)": {
+   "n": 399,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.29109349374230387,
+   "coverage_1sigma": 0.6641604010025063,
+   "coverage_1sigma_error": 0.01853959899749369,
+   "coverage_2sigma": 0.7694235588972431,
+   "spearman_sigma_error": 0.6636573983510489,
+   "median_rel_sigma": 0.0658950885068526,
+   "sigma_zero_share": 0.0,
+   "bin_entropy_bits": 2.826569739086395
+  },
+  "SFT stated \u03c3 (4-bit)": {
+   "n": 399,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.3215157593548204,
+   "coverage_1sigma": 0.12030075187969924,
+   "coverage_1sigma_error": 0.5623992481203007,
+   "coverage_2sigma": 0.17042606516290726,
+   "spearman_sigma_error": 0.03833509666397717,
+   "median_rel_sigma": 0.0006842958892615878,
+   "sigma_zero_share": 0.1658291457286432,
+   "bin_entropy_bits": 1.4519823897249797
+  }
+ },
+ "label_a": "capacity likely",
+ "rho_b_minus_a": {
+  "value": 0.00801778767777317,
+  "ci95": [
+   -0.05426137985907677,
+   0.0720861065628816
+  ]
+ }
+}
