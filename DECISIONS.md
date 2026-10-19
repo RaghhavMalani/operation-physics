@@ -2094,3 +2094,80 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **The real pin** matches the cached snapshot.
 - **Not tested: the GPU path** (Unsloth loading a pre-quantized snapshot from a local dir, then saving and reloading
   an adapter that names it). Tonight's queue ends with a 2-minute GPU check of exactly that, when time allows (D81).
+
+### D79. Pre-registration of X3: the distillation capacity test, pilot (written before any X3 teacher σ, student or score exists)
+- **Origin:** REVIEW_SYNTHESIS_ROUND2 X3 (both reviewers; secondary). Your instruction (2026-10-19): pre-register X3, build
+  the out-of-fold A5 teacher σ and the true-error-label control, configs; the pilot runs tonight only if ≥ 2 h of GPU
+  time remain after X2 (D81).
+- **Question:** can the RL runs' own setup express a σ that ranks errors, if it is *told* the target by SFT?
+  - **The setup:** the 4-bit merged SFT base plus a fresh LoRA r = 16.
+  - **If it can,** split credit's ρ ≈ 0.06 (FINDINGS #16 / #18) is an optimization problem (credit, reward signal),
+    not a capacity limit.
+  - **What X3 does not test:** self-awareness produced by RL. It tests capacity and transfer only (R2 synthesis).
+- **State of the data:** the D69 4-bit calibration completions and the 4-bit A5 fit (`results/a5_baselines_4bit`)
+  exist. No X3 teacher σ, label, student or score exists. X2 has not been sampled.
+- **Students (one variable between them: the σ target):**
+  - **The model:** exactly the RL runs' start and LoRA.
+    - **Base:** the merged SFT model (`results/sft/qwen2.5-math-1.5b-instruct/merged`, content hash
+      `0b435c0ebaed36e2`), loaded 4-bit by Unsloth (the training / corrected-eval loader).
+    - **LoRA:** a fresh adapter with grpo_overnight2's settings (r 16, α 16, dropout 0, the same 7 modules, seed 0).
+    - **Never merged (D68):** every eval applies the adapter unmerged, R2-1 enforced (D77). The trainer records the
+      fingerprint.
+  - **Training rows:** D69's 2,000 4-bit SFT greedy calibration completions (seeds 2e7..2e7+1,999). A row is kept if
+    it has a parsed answer with μ > 0 (A5's `ok`) and a "±" in `<answer>`; the excluded count is reported.
+    - **Context (no loss):** the prompt (v4) and the completion up to and including "±", as in E1. So the student
+      never trains on μ or the reasoning.
+    - **Target (loss):** the suffix after "±", with the σ number replaced by the target σ in the answer's own unit,
+      written `.2g` (the SFT data's σ format), then the original unit, `</answer>` and the end-of-turn token.
+    - **The σ in the target:** σ_display = σ_log · |μ_display|, so crps_log reads it back as σ_log (it scores
+      N(ln μ, (σ/μ)²)).
+  - **Student (a), the A5 teacher.** σ_log is the strongest 4-bit A5 σ (`problem_answer_reasoning/gbt`, its selected
+    hyperparameters), predicted **out of fold**.
+    - **The folds:** A5's own 5-fold CV, grouped by template.
+    - **The scale:** c × exp(out-of-fold prediction), with c the value A5's selection fitted on those out-of-fold
+      predictions (one global scalar).
+    - **Why out of fold:** the refit A5 has seen these completions' own errors, so in-sample targets would leak them.
+    - **Pipeline check (not a result):** these σ must reproduce A5's recorded CV metrics for that candidate
+      (crps_log −0.1972, ρ 0.653, 1σ coverage 69.2%).
+  - **Student (b), the true-error-label control.** σ_log is the σ that minimizes this completion's own crps_log given
+    its realized error: σ_log = max(|ln(μ / truth)|, 1e-6) / √(ln 2). For one observation the CRPS of N(0, σ²) at
+    e is minimized at |e| = σ·√(ln 2); 1e-6 is the verifier's crps_log floor.
+    - **What it measures:** no teacher sits between the labels and the student. The student is fitted directly to
+      the true errors, and on held-out problems it can only learn E[label | text].
+- **Training (both students identical except the target):**
+  - **Settings:** `configs/sft.yaml`'s optimizer settings (AdamW 8-bit, LR 1e-4 constant after 10 warmup steps,
+    batch 2 × 4 accumulation, grad-norm 1.0, weight decay 0, bf16), seed 0, shuffled once with seed 0.
+  - **Budget:** 2 epochs (about 500 optimizer steps).
+  - **Time cap:** at launch the queue gives (a) a wall-clock cap, so that both students and their evals fit before
+    the deadline. Student (b) then gets exactly (a)'s completed step count, so the budget stays matched.
+  - **Reported:** steps, loss on the target tokens, time.
+- **Evaluation (greedy σ suffix, 24 tokens, the E1 eval machinery; μ fixed):**
+  1. **ID + depth 5 (primary):** the frozen 1.1.0 sets' 400 4-bit SFT greedy completions (`overnight2…/compare/
+     sft_4bit`), truncated after "±".
+     - **These answers already have** the 4-bit A5 σ (ρ 0.68), the SFT's own σ (ρ 0.05), and the 4-bit SFT corrected
+       eval rows of FINDINGS #16.
+     - **Failures:** parse failure, unit mismatch, or a suffix that changes μ (E1's `mu_changed`). These score the
+       floor, count as not covered, and are excluded from ρ, as in E1.
+  2. **X2 pairs (secondary):** every answer of the kept X2 problems (D74) truncated after "±". Pairwise accuracy
+     with confidence −ln σ_rel, as X2's method 2; an unusable suffix is a tie.
+- **Metrics:**
+  - ρ = Spearman(σ, |ln(μ / truth)|) on the pooled 400 (answered, μ unchanged);
+  - mean crps_log; 1σ / 2σ coverage; median relative σ; σ = 0 share; the parse / unit / μ-changed rates;
+  - fidelity: Spearman(student σ, teacher σ) on the same answers;
+  - X2 pairwise accuracy.
+  - **Inference:** bootstrap over problems (B = 10,000, seed 0) for the 95% CIs; paired bootstrap for differences.
+- **Reading rules (fixed now; a pilot, so labels, not hypothesis tests):**
+  - **"Capacity shown":** student (a)'s ρ CI lies above 0.5 (the synthesis's bar). RL's ρ ≈ 0.06 is then an
+    optimization problem, not a capacity limit.
+  - **"Capacity likely":** the point estimate is ≥ 0.5, but the CI reaches below 0.5.
+  - **"Not shown at the pilot budget":** the point estimate is < 0.5. Read with the fidelity: low fidelity means the
+    student did not learn the teacher, which is an SFT-budget question, not a capacity verdict.
+  - **Student (b), descriptive:** ρ_b − ρ_a with its paired CI. Both are read against the teacher's own ρ on the
+    same answers (0.68) and SFT's (0.05).
+  - **X2 pairwise accuracy, descriptive:** reported next to X2's methods. A student above 0.5 there would carry
+    answer-specific information that A5's text features do or do not have.
+  - **What comes next:** a full X3 (3 seeds, a longer budget) is specified separately, if the pilot warrants it.
+- **Code and outputs:**
+  - **Code:** `physcal/train/x3.py`; config `configs/x3.yaml`; tests `tests/test_x3.py`.
+  - **Data:** `results/x3/data/` (rows, targets, the pipeline check). It is built today on CPU and committed before
+    any student is trained.
