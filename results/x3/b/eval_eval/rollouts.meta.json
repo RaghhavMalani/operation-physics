@@ -1,0 +1,333 @@
+{
+  "adapter": "/home/flash2404/operation-physics/results/x3/b/final_adapter",
+  "e1": {
+    "bins": [
+      0.001,
+      0.002,
+      0.005,
+      0.01,
+      0.02,
+      0.05,
+      0.1,
+      0.3,
+      1.0
+    ],
+    "chat_template_kwargs": {},
+    "compare": {
+      "a5_sigma_tape": "results/a5_baselines/sft_eval_a5_sigma.jsonl",
+      "alpha": 0.05,
+      "bootstrap": 10000,
+      "coverage_target": 0.6827,
+      "output_dir": "results/e1",
+      "runs": {
+        "E1a": "results/train/e1a-sigma-only-free-seed0",
+        "E1b": "results/train/e1b-sigma-only-bins-seed0"
+      },
+      "seed": 0
+    },
+    "data_dir": "results/e1/data",
+    "eval": {
+      "generation": {
+        "batch_size": 16,
+        "do_sample": false,
+        "max_new_tokens": 24,
+        "repetition_penalty": 1.0,
+        "seed": 0,
+        "temperature": 1.0,
+        "top_k": 0,
+        "top_p": 1.0
+      }
+    },
+    "eval_tapes": [
+      "results/train/overnight-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-512/compare_verifier_1.1.0/sft/rollouts.jsonl"
+    ],
+    "model_id": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+    "mu_changed_rtol": 1e-09,
+    "prompt": "v4_worked_example",
+    "reward_rule": "crps_log",
+    "sft_eval": {
+      "loader_settings_from": "grpo_e1a",
+      "mode": "free",
+      "output_dir": "results/e1/sft_4bit"
+    },
+    "train_tapes": [
+      "results/posthoc_calibration/sft_calibration_set/rollouts.jsonl",
+      "results/probe_sft/sft_calibration_ext/rollouts.jsonl"
+    ]
+  },
+  "e1_mode": "free",
+  "env_config": {
+    "generator": {
+      "condition_rel_step": 1e-06,
+      "display": {
+        "fixed_exponent_range": [
+          -2,
+          4
+        ],
+        "magnitude_range": [
+          0.01,
+          10000.0
+        ],
+        "sig_figs": 3
+      },
+      "distractors": [
+        0,
+        2
+      ],
+      "max_attempts": 200,
+      "max_condition_number": 5.0,
+      "max_world_tries": 100,
+      "version": "1.1.0",
+      "worlds_per_chain": 10
+    },
+    "splits": {
+      "depths": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "eval_seed_offset": 1000000000,
+      "heldout_depths": [
+        5
+      ],
+      "heldout_families": [
+        "optics"
+      ]
+    }
+  },
+  "eval_tapes": [
+    "results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare/sft_4bit/rollouts.jsonl"
+  ],
+  "loader": "unsloth_4bit",
+  "loader_check": {
+    "adapter_base": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+    "adapter_max_abs_logit_delta": 0.46875,
+    "bnb_4bit_linear_modules": 196,
+    "fingerprint": {
+      "below_floor_rule": null,
+      "criteria": {
+        "logprob": {
+          "adapter_effect": 0.0737003797180649,
+          "decisive": true,
+          "max_ratio": 0.25,
+          "mean_abs_dlogp": 0.001966795484291383,
+          "pass": true,
+          "ratio": 0.026686368398849598
+        },
+        "provenance": {
+          "mismatches": {},
+          "must_match": [
+            "base_identity",
+            "quantization_config",
+            "compute_dtype",
+            "bitsandbytes"
+          ],
+          "other_differences": [],
+          "pass": true
+        },
+        "sigma_samples": {
+          "abs_dlog_median": 0.0,
+          "evaluable": true,
+          "max_abs_dlog_median": 0.693,
+          "median_ln_sigma_reloaded": -2.8315528409952306,
+          "median_ln_sigma_training": -2.8315528409952306,
+          "n_parsed_reloaded": 63,
+          "n_parsed_training": 63,
+          "pass": true,
+          "share_identical_texts": 1.0
+        },
+        "sigma_token": {
+          "adapter_effect": 0.32054809648179977,
+          "decisive": true,
+          "max_ratio": 0.25,
+          "mean_tv": 0.012363671433385542,
+          "pass": true,
+          "ratio": 0.0385704097733974
+        }
+      },
+      "fingerprint": "/home/flash2404/operation-physics/results/x3/b/final_adapter/physcal_fingerprint.json",
+      "provenance": {
+        "adapter": {
+          "base_model_name_or_path": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+          "dir": "/home/flash2404/operation-physics/results/x3/b/final_adapter",
+          "file": "3f4d6bff0a003c42",
+          "lora_alpha": 16,
+          "r": 16,
+          "target_modules": [
+            "down_proj",
+            "gate_proj",
+            "k_proj",
+            "o_proj",
+            "q_proj",
+            "up_proj",
+            "v_proj"
+          ],
+          "tensors": "59e7806f74674adf"
+        },
+        "adapter_merged": false,
+        "base": {
+          "commit": null,
+          "content_sha256": "0b435c0ebaed36e2",
+          "model_id": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+          "name_or_path": "results/sft/qwen2.5-math-1.5b-instruct/merged"
+        },
+        "base_identity": "sha256:0b435c0ebaed36e2",
+        "bitsandbytes": "0.50.2",
+        "compute_dtype": {
+          "bnb_4bit_compute_dtype": "torch.bfloat16",
+          "model_dtype": "torch.bfloat16"
+        },
+        "loader": "unsloth_4bit",
+        "quantization_config": {
+          "bnb_4bit_compute_dtype": "torch.bfloat16",
+          "bnb_4bit_quant_type": "nf4",
+          "bnb_4bit_use_double_quant": true,
+          "llm_int8_enable_fp32_cpu_offload": false,
+          "llm_int8_has_fp16_weight": false,
+          "llm_int8_skip_modules": [
+            "lm_head",
+            "multi_modal_projector",
+            "merger",
+            "modality_projection",
+            "mm_projector",
+            "router",
+            "mlp.gate",
+            "block_sparse_moe.gate",
+            "moe.gate",
+            "mamba",
+            "audio_tower",
+            "vision_tower",
+            "vision_embedder",
+            "embed_vision",
+            "embed_audio",
+            "score",
+            "classifier",
+            "qa_outputs"
+          ],
+          "llm_int8_threshold": 6.0,
+          "load_in_4bit": true,
+          "load_in_8bit": false,
+          "quant_method": "bitsandbytes"
+        },
+        "versions": {
+          "accelerate": "1.15.0",
+          "bitsandbytes": "0.50.2",
+          "peft": "0.21.2",
+          "torch": "2.14.1",
+          "transformers": "5.17.0",
+          "trl": "1.13.0",
+          "unsloth": "2026.10.3",
+          "unsloth_zoo": "2026.10.3"
+        }
+      },
+      "status": "pass"
+    },
+    "loader": "unsloth_4bit",
+    "tokenizer_matches": {
+      "backend": true,
+      "chat_template": true,
+      "eos_token_id": true,
+      "vocab": true
+    }
+  },
+  "provenance": {
+    "adapter": {
+      "base_model_name_or_path": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+      "dir": "/home/flash2404/operation-physics/results/x3/b/final_adapter",
+      "file": "3f4d6bff0a003c42",
+      "lora_alpha": 16,
+      "r": 16,
+      "target_modules": [
+        "down_proj",
+        "gate_proj",
+        "k_proj",
+        "o_proj",
+        "q_proj",
+        "up_proj",
+        "v_proj"
+      ],
+      "tensors": "59e7806f74674adf"
+    },
+    "adapter_merged": false,
+    "base": {
+      "commit": null,
+      "content_sha256": "0b435c0ebaed36e2",
+      "model_id": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+      "name_or_path": "results/sft/qwen2.5-math-1.5b-instruct/merged"
+    },
+    "base_identity": "sha256:0b435c0ebaed36e2",
+    "bitsandbytes": "0.50.2",
+    "compute_dtype": {
+      "bnb_4bit_compute_dtype": "torch.bfloat16",
+      "model_dtype": "torch.bfloat16"
+    },
+    "loader": "unsloth_4bit",
+    "quantization_config": {
+      "bnb_4bit_compute_dtype": "torch.bfloat16",
+      "bnb_4bit_quant_type": "nf4",
+      "bnb_4bit_use_double_quant": true,
+      "llm_int8_enable_fp32_cpu_offload": false,
+      "llm_int8_has_fp16_weight": false,
+      "llm_int8_skip_modules": [
+        "lm_head",
+        "multi_modal_projector",
+        "merger",
+        "modality_projection",
+        "mm_projector",
+        "router",
+        "mlp.gate",
+        "block_sparse_moe.gate",
+        "moe.gate",
+        "mamba",
+        "audio_tower",
+        "vision_tower",
+        "vision_embedder",
+        "embed_vision",
+        "embed_audio",
+        "score",
+        "classifier",
+        "qa_outputs"
+      ],
+      "llm_int8_threshold": 6.0,
+      "load_in_4bit": true,
+      "load_in_8bit": false,
+      "quant_method": "bitsandbytes"
+    },
+    "versions": {
+      "accelerate": "1.15.0",
+      "bitsandbytes": "0.50.2",
+      "peft": "0.21.2",
+      "torch": "2.14.1",
+      "transformers": "5.17.0",
+      "trl": "1.13.0",
+      "unsloth": "2026.10.3",
+      "unsloth_zoo": "2026.10.3"
+    }
+  },
+  "reward_config": {
+    "checks": {
+      "copy_tolerance": 0.001
+    },
+    "scoring": {
+      "abs_rel_error_clip": 5.0,
+      "binary_tolerance": 0.01,
+      "crps_clip": 5.0,
+      "crps_log_sigma_floor": 1e-06,
+      "log_score_clip": 10.0,
+      "rule": "crps_log",
+      "sigma_floor": 0.001
+    },
+    "steps": {
+      "empty_score": 0.0,
+      "tolerance": 0.02
+    },
+    "version": "1.1.0",
+    "weights": {
+      "final": 1.0,
+      "steps": 0.2
+    }
+  },
+  "run_id": "x3-b-eval"
+}
