@@ -32,3 +32,8 @@
 [01:11:32] start x2_select (timeout 900s): env CUDA_VISIBLE_DEVICES= nice -n 10 uv run python -m physcal.eval.x2_pairs select
 [01:11:35] end x2_select: exit 0
 516 of 1200 sampled candidates have mixed outcomes
+[01:11:36] commit 'X2 (D74): selection of the mixed problems from the sampled prefix': pushed
+[01:11:36] GPU at 61C
+[01:11:36] start x2_suffix (timeout 3600s): uv run python -m physcal.eval.x2_pairs suffix
+[02:18:15] end x2_suffix: exit 124
+[02:18:15] BLOCKED x2_suffix (see results/queue_x2_x3/x2_suffix.log): method 2 counts as p = 1
