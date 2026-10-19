@@ -76,3 +76,7 @@
 [04:54:14] GPU at 63C
 [04:54:14] start x3_eval_b_eval (timeout 2400s): uv run python -m physcal.train.x3 eval --arm b --set eval
 [04:57:49] end x3_eval_b_eval: exit 0
+[04:57:52] commit 'X3 pilot (D79): student (b) sigma suffixes on the eval set (4-bit, unmerged, R2-1 enforced)': pushed
+[04:57:52] GPU at 63C
+[04:57:52] start x3_eval_b_x2 (timeout 2400s): uv run python -m physcal.train.x3 eval --arm b --set x2
+[05:16:47] end x3_eval_b_x2: exit 0
