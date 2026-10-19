@@ -2356,3 +2356,12 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - X3 training and its fingerprint;
   - the D78 snapshot load.
 - **Launch command:** `nohup scripts/queue_x2_x3.sh > results/queue_x2_x3/nohup.log 2>&1 &`
+
+## Decisions on the 2026-10-19 day report (2026-10-19, afternoon; CPU only)
+
+### D82. X3's control and X2's method-2 stage confirmed (your decisions, 2026-10-19)
+- **X3 control (D79):** each answer's own CRPS-optimal σ, |ln(μ/truth)| / √(ln 2), floored at 1e-6, is **confirmed**
+  as the reading of "a σ fitted directly to true error labels". The pre-registration and the built data stand
+  unchanged.
+- **X2 method 2 in tonight's queue (D81):** the split credit seed 0 @287 σ-suffix stage is **approved**. The queue is
+  unchanged.
