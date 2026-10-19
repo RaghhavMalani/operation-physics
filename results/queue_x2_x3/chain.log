@@ -1,0 +1,5 @@
+[23:06:41] queue start; GPU deadline 09:00 IST; queue PID 2085
+[23:06:41] GPU at 50C
+[23:06:41] start x2_batch_probe (timeout 1800s): uv run python scripts/x2_batch_probe.py
+[23:07:48] end x2_batch_probe: exit 0
+[23:07:48] X2 sampling: batch 32, worst-case chunk 2279s (x 1.3)

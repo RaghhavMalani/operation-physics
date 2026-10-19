@@ -1,0 +1,66 @@
+{
+ "decision": "D81",
+ "chosen_batch_size": 32,
+ "worst_case_seconds_per_batch": 35.04959487915039,
+ "worst_case_seconds_per_chunk": 1752.4797439575195,
+ "chunk_size": 200,
+ "k": 8,
+ "max_reserved_gib_cap": 5.75,
+ "trials": [
+  {
+   "batch_size": 128,
+   "prompts": 16,
+   "ok": false,
+   "error": "OutOfMemoryError: CUDA out of memory. Tried to allocate 2.38 GiB. GPU 0 has a total capacity of 8.00 GiB of which 741.80 MiB is free. Including non-PyTorch memory, this process has 17179869184.00 GiB memory in use. 5.7",
+   "new_tokens": null,
+   "seconds": 1.6242280006408691,
+   "peak_reserved_gib": 5.595703125,
+   "peak_allocated_gib": 5.147892475128174,
+   "prompt_tokens_max": 1108
+  },
+  {
+   "batch_size": 96,
+   "prompts": 12,
+   "ok": false,
+   "error": "OutOfMemoryError: CUDA out of memory. Tried to allocate 1.78 GiB. GPU 0 has a total capacity of 8.00 GiB of which 2.50 GiB is free. Including non-PyTorch memory, this process has 17179869184.00 GiB memory in use. 5.75 ",
+   "new_tokens": null,
+   "seconds": 0.32019639015197754,
+   "peak_reserved_gib": 4.486328125,
+   "peak_allocated_gib": 4.140842914581299,
+   "prompt_tokens_max": 1108
+  },
+  {
+   "batch_size": 64,
+   "prompts": 8,
+   "ok": false,
+   "error": "OutOfMemoryError: CUDA out of memory. Tried to allocate 1.19 GiB. GPU 0 has a total capacity of 8.00 GiB of which 515.25 MiB is free. Including non-PyTorch memory, this process has 17179869184.00 GiB memory in use. 5.7",
+   "new_tokens": null,
+   "seconds": 0.602471113204956,
+   "peak_reserved_gib": 5.744140625,
+   "peak_allocated_gib": 5.482199668884277,
+   "prompt_tokens_max": 1108
+  },
+  {
+   "batch_size": 48,
+   "prompts": 6,
+   "ok": false,
+   "error": "OutOfMemoryError: CUDA out of memory. Tried to allocate 912.00 MiB. GPU 0 has a total capacity of 8.00 GiB of which 973.48 MiB is free. Including non-PyTorch memory, this process has 17179869184.00 GiB memory in use. 5",
+   "new_tokens": null,
+   "seconds": 3.7306971549987793,
+   "peak_reserved_gib": 5.376953125,
+   "peak_allocated_gib": 5.299332618713379,
+   "prompt_tokens_max": 1108
+  },
+  {
+   "batch_size": 32,
+   "prompts": 4,
+   "ok": true,
+   "error": null,
+   "new_tokens": 512,
+   "seconds": 35.04959487915039,
+   "peak_reserved_gib": 4.56640625,
+   "peak_allocated_gib": 4.3044514656066895,
+   "prompt_tokens_max": 1108
+  }
+ ]
+}
