@@ -2504,3 +2504,31 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Deadline (your message at launch, ~23:07):** all GPU work by **09:00 IST** instead of 08:30. The queue takes it
   from `GPU_DEADLINE=09:00` at launch, so the script is unchanged. Its gates (X2 downstream reserve, the X3 pilot's
   ≥ 2 h, the D78 check's ≥ 10 min) measure from that deadline.
+
+### D87. X2 method 2 timed out (BLOCKED): σ-suffix generation spilled into WSL shared memory; fixed for the X3 evals and for a rerun after the queue
+- **What happened:** the queue's `x2_suffix` stage (split credit seed 0 @287 writes a greedy σ suffix on each of the
+  516 kept problems' answers) hit its 1 h timeout (exit 124, 01:11 → 02:18) without writing output.
+  - **The queue's handling, as designed:** it logged BLOCKED (method 2 counts as p = 1) and went on to the
+    hidden-state stages.
+- **Cause (from the log and the probe):** about 60 generate calls in an hour, roughly 60 s each where about 5 s was
+  expected.
+  - **The shape of each call:** 32 *distinct* prompts of about 1,300 tokens (prompt + completion up to "±"), one
+    prefill. The X2 sampling batches were 4 prompts × 8 samples.
+  - **The probe already measured that shape:** 32 sequences × 1,108 tokens peaked at 4.57 GiB reserved.
+  - **Free memory tonight:** about 6.3 GiB physically free (D86).
+  - **The cap:** E1's eval path passed no allocator cap, so the overflow went to WSL shared memory (slow, no error)
+    instead of OOM. D86's claim that the other stages need far less memory was wrong for this stage.
+  - **Also:** `x2_pairs.suffix` imported transformers before Unsloth, which Unsloth warns can slow it.
+- **Fix (one attempt; it applies to every later stage, since each stage imports the code when it starts):**
+  - **Batches:** σ-suffix batches 32 → 16 (`x2.yaml suffix.batch_size`, `x3.yaml eval.batch_size`).
+  - **The cap:** `e1._evaluate` takes an optional `max_reserved_gib`, which X2's suffix stage and X3's evals set to
+    the sampling cap, 5.75 GiB. An overflow now raises OOM, which the backoff halves.
+  - **Import order:** Unsloth is imported before transformers in both.
+  - **Progress lines:** `suffixes n/N (s, OOM backoffs)` every 10 batches.
+  - **E1's own defaults are unchanged.** 28 CPU tests pass (E1, X3, X2).
+- **Plan:**
+  - **The X3 evals in the queue** pick the fix up automatically.
+  - **After the queue's GPU stages end, if time remains before 09:00:** rerun the method-2 stage by hand
+    (`python -m physcal.eval.x2_pairs suffix`, about 15 min expected), then rerun the X2 analysis.
+  - **The queue's own X2 analysis** runs without method 2 and is superseded by the rerun. Both are committed. The
+    rerun is the complete D74 analysis; Holm's family size does not depend on it.

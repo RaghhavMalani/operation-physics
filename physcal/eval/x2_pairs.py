@@ -145,7 +145,10 @@ def kept_records(cfg: dict | None = None) -> tuple[list[dict], str]:
 
 def suffix(batch_size: int | None = None, backend=None) -> dict:
     """Method 2 (D74): each kept answer truncated after "±"; split credit seed 0 @287 (corrected loader, unmerged)
-    writes a greedy σ suffix (E1's eval machinery). Rows carry (key, source_sample)."""
+    writes a greedy σ suffix (E1's eval machinery). Rows carry (key, source_sample). D87: the allocator cap of
+    sampling, and Unsloth imported before transformers."""
+    if backend is None:
+        import unsloth  # noqa: F401  (before transformers, as in training)
     from transformers import AutoTokenizer
 
     from physcal.tape.tape import read_meta
@@ -161,7 +164,8 @@ def suffix(batch_size: int | None = None, backend=None) -> dict:
     model = read_meta(run / "rollouts.jsonl")["train_config"]["model"]
     out = REPO_ROOT / sc["output_dir"]
     res = e1._evaluate(out, "x2-split-seed0-287-suffix", "free", str(run / sc["adapter"]), model, backend, 0,
-                       "unsloth_4bit", rows=rows, source_tapes=[source], batch_size=batch_size or sc["batch_size"])
+                       "unsloth_4bit", rows=rows, source_tapes=[source], batch_size=batch_size or sc["batch_size"],
+                       max_reserved_gib=cfg["sampling"]["max_reserved_gib"] if backend is None else None)
     (out / "excluded.json").write_text(json.dumps(excluded))
     return {**res, "excluded": excluded}
 

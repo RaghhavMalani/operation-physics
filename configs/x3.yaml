@@ -30,7 +30,9 @@ guards:
 eval:
   eval_tape: results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/compare/sft_4bit/rollouts.jsonl
   a5_sigma_tape: results/a5_baselines_4bit/sft_eval_a5_sigma.jsonl   # the teacher's sigma on the same 400 answers
-  batch_size: 32                        # sigma suffixes per generate call (24 new tokens; OOM backoff halves it)
+  batch_size: 16                        # sigma suffixes per generate call (24 new tokens; OOM backoff halves it). D87:
+                                        # 32 overran physical VRAM on the X2 suffix stage tonight
+  max_reserved_gib: 5.75                # D87: the X2 sampling cap (D86): OOM + backoff instead of WSL spill
 analysis:
   bootstrap: 10000
   seed: 0

@@ -298,9 +298,10 @@ def evaluate_sft(out: Path | None = None, backend=None, samples: int = 0, loader
 
 def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settings: dict, backend, samples: int,
               loader: str, rows: list[dict] | None = None, source_tapes: list[str] | None = None,
-              batch_size: int | None = None) -> dict:
+              batch_size: int | None = None, max_reserved_gib: float | None = None) -> dict:
     """`rows` (default: E1's eval prefixes) are `build_rows` rows; X2 and X3 pass their own (D79 / D81), with the
-    tapes they came from in `source_tapes` and optionally a larger `batch_size`."""
+    tapes they came from in `source_tapes`, their `batch_size`, and an allocator cap (D87: past it torch raises OOM,
+    which the backoff handles, instead of spilling into WSL shared memory)."""
     e1 = _config()
     rows = read_rows("eval") if rows is None else rows
     gen_cfg = {**e1["eval"]["generation"], "num_samples": 1} if samples <= 0 else \
@@ -315,6 +316,8 @@ def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settin
         if loader == "unsloth_4bit":  # the training run's own loader settings
             model_cfg.update(max_seq_length=model_settings["max_seq_length"],
                              text_only=model_settings.get("text_only", False))
+        if max_reserved_gib:
+            model_cfg["max_reserved_gib"] = max_reserved_gib
         backend = HFBackend(model_cfg["id"], model_cfg, gen_cfg)
     rw_cfg = reward_config()
     rw_cfg["scoring"]["rule"] = e1["reward_rule"]
@@ -322,8 +325,12 @@ def _evaluate(out: Path, tape_id: str, mode: str, lora: str | None, model_settin
     gens = []
     bs = gen_cfg["batch_size"]
     if samples <= 0:
-        for start in range(0, len(rows), bs):
+        t0 = time.time()
+        for n, start in enumerate(range(0, len(rows), bs)):
             gens += [g[0] for g in backend._generate([r["prompt"] for r in rows[start:start + bs]], 1)]
+            if n % 10 == 0:
+                print(f"  suffixes {len(gens)}/{len(rows)} ({time.time() - t0:.0f}s, "
+                      f"OOM backoffs {getattr(backend, 'oom_backoffs', 0)})", flush=True)
     else:
         import torch
 

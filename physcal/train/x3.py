@@ -288,7 +288,10 @@ def eval_rows(which: str, tok) -> tuple[list[dict], dict, list[str]]:
 
 
 def evaluate(arm: str, which: str, backend=None, lora: str | None = None, out: Path | None = None) -> dict:
-    """Greedy σ suffixes from a student (or `lora`) on fixed prefixes, via E1's eval machinery (4-bit, unmerged)."""
+    """Greedy σ suffixes from a student (or `lora`) on fixed prefixes, via E1's eval machinery (4-bit, unmerged).
+    D87: an allocator cap, and Unsloth imported before transformers."""
+    if backend is None:
+        import unsloth  # noqa: F401  (before transformers, as in training)
     from transformers import AutoTokenizer
 
     from physcal.train import e1
@@ -299,7 +302,8 @@ def evaluate(arm: str, which: str, backend=None, lora: str | None = None, out: P
     lora = lora or str(REPO_ROOT / cfg["output_dir"] / arm / "final_adapter")
     out = out or REPO_ROOT / cfg["output_dir"] / arm / f"eval_{which}"
     res = e1._evaluate(out, f"x3-{arm}-{which}", "free", lora, load_config(cfg["loader_settings_from"])["model"],
-                       backend, 0, "unsloth_4bit", rows=rows, source_tapes=tapes, batch_size=cfg["eval"]["batch_size"])
+                       backend, 0, "unsloth_4bit", rows=rows, source_tapes=tapes, batch_size=cfg["eval"]["batch_size"],
+                       max_reserved_gib=cfg["eval"]["max_reserved_gib"] if backend is None else None)
     res["excluded"] = excluded
     (out / "excluded.json").write_text(json.dumps(excluded))
     return res
