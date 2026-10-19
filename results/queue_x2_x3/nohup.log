@@ -50,3 +50,9 @@
 [02:45:10] GPU at 67C
 [02:45:10] start x2_hidden_random_init_x2 (timeout 3600s): uv run python -m physcal.eval.x2_hidden extract --model random_init --set x2
 [02:58:05] end x2_hidden_random_init_x2: exit 0
+[02:58:08] commit 'X2 (D74): hidden states at the first ± token (SFT 4-bit and random init; index and info, arrays local)': pushed
+[02:58:08] start x2_analysis (CPU, background)
+[02:58:08] X3 pilot: 21712s left; student (a) wall-clock cap 140 min (2 epochs if they fit)
+[02:58:08] GPU at 65C
+[02:58:08] start x3_train_a (timeout 9356s): uv run python -m physcal.train.x3 train --arm a --minutes 140
+[03:18:45] end x2_analysis: exit 0
