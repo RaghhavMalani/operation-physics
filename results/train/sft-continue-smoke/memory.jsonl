@@ -1,0 +1,2 @@
+{"step": 1, "time": 1792371245.2082248, "max_reserved_gib": 4.369140625, "max_allocated_gib": 4.231213569641113, "reserved_gib": 1.607421875, "num_alloc_retries": 0, "num_ooms": 0}
+{"step": 2, "time": 1792371285.8791268, "max_reserved_gib": 4.736328125, "max_allocated_gib": 4.358715534210205, "reserved_gib": 4.736328125, "num_alloc_retries": 0, "num_ooms": 0}
