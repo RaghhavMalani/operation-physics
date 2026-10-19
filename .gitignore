@@ -33,3 +33,10 @@ results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512
 results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed2/rollouts.jsonl
 results/train/sft-continue-smoke/rollouts.jsonl
 results/queue_uniform_seeds/*.pid
+# 2026-10-19: regenerable from seeds (sha256 in the manifest); tonight's large GPU outputs
+results/phase12_sft_data/*.jsonl
+results/x3/*/final_adapter/
+results/x3/*/checkpoints/
+results/x2/hidden/
+results/x2/random_init_model/
+results/queue_x2_x3/*.pid

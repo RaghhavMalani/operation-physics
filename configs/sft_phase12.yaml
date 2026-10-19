@@ -1,0 +1,31 @@
+# Phase 12 SFT data (D80): PREP ONLY. Phase 12 is pre-registered after X2 reports; every choice marked [REVIEW] is
+# open until then. Two-channel format (round-2 synthesis): <answer>mu ± sigma unit</answer> then
+# <confidence>c%</confidence>. The same problems (and the same confidence draw) in every arm, so the arms differ only
+# in the sigma channel. Completions are stored untokenized with character spans; masking is applied per arm at
+# tokenization, so a masking change needs no rebuild.
+env_config: env_v2                 # generator 2.0.0 (measurement-noise mode, D51)
+seed_offset: 60000000              # training split; disjoint from GRPO 0..4799, SFT 1e7.., calibration 2e7..,
+                                   # X2 3e7.., fingerprint 4e7.., X1 5e7..5.2e7
+n_examples: 3000                   # per arm (the Phase 3.6 SFT's size), round-robin over 12 cells x noise levels
+noise_levels: [0.0, 0.01, 0.02, 0.05]   # D54: capped at 5%; 0 = exact givens (sigma* = 0: the aleatoric channel is 0)
+prompt: v5_two_channel             # [REVIEW] draft prompt (physcal/prompt.py)
+mu_sig_figs: 4                     # the answer and every chain line: the Phase 3.6 SFT data's format (sft_data.SIG)
+sigma_format: ".2g"                # sigma in the answer, and the propagation line's numbers
+confidence:
+  bins: [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99]   # percent (R2 synthesis)
+  draw: uniform                    # [REVIEW] c drawn uniformly from the bins per problem, independent of the problem,
+                                   # the same in every arm: the format and the allowed values, with no confidence signal
+  train: true                      # c tokens trained (false: masked like the implicit arm's sigma)
+arms:
+  implicit:                        # sigma stated directly after "±" (sigma* written, masked: RL learns it)
+    explicit_line: false
+    train_sigma: false
+  explicit:                        # one propagation line in <steps> before the answer; the answer's sigma = the line
+    explicit_line: true            # (first-order propagation with the chain's log-sensitivities)
+    train_sigma: true
+    train_line_numbers: true       # [REVIEW] true: SFT teaches the propagation values; false: format only (the
+                                   # line's numbers and the answer's sigma masked; RL learns them)
+  supervised:                      # supervised sigma* baseline (no RL): sigma* written and trained; token cross-entropy
+    explicit_line: false           # on a 2-significant-figure sigma approximates a log-scale loss [REVIEW]
+    train_sigma: true
+output_dir: results/phase12_sft_data

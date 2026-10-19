@@ -85,11 +85,43 @@ SIGMA_HINT = (" The inputs have 3 significant figures, so I estimate a relative 
 assert WORKED_EXAMPLE.count(SIGMA_HINT) == 1
 SYSTEM_PROMPT_WORKED_EXAMPLE_NO_SIGMA_HINT = SYSTEM_PROMPT_WORKED_EXAMPLE.replace(SIGMA_HINT, "")
 
+# Phase 12 DRAFT (D80, not yet pre-registered; [REVIEW]): the two-channel format of the round-2 synthesis. σ is the
+# aleatoric channel (the spread that the measurement uncertainties of the givens imply; 0 when every given is exact),
+# c the epistemic one (p in the synthesis: the probability that the calculation is right given the stated measurements), restricted to
+# discrete values. v4's worked example, with its answer in the new format (exact givens: σ = 0).
+CONFIDENCE_BINS = (10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99)
+
+
+def _replace_once(text: str, old: str, new: str) -> str:
+    assert text.count(old) == 1, old
+    return text.replace(old, new)
+
+
+SYSTEM_PROMPT_TWO_CHANNEL = SYSTEM_PROMPT_WORKED_EXAMPLE_NO_SIGMA_HINT
+for _old, _new in (
+    ("<answer>value ± uncertainty unit</answer>\n",
+     "<answer>value ± uncertainty unit</answer>\n<confidence>c%</confidence>\n"),
+    ("- In <answer>, give the final value in the unit the problem asks for, then ± and your honest one-standard-"
+     "deviation uncertainty in the same unit. The true value should lie within ± one uncertainty of your value about "
+     "68% of the time: say a large uncertainty when unsure and a small one when confident.",
+     "- In <answer>, give the final value in the unit the problem asks for, then ± and the one-standard-deviation "
+     "uncertainty of that value caused by the measurement uncertainties of the given values, in the same unit. Values "
+     "marked ± p% are measurements with that relative standard uncertainty; values without ± are exact. If every value "
+     "you use is exact, the uncertainty is 0.\n"
+     "- In <confidence>, give c, the probability that your calculation is correct for the values as stated, as one of "
+     + ", ".join(f"{b}%" for b in CONFIDENCE_BINS) + "."),
+    ("- Write exactly one <answer> block, and nothing after it.",
+     "- Write exactly one <answer> block, then exactly one <confidence> block, and nothing after it."),
+    ("<answer>0.02882 ± 0.0003 km</answer>", "<answer>0.02882 ± 0 km</answer>\n<confidence>90%</confidence>"),
+):
+    SYSTEM_PROMPT_TWO_CHANNEL = _replace_once(SYSTEM_PROMPT_TWO_CHANNEL, _old, _new)
+
 SYSTEM_PROMPTS = {
     "v1": SYSTEM_PROMPT,
     "v2_reason_first": SYSTEM_PROMPT_REASON_FIRST,
     "v3_worked_example": SYSTEM_PROMPT_WORKED_EXAMPLE,
     "v4_worked_example": SYSTEM_PROMPT_WORKED_EXAMPLE_NO_SIGMA_HINT,
+    "v5_two_channel": SYSTEM_PROMPT_TWO_CHANNEL,  # Phase 12 draft (D80)
 }
 
 

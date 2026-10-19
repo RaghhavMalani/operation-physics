@@ -2171,3 +2171,91 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Code:** `physcal/train/x3.py`; config `configs/x3.yaml`; tests `tests/test_x3.py`.
   - **Data:** `results/x3/data/` (rows, targets, the pipeline check). It is built today on CPU and committed before
     any student is trained.
+
+### D80. Phase 12 SFT data: three arms on the same noisy problems (PREP ONLY; not pre-registered; several items [REVIEW])
+- **Your instruction (2026-10-19):**
+  - **The arms:** SFT data for noisy problems in three arms (implicit σ, an explicit propagation line, a supervised σ\*
+    baseline), with p in discrete bins, plus tests.
+  - **Not yet:** pre-registration. Phase 12 is pre-registered after X2 reports.
+  - **Status of these choices:** nothing here is fixed for Phase 12. The [REVIEW] items are open until the
+    pre-registration.
+- **Code and outputs:**
+  - **Code:** `physcal/train/sft_phase12.py`, `configs/sft_phase12.yaml`, `tests/test_sft_phase12.py` (7 tests).
+  - **Outputs:** `results/phase12_sft_data/`.
+    - **Committed:** `manifest.json` (counts, sha256 of every file) and `samples.md` (8 problems × 3 arms).
+    - **Not committed:** the jsonl files, about 15 MB, rebuilt deterministically by
+      `python -m physcal.train.sft_phase12 build`.
+- **Problems (the same in every arm):**
+  - **Source:** generator 2.0.0 (`env_v2`), training split.
+  - **Count:** 3,000, round-robin over the 12 training cells × noise {0, 1, 2, 5}%. 5% is D54's cap; 10% stays the
+    heavy-tail regime. That gives 62–63 per cell × level.
+  - **Seeds:** 60,000,000–60,002,999, used by no other set.
+  - **The answer is f(x_meas)**, the generator's point estimate from the displayed values (4 s.f., the old SFT data's
+    format). It is never the noise-free truth.
+    - **How:** `sft_data.solution` is reused unchanged on a copy of the problem whose target is the point estimate,
+      so every chain line is computed from the displayed values.
+- **Format (two channels, per the round-2 synthesis):**
+  - **Layout:** `<answer>μ ± σ unit</answer>`, then on the next line `<confidence>c%</confidence>`.
+  - **[REVIEW] Why a separate block after `</answer>`:**
+    - **The problem with ", confidence p" inside `<answer>`:** the current verifier would parse it as part of the unit
+      and fail the answer.
+    - **What a separate block keeps:** the verifier's μ / σ parsing and scoring exactly as they are; the existing
+      verifier ignores text after `</answer>` (tested: every arm's completion scores "ok").
+    - **Still needed:** a verifier extension for c, i.e. its parser and a Brier score on A1's computation-correct
+      event. It is additive and needs your approval with the Phase 12 pre-registration.
+    - **The parser:** `parse_confidence` is the reference for that extension. It requires exactly one block after
+      `</answer>` with a bin value, otherwise None.
+  - **[REVIEW] Prompt `v5_two_channel` (draft, `physcal/prompt.py`).** It is v4 with:
+    - the `<confidence>` block in the format;
+    - σ defined as the 1-SD uncertainty caused by the givens' measurement uncertainties (0 if all exact);
+    - c defined as the probability that the calculation is correct for the values as stated, one of the bins;
+    - "exactly one <answer> block, then exactly one <confidence> block";
+    - the worked example's answer as `± 0 km` (its givens are exact) with `<confidence>90%</confidence>`.
+    - **Unchanged:** the existing prompts (their hashes are tested). The prompt is applied at tokenization, so changing
+      it needs no data rebuild.
+- **Confidence channel ("p in discrete bins"):**
+  - **Bins:** c ∈ {10, 20, …, 90, 95, 99}%.
+  - **[REVIEW] The draw:** c is drawn uniformly from the bins per problem (its own seeded stream), independent of the
+    problem, and the same in every arm. Its tokens are trained.
+    - **What it teaches:** the format and the allowed values, with a flat prior and no confidence signal for RL
+      (Brier, later) to unlearn.
+    - **Realized counts:** 258–295 per bin.
+  - **Alternatives:** mask c (the model may then emit non-bin values), or a fixed c (a strong prior).
+- **σ channel, per arm:**
+  - **implicit:** σ\* (the CRPS-optimal Monte Carlo σ\*, A2) written after "±" and **masked** from the loss, as D35
+    masked σ. RL learns σ.
+  - **explicit:** one line at the end of `<steps>`: `sigma_rel = sqrt((a1*s1)^2 + …) = X`.
+    - **The terms:** a_i = |d ln f / d ln x_i|, the chain's log-sensitivities at the displayed values, written `.2g`;
+      s_i is the stated level.
+    - **Order:** the givens in the order of the solution's "SI values" line.
+    - **X:** computed from the displayed terms, so the line is self-consistent, and written `.2g`. The answer's σ is
+      X·|μ|.
+    - **Exact givens:** the line is `sigma_rel = 0`.
+    - **How X compares:** X agrees with the generator's exact first-order σ (its `sigma_star_log_delta`, tested) up to
+      rounding. Against σ\*, the median |ln(X / σ\*)| on noisy problems is 0.013.
+    - **The verifier:** it reads the line as an unrequested step, so it has no effect on step credit.
+    - **[REVIEW] `train_line_numbers`, default true:** SFT trains the line's numbers and the answer's σ, i.e. it
+      teaches first-order propagation. False masks those numbers (the `^2` exponents stay trained): format only, and
+      RL must find the sensitivities. The choice decides what "explicit + RL" can add over its SFT-only control.
+    - **[REVIEW] The line names no symbols** (as the synthesis's example). Naming them would make it more learnable.
+  - **supervised:** σ\* written and **trained**; no RL.
+    - **[REVIEW] The loss:** cross-entropy on a 2-significant-figure σ only approximates the synthesis's "log-scale
+      loss".
+    - **Its text is identical to the implicit arm's;** only the mask differs.
+- **Exact givens (noise 0):** σ = 0 (`± 0 unit`) in every arm. Under A1 / R2-3 the aleatoric channel is 0 when every
+  given is exact, and epistemic doubt belongs in c.
+- **Tests (7):**
+  - **Every arm's completion:** scores "ok" with the unchanged verifier, with μ = f(x_meas) (never the truth when
+    noisy) and σ / μ read back as intended.
+  - **The arms:** implicit and supervised texts are identical; explicit is that text plus the line, with its own σ.
+  - **The confidence:** the same in every arm, the span checks, and the parser refuses malformed blocks.
+  - **The line:** matches the generator's first-order σ and parses as a step.
+  - **Masking per arm:** checked with the real tokenizer, including the format-only and masked-c variants.
+  - **Data integrity:** the manifest (seeds, no held-out depth / family, noise levels, sha256), and the existing
+    prompts unchanged.
+- **Open for the Phase 12 pre-registration (your decisions):**
+  - the `<confidence>` block and the v5 prompt;
+  - uniform trained c;
+  - explicit-arm supervision (`train_line_numbers`) and symbol names;
+  - whether the supervised arm's token loss is acceptable as the "log-scale" baseline;
+  - n = 3,000 and the noise mix (25% exact problems).
