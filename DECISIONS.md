@@ -2501,3 +2501,6 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Effect:** the probe and the sampling run see the same cap. The likely choice falls to 32; batch 16 peaked at
     3.5 GiB reserved on earlier nights.
   - **Not affected:** the other stages (suffixes, extraction, X3 SFT) need far less memory and set no cap.
+- **Deadline (your message at launch, ~23:07):** all GPU work by **09:00 IST** instead of 08:30. The queue takes it
+  from `GPU_DEADLINE=09:00` at launch, so the script is unchanged. Its gates (X2 downstream reserve, the X3 pilot's
+  ≥ 2 h, the D78 check's ≥ 10 min) measure from that deadline.
