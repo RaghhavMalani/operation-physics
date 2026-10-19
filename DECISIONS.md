@@ -2013,3 +2013,40 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     traceback, and the eval goes on. With `enforce: true` it raises, as before. A provenance error is recorded in
     `provenance.error`.
   - **Effect on outputs:** none on any eval output. Only a crash of the check itself is caught.
+
+## Decisions on the 2026-10-19 morning report (2026-10-19, daytime; CPU only)
+
+### D77. R2-1: below the log-prob floor the σ-token criterion decides (future fingerprints only); the check is enforced (your decisions, 2026-10-19)
+- **Origin:** MORNING.md §4.1–4.2 (2026-10-19). Uniform-credit seed 1's reload was bit-exact, but its check is
+  "inconclusive": the adapter's own log-prob effect (0.0047 nats/token) is under D72's floor of 0.005. Its σ-token
+  effect (TV 0.018) discriminates clearly.
+- **Decision 1 (yours): option (b), for future runs only.**
+  - **The rule:** when the adapter's own log-prob effect is below `min_adapter_effect`, the σ-token criterion decides.
+    - **Log-prob criterion:** reported, not decisive (`decisive: false` in the criteria).
+    - **Still decisive:** the σ-token criterion (TV ratio ≤ 0.25), plus the two checks that do not depend on the
+      adapter's size: provenance (`must_match`), and the sampled-σ median when evaluable.
+    - **Status:** "pass" if all the decisive criteria pass, otherwise "fail".
+    - **The degenerate case:** if the σ-token effect is also exactly 0, neither criterion can discriminate, and the
+      status stays "inconclusive". This is not a new threshold.
+  - **Not retroactive, by construction:** `compare` uses the config stored *in the fingerprint*.
+    - **New fingerprints:** `configs/fingerprint.yaml` gains `below_floor: sigma_token`, so every fingerprint
+      recorded from now on carries it.
+    - **The two existing fingerprints** (uniform seeds 1 and 2) lack the key and keep D72's rule. Seed 1 stays
+      "inconclusive" as recorded, in FINDINGS #18 and in its eval's `metrics.json`. Nothing is re-run or rewritten.
+  - **Tolerances unchanged:** 0.25 / 0.25 / ln 2 and the 0.005 floor (D72).
+- **Decision 2 (yours): R2-1 is enforced from now on** (`enforce: true`).
+  - **"fail":** raises in the eval loader (`load_unsloth_4bit`), so the eval stops before generating anything.
+  - **"inconclusive" and "no_fingerprint":** a WARNING on stderr and a `warning` field in the check record. The eval
+    goes on. "no_fingerprint" covers every adapter trained before D72, e.g. split credit seed 0 in X2.
+  - **An exception inside the check itself:** with `enforce: true` it raises, as D76 specified. A check that could not
+    run has certified nothing, so it blocks the same way a "fail" does.
+  - **Where `enforce` comes from:** the current config file, not the fingerprint.
+- **Code:** `physcal/eval/fingerprint.py` (`compare`, `check_adapter`), `configs/fingerprint.yaml`, the comment in
+  `run_eval.load_unsloth_4bit`.
+- **Tests (`tests/test_fingerprint.py`):**
+  - **On the tiny model**, with an update below the floor: a faithful reload passes by the σ-token criterion with the
+    log-prob criterion non-decisive, the bf16 merge fails, and the pre-D77 config still gives "inconclusive".
+  - **On synthetic inputs:** a log-prob "failure" (ratio 1) with an identical σ-token distribution passes under D77
+    and fails under D72. A zero σ-token effect gives "inconclusive". A provenance mismatch still fails below the
+    floor. An unknown rule raises.
+  - **Enforcement:** enforced "fail" raises; "no_fingerprint" warns. 25 / 25 fingerprint and eval-loader tests pass.

@@ -24,8 +24,13 @@ tolerances:                        # fixed before the first real fingerprint exi
   max_sigma_tv_ratio: 0.25         # TV(reloaded, training) / TV(adapter on, adapter off) at the first σ token
   min_adapter_effect: 0.005        # mean |Δ log p| of the adapter itself below this (nats/token): "inconclusive"
   max_abs_dlog_median_sigma: 0.693 # |median ln σ_rel, reloaded − training| over the sampled completions (ln 2)
+below_floor: sigma_token           # D77: adapter log-prob effect < min_adapter_effect -> the σ-token criterion
+                                   # decides (log-prob reported only). Stored with each fingerprint; fingerprints
+                                   # recorded before D77 lack the key and keep D72's "inconclusive" (not retroactive)
 must_match: [base_identity, quantization_config, compute_dtype, bitsandbytes]   # provenance fields; others are
                                    # reported. base_identity: a local base's content hash, or repo@commit
-enforce: false                     # true: a FAIL raises in the eval loader. D72: false until the tolerances have
-                                   # been seen on real adapters (tonight's uniform-credit seeds 1 and 2)
+enforce: true                      # D77 (your decision, 2026-10-19): a FAIL (or an error in the check itself)
+                                   # raises in the eval loader and blocks the eval; "inconclusive" and
+                                   # "no_fingerprint" only warn. Read from this file at eval time, not from the
+                                   # fingerprint
 file_name: physcal_fingerprint.json

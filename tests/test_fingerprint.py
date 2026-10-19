@@ -133,9 +133,56 @@ def test_bf16_merge_of_a_small_update_fails(base_dir, tmp_path):
     assert bad["status"] == "fail"
     assert bad["criteria"]["logprob"]["ratio"] > 0.8  # most of the update rounded away
     floor = small_cfg()
+    del floor["below_floor"]  # D72's rule, as stored in every fingerprint recorded before D77
     assert fp["adapter_effect"]["mean_abs_dlogp"] < floor["tolerances"]["min_adapter_effect"]
     assert fpm.compare(fpm.measure(_reload_unmerged(base_dir, ad), tok, cfg=floor), fp,
                        fpm.provenance(merged, str(base_dir), ad), floor)["status"] == "inconclusive"
+
+
+def test_below_the_floor_the_sigma_token_criterion_decides(base_dir, tmp_path):
+    """D77: an adapter whose log-prob effect is under the floor is judged by the σ-token criterion. A faithful reload
+    passes, the bf16 merge fails, and the log-prob criterion is reported but not decisive. A pre-D77 fingerprint
+    (no `below_floor` key) keeps "inconclusive"."""
+    fp, tok, ad = _run_case(base_dir, tmp_path, 2e-5, small_cfg(min_adapter_effect=0.0))
+    new, old = small_cfg(), small_cfg()
+    del old["below_floor"]
+    assert new["below_floor"] == "sigma_token"
+    assert fp["adapter_effect"]["mean_abs_dlogp"] < new["tolerances"]["min_adapter_effect"]
+    assert fp["adapter_effect"]["mean_sigma_tv"] > 0
+    faithful, merged = _reload_unmerged(base_dir, ad), _reload_bf16_merged(base_dir, ad)
+
+    def verdict(model, cfg):
+        return fpm.compare(fpm.measure(model, tok, cfg=cfg), fp, fpm.provenance(model, str(base_dir), ad), cfg)
+
+    good, bad = verdict(faithful, new), verdict(merged, new)
+    assert good["status"] == "pass" and good["below_floor_rule"] == "sigma_token"
+    assert good["criteria"]["logprob"]["decisive"] is False and good["criteria"]["sigma_token"]["decisive"] is True
+    assert bad["status"] == "fail" and bad["criteria"]["sigma_token"]["pass"] is False
+    assert verdict(faithful, old)["status"] == "inconclusive"  # not retroactive
+    assert verdict(merged, old)["status"] == "fail"
+
+
+def test_below_the_floor_rule_on_synthetic_inputs():
+    """D77 on synthetic measurements: below the floor a log-prob 'failure' (ratio 1) with an identical σ-token
+    distribution passes under the new rule and fails under D72's; with no σ-token effect either, nothing can decide."""
+    fp = _fp([0.01] * 10, PROV)
+    fp["adapter_effect"] = {"mean_abs_dlogp": 1e-3, "mean_sigma_tv": 0.1}
+    re = _fake([0.01] * 10)
+    for x in re["on"]:
+        x["token_logprobs"] = np.full(3, 1e-3)  # |Δ log p| = the adapter's own effect: ratio 1
+    cfg = fp["config"]
+    old = copy.deepcopy(cfg)
+    del old["below_floor"]
+    r = fpm.compare(re, fp, PROV, cfg)
+    assert r["status"] == "pass" and r["criteria"]["logprob"]["pass"] is False
+    assert fpm.compare(re, fp, PROV, old)["status"] == "fail"
+    fp["adapter_effect"]["mean_sigma_tv"] = 0.0
+    assert fpm.compare(re, fp, PROV, cfg)["status"] == "inconclusive"
+    bad_prov = dict(PROV, bitsandbytes="0.49")  # provenance still fails below the floor
+    fp["adapter_effect"]["mean_sigma_tv"] = 0.1
+    assert fpm.compare(re, fp, bad_prov, cfg)["status"] == "fail"
+    with pytest.raises(ValueError):
+        fpm.compare(re, fp, PROV, dict(cfg, below_floor="majority"))
 
 
 def test_find_matches_by_tensor_hash(base_dir, tmp_path):
@@ -221,8 +268,9 @@ def test_check_adapter_without_fingerprint_reports_provenance(base_dir, tmp_path
     model, tok = _trained(base_dir, 0.05)
     ad = tmp_path / "ad"
     model.save_pretrained(str(ad))
-    res = fpm.check_adapter(model, tok, str(base_dir), ad, cfg=small_cfg())
+    res = fpm.check_adapter(model, tok, str(base_dir), ad, cfg=small_cfg())  # enforce: true (D77) only warns here
     assert res["status"] == "no_fingerprint" and res["provenance"]["adapter"]["tensors"]
+    assert "not certified" in res["warning"]
 
 
 def test_enforce_raises_on_fail(base_dir, tmp_path):
@@ -232,6 +280,7 @@ def test_enforce_raises_on_fail(base_dir, tmp_path):
     from transformers import AutoModelForCausalLM
 
     dropped = AutoModelForCausalLM.from_pretrained(str(base_dir), dtype=torch.float32).eval()
-    assert fpm.check_adapter(dropped, tok, str(base_dir), ad, cfg=cfg)["status"] == "fail"
+    assert fpm.check_adapter(dropped, tok, str(base_dir), ad, cfg=dict(cfg, enforce=False))["status"] == "fail"
+    assert cfg["enforce"] is True  # D77: enforced from now on
     with pytest.raises(RuntimeError, match="R2-1 regression check FAILED"):
-        fpm.check_adapter(dropped, tok, str(base_dir), ad, cfg=dict(cfg, enforce=True))
+        fpm.check_adapter(dropped, tok, str(base_dir), ad, cfg=cfg)

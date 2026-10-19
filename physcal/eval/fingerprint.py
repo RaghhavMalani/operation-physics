@@ -16,9 +16,11 @@ Checked by the eval's adapter loader on the reloaded model (`check`). It passes 
 - the TV distance at the σ token <= max_sigma_tv_ratio × the adapter's own TV distance;
 - |median ln σ_rel, reloaded − training| <= max_abs_dlog_median_sigma, when both sides parse >= min_parsed σ;
 - the `must_match` provenance fields are equal.
-An adapter whose own effect is below `min_adapter_effect` makes the check "inconclusive": a loader that drops the
-adapter could not be told apart from one that keeps it. The bf16 merge of FINDINGS #15 erases > 90% of an RL update,
-so it gives a log-prob ratio near 1. The same functions run on both sides, so only the loader differs.
+An adapter whose own log-prob effect is below `min_adapter_effect` cannot be judged by the log-prob criterion. D72
+made such a check "inconclusive"; since D77 (`below_floor: sigma_token`, recorded with each new fingerprint) the
+σ-token criterion decides it instead, and the log-prob criterion is reported only. Fingerprints recorded before D77
+keep D72's rule. The bf16 merge of FINDINGS #15 erases > 90% of an RL update, so it gives a log-prob ratio near 1.
+The same functions run on both sides, so only the loader differs.
 """
 
 from __future__ import annotations
@@ -330,14 +332,24 @@ def compare(reloaded: dict, fp: dict, prov: dict, cfg: dict | None = None) -> di
             if prov.get(k) != fp_prov.get(k)}
     crit["provenance"] = {"must_match": cfg["must_match"], "mismatches": mism, "pass": not mism,
                           "other_differences": sorted(k for k in ("versions",) if prov.get(k) != fp_prov.get(k))}
-    passes = [c["pass"] for c in crit.values() if c["pass"] is not None]
+    # D77: below the log-prob floor, the σ-token criterion decides (`below_floor: sigma_token`); the log-prob
+    # criterion is reported but not decisive. A fingerprint recorded before D77 has no `below_floor` key and keeps
+    # D72's rule (any failure fails, otherwise "inconclusive"): the rule travels with the fingerprint, not retroactive.
+    below = eff < tol["min_adapter_effect"]
+    rule = cfg.get("below_floor", "inconclusive")
+    if rule not in ("inconclusive", "sigma_token"):
+        raise ValueError(f"unknown below_floor rule {rule!r}")
+    by_sigma_token = below and rule == "sigma_token"
+    crit["logprob"]["decisive"] = not by_sigma_token
+    crit["sigma_token"]["decisive"] = not (by_sigma_token and tv_eff <= 0)  # no σ-token effect: nothing decides
+    passes = [c["pass"] for c in crit.values() if c["pass"] is not None and c.get("decisive", True)]
     if not all(passes):
         status = "fail"
-    elif eff < tol["min_adapter_effect"]:
+    elif below and not (by_sigma_token and crit["sigma_token"]["decisive"]):
         status = "inconclusive"
     else:
         status = "pass"
-    return {"status": status, "criteria": crit}
+    return {"status": status, "criteria": crit, "below_floor_rule": rule if below else None}
 
 
 def find(lora_dir: str | Path, cfg: dict | None = None) -> tuple[dict | None, str | None]:
@@ -358,17 +370,24 @@ def find(lora_dir: str | Path, cfg: dict | None = None) -> tuple[dict | None, st
 
 def check_adapter(model, tok, model_id: str, lora_dir: str | Path, chat_kwargs: dict | None = None,
                   cfg: dict | None = None) -> dict:
-    """Eval side: provenance of the reloaded model, and the regression verdict if a fingerprint exists. Raises on
-    "fail" when `enforce` is set (D72)."""
+    """Eval side: provenance of the reloaded model, and the regression verdict if a fingerprint exists. With
+    `enforce` (D72; on since D77) a "fail" raises and blocks the eval; "inconclusive" and "no_fingerprint" only warn."""
+    import sys
+
     cfg = cfg or _config()
     prov = provenance(model, model_id, lora_dir)
     fp, where = find(lora_dir, cfg)
     if fp is None:
-        return {"status": "no_fingerprint", "reason": where, "provenance": prov}
-    res = compare(measure(model, tok, chat_kwargs, cfg=fp["config"]), fp, prov, fp["config"])
-    res.update(fingerprint=where, provenance=prov)
+        res = {"status": "no_fingerprint", "reason": where, "provenance": prov}
+    else:
+        res = compare(measure(model, tok, chat_kwargs, cfg=fp["config"]), fp, prov, fp["config"])
+        res.update(fingerprint=where, provenance=prov)
     if res["status"] == "fail" and cfg["enforce"]:
         raise RuntimeError(f"R2-1 regression check FAILED for {lora_dir}: {json.dumps(res['criteria'], default=str)}")
+    if res["status"] in ("inconclusive", "no_fingerprint"):
+        res["warning"] = (f"R2-1 check {res['status']} for {lora_dir}: the eval goes on, but this loader is not "
+                          "certified for these weights (D77)")
+        print(f"WARNING: {res['warning']}", file=sys.stderr, flush=True)
     return res
 
 

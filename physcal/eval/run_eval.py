@@ -191,8 +191,8 @@ def load_unsloth_4bit(model_id: str, model_cfg: dict, tok) -> tuple[Any, dict]:
 
         try:
             check["fingerprint"] = check_adapter(model, tok, model_id, lora, model_cfg.get("chat_template_kwargs") or {})
-        except Exception as exc:  # D76: while the check only records (enforce: false), its own failure is logged,
-            if fp_config()["enforce"]:  # never fatal to the eval; with enforce: true it raises as before
+        except Exception as exc:  # D76: with enforce: false the check's own failure is logged, never fatal; with
+            if fp_config()["enforce"]:  # enforce: true (D77) it raises and blocks the eval, as a "fail" does
                 raise
             import traceback
 
