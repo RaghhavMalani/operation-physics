@@ -1,0 +1,59 @@
+{
+ "decision": "D74 (X2)",
+ "model": "sft",
+ "set": "x2",
+ "n": 4109,
+ "n_layers": 29,
+ "path": "unsloth_4bit",
+ "check": {
+  "returned_states": true,
+  "n_states": 29,
+  "relative_gap": {
+   "as_returned": 0.0012626262626262627,
+   "normed": 0.22727272727272727
+  },
+  "best": "as_returned",
+  "argmax_agree": true
+ },
+ "model_dir": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+ "model_content_sha256": "0b435c0ebaed36e2",
+ "quantization_config": {
+  "bnb_4bit_compute_dtype": "torch.bfloat16",
+  "bnb_4bit_quant_type": "nf4",
+  "bnb_4bit_use_double_quant": true,
+  "llm_int8_enable_fp32_cpu_offload": false,
+  "llm_int8_has_fp16_weight": false,
+  "llm_int8_skip_modules": [
+   "lm_head",
+   "multi_modal_projector",
+   "merger",
+   "modality_projection",
+   "mm_projector",
+   "router",
+   "mlp.gate",
+   "block_sparse_moe.gate",
+   "moe.gate",
+   "mamba",
+   "audio_tower",
+   "vision_tower",
+   "vision_embedder",
+   "embed_vision",
+   "embed_audio",
+   "score",
+   "classifier",
+   "qa_outputs"
+  ],
+  "llm_int8_threshold": 6.0,
+  "load_in_4bit": true,
+  "load_in_8bit": false,
+  "quant_method": "bitsandbytes"
+ },
+ "versions": {
+  "torch": "2.14.1",
+  "transformers": "5.17.0",
+  "bitsandbytes": "0.50.2",
+  "unsloth": "2026.10.3"
+ },
+ "seconds": 762.0733873844147,
+ "peak_reserved_gib": 5.88671875
+}

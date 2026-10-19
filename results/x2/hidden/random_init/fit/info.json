@@ -1,0 +1,59 @@
+{
+ "decision": "D74 (X2)",
+ "model": "random_init",
+ "set": "fit",
+ "n": 1998,
+ "n_layers": 29,
+ "path": "unsloth_4bit",
+ "check": {
+  "returned_states": true,
+  "n_states": 29,
+  "relative_gap": {
+   "as_returned": 0.0022522522522522522,
+   "normed": 0.0022522522522522522
+  },
+  "best": "as_returned",
+  "argmax_agree": true
+ },
+ "model_dir": "results/x2/random_init_model",
+ "model_content_sha256": "13ededef3f3acbd4",
+ "quantization_config": {
+  "bnb_4bit_compute_dtype": "torch.bfloat16",
+  "bnb_4bit_quant_type": "nf4",
+  "bnb_4bit_use_double_quant": true,
+  "llm_int8_enable_fp32_cpu_offload": false,
+  "llm_int8_has_fp16_weight": false,
+  "llm_int8_skip_modules": [
+   "lm_head",
+   "multi_modal_projector",
+   "merger",
+   "modality_projection",
+   "mm_projector",
+   "router",
+   "mlp.gate",
+   "block_sparse_moe.gate",
+   "moe.gate",
+   "mamba",
+   "audio_tower",
+   "vision_tower",
+   "vision_embedder",
+   "embed_vision",
+   "embed_audio",
+   "score",
+   "classifier",
+   "qa_outputs"
+  ],
+  "llm_int8_threshold": 6.0,
+  "load_in_4bit": true,
+  "load_in_8bit": false,
+  "quant_method": "bitsandbytes"
+ },
+ "versions": {
+  "torch": "2.14.1",
+  "transformers": "5.17.0",
+  "bitsandbytes": "0.50.2",
+  "unsloth": "2026.10.3"
+ },
+ "seconds": 400.742399930954,
+ "peak_reserved_gib": 4.994140625
+}

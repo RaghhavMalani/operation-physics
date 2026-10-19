@@ -1,0 +1,47 @@
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/unsloth/__init__.py:1635: UserWarning: WARNING: Unsloth should be imported before [transformers] to ensure all optimizations are applied. Your code may run slower or encounter memory issues without these optimizations.
+
+Please restructure your imports with 'import unsloth' at the top of your file.
+  from ._gpu_init import *
+W1019 21:08:29.130000 32474 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1019 21:08:29.175000 32474 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<01:40,  3.34it/s]Loading weights:   3%|▎         | 9/338 [00:00<00:11, 27.94it/s]Loading weights:   9%|▊         | 29/338 [00:00<00:03, 81.82it/s]Loading weights:  16%|█▌        | 53/338 [00:00<00:02, 127.65it/s]Loading weights:  23%|██▎       | 77/338 [00:00<00:01, 154.14it/s]Loading weights:  30%|██▉       | 101/338 [00:00<00:01, 170.73it/s]Loading weights:  37%|███▋      | 124/338 [00:00<00:01, 183.74it/s]Loading weights:  44%|████▍     | 148/338 [00:01<00:00, 195.11it/s]Loading weights:  51%|█████     | 172/338 [00:01<00:00, 200.64it/s]Loading weights:  58%|█████▊    | 195/338 [00:01<00:00, 206.89it/s]Loading weights:  65%|██████▍   | 219/338 [00:01<00:00, 213.75it/s]Loading weights:  72%|███████▏  | 244/338 [00:01<00:00, 217.57it/s]Loading weights:  79%|███████▉  | 267/338 [00:01<00:00, 216.96it/s]Loading weights:  86%|████████▌ | 289/338 [00:01<00:00, 212.65it/s]Loading weights:  92%|█████████▏| 311/338 [00:01<00:00, 205.78it/s]Loading weights:  98%|█████████▊| 332/338 [00:01<00:00, 197.77it/s]Loading weights: 100%|██████████| 338/338 [00:01<00:00, 173.77it/s]
+  random_init/fit: 8/1998 (15s)
+  random_init/fit: 408/1998 (91s)
+  random_init/fit: 808/1998 (168s)
+  random_init/fit: 1208/1998 (248s)
+  random_init/fit: 1608/1998 (324s)
+{
+ "decision": "D74 (X2)",
+ "model": "random_init",
+ "set": "fit",
+ "n": 1998,
+ "n_layers": 29,
+ "path": "unsloth_4bit",
+ "check": {
+  "returned_states": true,
+  "n_states": 29,
+  "relative_gap": {
+   "as_returned": 0.0022522522522522522,
+   "normed": 0.0022522522522522522
+  },
+  "best": "as_returned",
+  "argmax_agree": true
+ },
+ "model_dir": "results/x2/random_init_model",
+ "model_content_sha256": "13ededef3f3acbd4",
+ "versions": {
+  "torch": "2.14.1",
+  "transformers": "5.17.0",
+  "bitsandbytes": "0.50.2",
+  "unsloth": "2026.10.3"
+ },
+ "seconds": 400.742399930954,
+ "peak_reserved_gib": 4.994140625
+}

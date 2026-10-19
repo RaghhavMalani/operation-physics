@@ -37,3 +37,16 @@
 [01:11:36] start x2_suffix (timeout 3600s): uv run python -m physcal.eval.x2_pairs suffix
 [02:18:15] end x2_suffix: exit 124
 [02:18:15] BLOCKED x2_suffix (see results/queue_x2_x3/x2_suffix.log): method 2 counts as p = 1
+[02:18:17] commit 'X2 (D74): split credit seed 0 @287 sigma suffixes on the kept answers (corrected loader)': pushed
+[02:18:17] GPU at 60C
+[02:18:17] start x2_hidden_sft_fit (timeout 3600s): uv run python -m physcal.eval.x2_hidden extract --model sft --set fit
+[02:25:20] end x2_hidden_sft_fit: exit 0
+[02:25:20] GPU at 65C
+[02:25:20] start x2_hidden_sft_x2 (timeout 3600s): uv run python -m physcal.eval.x2_hidden extract --model sft --set x2
+[02:38:16] end x2_hidden_sft_x2: exit 0
+[02:38:16] GPU at 67C
+[02:38:16] start x2_hidden_random_init_fit (timeout 3600s): uv run python -m physcal.eval.x2_hidden extract --model random_init --set fit
+[02:45:10] end x2_hidden_random_init_fit: exit 0
+[02:45:10] GPU at 67C
+[02:45:10] start x2_hidden_random_init_x2 (timeout 3600s): uv run python -m physcal.eval.x2_hidden extract --model random_init --set x2
+[02:58:05] end x2_hidden_random_init_x2: exit 0
