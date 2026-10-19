@@ -634,3 +634,11 @@ Progress:
     analysis (CPU) → X3 pilot if ≥ 2 h remain → D78 GPU check.
 - [ ] **Next:** launch the queue; then the Phase 12 pre-registration after X2 reports (it needs your [REVIEW] calls in
   D80).
+- [x] **Afternoon (your decisions, D82–D85):**
+  - the X3 control is confirmed and the X2 method-2 stage approved (D82);
+  - **verifier 1.2.0** (`reward_v12`, Brier on the computation-correct event; the default stays 1.1.0; old tapes
+    re-score identically) (D83);
+  - the explicit arm is format only, and was rebuilt with per-row masks (D84);
+  - the v5 example shows a placeholder (D85).
+  - **Tonight's queue:** unchanged; the dry run was re-run.
+  - **Tests:** 456 pass.

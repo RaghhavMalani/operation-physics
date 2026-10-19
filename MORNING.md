@@ -128,3 +128,34 @@ directly to true error labels". Say so if you meant something else; nothing has 
 - **Launch time:** start by about 23:00 IST for everything to fit before 08:30.
 - **Recommendation:** launch as prepared. If you want the X3 pilot guaranteed, launch earlier rather than lowering the
   2 h gate.
+
+---
+
+## Addendum, afternoon: your decisions on this report (D82–D85; CPU only)
+
+| your decision | done | commit |
+|---|---|---|
+| 1, 2 | **D82:** the X3 control (per-answer CRPS-optimal σ) is confirmed; the X2 method-2 stage is approved | `f676435` |
+| 3 | **D83:** verifier 1.2.0, `<confidence>` scored by Brier on the computation-correct event. Implemented and tested, no training | `db30a41` |
+| 4 | **D84:** the explicit arm masks the propagation numbers and its σ (format only). The arm was rebuilt; its rows now carry their loss masks | `c73500f` |
+| 5 | **D85:** v5's worked example shows `<confidence>c%</confidence>` instead of 90% | `bba06b8` |
+| 6 | the other Phase 12 choices wait for Round 3: uniform trained c, the supervised arm's token loss, n and the noise mix, symbol names in the line | – |
+
+**Verifier 1.2.0** (`configs/reward_v12.yaml`; the default `reward.yaml` stays 1.1.0):
+- **Replay:** old tapes replay exactly. Both 1.1.0 tapes checked (800 rows) re-score to identical rewards **and identical
+  breakdowns**, and the 1.0.0 replay tests pass. A `<confidence>` block is ignored under 1.1.0.
+- **Two values for Round 3:**
+  1. **`weights.confidence = 0`.** The reward equals 1.1.0's, and score_confidence goes to split credit through the
+     breakdown.
+     - **Why not positive:** it couples the channels. A wrong answer stated with c = 10% can then outscore a right one
+       stated with c = 10%.
+  2. **τ = 0.1% (A1).** On D69's 2,000 SFT answers, only **14.5%** are computation-correct at 0.1%, against **39.9%**
+     correct within the verifier's 1%.
+     - **Why:** mostly intermediate rounding (4-significant-figure intermediates).
+     - **The risk:** at 0.1% the c channel would partly score precision. I did not change A1's τ.
+
+**Tonight's queue: unchanged.** None of its files changed. Its dry run was re-run and plans the same 36 steps.
+- **The one shared code change** is the verifier, which under the default 1.1.0 config behaves byte-identically
+  (tested).
+- **Tests:** 456 / 456 pass.
+- **Launch:** `nohup scripts/queue_x2_x3.sh > results/queue_x2_x3/nohup.log 2>&1 &`
