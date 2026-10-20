@@ -1,0 +1,72 @@
+# X4: self-verification on the X2 pairs (D89, amended by D91)
+
+X2's 516 kept problems; problems analyzed per arm: {'sft': 516, 'direct': 516, 'perturbed': 516, 'shuffled': 516, 'random_init': 516}; answers excluded by the perturbation check: {'perturbed': 1}.
+
+**Reading (D89):** sft not Holm-supported: self-verification fails within problems, consistent with X2; asking the model does not rank its right answers above its wrong ones.
+
+**D91 flags:** final-value-sensitive (sft − perturbed CI > 0): False; direct self-verification succeeds: False; recomputation helps (sft − direct CI > 0): False. Holm over the five arms. All CIs: bootstrap over problems.
+
+| method | pairwise accuracy [95% CI] | p (> 0.5) | Holm | ties / missing | AUROC across problems [95% CI] |
+|---|---|---|---|---|---|
+| X4 self-verification, SFT (4-bit), recompute | 0.524 [0.498, 0.550] | 0.0333 | not supported | 0.0% | 0.469 [0.442, 0.496] |
+| X4 direct: no recomputation (D91) | 0.526 [0.500, 0.553] | 0.0245 | not supported | 0.0% | 0.463 [0.436, 0.490] |
+| control: final μ × 1.25, recompute (D91) | 0.524 [0.498, 0.551] | 0.0381 | not supported | 0.0% | 0.450 [0.423, 0.477] |
+| control: another problem's text (SFT) | 0.513 [0.488, 0.539] | 0.153 | not supported | 0.0% | 0.463 [0.435, 0.491] |
+| control: random-init model | 0.489 [0.465, 0.514] | 0.81 | not supported | 0.0% | 0.517 [0.495, 0.539] |
+| X2 method 5: hidden-state probe (reference) | 0.547 [0.520, 0.574] | 0.0001 | – | 0.5% | 0.727 [0.708, 0.745] |
+| X2 method 1: SFT stated σ (reference) | 0.499 [0.474, 0.524] | 0.54 | – | 8.9% | 0.490 [0.467, 0.512] |
+
+| paired difference (over problems) | role | mean | 95% CI | problems |
+|---|---|---|---|---|
+| sft - x2_probe | primary | -0.023 | [-0.060, +0.013] | 516 |
+| sft - random_init | primary | +0.035 | [-0.001, +0.071] | 516 |
+| sft - shuffled | primary | +0.011 | [-0.021, +0.042] | 516 |
+| sft - perturbed | primary (D91) | -0.000 | [-0.028, +0.028] | 516 |
+| sft - x2_sft_sigma | secondary | +0.025 | [-0.008, +0.060] | 516 |
+| sft - direct | secondary (D91) | -0.002 | [-0.008, +0.004] | 516 |
+| direct - x2_probe | secondary (D91) | -0.021 | [-0.058, +0.015] | 516 |
+| direct - random_init | secondary (D91) | +0.037 | [+0.001, +0.073] | 516 |
+
+| method | depth 1 | depth 2 | depth 3 | depth 4 |
+|---|---|---|---|---|
+| X4 self-verification, SFT (4-bit), recompute | 0.508 (n 109) | 0.530 (n 137) | 0.519 (n 137) | 0.537 (n 133) |
+| X4 direct: no recomputation (D91) | 0.518 (n 109) | 0.530 (n 137) | 0.519 (n 137) | 0.537 (n 133) |
+| control: final μ × 1.25, recompute (D91) | 0.506 (n 109) | 0.507 (n 137) | 0.548 (n 137) | 0.533 (n 133) |
+| control: another problem's text (SFT) | 0.471 (n 109) | 0.493 (n 137) | 0.523 (n 137) | 0.559 (n 133) |
+| control: random-init model | 0.498 (n 109) | 0.481 (n 137) | 0.519 (n 137) | 0.459 (n 133) |
+| X2 method 5: hidden-state probe (reference) | 0.544 (n 109) | 0.539 (n 137) | 0.529 (n 137) | 0.577 (n 133) |
+| X2 method 1: SFT stated σ (reference) | 0.497 (n 109) | 0.460 (n 137) | 0.509 (n 137) | 0.530 (n 133) |
+
+| secondary (no verdict) | pairwise accuracy (detection: share) [95% CI] | ties / missing |
+|---|---|---|
+| sft raw P(yes) | 0.524 [0.498, 0.551] | 0.0% |
+| direct raw P(yes) | 0.527 [0.500, 0.553] | 0.0% |
+| perturbed raw P(yes) | 0.524 [0.498, 0.551] | 0.0% |
+| shuffled raw P(yes) | 0.514 [0.488, 0.539] | 0.0% |
+| random_init raw P(yes) | 0.492 [0.468, 0.516] | 0.0% |
+| perturbed detection (D91) | 0.986 [0.977, 0.994] | – |
+| sft recomputation agreement (exploratory) | 0.500 [0.499, 0.501] | 99.7% |
+
+| inference tokens per answer (D91) | generated: mean [95% CI] | median | p95 | total extra: mean |
+|---|---|---|---|---|
+| X4 self-verification, SFT (4-bit), recompute | 18.4 [17.6, 19.3] | 13 | 34 | 93.4 |
+| X4 direct: no recomputation (D91) | 0.0 [0.0, 0.0] | 0 | 0 | 75.0 |
+| control: final μ × 1.25, recompute (D91) | 19.5 [18.6, 20.5] | 13 | 34 | 94.5 |
+| control: another problem's text (SFT) | 24.9 [22.2, 27.9] | 14 | 107 | 99.9 |
+| control: random-init model | 512.0 [512.0, 512.0] | 512 | 512 | 587.0 |
+
+Perturbed answers against the truth (D91): {'correct_to_correct': 0, 'correct_to_incorrect': 1598, 'incorrect_to_correct': 20, 'incorrect_to_incorrect': 2497, 'excluded': 1}.
+
+| diagnostic | sft | direct | perturbed | shuffled | random_init |
+|---|---|---|---|---|---|
+| n_answers | 4116 | 4116 | 4115 | 4116 | 4116 |
+| share_wrote_verdict | 0.980 | 0.000 | 0.972 | 0.830 | 0.000 |
+| share_wrote_yes_or_no | 0.980 [0.969, 0.989] | 0.000 [0.000, 0.000] | 0.972 [0.959, 0.984] | 0.830 [0.799, 0.860] | 0.000 [0.000, 0.000] |
+| natural_yes_rate_correct | 0.999 [0.997, 1.000] | – | 0.995 [0.988, 0.999] | 0.990 [0.981, 0.998] | – |
+| natural_yes_rate_incorrect | 0.998 [0.997, 1.000] | – | 0.995 [0.990, 0.999] | 0.989 [0.980, 0.995] | – |
+| mean_p_yes_correct | 0.804 [0.792, 0.816] | 0.817 [0.811, 0.823] | 0.720 [0.706, 0.733] | 0.580 [0.551, 0.608] | 0.439 [0.433, 0.444] |
+| mean_p_yes_incorrect | 0.820 [0.813, 0.826] | 0.825 [0.820, 0.829] | 0.743 [0.735, 0.751] | 0.636 [0.615, 0.654] | 0.434 [0.430, 0.439] |
+| mean_yes_no_mass | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 0.999 [0.999, 0.999] | 0.000 [0.000, 0.000] |
+| share_truncated | 0.000 [0.000, 0.001] | 0.000 [0.000, 0.000] | 0.000 [0.000, 0.001] | 0.000 [0.000, 0.000] | 1.000 [1.000, 1.000] |
+| median_gen_tokens | 13.000 | 0.000 | 13.000 | 14.000 | 512.000 |
+| paths | ['float32_head'] | ['float32_head'] | ['float32_head'] | ['float32_head'] | ['float32_head'] |

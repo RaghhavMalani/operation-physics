@@ -35,3 +35,6 @@
 [01:26:07] start x4_random_init (timeout 35933s): uv run python -m physcal.eval.x4_verify run --arm random_init --max-reserved-gib 6.9 --minutes 588
 [03:53:00] end x4_random_init: exit 0
 [03:53:00] X4 random_init: 4116 of 4116 rows
+[03:53:06] commit 'X4 (D89/D91): random_init arm, 4116 of 4,116 X2 answers verified (exit 0, cap 6.9 GiB)': pushed
+[03:53:06] start x4_analysis (timeout 3600s): env OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4 CUDA_VISIBLE_DEVICES= nice -n 10 uv run python -m physcal.eval.x4_analysis analyze
+[03:57:34] end x4_analysis: exit 0
