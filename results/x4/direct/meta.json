@@ -1,0 +1,164 @@
+{
+ "decision": "D89 (X4)",
+ "arm": "direct",
+ "model_dir": "results/sft/qwen2.5-math-1.5b-instruct/merged",
+ "model_content_sha256": "0b435c0ebaed36e2",
+ "prompt_id": "v4_worked_example",
+ "system_prompt_sha256": "c73d5a99d2c7cf47161a8e8960d9f26e615d79309cc5beb94dbdac7b3f5fd7c2",
+ "verify_prompt": "x4_v1",
+ "verify_prompt_sha256": "5f5fa39dbd8fd73b6d0af0325e5ce49f3e7c9b775b47126c8209a9ea50ce0f34",
+ "generation": {
+  "max_new_tokens": 512,
+  "batch_size": 16,
+  "repetition_penalty": 1.0,
+  "seed": 0
+ },
+ "model": {
+  "loader": "unsloth_4bit",
+  "max_seq_length": 3072,
+  "max_reserved_gib": 5.75
+ },
+ "reading": {
+  "marker": "Verdict:",
+  "cut_pattern": "(?i)verdict",
+  "strip_chars": " \t\r\n*_#",
+  "yes_tokens": [
+   "yes",
+   " yes",
+   "Yes",
+   " Yes",
+   "YES",
+   " YES"
+  ],
+  "no_tokens": [
+   "no",
+   " no",
+   "No",
+   " No",
+   "NO",
+   " NO"
+  ],
+  "score_batch_size": 4,
+  "logit_check_rtol": 0.02,
+  "head_chunk": 32768
+ },
+ "n_answers": 4116,
+ "segments": [
+  {
+   "started": "2026-10-20T18:39:47+0000",
+   "n_done_before": 0,
+   "git_commit": "34731571fea2444fe483655983f34b827dd0ac6b",
+   "max_reserved_gib": 6.72,
+   "logit_check": {
+    "path": "float32_head",
+    "relative_gap": 0.002195172943174839,
+    "argmax_agree": true,
+    "vocab": 151936
+   },
+   "path": "float32_head",
+   "yes_ids": [
+    9693,
+    9834,
+    9454,
+    7414,
+    14004,
+    14080
+   ],
+   "no_ids": [
+    2152,
+    902,
+    2753,
+    2308,
+    8996,
+    5664
+   ],
+   "device": "cuda",
+   "loader": "unsloth_4bit",
+   "loader_check": {
+    "loader": "unsloth_4bit",
+    "tokenizer_matches": {
+     "vocab": true,
+     "chat_template": true,
+     "eos_token_id": true,
+     "backend": true
+    },
+    "bnb_4bit_linear_modules": 196
+   },
+   "provenance": {
+    "base": {
+     "model_id": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+     "name_or_path": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+     "commit": null,
+     "content_sha256": "0b435c0ebaed36e2"
+    },
+    "quantization_config": {
+     "bnb_4bit_compute_dtype": "torch.bfloat16",
+     "bnb_4bit_quant_type": "nf4",
+     "bnb_4bit_use_double_quant": true,
+     "llm_int8_enable_fp32_cpu_offload": false,
+     "llm_int8_has_fp16_weight": false,
+     "llm_int8_skip_modules": [
+      "lm_head",
+      "multi_modal_projector",
+      "merger",
+      "modality_projection",
+      "mm_projector",
+      "router",
+      "mlp.gate",
+      "block_sparse_moe.gate",
+      "moe.gate",
+      "mamba",
+      "audio_tower",
+      "vision_tower",
+      "vision_embedder",
+      "embed_vision",
+      "embed_audio",
+      "score",
+      "classifier",
+      "qa_outputs"
+     ],
+     "llm_int8_threshold": 6.0,
+     "load_in_4bit": true,
+     "load_in_8bit": false,
+     "quant_method": "bitsandbytes"
+    },
+    "compute_dtype": {
+     "bnb_4bit_compute_dtype": "torch.bfloat16",
+     "model_dtype": "torch.bfloat16"
+    },
+    "versions": {
+     "torch": "2.14.1",
+     "transformers": "5.17.0",
+     "peft": "0.21.2",
+     "trl": "1.13.0",
+     "accelerate": "1.15.0",
+     "bitsandbytes": "0.50.2",
+     "unsloth": "2026.10.3",
+     "unsloth_zoo": "2026.10.3"
+    },
+    "adapter": null,
+    "base_identity": "sha256:0b435c0ebaed36e2",
+    "bitsandbytes": "0.50.2",
+    "loader": "unsloth_4bit",
+    "adapter_merged": false
+   },
+   "ended": "2026-10-20T18:52:16+0000",
+   "seconds": 750.041307926178,
+   "n_new": 4116,
+   "stopped_by_time": false,
+   "oom_backoffs": 0,
+   "final_batch_size": 16,
+   "memory": {
+    "torch_max_allocated_gib": 1.512528896331787,
+    "torch_max_reserved_gib": 1.630859375,
+    "device_total_gib": 7.99560546875,
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU"
+   }
+  }
+ ],
+ "mode": "direct",
+ "perturb_factor": null,
+ "excluded": [],
+ "n_rows": 4116,
+ "complete": true
+}

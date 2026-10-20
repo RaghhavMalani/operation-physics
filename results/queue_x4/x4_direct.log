@@ -1,0 +1,46 @@
+X4 direct: 4116 answers, 0 already done, 4116 to go
+W1020 18:39:54.453000 42320 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1020 18:39:54.506000 42320 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   1%|          | 3/338 [00:00<00:11, 27.94it/s]Loading weights:  19%|█▉        | 64/338 [00:00<00:00, 359.60it/s]Loading weights:  40%|███▉      | 135/338 [00:00<00:00, 512.20it/s]Loading weights:  58%|█████▊    | 197/338 [00:00<00:00, 544.00it/s]Loading weights:  78%|███████▊  | 263/338 [00:00<00:00, 583.19it/s]Loading weights:  97%|█████████▋| 328/338 [00:00<00:00, 602.13it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 538.32it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': True}, 'bnb_4bit_linear_modules': 196}
+X4 direct: reading path float32_head ({'path': 'float32_head', 'relative_gap': 0.002195172943174839, 'argmax_agree': True, 'vocab': 151936})
+  X4 direct: 16/4116 (29s, OOM backoffs 0)
+  X4 direct: 176/4116 (61s, OOM backoffs 0)
+  X4 direct: 336/4116 (89s, OOM backoffs 0)
+  X4 direct: 496/4116 (120s, OOM backoffs 0)
+  X4 direct: 656/4116 (151s, OOM backoffs 0)
+  X4 direct: 816/4116 (183s, OOM backoffs 0)
+  X4 direct: 976/4116 (214s, OOM backoffs 0)
+  X4 direct: 1136/4116 (245s, OOM backoffs 0)
+  X4 direct: 1296/4116 (276s, OOM backoffs 0)
+  X4 direct: 1456/4116 (306s, OOM backoffs 0)
+  X4 direct: 1616/4116 (333s, OOM backoffs 0)
+  X4 direct: 1776/4116 (364s, OOM backoffs 0)
+  X4 direct: 1936/4116 (394s, OOM backoffs 0)
+  X4 direct: 2096/4116 (423s, OOM backoffs 0)
+  X4 direct: 2256/4116 (450s, OOM backoffs 0)
+  X4 direct: 2416/4116 (475s, OOM backoffs 0)
+  X4 direct: 2576/4116 (502s, OOM backoffs 0)
+  X4 direct: 2736/4116 (529s, OOM backoffs 0)
+  X4 direct: 2896/4116 (556s, OOM backoffs 0)
+  X4 direct: 3056/4116 (579s, OOM backoffs 0)
+  X4 direct: 3216/4116 (606s, OOM backoffs 0)
+  X4 direct: 3376/4116 (632s, OOM backoffs 0)
+  X4 direct: 3536/4116 (659s, OOM backoffs 0)
+  X4 direct: 3696/4116 (682s, OOM backoffs 0)
+  X4 direct: 3856/4116 (709s, OOM backoffs 0)
+  X4 direct: 4016/4116 (735s, OOM backoffs 0)
+{
+ "arm": "direct",
+ "n_rows": 4116,
+ "complete": true,
+ "seconds": 750.041307926178,
+ "path": "float32_head"
+}

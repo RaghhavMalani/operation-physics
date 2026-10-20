@@ -1,2 +1,8 @@
 [23:32:04] queue start; GPU deadline 11:30 IST; queue PID 15055; arms: direct perturbed shuffled random_init
 [23:32:04] waiting for PID 7226 to exit: bash scripts/queue_x4_main.sh 
+[00:09:42] PID 7226 has exited
+[00:09:42] GPU at 62C
+[00:09:43] X4 direct: cap 6.72 GiB, soft limit 575 min (reserve 6300s), 0 rows so far
+[00:09:43] start x4_direct (timeout 35117s): uv run python -m physcal.eval.x4_verify run --arm direct --max-reserved-gib 6.72 --minutes 575
+[00:22:18] end x4_direct: exit 0
+[00:22:18] X4 direct: 4116 of 4116 rows
