@@ -2,3 +2,8 @@
 [05:18:30] GPU at 55C
 [05:18:30] start x3_eval_a_x2_rerun (timeout 2400s): uv run python -m physcal.train.x3 eval --arm a --set x2
 [05:37:21] end x3_eval_a_x2_rerun: exit 0
+[05:37:25] commit 'X3 pilot (D79/D88): student (a) sigma suffixes on the X2 answers, rerun after the mu = 0 fix': pushed
+[05:37:25] start x3_analyze_rerun (timeout 1800s): env CUDA_VISIBLE_DEVICES= nice -n 10 uv run python -m physcal.train.x3 analyze
+[05:37:25] GPU at 61C
+[05:37:25] start x2_suffix_rerun (timeout 3000s): uv run python -m physcal.eval.x2_pairs suffix
+[05:38:16] end x3_analyze_rerun: exit 0
