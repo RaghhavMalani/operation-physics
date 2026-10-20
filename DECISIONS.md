@@ -2825,3 +2825,68 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     pairs.
 - **Uncertainty everywhere:** a bootstrap over problems, B = 10,000, seed 0. The one-sided p for "> 0.5" is
   reported, with no Holm family: exploratory.
+
+### D93. Round-3 review amendments R3-1 to R3-10 (`REVIEW_SYNTHESIS_ROUND3_2026-10-20.md`; recorded 2026-10-20 night, before any result they affect)
+- **State when recorded:** X4 `sft` rows are being written on the GPU; no X4 analysis, reading or score exists. No
+  E1c, E1d, A6c or Phase 12 data exists. X2 robustness (D92) code exists; its full run is in progress.
+- **R3-1, X4 additions:** done as **D91** (direct mode, the perturbed control, problem-level cluster bootstrap,
+  extra inference tokens per mode), before any X4 data.
+  - **Later, not tonight:** a yes/no order variant (affirmative bias), and a deterministic arithmetic checker as a
+    ceiling. Each needs its own entry before it runs.
+- **R3-2, X2 robustness (post-hoc, exploratory):** done as **D92**.
+  - The self-consistency baseline costs 8 samples per problem at inference. It is reported next to its number.
+- **R3-3, optimization pilots before Phase 12 RL:** E1c (σ advantages normalized over the batch) and E1d (higher
+  learning rate), on the E1 machinery. Pre-registered in **D94**, configs and CPU tests built, NOT launched.
+  - **The decision rule:** whichever moves ρ sets the RL configuration for Phase 12 (D94 gives the test).
+- **R3-4, Phase 12 primary scope: aleatoric σ propagation only.** Stages:
+  - **A (CPU):** X1, plus noise heuristics (max, mean, root-sum-square of the stated noise); a scoring audit; the
+    oracle-centred diagnostic (R3-6). The heuristics are built tonight with A6c (**D95**).
+  - **B:** a supervised σ\* model, 3 seeds: the propagation ceiling. It comes before any RL night.
+  - **C:** implicit σ-RL, 1 pilot with the R3-3 configuration; 3 seeds only if it shows signal.
+  - **D:** explicit propagation, 1 diagnostic seed each.
+    - **The positive control:** SFT with real propagation numbers, i.e. D80's trained variant, with the line numbers
+      in the loss.
+    - **The ablation:** format-only SFT, i.e. **D84**'s masked arm.
+    - **This amends D84:** D84's masked arm stays, as the ablation, no longer as the only explicit arm. Full seeds
+      only if D resolves B vs C.
+  - **E:** p (confidence, D83's `<confidence>` channel) is deferred to a follow-up. If X4 works, verification-derived
+    p becomes its teacher or baseline.
+  - **Not changed tonight:** no Phase 12 code, data or config changes with this entry. Your instruction was "do not
+    change anything else in Phase 12".
+- **R3-5, a new counterfactual set A6c: noise-allocation pairs.**
+  - **The pairs:** the same multiset of noise percentages, with the inputs that receive them swapped (e.g.
+    y = a·b², 1% on a and 5% on b, then reversed). The visible percentages are identical; the correct σ\* differs.
+  - **Role:** a primary propagation test alongside A6/A6b, compared against X1 and the R3-4 heuristics.
+  - Built tonight, frozen like A6/A6b (**D95**); no model is evaluated on it.
+- **R3-6, tolerances and selection bias:**
+  - **The confidence event:** |ŷ − y_display| / |y_display| ≤ 1%, with y_display computed from the displayed
+    givens. Sensitivity analyses at 0.1% and 0.5%.
+    - This replaces D83's τ = 0.1% (A1's value) as the primary.
+    - It is a `reward_v12.yaml` change, made when p is next worked on (R3-4 E defers it). Verifier 1.2.0 is not
+      edited tonight.
+  - **σ propagation, primary:** the oracle-centred diagnostic on all problems. The stated σ is scored with μ replaced
+    by f(x_meas), which avoids selecting on correctness.
+  - **σ propagation, secondary:** the correctly computed answers, with τ_σ = max(0.25%, 0.25·σ\*).
+  - **Noise-0 problems** are handled separately (log σ\* is undefined).
+- **R3-7, statistics:**
+  - Bootstrap over problems or templates, never over overlapping pairs. X4 (D91) and D92 follow it.
+  - The credit-assignment result is described as 3 vs 3 seeds, not 9 independent replications. It applies to the
+    write-up and every later summary.
+- **R3-8, claim strength:** Part II is stated "for the tested estimators and this model", with no claim about model
+  size.
+  - **The defences:** X4, candidate verification and, optionally later, an inference-only scale check on a 7B model.
+- **R3-9, explicit arm mechanics (when stage D is built):**
+  - SFT teaches the copy step (answer σ = line result × |μ|).
+  - Split credit routes the σ reward to the line's number tokens as well as to the answer's σ.
+  - If p is ever trained, its loss coefficient is specified separately. A zero weight in the total reward does not
+    mean zero effect through separately normalized token advantages.
+- **R3-10, references:** these are to be verified before citing, none cited yet:
+  - Huang et al. (arXiv 2310.01798); Zhang et al., Generative Verifiers (arXiv 2408.15240);
+  - Tian et al. (arXiv 2305.14975); Weng et al. (arXiv 2212.09561);
+  - Xia et al. (arXiv 2601.08064); Ma et al. (arXiv 2608.07827);
+  - Zeng et al. (arXiv 2504.06564); Leng et al. (arXiv 2410.09724).
+  - Each gets checked against its arXiv page before it enters the write-up. A reviewer's "now verified" does not
+    count.
+- **The six points both reviewers agree on** (the file's first section) are recorded as given there.
+  - **No claim** of a model-size limit, and no claim that RL's failure is purely optimization without the R3-3 test.
+  - **Monte Carlo σ\* is not called exact.**
