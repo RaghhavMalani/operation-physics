@@ -1,0 +1,47 @@
+# X4 (pre-registered in DECISIONS.md D89): self-verification on the X2 pairs. The model sees its own completed answer,
+# is asked with a fixed yes/no prompt whether it is correct (it may recompute first), and P("yes") at a canonical
+# "Verdict:" position is the confidence. Scored with X2's within-problem pairwise accuracy on X2's pairs.
+x2_config: x2                          # the pairs: X2's kept problems and answers (configs/x2.yaml, results/x2/selected.json)
+prompt: v4_worked_example              # the system prompt the X2 answers were sampled under (checked against the tapes)
+verify_prompt: x4_v1                   # physcal/prompt.py VERIFY_PROMPTS (D89; sha256 below, checked at run time)
+verify_prompt_sha256: 5f5fa39dbd8fd73b6d0af0325e5ce49f3e7c9b775b47126c8209a9ea50ce0f34
+arms:                                  # D89: the same conversations, scored on the same pairs
+  sft:                                 # primary: the corrected SFT model of X2 (merged SFT dir, 4-bit at load, no adapter)
+    model_dir: results/sft/qwen2.5-math-1.5b-instruct/merged
+    donor: false
+  shuffled:                            # control: the SFT model judges another problem's answer (donor problem's text)
+    model_dir: results/sft/qwen2.5-math-1.5b-instruct/merged
+    donor: true
+  random_init:                         # control: X2's random-init model (seed 0), loaded the same way
+    model_dir: results/x2/random_init_model
+    donor: false
+order: [sft, shuffled, random_init]    # GPU order (D89)
+generation:                            # the recomputation: greedy, the answers' own budget
+  max_new_tokens: 512
+  batch_size: 16                       # conversations per generate call (2 problems x 8 answers); OOM halves it
+  repetition_penalty: 1.0
+  seed: 0
+model:
+  loader: unsloth_4bit
+  max_seq_length: 3072                 # longest conversation ~1,980 tokens; max_position_embeddings 4096, default RoPE
+  max_reserved_gib: 5.75               # default allocator cap; the queue passes total - used - margin at each stage
+cap:                                   # the queue's per-stage cap (D86/D87 WSL-spill rule)
+  margin_gib: 0.5
+  min_gib: 4.0
+  max_gib: 7.5
+reading:
+  marker: "Verdict:"                   # appended at the canonical reading position
+  cut_pattern: "(?i)verdict"           # the generated text is cut before its LAST match
+  strip_chars: " \t\r\n*_#"            # dropped from the end of the kept text
+  yes_tokens: ["yes", " yes", "Yes", " Yes", "YES", " YES"]   # each a single token (checked)
+  no_tokens: ["no", " no", "No", " No", "NO", " NO"]
+  score_batch_size: 4                  # sequences per reading forward (right padding); OOM halves it
+  logit_check_rtol: 0.02               # float32 head vs the model's own logits on the first row of a run
+  head_chunk: 32768                    # vocabulary rows per float32 matmul
+analysis:
+  bootstrap: 10000                     # over problems (X2's)
+  seed: 0
+  alpha: 0.05                          # Holm over the three arms' "> 0.5" tests
+  probe_check_atol: 1.0e-9             # the X2 probe must reproduce results/x2/results.json (the same pairs)
+  recompute_tolerance: 0.01            # exploratory recomputation agreement: |mu_re / mu - 1| <= 1%
+output_dir: results/x4                 # <arm>/rows.jsonl + meta.json; x2_reference.json; results.json, summary.md

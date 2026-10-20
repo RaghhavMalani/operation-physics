@@ -662,3 +662,11 @@ Progress:
 ## 2026-10-20 day: full test suite, then X4 (self-verification) prep (CPU only)
 
 - [x] **Full test suite (the rerun D87/D88 asked for):** 457 passed, 0 failed, 0 skipped (5 min 13 s). Nothing to fix.
+- [x] **X4 pre-registered (D89)** before any X4 data: self-verification on the X2 pairs; the prompt `x4_v1` is fixed
+  by its SHA-256.
+- [x] **X4 built and tested on CPU:**
+  - **Code:** `physcal/eval/x4_verify.py` (GPU runs, resumable), `physcal/eval/x4_analysis.py` (CPU), `configs/x4.yaml`.
+  - **The X2 reference** (`results/x4/x2_reference.json`, X2 outputs only) reproduces X2's probe exactly (0.5471, gap 0).
+  - **Tests:** `tests/test_x4.py` (14), including a tiny CPU model end to end. Its float32 head matches the model's own
+    logits (gap ~1e-7); a run resumes, also after a cut-off line; the shuffled arm shows the donor's text.
+  - **Full suite:** 470 passed before the last X4 test was added; the X4 + X2 tests (24) pass on the final code.
