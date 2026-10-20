@@ -658,3 +658,7 @@ Progress:
   - student (a)'s X2 eval (a μ = 0 crash, D88).
 - [ ] **Next:** the Round 3 review (Phase 12 choices, D83's τ / weight); a full X3 spec, if wanted; rerun the full test
   suite by day.
+
+## 2026-10-20 day: full test suite, then X4 (self-verification) prep (CPU only)
+
+- [x] **Full test suite (the rerun D87/D88 asked for):** 457 passed, 0 failed, 0 skipped (5 min 13 s). Nothing to fix.
