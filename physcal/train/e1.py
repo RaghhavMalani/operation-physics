@@ -189,6 +189,24 @@ class E1Reward:
 
 
 # ------------------------------------------------------------------------------------------- train
+def grpo_args(cfg: dict, out: Path, run_id: str, steps: int) -> dict:
+    """The GRPOConfig arguments of a run (None values are left to TRL's defaults). `scale_rewards` (D94, E1c) is
+    passed only when the config sets it; E1a / E1b leave it unset (TRL's default, "group")."""
+    g = cfg["grpo"]
+    return dict(
+        output_dir=str(out / "checkpoints"), run_name=run_id, seed=cfg["seed"], report_to="none",
+        max_steps=steps, logging_steps=1, save_steps=g["save_steps"], save_total_limit=g["save_total_limit"],
+        learning_rate=g["learning_rate"], lr_scheduler_type=g["lr_scheduler_type"], warmup_steps=g["warmup_steps"],
+        optim=g["optim"], weight_decay=g["weight_decay"], max_grad_norm=g["max_grad_norm"], bf16=True,
+        per_device_train_batch_size=g["per_device_train_batch_size"],
+        gradient_accumulation_steps=g["gradient_accumulation_steps"],
+        num_generations=g["num_generations"], max_completion_length=g["max_completion_length"],
+        max_prompt_length=g.get("max_prompt_length"), beta=g["beta"], temperature=g["temperature"],
+        top_p=g["top_p"], top_k=g["top_k"], repetition_penalty=g["repetition_penalty"],
+        scale_rewards=g.get("scale_rewards"),
+    )
+
+
 def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float | None = None) -> dict:
     from physcal.train.grpo import make_keep_and_memory_callback, make_stop_callback
 
@@ -231,17 +249,7 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
     tape = TapeWriter(out / "rollouts.jsonl", run_id, meta)
     reward_fn = E1Reward(rw_cfg, cfg["e1_mode"], e1["bins"], tape, out / "train_metrics.jsonl", g["num_generations"],
                          g["max_completion_length"], m["id"])
-    wanted = dict(
-        output_dir=str(out / "checkpoints"), run_name=run_id, seed=cfg["seed"], report_to="none",
-        max_steps=steps, logging_steps=1, save_steps=g["save_steps"], save_total_limit=g["save_total_limit"],
-        learning_rate=g["learning_rate"], lr_scheduler_type=g["lr_scheduler_type"], warmup_steps=g["warmup_steps"],
-        optim=g["optim"], weight_decay=g["weight_decay"], max_grad_norm=g["max_grad_norm"], bf16=True,
-        per_device_train_batch_size=g["per_device_train_batch_size"],
-        gradient_accumulation_steps=g["gradient_accumulation_steps"],
-        num_generations=g["num_generations"], max_completion_length=g["max_completion_length"],
-        max_prompt_length=g.get("max_prompt_length"), beta=g["beta"], temperature=g["temperature"],
-        top_p=g["top_p"], top_k=g["top_k"], repetition_penalty=g["repetition_penalty"],
-    )
+    wanted = grpo_args(cfg, out, run_id, steps)
     fields = set(GRPOConfig.__dataclass_fields__)
     dropped = sorted(k for k in wanted if k not in fields)
     args = GRPOConfig(**{k: v for k, v in wanted.items() if k in fields and v is not None})
@@ -265,6 +273,8 @@ def train(cfg: dict, run_id: str, max_steps: int | None = None, deadline: float 
                              "torch_max_allocated_gib": torch.cuda.max_memory_allocated() / gib,
                              "num_ooms": torch.cuda.memory_stats().get("num_ooms", 0)},
                "grpo_config_dropped_keys": dropped, "train_loss": getattr(result, "training_loss", None),
+               "trainer_args": {k: getattr(trainer.args, k, None) for k in ("scale_rewards", "learning_rate",
+                                                                            "loss_type", "beta")},  # D94: as used
                "final_adapter": str(out / "final_adapter")}
     from physcal.eval.fingerprint import record_after_training  # R2-1 / D72: after the save and the memory stats
 

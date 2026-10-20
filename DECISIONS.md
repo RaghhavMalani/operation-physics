@@ -2890,3 +2890,63 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **The six points both reviewers agree on** (the file's first section) are recorded as given there.
   - **No claim** of a model-size limit, and no claim that RL's failure is purely optimization without the R3-3 test.
   - **Monte Carlo σ\* is not called exact.**
+
+### D94. Pre-registration of E1c and E1d, the R3-3 optimization pilots (written before any E1c/E1d data exists; built, NOT launched)
+- **Question (R3-3):** E1 had clean credit (μ fixed, only σ varies within a group), yet learned an almost constant σ.
+  - **The corrected 4-bit eval (D67):** ρ(σ, |error|) = 0.013 for E1a and 0.014 for E1b; 0.001 for the SFT σ; 0.70
+    for the A5 σ on the same answers.
+  - **Supervised training on the same kind of labels** reached ρ ≈ 0.58 (X3, FINDINGS #20).
+  - **So:** is E1's failure an optimization artifact? Two candidates: (c) per-prompt advantage normalization;
+    (d) the learning rate.
+- **The base: E1a, exactly** (`configs/grpo_e1a.yaml`, D52/D53). Free σ; the unchanged verifier reward (crps_log
+  + 0.2·steps); the same 1,996 training prefixes in the same shuffled order (seed 0); 300 steps of 4 prefixes × 8
+  samples; LoRA r = 16; DAPO loss; β = 0; grad-norm clip 0.1; the 7.5 GiB cap; the same loader. Each pilot changes
+  one variable:
+  - **E1c (`configs/grpo_e1c.yaml`): `scale_rewards: batch`.** The advantage keeps the prompt's own mean as its
+    baseline, (r − group mean), so credit stays within the prompt. It is divided by the std over the step's whole
+    batch (all 32 completions: 4 prompts × 8), not by the std within each prompt's 8.
+    - This is TRL 1.13's `scale_rewards="batch"`. E1a ran with TRL's default `"group"`.
+    - **Checked in source:** Unsloth's compiled GRPOConfig overrides `scale_rewards` only for `loss_type: dr_grpo`;
+      E1 uses `dapo`. `summary.json` records the value the trainer actually used.
+    - **Why it might matter:** per-prompt scaling gives every prompt unit-variance advantages. Prompts whose μ is
+      exact (where σ hardly changes crps_log) then push as hard as prompts whose μ is far off (where a wide σ pays a
+      lot). Batch scaling keeps those relative sizes.
+    - **[REVIEW]: the other reading of "normalized across the whole batch"** is to center at the batch mean as well.
+      That re-mixes μ error (between prompts) into σ's advantage, so it was not chosen. It can still change before
+      launch.
+  - **E1d (`configs/grpo_e1d.yaml`): learning rate 5e-5,** 10× E1a's 5e-6. Same schedule (constant after 5 warmup
+    steps).
+    - **A correction to R3-3:** the SFT learning rate is 1e-4 (`configs/sft.yaml`), so RL's is 20× below SFT's, not
+      ~40×.
+    - **[REVIEW]:** 5e-5 sits between E1a and SFT on a log scale. The alternatives are 2.5e-5 and 1e-4. It can
+      change before launch.
+- **Evaluation:** E1a's corrected eval, unchanged (D67).
+  - **The eval:** `python -m physcal.train.e1 eval --run <run> --adapter final_adapter --out-name final_4bit` (the
+    greedy σ suffix on the 400 frozen eval prefixes; 4-bit base, adapter unmerged), and the same for step 150.
+  - **The reference** is E1a's existing `final_4bit` rows.
+- **Primary metric:** Spearman ρ(relative σ, |log error|) over the eval prefixes. These are `e1_compare.describe`'s
+  rows: failures and μ ≤ 0 left out, as for E1a.
+- **Tests (family E-opt):** ρ(E1x) > ρ(E1a), for x = c and d.
+  - **The p-value:** one-sided, from a paired bootstrap over the 400 problems (B = 10,000, seed 0). Each resample
+    recomputes both ρ on the same problems; p = the share of resamples with ρ(E1x) − ρ(E1a) ≤ 0.
+  - **Holm** at α = 0.05 over the two tests. A pilot that did not run counts as p = 1.
+- **The decision rule (R3-3: "whichever moves ρ sets the RL configuration for Phase 12"):**
+  - **Exactly one Holm-supported:** its setting becomes Phase 12's RL setting.
+  - **Both supported:** the one with the higher ρ point estimate. Combining them would be a new, untested
+    configuration; it needs its own entry.
+  - **Neither:** Phase 12 RL keeps E1's settings. The negative result is reported: under these optimizer settings,
+    GRPO does not learn a problem-dependent σ with clean credit.
+- **Reported, not tested:**
+  - D52's family E for both pilots: crps_log vs the SFT σ and vs the strongest A5 σ, paired, on the same answers;
+  - 1σ / 2σ coverage, median relative σ, the σ = 0 share, the 9-bin entropy;
+  - parse-fail, unit-mismatch and μ-changed rates;
+  - per-step training reward;
+  - ρ at step 150.
+- **Collapse check (E1d mainly):** if one σ string makes up > 90% of the eval suffixes, the run is reported as
+  collapsed, whatever its ρ.
+- **Pipeline sanity:** D52's rule. If more than 10% of step-1 suffixes fail to parse, or the run OOMs, it is a
+  pipeline failure, not a result.
+- **Budget:** 1 seed each (pilots), about 2.7 h each (E1a: 300 steps in 2.71 h). The R3 schedule puts them on the
+  night of Wed 21.
+- **Built (CPU):** the two configs; `e1.grpo_args` (E1a/E1b's arguments are unchanged; `scale_rewards` passes
+  through when set); `e1_compare.compare_pilots` (the ρ tests); tests in `tests/test_e1_pilots.py`.

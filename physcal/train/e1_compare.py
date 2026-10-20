@@ -9,6 +9,10 @@ in every arm:
 One-sided paired bootstrap over problems; Holm over all four (a run that does not exist counts as p = 1, so the
 correction never gets weaker than pre-registered). Writes results/e1/family_E.{json,md}.
 
+`compare_pilots()` (DECISIONS.md D94, R3-3): E1c / E1d against E1a on ρ(σ, |error|), the corrected eval, one-sided
+paired bootstrap over problems, Holm over the two; plus each pilot's family E and the collapse check. Writes
+results/e1/pilots/pilots.{json,md}.
+
 `compare(corrected=True)` (DECISIONS.md D67): the same tests on the corrected evals. The E1 adapters are applied
 unmerged to the 4-bit training base (e1_eval/final_4bit), and the SFT stated σ is the SFT-only model's own σ suffix
 on the same prefixes and base (results/e1/sft_4bit). The A5 σ (on the fixed prefixes) is unchanged. Writes
@@ -144,3 +148,96 @@ def compare(corrected: bool = False, a5_tape: str | None = None, output_dir: str
     md = "\n".join(lines) + "\n"
     (od / "family_E.md").write_text(md)
     return md
+
+
+# ------------------------------------------------------------------------------------------- D94: the R3-3 pilots
+def _ok(arm: dict, keys: list) -> list:
+    return [k for k in keys if not arm[k]["fail"] and arm[k]["rel_sigma"] is not None
+            and arm[k]["abs_log_error"] is not None]  # describe()'s rows
+
+
+def rho_of(arm: dict, keys: list) -> float | None:
+    ok = _ok(arm, keys)
+    if len(ok) <= 2:
+        return None
+    r = spearmanr([arm[k]["rel_sigma"] for k in ok], [arm[k]["abs_log_error"] for k in ok]).statistic
+    return None if r is None or math.isnan(r) else float(r)
+
+
+def rho_bootstrap(a: dict, b: dict, keys: list, n_boot: int, seed: int) -> dict:
+    """D94: one-sided ρ(a) > ρ(b); each resample of problems recomputes both ρ on the same problems. p = the share
+    of resamples with ρ(a) − ρ(b) <= 0 (a resample where either ρ is undefined counts against a)."""
+    rng = np.random.default_rng(seed)
+    diffs = []
+    for _ in range(n_boot):
+        ks = [keys[i] for i in rng.integers(0, len(keys), len(keys))]
+        ra, rb = rho_of(a, ks), rho_of(b, ks)
+        diffs.append(ra - rb if ra is not None and rb is not None else -math.inf)
+    d = np.array(diffs)
+    fin = d[np.isfinite(d)]
+    return {"rho": rho_of(a, keys), "rho_reference": rho_of(b, keys), "diff": rho_of(a, keys) - rho_of(b, keys),
+            "ci95": np.percentile(fin, [2.5, 97.5]).tolist() if len(fin) else [None, None],
+            "p_one_sided": float(np.mean(d <= 0))}
+
+
+def collapse(tape: Path, share: float) -> dict:
+    """D94: the most common σ suffix string (stripped) and its share of the eval suffixes."""
+    from collections import Counter
+
+    sfx = [r.get("suffix", "").strip() for r in read_tape(tape)]
+    top, n = Counter(sfx).most_common(1)[0] if sfx else ("", 0)
+    return {"top_suffix": top, "top_share": n / len(sfx) if sfx else None, "collapsed": bool(sfx) and n / len(sfx) > share}
+
+
+def compare_pilots() -> dict:
+    e1 = load_config("e1")
+    cc = e1["compare"]
+    pc = cc["pilots"]
+    keys = [tuple(r["key"]) for r in read_rows("eval")]
+    ref = rows_arm(REPO_ROOT / pc["reference"] / "e1_eval" / pc["eval_name"] / "rows.jsonl")
+    sft = rows_arm(REPO_ROOT / CORRECTED["sft_rows"])
+    a5 = tape_arm(REPO_ROOT / cc["a5_sigma_tape"])
+    tests, p, desc, fam, col = {}, {}, {}, {}, {}
+    for name, run in pc["runs"].items():
+        d = REPO_ROOT / run / "e1_eval" / pc["eval_name"]
+        if not (d / "rows.jsonl").exists():
+            p[name], tests[name] = 1.0, "not run"
+            continue
+        arm = rows_arm(d / "rows.jsonl")
+        missing = [k for k in keys if k not in arm]
+        if missing:
+            raise ValueError(f"{name}: {len(missing)} eval prefixes without a row")
+        tests[name] = rho_bootstrap(arm, ref, keys, cc["bootstrap"], cc["seed"])
+        p[name] = tests[name]["p_one_sided"]
+        desc[name] = describe(arm, keys, e1["bins"], cc["coverage_target"])
+        fam[name] = {"P (vs SFT σ)": paired_bootstrap(arm, sft, keys, cc["bootstrap"], cc["seed"]),
+                     "N (vs A5 σ)": paired_bootstrap(arm, a5, keys, cc["bootstrap"], cc["seed"])}
+        col[name] = collapse(d / "rollouts.jsonl", pc["collapse_share"])
+    desc["E1a (reference)"] = describe(ref, keys, e1["bins"], cc["coverage_target"])
+    h = holm(p, cc["alpha"])
+    sup = [n for n in p if h[n]["rejected"]]
+    if not sup:
+        rule = "neither moves ρ: Phase 12 RL keeps E1's settings (reported as a negative result)"
+    else:
+        best = max(sup, key=lambda n: tests[n]["rho"])
+        rule = f"{best} moves ρ: its setting becomes Phase 12's RL setting" + (
+            f" (both supported; {best} has the higher ρ)" if len(sup) > 1 else "")
+    out = {"decision": "D94", "n_problems": len(keys), "tests": tests, "holm": h, "describe": desc,
+           "family_E": fam, "collapse": col, "decision_rule": rule}
+    od = REPO_ROOT / pc["output_dir"]
+    od.mkdir(parents=True, exist_ok=True)
+    (od / "pilots.json").write_text(json.dumps(out, indent=1, default=float))
+    L = [f"# E1c / E1d, the R3-3 pilots (D94): ρ(σ, |error|) vs E1a, {len(keys)} eval prefixes, corrected eval", "",
+         f"**Decision rule:** {rule}.", "",
+         "| pilot | ρ | ρ E1a | Δρ [95% CI] | p (one-sided) | Holm | collapsed (top suffix share) |", "|---|---|---|---|---|---|---|"]
+    for name in p:
+        t = tests[name]
+        if t == "not run":
+            L.append(f"| {name} | not run | – | – | 1 | not supported | – |")
+            continue
+        c = col[name]
+        L.append(f"| {name} | {t['rho']:.3f} | {t['rho_reference']:.3f} | {t['diff']:+.3f} [{t['ci95'][0]:+.3f}, "
+                 f"{t['ci95'][1]:+.3f}] | {t['p_one_sided']:.3g} | {'supported' if h[name]['rejected'] else 'not supported'} "
+                 f"| {c['collapsed']} ({c['top_share']:.1%}) |")
+    (od / "pilots.md").write_text("\n".join(L) + "\n")
+    return out

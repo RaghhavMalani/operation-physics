@@ -35,3 +35,11 @@ compare:
   alpha: 0.05
   coverage_target: 0.6827
   output_dir: results/e1
+  pilots:                             # D94 (R3-3): E1c / E1d vs E1a on rho, the corrected eval (D67)
+    reference: results/train/e1a-sigma-only-free-seed0
+    runs:
+      E1c: results/train/e1c-sigma-only-free-seed0
+      E1d: results/train/e1d-sigma-only-free-seed0
+    eval_name: final_4bit
+    collapse_share: 0.9               # one sigma suffix string in > 90% of the eval suffixes -> "collapsed"
+    output_dir: results/e1/pilots
