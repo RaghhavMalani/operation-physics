@@ -75,7 +75,7 @@ def x2_confidences(x2: dict, rc: dict) -> tuple[dict, dict]:
     conf["probe"] = {(tuple(k), s): v for k, s, v in ref["probe"]}
     info = {"probe": "from results/x4/x2_reference.json (D89)"}
     if rc["refits"]:
-        pc = ac["probe"] | {"n_jobs": rc["n_jobs"]}
+        pc = ac["probe"] | ({} if rc["n_jobs"] is None else {"n_jobs": rc["n_jobs"]})  # X2's own by default
         fl, fi = x2_hidden.load("random_init", "fit", x2)
         xl, xi = x2_hidden.load("random_init", "x2", x2)
         conf["random_init_probe"], info["random_init_probe"] = XA.probe_confidence(fl, fi, xl, xi, pc)

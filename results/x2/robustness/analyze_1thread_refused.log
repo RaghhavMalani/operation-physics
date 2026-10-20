@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/flash2404/operation-physics/physcal/eval/x2_robustness.py", line 281, in <module>
+    main()
+  File "/home/flash2404/operation-physics/physcal/eval/x2_robustness.py", line 277, in main
+    print(render(analyze(), _config()))
+                 ^^^^^^^^^
+  File "/home/flash2404/operation-physics/physcal/eval/x2_robustness.py", line 208, in analyze
+    gaps = check_reproduces(groups, keys, conf, published["methods"], rc["reproduce_atol"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/flash2404/operation-physics/physcal/eval/x2_robustness.py", line 94, in check_reproduces
+    raise RuntimeError(f"X2 method {m}: recomputed {mine}, published {published[m]['pairwise_accuracy']}")
+RuntimeError: X2 method probe_crossfit: recomputed 0.5390400055370985, published 0.5396260151347361

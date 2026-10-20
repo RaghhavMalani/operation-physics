@@ -9,7 +9,9 @@ separated:                             # a. clearly separated pairs (verifier ab
 self_consistency:                      # c. confidence = share of the problem's other samples agreeing with this answer
   agree_tolerance: 0.01                # |mu_j / mu_i - 1| <= 1% (SI); an unparsed sample never agrees
 refits: true                           # refit X2's random-init probe and cross-fitted probe (CPU, minutes); else skipped
-n_jobs: 1                              # joblib workers for the refits: 1 (the GPU queue runs alongside; heat)
+n_jobs: null                           # null = X2's own (4). The refits reproduce X2 only under X2's settings
+                                       # (4 jobs, OMP/OPENBLAS/MKL 4 threads): with 1 thread the cross-fitted
+                                       # probe gave 0.5390 vs 0.5396 (D92's check refused it)
 bootstrap: 10000                       # over problems
 seed: 0
 reproduce_atol: 1.0e-9                 # every recomputed X2 method must match results/x2/results.json
