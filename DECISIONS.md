@@ -2950,3 +2950,66 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   night of Wed 21.
 - **Built (CPU):** the two configs; `e1.grpo_args` (E1a/E1b's arguments are unchanged; `scale_rewards` passes
   through when set); `e1_compare.compare_pilots` (the ρ tests); tests in `tests/test_e1_pilots.py`.
+
+### D95. A6c noise-allocation pairs and the noise heuristics (R3-5, R3-4 A): construction and analysis fixed before the set is built; no model is evaluated on it
+- **Purpose (R3-5):** a pair keeps the same multiset of visible noise percentages and swaps which input receives
+  them. The visible percentages are identical, but σ\* differs. This defeats "copy the largest (or mean, or RSS)
+  percentage", which A6 cannot: within an A6 pair every given has the same level.
+- **Construction (`kind: allocation`, `configs/pairs.yaml`; code in `physcal/env/pairs.py`):** per family, depth,
+  level pair (l, h) and pair seed:
+  1. **The chain:** at least 2 givens. The world is the first of up to 24 draws that passes the generator's validity
+     and κ ≤ 5 filters at its true givens.
+  2. **The allocation:** for each given j, the delta-method σ\* with h on j and l on every other given (the
+     sensitivities at the true givens).
+     - **Member lo** puts h on the j with the smallest σ\*, member hi on the j with the largest. Ties go to the
+       earlier given.
+     - **Kept** if σ\*_hi / σ\*_lo ≥ 1.5 (delta method). Otherwise the next chain, up to 20.
+     - **Why 1.5, not A6's 2:** with (1%, 2%) no allocation can reach 2. Before this entry, a CPU feasibility check
+       of the construction only (no model) found 11–39% of (1%, 2%) chains at ≥ 1.5, and 35–96% for (1%, 5%).
+  3. **Identical displayed values in both members:**
+     - Member lo: measured = true · (1 + e_lo), with e_lo = levels_lo ⊙ z.
+     - Member hi: the same unrounded measured values, with levels_hi. Its true givens are backed out,
+       true_hi = measured / (1 + levels_hi ⊙ z), with the same z. So both members follow the generative model, and
+       only the two swapped givens' true values differ.
+     - **Checked:** every displayed number string is identical, and the text differs only in those two "± p%".
+       Member hi must also pass the validity and κ filters; otherwise the next chain.
+  4. **Shared, as in A6:** chain, phrasing, given and target units (from lo), z, the MC standard-normal draws
+     (`n_mc` of the generator), and the distractors (shown at level l, the same in both members).
+  5. **σ\*:** the MC value (A2) with per-given levels, pushed through the chain, as `noise.predictive` already
+     does. Delta-method σ\* is stored too.
+- **Identity and replay:**
+  - **Members:** seeds 2·pair_seed + {0 (lo), 1 (hi)}.
+  - **`noise.pair`:** the construction including `levels: [l, h]`, the member, the chain try, the delta ratio, and
+    the given that carries h.
+  - **Per-given levels:** in `noise.givens[g].rel`. `noise.level` = h, the largest stated level, used for per-level
+    tables and by `generator.regenerate`. The construction must agree with it.
+  - **No generator change:** `generator.regenerate` already sends every pair problem to `pairs.generate_pair`,
+    which dispatches on the stored construction's kind.
+- **Frozen set:**
+  - **Size:** depth 1–5 × level pairs {(1%, 5%), (2%, 5%), (1%, 2%)} × 34 pairs = 510 pairs, 1,020 problems.
+  - **Seeds:** families round-robin; pair seeds from 2.0e9 (disjoint from A6 1.8e9, A6b 1.9e9); at most 136 seeds
+    per cell, shortfalls reported.
+  - **Files:** `data/eval_sets/2.0.0+bdbb2279/a6c_pairs.jsonl` + `a6c_pairs_manifest.json` (SHA-256; per cell:
+    pairs, seeds tried, the MC σ\* ratio median and min, the family mix).
+- **Analysis for a model (later, when one is evaluated):**
+  - **Variables:** x = ln σ\*_hi − ln σ\*_lo (MC); y = ln σ_hi − ln σ_lo (stated relative σ; σ = 0 → the 1e-6
+    floor).
+  - **Primary:** all pairs with both σ parsed, so no selection on correctness (R3-6). The test is A6's statistic:
+    the OLS slope of y on x with an intercept, one-sided bootstrap over pairs (B = 10,000, seed 0) for slope > 0.
+    Pairs do not overlap, so a pair is the cluster (R3-7).
+  - **Secondary:** both answers computation-correct (A1, τ = 0.1%, A6's primary); mean y > 0; the through-origin
+    slope Σxy / Σx².
+  - **Reported in one table** with A6 and A6b.
+- **The noise heuristics (R3-4 A; `physcal/eval/noise_heuristics.py`):** a stated relative σ from the visible
+  percentages alone.
+  - **The three:** max, mean and root-sum-square (√Σ s_i²) of the levels.
+  - **Primary:** over the chain's givens (a solver that knows which values matter). **Secondary:** over every shown
+    measurement, distractors included (a surface reader).
+  - **Evaluated now, on CPU, on the frozen A6, A6b and A6c sets:**
+    - each set's pair statistic (A6 slope, A6b slope, A6c slope);
+    - per problem: median |ln(σ_h / σ\*)|, Spearman ρ(σ_h, σ\*), and the slope of ln σ_h on ln σ\* over all
+      problems.
+  - **What follows by construction:** every heuristic is constant within an A6, A6b and A6c pair (y = 0). So each
+    fails A6 and A6c and passes A6b. That is the reference point A6c exists to make.
+  - **The comparison with X1 (D73) on A6c** needs X1's fitted model applied to the new set. It is left for the next
+    day.
