@@ -1,5 +1,5 @@
-"""X4 analysis (pre-registered in DECISIONS.md D89): does the model, asked to check its own answer, rank a correct
-answer above an incorrect answer to the same problem?
+"""X4 analysis (pre-registered in DECISIONS.md D89, amended by D91): does the model, asked to check its own answer,
+rank a correct answer above an incorrect answer to the same problem?
 
     nice uv run python -m physcal.eval.x4_analysis analyze      # CPU, after the GPU runs
 
@@ -10,6 +10,11 @@ sft − random_init, sft − shuffled (95% bootstrap CIs over problems). Seconda
 problems; per depth; the raw P(yes); diagnostics; exploratory recomputation agreement (sft). Each arm is analyzed on
 the kept problems it completed; paired differences on the problems both completed. Writes results/x4/results.json
 and summary.md.
+
+D91 adds `direct` (no recomputation tokens; reported side by side with recompute) and `perturbed` (the answer's final
+μ × 1.25, original labels) to the Holm family (five arms), the comparisons sft − perturbed (primary), sft − direct,
+direct − X2 probe, direct − random_init (secondary), the detection rate and the perturbed answers' own correctness,
+extra inference tokens per mode, and problem-level cluster-bootstrap CIs for every statistic, diagnostics included.
 """
 
 from __future__ import annotations
@@ -24,10 +29,14 @@ from physcal.eval import x2_pairs
 from physcal.eval import x4_verify as V
 from physcal.eval.x2_analysis import paired, per_problem, tie_share
 
-ARMS = ("sft", "shuffled", "random_init")
-LABELS = {"sft": "X4 self-verification, SFT (4-bit)", "shuffled": "control: another problem's text (SFT)",
+ARMS = ("sft", "direct", "perturbed", "shuffled", "random_init")
+LABELS = {"sft": "X4 self-verification, SFT (4-bit), recompute", "direct": "X4 direct: no recomputation (D91)",
+          "perturbed": "control: final μ × 1.25, recompute (D91)", "shuffled": "control: another problem's text (SFT)",
           "random_init": "control: random-init model", "x2_probe": "X2 method 5: hidden-state probe (reference)",
           "x2_sft_sigma": "X2 method 1: SFT stated σ (reference)"}
+PAIRS = [("sft", "x2_probe", "primary"), ("sft", "random_init", "primary"), ("sft", "shuffled", "primary"),
+         ("sft", "perturbed", "primary (D91)"), ("sft", "x2_sft_sigma", "secondary"), ("sft", "direct", "secondary (D91)"),
+         ("direct", "x2_probe", "secondary (D91)"), ("direct", "random_init", "secondary (D91)")]
 
 
 # ------------------------------------------------------------------------------------------- inputs
@@ -45,9 +54,10 @@ def load_reference(cfg: dict, groups: dict, keys: list) -> dict:
     return out
 
 
-def complete_keys(rows: list[dict], groups: dict, keys: list) -> list:
-    """The kept problems (in the kept order) whose every answer has a row."""
-    have = {(tuple(r["key"]), r["sample"]) for r in rows}
+def complete_keys(rows: list[dict], groups: dict, keys: list, excluded: set | None = None) -> list:
+    """The kept problems (in the kept order) whose every answer has a row (or was excluded by D91's perturbation
+    check: no confidence, so its pairs count 0.5, D89's missing rule)."""
+    have = {(tuple(r["key"]), r["sample"]) for r in rows} | (excluded or set())
     return [k for k in keys if all((tuple(k), a["sample"]) in have for a in groups[k])]
 
 
@@ -85,6 +95,19 @@ def auroc(groups: dict, keys: list, conf: dict, n_boot: int, seed: int) -> dict:
             "n_answers": int(len(y))}
 
 
+def cluster_mean(by_problem: list, n_boot: int, seed: int) -> dict:
+    """D91: the mean over answers pooled across problems, with a 95% CI from a bootstrap over problems (problems are
+    resampled with all their answers, never answers on their own). `by_problem`: one list of values per problem."""
+    s = np.array([float(np.sum(v)) for v in by_problem if len(v)])
+    n = np.array([len(v) for v in by_problem if len(v)])
+    if not len(n):
+        return {"mean": None, "ci95": [None, None], "n_problems": 0}
+    idx = np.random.default_rng(seed).integers(0, len(n), (n_boot, len(n)))
+    boots = s[idx].sum(axis=1) / n[idx].sum(axis=1)
+    return {"mean": float(s.sum() / n.sum()), "ci95": np.percentile(boots, [2.5, 97.5]).tolist(),
+            "n_problems": int(len(n))}
+
+
 def method_summary(groups: dict, keys: list, conf: dict, n_boot: int, seed: int) -> dict:
     pa = per_problem(groups, keys, conf)
     r = x2_pairs.summarize(pa, n_boot, seed)
@@ -115,6 +138,105 @@ def diagnostics(rows: list[dict], keys: list) -> dict:
             "paths": sorted({r["path"] for r in rs})}
 
 
+DIAG_CI = {  # D91: cluster-bootstrap CIs for the diagnostics; field -> (which answers, value)
+    "share_wrote_yes_or_no": (lambda r: True, lambda r: r["natural_verdict"] in ("yes", "no")),
+    "natural_yes_rate_correct": (lambda r: r["correct"] and r["natural_verdict"] in ("yes", "no"),
+                                 lambda r: r["natural_verdict"] == "yes"),
+    "natural_yes_rate_incorrect": (lambda r: not r["correct"] and r["natural_verdict"] in ("yes", "no"),
+                                   lambda r: r["natural_verdict"] == "yes"),
+    "mean_p_yes_correct": (lambda r: r["correct"], lambda r: r["p_yes"]),
+    "mean_p_yes_incorrect": (lambda r: not r["correct"], lambda r: r["p_yes"]),
+    "mean_yes_no_mass": (lambda r: True, lambda r: r["p_yes_raw"] + r["p_no_raw"]),
+    "share_truncated": (lambda r: True, lambda r: r["truncated"]),
+}
+
+
+def by_problem(rows: list[dict], keys: list, which, value) -> list:
+    """Per kept problem of `keys`, the values of its rows that `which` selects."""
+    per: dict = {tuple(k): [] for k in keys}
+    for r in rows:
+        if tuple(r["key"]) in per and which(r):
+            per[tuple(r["key"])].append(float(value(r)))
+    return list(per.values())
+
+
+def diagnostics_ci(rows: list[dict], keys: list, n_boot: int, seed: int) -> dict:
+    return {f: cluster_mean(by_problem(rows, keys, w, v), n_boot, seed) for f, (w, v) in DIAG_CI.items()}
+
+
+def token_overhead(cfg: dict) -> dict | None:
+    """D91's token cost beyond the answer's own conversation: the verification turn (the second user turn and the
+    generation prompt: the same text for every answer, so a constant) and the marker. None without the tokenizer."""
+    from transformers import AutoTokenizer
+
+    d = REPO_ROOT / cfg["arms"]["sft"]["model_dir"]
+    if not (d / "tokenizer.json").exists():
+        return None
+    tok = AutoTokenizer.from_pretrained(str(d))
+    conv = V.conversation("Problem.", "<answer>1 ± 0.1 m</answer>", cfg["prompt"], V.check_prompt(cfg))
+    full = tok.apply_chat_template(conv, tokenize=False, add_generation_prompt=True)
+    answer = tok.apply_chat_template(conv[:-1], tokenize=False)
+    if not full.startswith(answer):
+        raise RuntimeError("the verification prompt does not extend the answer's conversation")
+    return {"verification_turn": len(tok(full)["input_ids"]) - len(tok(answer)["input_ids"]),
+            "marker": len(tok(cfg["reading"]["marker"], add_special_tokens=False)["input_ids"])}
+
+
+def tokens(rows: list[dict], keys: list, overhead: dict | None, n_boot: int, seed: int) -> dict:
+    """D91: inference tokens per answer beyond the answer itself; generated tokens and, with the tokenizer, the total
+    extra (verification turn + generated + marker). Mean (cluster-bootstrap CI), median, 95th percentile."""
+    kset = {tuple(k) for k in keys}
+    gen = np.array([r["gen_tokens"] for r in rows if tuple(r["key"]) in kset], dtype=float)
+    out = {"generated": cluster_mean(by_problem(rows, keys, lambda r: True, lambda r: r["gen_tokens"]), n_boot, seed)}
+    out["generated"].update(median=float(np.median(gen)) if len(gen) else None,
+                            p95=float(np.percentile(gen, 95)) if len(gen) else None)
+    if overhead is not None:
+        c = overhead["verification_turn"] + overhead["marker"]
+        out["total_extra"] = {k: (v + c if isinstance(v, float) else [x + c for x in v] if k == "ci95" else v)
+                              for k, v in out["generated"].items()}
+        out["overhead"] = overhead
+    return out
+
+
+def detection(rows_s: list[dict], rows_p: list[dict], groups: dict, keys: list, n_boot: int, seed: int) -> dict:
+    """D91 secondary: per problem, over its originally-correct answers, the share whose perturbed confidence is below
+    its sft confidence (ties and a missing confidence 0.5); mean over problems, bootstrap over problems."""
+    cs, cp = conf_of(rows_s, "log_odds"), conf_of(rows_p, "log_odds")
+    per = []
+    for k in keys:
+        v = []
+        for a in groups[k]:
+            if a["correct"]:
+                x, y = cs.get((tuple(k), a["sample"])), cp.get((tuple(k), a["sample"]))
+                v.append(0.5 if x is None or y is None or x == y else float(y < x))
+        if v:
+            per.append(float(np.mean(v)))
+    return x2_pairs.summarize(np.array(per), n_boot, seed) if per else {"missing": True}
+
+
+def perturbed_correctness(cfg: dict, keys: list, tol: float) -> dict:
+    """D91: how many perturbed answers are correct against the truth (the verifier on the edited completion)."""
+    from physcal.env.generator import problem_from_dict
+    from physcal.verify.reward import reward, reward_config
+
+    rw = reward_config()
+    kset = {tuple(k) for k in keys}
+    n = {"correct_to_correct": 0, "correct_to_incorrect": 0, "incorrect_to_correct": 0, "incorrect_to_incorrect": 0,
+         "excluded": 0}
+    its, _ = V.items(cfg)
+    for it in its:
+        if tuple(it["key"]) not in kset:
+            continue
+        text, _ = V.perturb(it["completion"], cfg["arms"]["perturbed"]["perturb_factor"], cfg["perturb"]["min_sig_digits"])
+        if text is None:
+            n["excluded"] += 1
+            continue
+        _, bd = reward(problem_from_dict(it["problem"]), text, rw)
+        now = bd["reason"] == "ok" and bd.get("abs_rel_error") is not None and bd["abs_rel_error"] <= tol
+        n[f"{'correct' if it['correct'] else 'incorrect'}_to_{'correct' if now else 'incorrect'}"] += 1
+    return n
+
+
 def recompute_agreement(rows: list[dict], groups: dict, keys: list, tol: float, x2cfg: dict) -> dict:
     """Exploratory (sft): confidence 1 if the verification text holds an <answer> the verifier parses (against the
     shown problem) whose μ is within `tol` of the original μ, 0 if it parses and disagrees, None (a tie) otherwise."""
@@ -138,7 +260,7 @@ def recompute_agreement(rows: list[dict], groups: dict, keys: list, tol: float, 
 
 
 def reading(holm: dict, diffs: dict) -> dict:
-    """D89's reading rules."""
+    """D89's reading rules, and D91's added flags."""
     sup = {a: holm[a]["rejected"] for a in ARMS}
     lo = lambda name: diffs[name]["ci95"][0] if diffs.get(name) and not diffs[name].get("missing") else None
     above = lambda name: lo(name) is not None and lo(name) > 0
@@ -160,7 +282,10 @@ def reading(holm: dict, diffs: dict) -> dict:
     else:
         outcome = "another combination: reported as observed"
     return {"supported": sup, "self_verification_succeeds": succeeds, "problem_specific": specific,
-            "above_x2_probe": over_probe, "outcome": outcome}
+            "above_x2_probe": over_probe, "outcome": outcome,
+            "final_value_sensitive": above("sft - perturbed"),  # D91
+            "direct_succeeds": sup["direct"] and above("direct - random_init"),
+            "recomputation_helps": above("sft - direct")}
 
 
 # ------------------------------------------------------------------------------------------- the analysis
@@ -173,9 +298,13 @@ def analyze(cfg: dict | None = None) -> dict:
     groups, keys = x2_pairs.kept_groups(V._x2(cfg))
     ref = load_reference(cfg, groups, keys)
     rows = {a: V.read_rows(a, cfg) for a in ARMS}
-    done = {a: complete_keys(r, groups, keys) if r else [] for a, r in rows.items()}
-    res: dict = {"decision": "D89 (X4)", "n_kept": len(keys), "methods": {}, "secondary": {}, "diagnostics": {},
-                 "analyzed_problems": {a: len(done[a]) for a in ARMS}}
+    excl = {a: {(tuple(k), s) for k, s, _ in ((_meta_raw(a, cfg) or {}).get("excluded") or [])} for a in ARMS}
+    done = {a: complete_keys(r, groups, keys, excl[a]) if r else [] for a, r in rows.items()}
+    res: dict = {"decision": "D89 (X4), amended by D91", "n_kept": len(keys), "methods": {}, "secondary": {},
+                 "diagnostics": {}, "diagnostics_ci": {}, "tokens": {},
+                 "analyzed_problems": {a: len(done[a]) for a in ARMS},
+                 "excluded_answers": {a: len(excl[a]) for a in ARMS if excl[a]}}
+    overhead = token_overhead(cfg)
     pa = {}
     for a in ARMS:
         if not done[a]:
@@ -187,24 +316,30 @@ def analyze(cfg: dict | None = None) -> dict:
                                                for k in done[a]))
         res["secondary"][f"{a} raw P(yes)"] = method_summary(groups, done[a], conf_of(rows[a], "p_yes_raw"), n_boot, seed)
         res["diagnostics"][a] = diagnostics(rows[a], done[a])
+        res["diagnostics_ci"][a] = diagnostics_ci(rows[a], done[a], n_boot, seed)
+        res["tokens"][a] = tokens(rows[a], done[a], overhead, n_boot, seed)
         pa[a] = dict(zip(map(tuple, done[a]), per_problem(groups, done[a], conf)))
     base = done["sft"] or keys
     for name, conf in ref.items():
         res["methods"][name] = method_summary(groups, base, conf, n_boot, seed)
-        pa[name] = dict(zip(map(tuple, base), per_problem(groups, base, conf)))
+        pa[name] = dict(zip(map(tuple, keys), per_problem(groups, keys, conf)))  # every problem: any arm can pair
     p = {a: res["methods"][a].get("p_one_sided_gt_half", 1.0) if not res["methods"][a].get("missing") else 1.0
          for a in ARMS}
     res["holm"] = holm(p, ac["alpha"])
     res["paired"] = {}
-    for other in ("x2_probe", "random_init", "shuffled", "x2_sft_sigma"):
-        name = f"sft - {other}"
-        common = [tuple(k) for k in keys if tuple(k) in pa.get("sft", {}) and tuple(k) in pa.get(other, {})]
+    for one, other, role in PAIRS:
+        name = f"{one} - {other}"
+        common = [tuple(k) for k in keys if tuple(k) in pa.get(one, {}) and tuple(k) in pa.get(other, {})]
         if not common:
             res["paired"][name] = {"missing": True}
             continue
-        res["paired"][name] = paired(np.array([pa["sft"][k] for k in common]), np.array([pa[other][k] for k in common]),
-                                     n_boot, seed) | {"n_problems": len(common),
-                                                      "role": "secondary" if other == "x2_sft_sigma" else "primary"}
+        res["paired"][name] = paired(np.array([pa[one][k] for k in common]), np.array([pa[other][k] for k in common]),
+                                     n_boot, seed) | {"n_problems": len(common), "role": role}
+    if rows["sft"] and rows["perturbed"]:
+        both = [k for k in done["sft"] if tuple(k) in {tuple(x) for x in done["perturbed"]}]
+        res["secondary"]["perturbed detection (D91)"] = detection(rows["sft"], rows["perturbed"], groups, both, n_boot,
+                                                                  seed)
+        res["perturbed_correctness"] = perturbed_correctness(cfg, done["perturbed"], V._x2(cfg)["selection"]["tolerance"])
     if rows["sft"]:
         conf = recompute_agreement(rows["sft"], groups, done["sft"], ac["recompute_tolerance"], V._x2(cfg))
         r = method_summary(groups, done["sft"], conf, n_boot, seed)
@@ -219,20 +354,32 @@ def analyze(cfg: dict | None = None) -> dict:
     return res
 
 
-def _meta(arm: str, cfg: dict) -> dict | None:
+def _meta_raw(arm: str, cfg: dict) -> dict | None:
     p = V.arm_dir(arm, cfg) / "meta.json"
-    if not p.exists():
+    return json.loads(p.read_text()) if p.exists() else None
+
+
+def _meta(arm: str, cfg: dict) -> dict | None:
+    m = _meta_raw(arm, cfg)
+    if m is None:
         return None
-    m = json.loads(p.read_text())
     return {"complete": m.get("complete"), "n_rows": m.get("n_rows"), "model_content_sha256": m.get("model_content_sha256"),
+            "mode": m.get("mode", "recompute"), "perturb_factor": m.get("perturb_factor"),
+            "n_excluded": len(m.get("excluded") or []),
             "segments": [{k: s.get(k) for k in ("started", "seconds", "path", "logit_check", "max_reserved_gib",
                                                 "oom_backoffs", "stopped_by_time")} for s in m.get("segments", [])]}
 
 
 def render(res: dict) -> str:
-    L = ["# X4: self-verification on the X2 pairs (D89)", "",
-         f"X2's {res['n_kept']} kept problems; problems analyzed per arm: {res['analyzed_problems']}.", "",
-         f"**Reading (D89):** {res['reading']['outcome']}.", "",
+    rd = res["reading"]
+    ex = res.get("excluded_answers")
+    L = ["# X4: self-verification on the X2 pairs (D89, amended by D91)", "",
+         f"X2's {res['n_kept']} kept problems; problems analyzed per arm: {res['analyzed_problems']}"
+         + (f"; answers excluded by the perturbation check: {ex}" if ex else "") + ".",
+         "", f"**Reading (D89):** {rd['outcome']}.", "",
+         f"**D91 flags:** final-value-sensitive (sft − perturbed CI > 0): {rd['final_value_sensitive']}; direct "
+         f"self-verification succeeds: {rd['direct_succeeds']}; recomputation helps (sft − direct CI > 0): "
+         f"{rd['recomputation_helps']}. Holm over the five arms. All CIs: bootstrap over problems.", "",
          "| method | pairwise accuracy [95% CI] | p (> 0.5) | Holm | ties / missing | AUROC across problems [95% CI] |",
          "|---|---|---|---|---|---|"]
     for m, label in LABELS.items():
@@ -259,15 +406,31 @@ def render(res: dict) -> str:
             f"{r['by_depth'][d]['pairwise_accuracy']:.3f} (n {r['by_depth'][d]['n_problems']})"
             if d in r["by_depth"] else "–" for d in depths) + " |")
     if res["secondary"]:
-        L += ["", "| secondary (no verdict) | pairwise accuracy [95% CI] | ties / missing |", "|---|---|---|"]
+        L += ["", "| secondary (no verdict) | pairwise accuracy (detection: share) [95% CI] | ties / missing |",
+              "|---|---|---|"]
         for name, r in res["secondary"].items():
-            L.append(f"| {name} | {r['pairwise_accuracy']:.3f} [{r['ci95'][0]:.3f}, {r['ci95'][1]:.3f}] | "
-                     f"{r['share_pairs_tied_or_missing']:.1%} |")
+            ties = f"{r['share_pairs_tied_or_missing']:.1%}" if "share_pairs_tied_or_missing" in r else "–"
+            L.append(f"| {name} | {r['pairwise_accuracy']:.3f} [{r['ci95'][0]:.3f}, {r['ci95'][1]:.3f}] | {ties} |")
+    if res.get("tokens"):
+        L += ["", "| inference tokens per answer (D91) | generated: mean [95% CI] | median | p95 | total extra: mean |",
+              "|---|---|---|---|---|"]
+        for a, t in res["tokens"].items():
+            g, x = t["generated"], t.get("total_extra")
+            xs = "–" if x is None else f"{x['mean']:.1f}"
+            L.append(f"| {LABELS[a]} | {g['mean']:.1f} [{g['ci95'][0]:.1f}, {g['ci95'][1]:.1f}] | {g['median']:.0f} | "
+                     f"{g['p95']:.0f} | {xs} |")
+    if res.get("perturbed_correctness"):
+        L += ["", f"Perturbed answers against the truth (D91): {res['perturbed_correctness']}."]
     if res["diagnostics"]:
         L += ["", "| diagnostic | " + " | ".join(res["diagnostics"]) + " |", "|---|" + "---|" * len(res["diagnostics"])]
         for f in next(iter(res["diagnostics"].values())):
-            L.append(f"| {f} | " + " | ".join(_fmt(d[f]) for d in res["diagnostics"].values()) + " |")
+            L.append(f"| {f} | " + " | ".join(
+                _fmt(d[f]) + _ci(res["diagnostics_ci"].get(a, {}).get(f)) for a, d in res["diagnostics"].items()) + " |")
     return "\n".join(L) + "\n"
+
+
+def _ci(c: dict | None) -> str:
+    return "" if not c or c["ci95"][0] is None else f" [{c['ci95'][0]:.3f}, {c['ci95'][1]:.3f}]"
 
 
 def _fmt(x) -> str:

@@ -371,6 +371,8 @@ def test_reading_rules_on_synthetic_rows(cfg):
     _write_rows(cfg, "sft", lambda it: 2.0 if it["correct"] else -2.0)  # perfect within problems
     _write_rows(cfg, "shuffled", lambda it: 0.0)  # all ties
     _write_rows(cfg, "random_init", lambda it: float(rng.normal()))
+    _write_rows(cfg, "direct", lambda it: 1.0 if it["correct"] else -1.0)  # D91: as good as recompute
+    _write_rows(cfg, "perturbed", lambda it: -3.0)  # D91: every perturbed answer rejected alike
     res = A.analyze(cfg)
     assert res["methods"]["sft"]["pairwise_accuracy"] == 1.0 and res["methods"]["shuffled"]["pairwise_accuracy"] == 0.5
     assert res["methods"]["sft"]["n_pairs"] == 24 * 4 and res["analyzed_problems"] == {a: 24 for a in A.ARMS}
@@ -381,6 +383,24 @@ def test_reading_rules_on_synthetic_rows(cfg):
     assert res["diagnostics"]["sft"]["natural_yes_rate_correct"] == 1.0
     assert res["secondary"]["sft recomputation agreement (exploratory)"]["share_answers_with_parsed_recomputation"] == 0
     assert "Reading (D89)" in (REPO_ROOT / cfg["output_dir"] / "summary.md").read_text()
+    # D91: five arms in Holm; the added flags; detection; the perturbed answers' own correctness; tokens; CIs
+    assert set(res["holm"]) == set(A.ARMS) and res["holm"]["direct"]["rejected"]
+    assert not res["holm"]["perturbed"]["rejected"] and res["methods"]["perturbed"]["pairwise_accuracy"] == 0.5
+    rd = res["reading"]
+    assert rd["final_value_sensitive"] and rd["direct_succeeds"] and not rd["recomputation_helps"]
+    assert res["paired"]["sft - perturbed"]["mean_diff"] == pytest.approx(0.5)
+    assert res["paired"]["sft - direct"]["ci95"] == [0.0, 0.0] and res["paired"]["direct - x2_probe"]["n_problems"] == 24
+    assert res["secondary"]["perturbed detection (D91)"]["pairwise_accuracy"] == 1.0
+    assert res["perturbed_correctness"] == {"correct_to_correct": 0, "correct_to_incorrect": 48,
+                                            "incorrect_to_correct": 0, "incorrect_to_incorrect": 48, "excluded": 0}
+    tk = res["tokens"]["sft"]
+    assert tk["generated"]["mean"] == 5.0 and tk["generated"]["ci95"] == [5.0, 5.0]
+    if tk.get("overhead"):
+        assert tk["total_extra"]["mean"] == 5.0 + tk["overhead"]["verification_turn"] + tk["overhead"]["marker"]
+    ci = res["diagnostics_ci"]["sft"]
+    assert ci["share_truncated"]["ci95"] == [0.0, 0.0] and ci["mean_p_yes_correct"]["mean"] == pytest.approx(
+        res["diagnostics"]["sft"]["mean_p_yes_correct"])
+    assert "D91 flags" in (REPO_ROOT / cfg["output_dir"] / "summary.md").read_text()
 
     _write_rows(cfg, "shuffled", lambda it: 2.0 if it["correct"] else -2.0)  # the swap changes nothing
     assert A.analyze(cfg)["reading"]["outcome"].startswith("succeeds but not problem-specific")
@@ -396,7 +416,8 @@ def test_partial_and_missing_arms(cfg):
     rows = V.read_rows("shuffled", cfg)
     (V.arm_dir("shuffled", cfg) / "rows.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows[:-1]))
     res = A.analyze(cfg)
-    assert res["analyzed_problems"] == {"sft": 24, "shuffled": 9, "random_init": 0}  # only complete problems
+    assert res["analyzed_problems"] == {"sft": 24, "direct": 0, "perturbed": 0, "shuffled": 9,
+                                        "random_init": 0}  # only complete problems
     assert res["paired"]["sft - shuffled"]["n_problems"] == 9 and res["paired"]["sft - random_init"] == {"missing": True}
     assert res["methods"]["random_init"] == {"missing": True} and res["holm"]["random_init"]["p"] == 1.0
     assert res["reading"]["outcome"].startswith("another combination")  # supported, but no random-init comparison
@@ -409,3 +430,44 @@ def test_the_reference_must_reproduce_x2(cfg):
     _write_rows(cfg, "sft", lambda it: 0.0)
     with pytest.raises(RuntimeError):
         A.analyze(cfg)
+
+
+def test_cluster_bootstrap_resamples_problems_not_answers():
+    """D91: two problems of ten answers each, all right and all wrong: resampling the two problems gives [0, 1];
+    resampling the twenty answers would give a narrow interval around 0.5."""
+    r = A.cluster_mean([[1.0] * 10, [0.0] * 10], 4000, 0)
+    assert r["mean"] == 0.5 and r["ci95"] == [0.0, 1.0] and r["n_problems"] == 2
+    assert A.cluster_mean([[], [2.0, 4.0]], 100, 0) == {"mean": 3.0, "ci95": [3.0, 3.0], "n_problems": 1}
+    assert A.cluster_mean([[]], 100, 0)["mean"] is None
+
+
+def test_an_excluded_perturbed_answer_leaves_its_problem_complete(cfg):
+    _write_reference(cfg, lambda a: 0.5)
+    g, keys = X.kept_groups(cfg["x2_config"])
+    _write_rows(cfg, "sft", lambda it: 2.0 if it["correct"] else -2.0)
+    _write_rows(cfg, "perturbed", lambda it: 2.0 if it["correct"] else -2.0)
+    rows = V.read_rows("perturbed", cfg)
+    gone = rows[1]  # its pairs count 0.5 (D89's missing rule)
+    (V.arm_dir("perturbed", cfg) / "rows.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows if r is not gone))
+    (V.arm_dir("perturbed", cfg) / "meta.json").write_text(json.dumps(
+        {"excluded": [[gone["key"], gone["sample"], "mu_zero"]], "perturb_factor": 1.25, "mode": "recompute"}))
+    res = A.analyze(cfg)
+    assert res["analyzed_problems"]["perturbed"] == 24 and res["excluded_answers"] == {"perturbed": 1}
+    first = [a for a in g[keys[0]]]
+    n_c, n_w = sum(a["correct"] for a in first), sum(not a["correct"] for a in first)
+    lost = n_w if gone["correct"] else n_c  # the pairs of the excluded answer
+    expect = (23 + (n_c * n_w - lost + 0.5 * lost) / (n_c * n_w)) / 24
+    assert res["methods"]["perturbed"]["pairwise_accuracy"] == pytest.approx(expect)
+    assert res["meta"]["perturbed"]["n_excluded"] == 1
+
+
+@needs_tokenizer
+def test_token_overhead_is_the_verification_turn_and_the_marker():
+    cfg = V._config()
+    o = A.token_overhead(cfg)
+    from transformers import AutoTokenizer
+
+    tok = AutoTokenizer.from_pretrained(str(TOKENIZER_DIR))
+    n_verify = len(tok(V.check_prompt(cfg), add_special_tokens=False)["input_ids"])
+    assert n_verify < o["verification_turn"] <= n_verify + 12  # + the turn's chat markup
+    assert o["marker"] == len(tok("Verdict:", add_special_tokens=False)["input_ids"]) >= 1
