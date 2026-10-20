@@ -1017,3 +1017,50 @@ RL runs' setup, 2 epochs, 500 steps) states a σ that tracks the error.
   - **Results:** `results/x3/pilot.{json,md}`.
   - **Process:** student (a)'s X2 eval was rerun after the μ = 0 fix (D88). Its frozen-set numbers come from the
     first run.
+
+## #21. X4: asked to check its own answer, the SFT model says "yes" to almost everything; its P(yes) does not rank right answers above wrong ones to the same problem, with or without recomputation (D89 + D91; 2026-10-21 night)
+
+**Claim (D89 outcome 4).** `sft` is not Holm-supported: 0.524 [0.498, 0.550] on X2's 5,390 pairs, p = 0.033.
+Self-verification fails within problems, consistent with X2 (FINDINGS #19). Asking the model does not rank its right
+answers above its wrong ones.
+- **Neither Holm family supports any arm:** D91's five arms (thresholds 0.010–0.05), or D89's original three (sft
+  0.033 vs 0.0167).
+- **None of D91's flags holds:**
+  - final-value-sensitive: `sft − perturbed` −0.000 [−0.028, +0.028];
+  - recomputation helps: `sft − direct` −0.002 [−0.008, +0.004];
+  - direct self-verification succeeds: direct is not Holm-supported, although `direct − random_init` +0.037
+    [+0.001, +0.073] has a CI just above 0.
+
+| arm (all 516 problems; CIs: bootstrap over problems) | pairwise accuracy | p (> 0.5) | AUROC across problems | extra tokens / answer |
+|---|---|---|---|---|
+| `sft`: recompute (primary) | 0.524 [0.498, 0.550] | 0.033 | 0.469 [0.442, 0.496] | 93.4 (18.4 generated) |
+| `direct`: no recomputation (D91) | 0.526 [0.500, 0.553] | 0.025 | 0.463 [0.436, 0.490] | 75.0 (0 generated) |
+| `perturbed`: final μ × 1.25 (D91) | 0.524 [0.498, 0.551] | 0.038 | 0.450 [0.423, 0.477] | 94.5 |
+| `shuffled`: another problem's text | 0.513 [0.488, 0.539] | 0.153 | 0.463 [0.435, 0.491] | 99.9 |
+| `random_init` | 0.489 [0.465, 0.514] | 0.81 | 0.517 [0.495, 0.539] | 587 (512 generated) |
+| X2 probe (reference) | 0.547 [0.520, 0.574] | 0.0001 | 0.727 [0.708, 0.745] | – |
+
+- **The model barely checks.**
+  - **The verdicts:** it writes a verdict on 98% of answers, and that verdict is "yes" on 99.9% of correct and 99.8%
+    of incorrect ones.
+  - **The recomputation:** the median is 13 tokens, so recompute and direct give the same ranking (difference
+    −0.002).
+  - **The mean renormalized P(yes)** is slightly *higher* on incorrect answers: 0.820 vs 0.804.
+- **It notices an inconsistent final value, but not a wrong one.** Multiplying the final μ by 1.25 lowers P(yes) on
+  98.6% [97.7, 99.4] of the originally-correct answers: the mean drops from 0.80 to 0.72. The drop is the same for
+  incorrect answers (0.82 → 0.74), so the right-vs-wrong ranking is unchanged (0.524 → 0.524).
+  - **So the check behaves like** "does the final line match the steps", not "are the steps right".
+  - **Another problem's text** lowers P(yes) further (0.58 / 0.64), again without ranking.
+- **Across problems it is anti-informative:** AUROC 0.469 [0.442, 0.496] for `sft`, i.e. more confident on the
+  problems it gets wrong. The X2 probe, by contrast, reaches 0.727 across problems.
+- **Limits:**
+  - **The model and prompt:** one model (4-bit SFT Qwen2.5-Math-1.5B) and one fixed prompt (`x4_v1`), greedy.
+  - **Direct mode** keeps the prompt's "You may redo the calculation" (D91).
+  - **The random-init model** puts essentially no mass on yes/no (yes + no = 0.000), so its log-odds is a
+    near-arbitrary ratio. It is a weak control.
+  - **Later (R3-1):** the yes/no order variant (affirmative bias) and a deterministic checker ceiling are not run yet.
+- **Provenance:**
+  - **Code:** `physcal/eval/x4_verify.py`, `x4_analysis.py`; `configs/x4.yaml`.
+  - **Rows:** `results/x4/<arm>/rows.jsonl` and `meta.json`.
+  - **Results:** `results/x4/results.json`, `summary.md`.
+  - **Queue:** `results/queue_x4/` (D90, D91, D96).
