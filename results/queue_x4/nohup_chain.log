@@ -6,3 +6,9 @@
 [00:09:43] start x4_direct (timeout 35117s): uv run python -m physcal.eval.x4_verify run --arm direct --max-reserved-gib 6.72 --minutes 575
 [00:22:18] end x4_direct: exit 0
 [00:22:18] X4 direct: 4116 of 4116 rows
+[00:22:20] commit 'X4 (D89/D91): direct arm, 4116 of 4,116 X2 answers verified (exit 0, cap 6.72 GiB)': pushed
+[00:22:21] GPU at 67C
+[00:22:21] X4 perturbed: cap 6.75 GiB, soft limit 592 min (reserve 4500s), 0 rows so far
+[00:22:21] start x4_perturbed (timeout 36159s): uv run python -m physcal.eval.x4_verify run --arm perturbed --max-reserved-gib 6.75 --minutes 592
+[00:52:41] end x4_perturbed: exit 0
+[00:52:41] X4 perturbed: 4115 of 4116 rows
