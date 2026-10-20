@@ -913,3 +913,107 @@ p ≥ 0.10 (R2-4); no verdict):
 - **Provenance:** `results/corrected/robustness_3v3/` (`scripts/robustness_3v3.py`, written before the seed-1/2
   data); runs `results/train/overnight2-…-seed{1,2}/`; corrected evals in `compare/rl287_4bit/`; fingerprints in
   `physcal_fingerprint.json`.
+
+## #19. X2: no stated σ and no text model ranks a correct answer above an incorrect one to the same problem; a hidden-state probe does slightly, but no better than the same probe on a random-init model (D74; 2026-10-20)
+
+**Claim.** With problem difficulty held fixed (516 problems where the corrected SFT model's k = 8 samples are both right
+and wrong; 5,390 correct/incorrect pairs), stated σ carries no answer-specific information:
+- the SFT model's σ scores 0.499;
+- split credit's σ scores 0.491;
+- A5's text p (problem + answer + reasoning) scores 0.497, and ties on 64% of pairs.
+
+A linear probe on the SFT model's hidden state at the "±" token ranks the correct answer higher in 54.7% of pairs (Holm
+supported). But the same probe on a random-init model of the same architecture reaches 53.0%, and the difference
+(+0.017 [−0.015, +0.050]) is not distinguishable from 0. D74's labelled outcome is **"another combination: reported as
+observed"**.
+
+| method (D74) | pairwise accuracy [95% CI] | one-sided p (> 0.5) | Holm | ties / missing |
+|---|---|---|---|---|
+| 1. stated σ, SFT | 0.499 [0.474, 0.524] | 0.54 | not supported | 8.9% |
+| 2. stated σ, split credit seed 0 @287 | 0.491 [0.461, 0.521] | 0.73 | not supported | 0.4% |
+| 3. A5 p channel (4-bit fit) | 0.497 [0.481, 0.514] | 0.63 | not supported | 64.2% |
+| 4. problem-text-only (check) | 0.500 exactly | – | – | 100% |
+| **5. hidden-state probe, SFT (4-bit)** | **0.547 [0.520, 0.574]** | 0.0001 | **supported** | 0.5% |
+| 6. hidden-state probe, random init | 0.530 [0.503, 0.557] | 0.013 | not supported (threshold 0.0125) | 0.5% |
+| A5 σ (secondary) | 0.517 [0.494, 0.538] | 0.07 | – | 37.5% |
+| probe cross-fitted on the X2 answers (secondary) | 0.540 [0.514, 0.565] | 0.001 | – | 0.5% |
+
+- **Paired differences (bootstrap over problems):**
+  - probe − SFT σ: +0.048 [+0.011, +0.086];
+  - probe − random init: +0.017 [−0.015, +0.050], so **"probe succeeds" (D74) is not met**;
+  - A5 p − probe: −0.050 [−0.080, −0.020].
+- **The probes:**
+  - **SFT:** layer 12 was chosen (CV AUROC 0.875 for correctness *across* problems on the 1,998 calibration
+    completions).
+  - **Random init:** layer 1 was chosen, with CV AUROC 0.863 across problems. That is the FINDINGS #7 pattern again:
+    across problems, the signal is in the text.
+  - **The cross-fitted probe** chose layer 1 in four of five folds, so what separates answers within a problem looks
+    like surface features of the answer tokens.
+- **By depth:** no method is above 0.58 at any depth (table in `results/x2/summary.md`).
+- **What this means:**
+  - **A5's text σ:** its between-problem advantage (ρ ≈ 0.65, FINDINGS #10 / #16) is difficulty prediction. Within a
+    problem, A5's p barely varies, and when it does, it is at chance.
+  - **The model's own σ** (SFT or split credit) says nothing about which of its answers is right.
+  - **The one positive signal** (the probe) is small, and a random-weight network reading the same tokens gets most of
+    it.
+  - **Against D74's reading rules,** this sits between "every primary method fails" (not met: the probe is Holm
+    supported) and "the information exists" (not met: it does not beat random init). Reported as observed (R2-5: no
+    positive epistemic claim from X2).
+- **Sampling facts:**
+  - **Answers:** 1,200 candidates × 8 = 9,600 completions, 99.6% parsed, 33.8% correct within 1%.
+  - **The kept set:** 516 mixed problems (43%; D74 expected about 44%), and 4,109 answers with a "±".
+  - **Correct answers per kept problem:** 1 → 183 problems, … 7 → 64.
+- **Deviations / process (DECISIONS D81, D86–D88):**
+  - **Sampling:** batch 32, found by the probe under a 5.75 GiB cap (a host process held 1.65 GB of VRAM). Six chunks
+    of 200, torch seed 0 + chunk.
+  - **Method 2:** the first run timed out by spilling into WSL shared memory. It was rerun after the queue with
+    batch 16 under the cap, and an answer of μ = 0 now counts as a tie. The queue's first analysis (method 2 counted
+    as p = 1) is superseded by `results/x2/results.json`. Holm's verdicts are the same in both.
+- **Provenance:**
+  - **Code:** `physcal/eval/x2_pairs.py`, `x2_hidden.py`, `x2_analysis.py`; `configs/x2.yaml`.
+  - **Chunks:** `results/x2/sft_k8/chunk_*`.
+  - **Selection and suffixes:** `results/x2/selected.json`, `results/x2/split_seed0_suffix/`.
+  - **Hidden states:** `results/x2/hidden/*/*/{index,info}.json`; the arrays are local. The Unsloth path passed the
+    logit check (gap ≤ 0.5%).
+  - **The random-init weights:** content hash `13ededef3f3acbd4`.
+
+## #20. X3 pilot: the RL runs' own base + LoRA can learn a σ that ranks errors (ρ 0.58, "capacity likely"), but only between problems, not within them (D79; 2026-10-20)
+
+**Claim.** Supervised on the out-of-fold A5 σ (teacher), a fresh LoRA r = 16 on the 4-bit merged SFT base (exactly the
+RL runs' setup, 2 epochs, 500 steps) states a σ that tracks the error.
+- **On the 399 frozen-set answers:** ρ(σ, |log error|) = **0.575 [0.499, 0.643]**, against split credit's 0.03–0.08
+  and SFT's 0.04.
+- **Label:** the pre-registered **"capacity likely"**. The CI's lower end is 0.499, against the 0.5 bar.
+- **Its σ is also calibrated:** 1σ coverage 66.4%, crps_log −0.306, between the teacher's −0.291 and SFT's −0.322.
+- **Within problems** (X2's pairs), the student is at chance: 0.513 [0.484, 0.543].
+
+| σ source (μ fixed) | ρ(σ, err) [95% CI] | crps_log | 1σ / 2σ cov | median rel. σ | fidelity vs teacher | X2 pairwise acc. |
+|---|---|---|---|---|---|---|
+| student (a), A5 teacher | **+0.575 [+0.499, +0.643]** | −0.306 | 66.4 / 79.4% | 10.8% | 0.716 | 0.513 [0.484, 0.543] |
+| student (b), true-error labels | +0.583 [+0.509, +0.650] | −0.348 | 30.8 / 37.6% | 0.3% | 0.601 | 0.488 [0.460, 0.517] |
+| A5 teacher σ (4-bit fit) | 0.664 | −0.291 | 66.4 / 76.9% | 6.6% | – | – |
+| SFT stated σ (4-bit) | 0.038 | −0.322 | 12.0 / 17.0% | 0.1% | – | – |
+
+- **Paired comparisons:**
+  - student (a) − teacher: ρ −0.088 [−0.155, −0.024];
+  - student (a) − SFT: +0.537 [+0.402, +0.669];
+  - (b) − (a): +0.008 [−0.054, +0.072].
+- **Student (b) (D82):**
+  - **Ranking:** as good as (a).
+  - **Calibration:** badly overconfident (median σ 0.3%, 1σ coverage 31%, crps_log below SFT's).
+  - **Why:** its targets are bimodal (tiny for correct answers, large for wrong ones), and greedy decoding takes the
+    mode.
+- **Failures:** no parse failures, unit errors or changed μ in either student. Both pass the enforced R2-1 reload
+  check (D77): log-prob ratios 0.030 / 0.027, σ-token 0.023 / 0.039, and adapter effects 0.077 / 0.074 nats/token,
+  well above the floor.
+- **What this means (D79's reading):** split credit's ρ ≈ 0.06 is not a capacity limit of this base and LoRA. The
+  same setup learns, by SFT, a σ almost as good as its teacher's. But what it learns is the teacher's kind of
+  knowledge, i.e. which *problems* are hard (X2: 0.51 within problems). This matches FINDINGS #19. The pilot is one
+  seed at one budget; a full X3 needs its own specification (D79).
+- **Provenance:**
+  - **Code and config:** `physcal/train/x3.py`, `configs/x3.yaml`.
+  - **Data:** `results/x3/data/` (committed before training).
+  - **Runs:** `results/x3/{a,b}/` (summary, fingerprint, eval tapes).
+  - **Results:** `results/x3/pilot.{json,md}`.
+  - **Process:** student (a)'s X2 eval was rerun after the μ = 0 fix (D88). Its frozen-set numbers come from the
+    first run.

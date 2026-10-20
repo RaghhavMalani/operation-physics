@@ -12,3 +12,5 @@
 [05:54:32] commit 'X2 (D74/D87): split credit seed 0 @287 sigma suffixes on the kept answers, rerun (batch 16, capped)': pushed
 [05:54:32] start x2_analysis_rerun (timeout 3600s): env OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4 CUDA_VISIBLE_DEVICES= nice -n 10 uv run python -m physcal.eval.x2_analysis analyze
 [06:08:18] end x2_analysis_rerun: exit 0
+[06:08:20] commit 'X2 (D74) results with method 2 (supersedes the queue's analysis, where method 2 counted as p = 1)': pushed
+[06:08:20] reruns done

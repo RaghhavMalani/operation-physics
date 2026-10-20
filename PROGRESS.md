@@ -642,3 +642,19 @@ Progress:
   - the v5 example shows a placeholder (D85).
   - **Tonight's queue:** unchanged; the dry run was re-run.
   - **Tests:** 456 pass.
+
+## 2026-10-19/20 night: X2 + X3 pilot (unattended; queue 23:06–05:18, reruns to 06:08)
+
+- [x] Launch checks clean after the WSL restart.
+  - **D86:** X2's cap 5.75 GiB (a host process held 1.65 GB of VRAM); deadline 09:00.
+- [x] **X2:** 1,200 × 8 samples at batch 32; 516 mixed problems; hidden states (Unsloth path); the D74 analysis.
+  - **FINDINGS #19:** stated σ 0.50 / 0.49 and A5 p 0.50 within problems. The probe reaches 0.547, but not above
+    random init (0.530).
+- [x] **X3 pilot:** students (a) and (b), 500 steps each; R2-1 pass on both.
+  - **FINDINGS #20:** (a) ρ 0.575 [0.499, 0.643], "capacity likely", calibrated; at chance within problems (0.513).
+- [x] **D78 GPU check: PASS.**
+- [x] **BLOCKED, then fixed and rerun:**
+  - X2 method 2 (WSL spill → batch 16 under the cap, D87);
+  - student (a)'s X2 eval (a μ = 0 crash, D88).
+- [ ] **Next:** the Round 3 review (Phase 12 choices, D83's τ / weight); a full X3 spec, if wanted; rerun the full test
+  suite by day.

@@ -1,161 +1,133 @@
-# Report: 2026-10-19 day: your decisions applied (D77, D78), X3 prepared (D79), Phase 12 SFT data (D80), tonight's queue ready (D81)
+# Report: 2026-10-19/20 night: X2 (all 1,200 candidates) and the X3 pilot, after a late start (23:06–06:08 IST)
 
-The previous report (2026-10-18/19 night) is in git history: `git show cf74fb9:MORNING.md`.
+The previous report (2026-10-19 day + afternoon addendum) is in git history: `git show 971ffc4:MORNING.md`.
 
 **Short version.**
-1. **Tests first:** 405 / 405 passed, so there was nothing to fix. After today's work: **437 / 437 pass.**
-2. **Your six decisions are in:**
-   - **R2-1:** the below-floor rule changed for future fingerprints only (seed 1 stays "inconclusive"), and the check
-     is enforced (D77).
-   - **FINDINGS #16:** the ×22.1 row is added.
-   - **The Phase 12 base is pinned** (D78).
-   - **FINDINGS #4 / #5:** they carry the R2-2 pointers.
-3. **X3 is pre-registered (D79) and its data is built.**
-   - **The teacher:** the out-of-fold A5 σ reproduces A5's own CV metrics exactly (max difference 0.0).
-   - **The rows:** all 1,998 answered calibration completions are kept. Both students' targets read back through the
-     verifier within 4.7%, with μ unchanged.
-4. **Phase 12 SFT data (D80):** 3,000 noisy problems × 3 arms. **Not pre-registered;** six choices await you (§4).
-5. **Tonight's queue is ready and NOT launched** (D81, `scripts/queue_x2_x3.sh`). Launch:
-   `nohup scripts/queue_x2_x3.sh > results/queue_x2_x3/nohup.log 2>&1 &`
+1. **Everything ran.**
+   - **Timing:** GPU work ended at 05:54, inside your 09:00 deadline. Every stage was committed and pushed.
+   - **Two stages failed first time** (logged BLOCKED by the queue, as designed). Both were fixed and rerun after the
+     queue (D87, D88), so nothing is missing.
+2. **X2 (FINDINGS #19): within a problem, no stated σ and no text model tells right answers from wrong.**
+   - **Stated σ:** SFT 0.499; split credit 0.491.
+   - **A5's text p:** 0.497.
+   - **The hidden-state probe:** 0.547 (Holm supported), but a random-init model's probe reaches 0.530, and the
+     difference is not significant.
+   - **D74's label:** "another combination: reported as observed". No positive epistemic claim follows.
+3. **X3 pilot (FINDINGS #20): "capacity likely".**
+   - **Student (a):** the RL runs' own base + LoRA, SFT'd on the A5 teacher σ, reaches ρ = 0.575 [0.499, 0.643].
+     Split credit's is 0.06. It is also calibrated (66% 1σ coverage).
+   - **What it learned:** which problems are hard, not which answers are wrong. On X2's pairs it is at chance
+     (0.513).
+4. **D78's pinned-base GPU check: PASS.** **R2-1, now enforced:** both X3 students pass their reload checks.
+5. **Launch:** your pre-launch checks were clean.
+   - **One launch-time change (D86):** a host process held 1.65 GB of VRAM, so X2's allocator cap went 7.5 → 5.75 GiB.
 
 ---
 
-## 1. What was done (IST, all CPU)
+## 1. What ran (IST)
 
-| step | what | commit |
+| time | stage | result | commit |
+|---|---|---|---|
+| 23:04 | launch checks (after the WSL restart) | clean: git synced, no lock, inputs' hashes match | `efbbce4` (D86) |
+| 23:06–23:07 | X2 batch probe (cap 5.75 GiB) | 128 / 96 / 64 / 48 OOM; **32 fits** (4.6 GiB, 35 s per worst-case batch) | queue |
+| 23:07–01:11 | X2 sampling, 6 chunks × 200 (about 20 min each) | 9,600 completions, 99.6% parsed, 0 backoffs | queue (×6) |
+| 01:11 | selection | **516** mixed problems, 5,390 pairs | queue |
+| 01:11–02:18 | X2 method 2, split credit σ suffixes | **BLOCKED: timeout** (WSL spill, D87) | queue |
+| 02:18–02:58 | hidden states, SFT and random init × fit and X2 | all 4 OK, Unsloth path (logit gap ≤ 0.5%) | queue |
+| 02:58–03:18 | X2 analysis (CPU, without method 2) | superseded by 06:08 | queue |
+| 02:58–03:45 | X3 student (a), 500 steps | exit 0, R2-1 fingerprint | queue |
+| 03:45–03:49 | (a) on the frozen sets | exit 0, R2-1 **pass** | queue |
+| 03:49–04:09 | (a) on the X2 answers | **BLOCKED: crash on a μ = 0 answer** (D88) | queue |
+| 04:09–04:54 | X3 student (b), 500 steps | exit 0 | queue |
+| 04:54–05:17 | (b) evals, the X3 analysis (without (a)'s X2) | exit 0 (the analysis was superseded) | queue |
+| 05:17–05:18 | **D78 pinned-base GPU check** | **PASS** | queue |
+| 05:18–05:37 | rerun: (a) on the X2 answers | exit 0 | reruns |
+| 05:37–05:54 | rerun: X2 method 2 (batch 16, capped) | exit 0, 17 min | reruns |
+| 05:37–06:08 | reruns: X3 analysis, X2 analysis (CPU) | exit 0 | reruns |
+
+- **Temperatures:** stage starts were 55–67 °C; the peak seen was 85 °C, during X3 training. Never above 87 °C, so no
+  pause.
+- **The reruns** (`scripts/queue_x2_x3_reruns.sh`, same guards) were chained to start when the queue's PID exited.
+
+## 2. Results
+
+**X2 (D74; `results/x2/summary.md`; FINDINGS #19):**
+
+| method | pairwise accuracy [95% CI] | Holm |
 |---|---|---|
-| 6 (first) | full test suite: 405 / 405 pass; nothing to fix | – |
-| 1 + 2 | **D77:** R2-1's below-floor rule (future fingerprints only) and enforcement | `42bd61e` |
-| 3 + 5 | FINDINGS #16: the ×22.1 row; FINDINGS #4 / #5: the R2-2 pointers | `703f795` |
-| 4 | **D78:** the Phase 12 base pinned (snapshot dir + weights hash), checked by SFT, GRPO and eval | `836efb8` |
-| a | **D79:** X3 pre-registration (committed before any X3 data) | `de83afd` |
-| a | X3 data (teacher σ, control σ), code, config, tests | `86ee092` |
-| b | **D80:** Phase 12 SFT data, three arms, draft prompt v5, tests | `c91036d` |
-| c | **D81:** tonight's queue, X2 extraction / analysis code, the batch probe, the D78 GPU check, tests | `a25619c` |
+| 1. stated σ, SFT | 0.499 [0.474, 0.524] | no |
+| 2. stated σ, split credit seed 0 @287 | 0.491 [0.461, 0.521] | no |
+| 3. A5 p (4-bit) | 0.497 [0.481, 0.514] (ties on 64% of pairs) | no |
+| 4. problem-text-only (check) | 0.500 exactly | – |
+| 5. hidden-state probe, SFT | **0.547 [0.520, 0.574]** | **yes** |
+| 6. hidden-state probe, random init | 0.530 [0.503, 0.557] | no (p 0.013 vs threshold 0.0125) |
 
-## 2. Numbers
+- **Probe vs the other methods:**
+  - probe − random init: +0.017 [−0.015, +0.050], so it is **not** "probe succeeds" under D74;
+  - probe − SFT σ: +0.048 [+0.011, +0.086].
+- **What the probe reads:** the cross-fitted probe picks layer 1 in four of five folds, which suggests surface features
+  of the answer tokens.
+- **Reading:** A5's between-problem advantage (ρ ≈ 0.65) is difficulty prediction. Neither the model's σ nor the text
+  model knows which of its answers is right.
 
-**FINDINGS #16, the new row** (pooled 400 problems; the same code as every other row, and the ×18.1 row reproduces
-exactly):
+**X3 pilot (D79; `results/x3/pilot.md`; FINDINGS #20)**, on the 399 frozen-set answers with μ fixed:
 
-| arm | acc | 1σ / 2σ cov | σ = 0 | median rel. σ | ρ | crps_log |
-|---|---|---|---|---|---|---|
-| SFT + post-hoc ×18.1 (bf16 fit, as recorded) | 36.8% | 34.2 / 42.2% | 16.8% | 1.15% | 0.05 | −0.329 |
-| **SFT + post-hoc ×22.1 (4-bit fit, D69; standing baseline)** | 36.8% | **36.0 / 43.5%** | 16.8% | **1.40%** | 0.05 | **−0.328** |
+| σ source | ρ(σ, err) [95% CI] | crps_log | 1σ cov | median σ | X2 pairwise |
+|---|---|---|---|---|---|
+| **student (a), A5 teacher** | **0.575 [0.499, 0.643]** | −0.306 | 66.4% | 10.8% | 0.513 [0.484, 0.543] |
+| student (b), true-error labels | 0.583 [0.509, 0.650] | −0.348 | 30.8% | 0.3% | 0.488 [0.460, 0.517] |
+| A5 teacher | 0.664 | −0.291 | 66.4% | 6.6% | – |
+| SFT stated σ | 0.038 | −0.322 | 12.0% | 0.1% | – |
 
-**X3 data (`results/x3/data/data_report.json`):**
-- **Teacher (a), the out-of-fold `problem_answer_reasoning/gbt`:** crps_log −0.1972, ρ 0.653, 1σ coverage 69.2%,
-  identical to A5's recorded CV.
-- **Control (b):** σ_log = |ln(μ/truth)| / √(ln 2), each answer's own CRPS-optimal σ. Its ρ with the error is 1.0 on
-  these rows, by construction.
-- **Targets:** median σ_log 5.2% (a) and 2.6% (b).
+- **Label:** "capacity likely", i.e. a point estimate ≥ 0.5 with a CI lower end of 0.499. That is the pre-registered
+  rule applied as written.
+- **Fidelity to the teacher:** 0.72.
+- **Student (b):** ranks as well as (a) but is badly overconfident. Greedy decoding takes the mode of its bimodal
+  targets.
 
-**Phase 12 data (`results/phase12_sft_data/manifest.json`):**
-- **Size:** 62–63 problems per cell × noise level.
-- **Median σ\*:** 1.8% / 3.5% / 8.7% at 1 / 2 / 5% noise.
-- **The explicit line vs σ\*:** median |ln ratio| 0.013.
+**Other checks:**
+- **D78 (`results/pinned_base_smoke/report.json`): PASS on all five checks.** The snapshot loads 4-bit, the adapter
+  names the snapshot dir, the reload gets the same base, and the provenance hash is `sha256:9939448b3a0fbe45`.
+- **R2-1, enforced:** both students pass. Log-prob ratios are 0.030 / 0.027 and σ-token ratios 0.023 / 0.039, against
+  a 0.25 limit. Split credit seed 0 (no fingerprint) got the "no_fingerprint" warning, as D77 specifies.
 
-## 3. Today's code changes
+## 3. Decisions made tonight (please review)
 
-- **R2-1:** `fingerprint.compare` takes the rule stored in each fingerprint, `below_floor: sigma_token` from now on.
-  `check_adapter` raises on "fail" and warns on "inconclusive" / "no_fingerprint".
-- **New `physcal/base.py` (D78):**
-  - **What it does:** resolves the pinned commit to its local snapshot dir, checks the weights hash before a load and
-    the loaded base after it.
-  - **Where it is used:** `sft.py`, `grpo.py` (the fingerprint now records the base's identity, not an adapter's) and
-    `run_eval.HFBackend`.
-  - **Unchanged:** configs without `pinned_base` behave exactly as before; the resume digest of older runs is
-    unchanged.
-- **E1's fixed-prefix eval** takes custom rows. X3 and X2's method 2 use it; E1's defaults are unchanged.
-- **`run_eval`:** two opt-in config keys.
-  - **A `start` offset** for frozen splits, for X2's chunks.
-  - **An allocator cap,** `max_reserved_gib`. Past it, torch raises OOM, which the backoff handles, instead of
-    spilling into WSL shared memory.
-- **New modules:**
-  - `physcal/train/x3.py`, `physcal/train/sft_phase12.py`;
-  - `physcal/eval/x2_hidden.py`, `physcal/eval/x2_analysis.py`;
-  - `x2_pairs` gained chunked sampling, prefix checks and the method-2 stage.
-  - **Prompt `v5_two_channel`** (draft). The old prompts are byte-identical, and a test checks their hashes.
+1. **D86 (at launch):** X2's sampling cap 7.5 → 5.75 GiB, because a host-side process held 1.65 GB of VRAM. Deadline
+   09:00 via `GPU_DEADLINE` (your message). The queue script was unchanged.
+2. **D87: the method-2 stage spilled into WSL shared memory.**
+   - **Why:** batch 32 × ~1,300-token prompts with no cap; about 60 s per batch.
+   - **The fix:** σ-suffix evals now run at batch 16 under the 5.75 GiB cap, with Unsloth imported first and progress
+     lines. The X3 evals inherited it (399 suffixes in about 2 min).
+   - **The rerun:** after the queue.
+3. **D88: a ZeroDivisionError on the one X2 answer with μ = 0.**
+   - **The fix:** a direct comparison in the μ-changed check. μ = 0 has no relative σ, so it is a failed suffix, i.e.
+     a tie.
+   - **Effect elsewhere:** no existing E1 row is affected.
+   - **The rerun:** student (a)'s X2 eval.
+4. **Superseded outputs, committed and labelled:** the queue's first X2 analysis (method 2 as p = 1) and first X3
+   analysis (without (a)'s X2 numbers). Holm's X2 verdicts were the same in both.
 
-## 4. Decisions to review
+## 4. BLOCKED / housekeeping
 
-**Phase 12 SFT data (D80): open until the Phase 12 pre-registration.**
-1. **`<confidence>c%</confidence>` as a separate block after `</answer>`.**
-   - **Why:** ", confidence p" inside `<answer>` would break today's unit parsing. A separate block leaves the
-     verifier untouched; the extension for c is additive.
-   - **Your approval is still needed** for that verifier extension.
-2. **Draft prompt v5:**
-   - σ is defined as the uncertainty from the measurement errors, and 0 when every given is exact;
-   - c is the probability that the calculation is right;
-   - its worked example shows `± 0 km` and `90%`. The 90% is a cue, like the old "about 1%".
-3. **c drawn uniformly from the bins and trained.** The model learns the allowed values with a flat prior and no
-   signal. The alternatives are masking c or a fixed c.
-4. **The explicit arm's line numbers are trained (default).** SFT then teaches first-order propagation. Masking them
-   (one config flag) leaves the line's format to SFT and the values to RL. This choice decides what "explicit + RL"
-   can add over its SFT control.
-5. **The supervised σ\* arm uses token cross-entropy on a 2-significant-figure σ.** That approximates the synthesis's
-   "log-scale loss"; it is not exactly one.
-6. **The mix:** 25% of the problems are exact (σ = 0 in every arm, per A1 / R2-3); n = 3,000.
-
-**X2 implementation choices (D81, fixed before any sample; they fill gaps in D74):**
-- **Chunks:** 6 × 200 with torch seed 0 + chunk index (D74: seed 0); the chunks must form a prefix of the pool.
-- **Method 2 is in the queue** although your list did not name it: D74 makes it primary, and it takes about 15 min.
-- **Method 4's model** is `problem/gbt`, the lower CV Brier.
-- **The cross-fitted probe** chooses both layer and C by inner CV.
-- **A primary method with missing inputs** counts as p = 1.
-
-**X3 (D79):** the control is each answer's own CRPS-optimal σ, |e| / √(ln 2). This is my reading of "a σ fitted
-directly to true error labels". Say so if you meant something else; nothing has been trained yet.
-
-## 5. Not verified (GPU) / housekeeping
-
-- **No GPU stage has run.** Untested:
-  - the batch probe, including `min_new_tokens` under Unsloth's generate;
-  - Unsloth returning every layer's hidden states. The fallback is D74's transformers + bitsandbytes, triggered by a
-    logit check;
-  - X3 student training and its fingerprint;
-  - Unsloth loading the pinned snapshot dir (the queue's last stage checks this).
-- **Two inputs prepared on CPU and not committed** (size): the random-init control's weights
-  (`results/x2/random_init_model`, 2.9 GB, content hash `13ededef3f3acbd4`) and the Phase 12 jsonl files (sha256 in the
-  manifest).
-- **X3's frozen-set eval has 399 prefixes:** one 4-bit SFT answer has no "±". It drops out of every arm alike.
+- **BLOCKED and then fixed and rerun:** `x2_suffix` (D87) and `x3_eval_a_x2` (D88). **Nothing remains BLOCKED.**
+- **Not committed (size):** the hidden-state arrays (`results/x2/hidden/**/*.npy`, about 1.4 GB), the X3 adapters and
+  the random-init weights. Their hashes and info files are committed.
+- **Tests:** 456 passed yesterday. Tonight's code changes (D87, D88) were covered by the targeted E1 / X3 / X2 tests
+  (25–28 pass); the full suite was not rerun overnight.
 - `PHASES_10-15.md` is still untracked.
 
-## 6. Tonight
+## 5. Recommendation
 
-- **Expected time:** sampling takes about 3.3 h at batch 16, and less if the probe finds a larger batch. Then about
-  45 min of X2 GPU stages, and the X3 pilot (about 2 h) if ≥ 2 h remain.
-- **Launch time:** start by about 23:00 IST for everything to fit before 08:30.
-- **Recommendation:** launch as prepared. If you want the X3 pilot guaranteed, launch earlier rather than lowering the
-  2 h gate.
-
----
-
-## Addendum, afternoon: your decisions on this report (D82–D85; CPU only)
-
-| your decision | done | commit |
-|---|---|---|
-| 1, 2 | **D82:** the X3 control (per-answer CRPS-optimal σ) is confirmed; the X2 method-2 stage is approved | `f676435` |
-| 3 | **D83:** verifier 1.2.0, `<confidence>` scored by Brier on the computation-correct event. Implemented and tested, no training | `db30a41` |
-| 4 | **D84:** the explicit arm masks the propagation numbers and its σ (format only). The arm was rebuilt; its rows now carry their loss masks | `c73500f` |
-| 5 | **D85:** v5's worked example shows `<confidence>c%</confidence>` instead of 90% | `bba06b8` |
-| 6 | the other Phase 12 choices wait for Round 3: uniform trained c, the supervised arm's token loss, n and the noise mix, symbol names in the line | – |
-
-**Verifier 1.2.0** (`configs/reward_v12.yaml`; the default `reward.yaml` stays 1.1.0):
-- **Replay:** old tapes replay exactly. Both 1.1.0 tapes checked (800 rows) re-score to identical rewards **and identical
-  breakdowns**, and the 1.0.0 replay tests pass. A `<confidence>` block is ignored under 1.1.0.
-- **Two values for Round 3:**
-  1. **`weights.confidence = 0`.** The reward equals 1.1.0's, and score_confidence goes to split credit through the
-     breakdown.
-     - **Why not positive:** it couples the channels. A wrong answer stated with c = 10% can then outscore a right one
-       stated with c = 10%.
-  2. **τ = 0.1% (A1).** On D69's 2,000 SFT answers, only **14.5%** are computation-correct at 0.1%, against **39.9%**
-     correct within the verifier's 1%.
-     - **Why:** mostly intermediate rounding (4-significant-figure intermediates).
-     - **The risk:** at 0.1% the c channel would partly score precision. I did not change A1's τ.
-
-**Tonight's queue: unchanged.** None of its files changed. Its dry run was re-run and plans the same 36 steps.
-- **The one shared code change** is the verifier, which under the default 1.1.0 config behaves byte-identically
-  (tested).
-- **Tests:** 456 / 456 pass.
-- **Launch:** `nohup scripts/queue_x2_x3.sh > results/queue_x2_x3/nohup.log 2>&1 &`
+- **For the paper (R2-5):** X2 and X3 together give a clean negative-plus-mechanism result.
+  - **The model can be taught a calibrated, error-ranking σ** (X3: ρ 0.58 from the same base + LoRA). Split credit's
+    failure to reach it is an optimization / credit problem, not capacity.
+  - **But nothing in this setup carries answer-specific self-knowledge:** not stated σ, not text features, and not a
+    hidden-state readout beyond what a random-init network gets (X2).
+  - **This supports the R2-3 framing** (one σ asked to carry epistemic uncertainty fails), and it argues for judging
+    the c channel against the X2 bar, not pooled ρ.
+- **For Phase 12 (Round 3):** keep D83's τ question in view. At τ = 0.1% only 14.5% of answers count as
+  computation-correct. X2 shows within-problem correctness is hard to read at all, so a c channel scored on a
+  precision-heavy event would be harder still.
+- **Before more GPU work:** a full X3 (3 seeds), if wanted, needs its own specification (D79). And the full test suite
+  should be rerun once by day.
