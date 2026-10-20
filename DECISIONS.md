@@ -2549,3 +2549,134 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     (D87) and student (a)'s rerun all use it.
 - **Plan:** after the queue's GPU stages, rerun `x3 eval --arm a --set x2` (about 18 min), then `x3 analyze`. The
   queue's own X3 analysis lacks (a)'s X2 numbers and is superseded.
+
+## 2026-10-20 day (CPU only)
+
+### D89. Pre-registration of X4: self-verification on the X2 pairs (written before any X4 verification, reading or score exists)
+- **Your instructions (2026-10-20):** show the 4-bit SFT model its own completed answer and ask, with a fixed yes/no
+  verification prompt, whether the answer is correct; it may recompute first. Confidence = P("yes") from the
+  next-token probabilities. Primary metric: within-problem pairwise accuracy on the X2 pairs (same pairs, same Holm
+  conventions as X2), vs 0.5 and vs the X2 probe. Secondary: AUROC across problems; per depth. Controls: the same
+  prompt on the random-init model; a shuffled-answer control (the model judges another problem's answer).
+- **Question:** X2 (FINDINGS #19) found that no stated σ, text model or hidden-state readout ranks a correct answer
+  above an incorrect one to the same problem. Can the model do it when it is *asked*, with room to recompute?
+- **What exists before any X4 data:** this entry; `physcal/eval/x4_verify.py`, `physcal/eval/x4_analysis.py`,
+  `configs/x4.yaml`, `tests/test_x4.py` (CPU, a tiny model); and the X2 reference confidences (below), computed from X2
+  outputs only.
+- **The answers and the pairs (exactly X2's):**
+  - **The problems:** X2's 516 kept problems (`results/x2/selected.json`; `x2_pairs.kept_groups` checks the keys).
+  - **The answers:** every parsed answer of those problems (4,116: μ parsed, right dimension), i.e. every answer that
+    enters an X2 pair. **The pairs:** X2's 5,390 (correct, incorrect) pairs; correct = |relative error| ≤ 1%.
+  - **Order:** the kept order (the pool's round-robin order), then the sample index.
+- **The verification conversation (one per answer):**
+  1. system: prompt v4 (the prompt the answer was sampled under);
+  2. user: the problem text;
+  3. assistant: the answer's completion, verbatim (the model's own sampled text);
+  4. user: the fixed verification prompt `x4_v1` (`physcal/prompt.py VERIFY_PROMPTS`; SHA-256 `5f5fa39d…0f34`):
+     > Now check your solution above. Is the final value in your <answer> correct to within 1%? You may redo the
+     > calculation before you decide. Then end your reply with one line, either "Verdict: yes" (the value is correct)
+     > or "Verdict: no" (it is not).
+  5. the assistant generation prompt.
+- **Recomputation:** greedy decoding, up to 512 new tokens (the answers' own budget; their completions are at most 340
+  tokens), stopping at the end-of-turn token; repetition penalty 1.0. Batches of 16 conversations (2 problems × 8
+  answers) with left padding and the allocator cap (below); an OOM halves the batch (the eval backoff).
+- **The reading position:** the generated text is cut before its **last** occurrence of "verdict" (case-insensitive;
+  trailing whitespace and `*`, `_`, `#` dropped), and the canonical line `Verdict:` is appended (after a newline if any
+  text remains). If the model wrote no verdict, or hit the 512-token limit, the line is appended after all of its text.
+  So every answer is read at the same canonical position, whether the model wrote the verdict itself or not.
+- **The confidence:**
+  - **Next-token logits at the reading position,** in float32: lm_head applied in float32 to the final (post-norm)
+    hidden state of the last token. The model's own logits are bf16, and their rounding would create spurious ties
+    within a problem.
+    - **Check, on the first answer of every run:** these logits must reproduce the model's own logits there
+      (max |diff| / max |logit| ≤ 0.02 and the same argmax), as X2's hidden-state check.
+    - **Otherwise:** the model's own logits are used for the whole run, and this is recorded.
+  - **"yes" and "no" tokens:** {yes, " yes", Yes, " Yes", YES, " YES"} and {no, " no", No, " No", NO, " NO"}. Each is a
+    single Qwen token (tested).
+  - **Primary confidence:** the yes-vs-no log-odds, logsumexp(logits[yes]) − logsumexp(logits[no]). It is a monotone
+    function of P(yes) renormalized over yes + no, P(yes) / (P(yes) + P(no)), so it ranks exactly as that probability
+    does, without float saturation near 0 or 1. Probability mass on other tokens (formatting, say) counts as neither
+    answer.
+  - **Secondary:** the raw P(yes) over the full vocabulary.
+- **Arms (the same conversations, scored on the same pairs):**
+  1. **`sft` (primary):** the corrected SFT model of X2 (the merged SFT dir, 4-bit at load by Unsloth, no adapter; the
+     X2 sampling model and loader).
+  2. **`random_init` (control):** X2's random-init model (`results/x2/random_init_model`, content hash
+     `13ededef3f3acbd4`), loaded the same way, with the same recomputation, reading and confidence.
+  3. **`shuffled` (control):** the SFT model judges another problem's answer.
+     - **The swap:** each answer keeps its own completion and its own correctness label (for its own problem), but the
+       user turn shows the text of a **donor** problem.
+     - **The donor:** the next kept problem of the same (family, depth) cell in the kept order, cyclically. It is a
+       deterministic derangement: every kept problem's text is shown exactly once, never with its own answers, and all
+       8 answers of a problem share one donor.
+     - **Why the same cell:** the donor asks for the same kind of target and intermediates, so the mismatch is in the
+       numbers, not in the format.
+     - **What it tests:** whether the ranking depends on checking the answer against the problem it answers. A ranking
+       that survives the swap comes from the completion text alone, i.e. its internal consistency or surface features.
+- **Primary metric:** X2's within-problem pairwise accuracy.
+  - **Computation:** per kept problem, the share of its pairs in which the correct answer gets the higher confidence;
+    ties and a missing confidence count 0.5. The headline is the mean over problems.
+  - **Inference:** a bootstrap over problems (B = 10,000, seed 0) gives the 95% CI and a one-sided p for "> 0.5".
+- **The Holm family (X2's convention: the method and its controls are all tested):** "> 0.5" for `sft`,
+  `random_init` and `shuffled`, Holm at α = 0.05 over these three. An arm whose rows are missing counts as p = 1.
+- **The comparisons (paired over problems, 95% bootstrap CIs, the same B and seed, X2's `paired`):**
+  - **Primary:**
+    - `sft − X2 probe` (method 5, the probe on the SFT hidden states at the first "±" token);
+    - `sft − random_init`;
+    - `sft − shuffled`.
+  - **Secondary:** `sft − X2 SFT stated σ` (method 1).
+  - **Where the X2 values come from:** `results/x4/x2_reference.json`, computed before any X4 data by rerunning X2's
+    method-5 code on the saved X2 hidden states. The analysis refuses to run unless the probe's mean pairwise accuracy
+    reproduces `results/x2/results.json` (0.5471) to 1e-9. That check is what makes these "the same pairs".
+- **Reading rules (fixed now):**
+  - **Definitions:**
+    - **"Self-verification succeeds":** `sft` is Holm-supported and `sft − random_init` has a CI above 0 (X2's rule
+      for the probe).
+    - **"Problem-specific":** `sft − shuffled` has a CI above 0.
+    - **"Above the X2 probe":** `sft − X2 probe` has a CI above 0.
+  - **The outcomes:**
+    1. **Succeeds, problem-specific, above the probe:** asking the model recovers answer-specific self-knowledge that
+       no X2 readout found, and it depends on checking the answer against the problem.
+    2. **Succeeds and problem-specific, but not above the probe:** self-verification carries answer-specific signal
+       that depends on the problem, not detectably more than the X2 probe.
+    3. **Succeeds but not problem-specific:** the signal is in the completion text itself (internal consistency or
+       surface features), not in checking the answer against the problem.
+    4. **`sft` not Holm-supported:** self-verification fails within problems, consistent with X2. Asking the model
+       does not rank its right answers above its wrong ones.
+    5. **Any other combination** is reported as observed.
+- **Secondary (reported, no verdict):**
+  - **AUROC across problems:** confidence vs correct, pooled over every verified answer of the analyzed problems,
+    with a bootstrap CI over problems. It is reported for the three arms and, as references, the X2 probe and SFT
+    stated σ. It mixes between- and within-problem signal, restricted to the mixed problems.
+  - **Per depth:** pairwise accuracy of every arm.
+  - **The raw P(yes)'s pairwise accuracy.**
+  - **Diagnostics:**
+    - the share of answers where the model wrote a verdict itself, and its yes rate on correct and on incorrect
+      answers;
+    - the mean renormalized P(yes) on correct and on incorrect answers;
+    - the mean mass on yes + no;
+    - the share that hit 512 tokens;
+    - the tie share;
+    - which logits path was used.
+  - **Exploratory, `sft` only:** recomputation agreement. If the verification text contains an `<answer>` that the
+    verifier parses (against the shown problem), confidence = 1 when its μ is within 1% of the original μ and 0
+    otherwise; no parsed answer is a tie.
+- **A night that ends early:**
+  - Rows are appended after every batch, and a run resumes where it stopped.
+  - **The analyzed problems:** each arm is analyzed on the kept problems it completed (all of their answers). That is
+    a prefix of the round-robin kept order, so still stratified; its size is reported.
+  - **Paired differences** use the problems that both arms completed.
+- **Model and memory settings:**
+  - Unsloth 4-bit; max_seq_length 3072 (the longest conversation is about 1,980 tokens; max_position_embeddings is
+    4096, and the RoPE is the default, so outputs do not depend on this setting).
+  - **The allocator cap** is set per stage at launch: total VRAM − `nvidia-smi` memory.used with nothing of ours
+    running − 0.5 GiB, clipped to [4.0, 7.5] GiB (the WSL-spill rule of D86/D87). It is recorded in each run's meta.
+- **Order of the GPU runs:** `sft`, then `shuffled`, then `random_init`.
+  - **Why `shuffled` first:** it is the more informative control. `random_init` has no fitted readout, so its expected
+    pairwise accuracy is 0.5 apart from surface correlations. It is also the most expensive, because a random-init
+    model never stops before 512 tokens.
+- **[REVIEW] items** (they can still change before launch, since no X4 data exists):
+  1. the wording of `x4_v1`;
+  2. the renormalized yes-vs-no log-odds as the primary confidence (raw P(yes) as secondary);
+  3. the donor rule (next kept problem in the same cell);
+  4. the order of the controls.

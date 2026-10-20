@@ -132,3 +132,13 @@ def build_messages(problem_text: str, prompt_id: str = "v1") -> list[dict[str, s
         {"role": "system", "content": SYSTEM_PROMPTS[prompt_id]},
         {"role": "user", "content": problem_text},
     ]
+
+
+# X4 (DECISIONS.md D89): the fixed self-verification turn. It follows the model's own completed answer as a second user
+# turn of the same conversation (v4 system prompt, the problem, the completion as the assistant turn). The confidence
+# is read from the next-token probabilities right after "Verdict:" (physcal/eval/x4_verify.py).
+VERIFY_PROMPTS = {
+    "x4_v1": ("Now check your solution above. Is the final value in your <answer> correct to within 1%? You may redo "
+              "the calculation before you decide. Then end your reply with one line, either \"Verdict: yes\" (the "
+              "value is correct) or \"Verdict: no\" (it is not)."),
+}
