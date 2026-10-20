@@ -1,133 +1,106 @@
-# Report: 2026-10-19/20 night: X2 (all 1,200 candidates) and the X3 pilot, after a late start (23:06–06:08 IST)
+# Report: 2026-10-20 day: tests, X4 pre-registered and built, tonight's queue prepared (CPU only)
 
-The previous report (2026-10-19 day + afternoon addendum) is in git history: `git show 971ffc4:MORNING.md`.
+The previous report (the 2026-10-19/20 night: X2 and the X3 pilot) is in git history: `git show c333885:MORNING.md`.
 
 **Short version.**
-1. **Everything ran.**
-   - **Timing:** GPU work ended at 05:54, inside your 09:00 deadline. Every stage was committed and pushed.
-   - **Two stages failed first time** (logged BLOCKED by the queue, as designed). Both were fixed and rerun after the
-     queue (D87, D88), so nothing is missing.
-2. **X2 (FINDINGS #19): within a problem, no stated σ and no text model tells right answers from wrong.**
-   - **Stated σ:** SFT 0.499; split credit 0.491.
-   - **A5's text p:** 0.497.
-   - **The hidden-state probe:** 0.547 (Holm supported), but a random-init model's probe reaches 0.530, and the
-     difference is not significant.
-   - **D74's label:** "another combination: reported as observed". No positive epistemic claim follows.
-3. **X3 pilot (FINDINGS #20): "capacity likely".**
-   - **Student (a):** the RL runs' own base + LoRA, SFT'd on the A5 teacher σ, reaches ρ = 0.575 [0.499, 0.643].
-     Split credit's is 0.06. It is also calibrated (66% 1σ coverage).
-   - **What it learned:** which problems are hard, not which answers are wrong. On X2's pairs it is at chance
-     (0.513).
-4. **D78's pinned-base GPU check: PASS.** **R2-1, now enforced:** both X3 students pass their reload checks.
-5. **Launch:** your pre-launch checks were clean.
-   - **One launch-time change (D86):** a host process held 1.65 GB of VRAM, so X2's allocator cap went 7.5 → 5.75 GiB.
+1. **Full test suite: 457 passed, nothing to fix.** That is the by-day rerun the night report asked for.
+2. **X4 is pre-registered (D89)** before any X4 data.
+   - **The task:** the 4-bit SFT model sees its own completed X2 answer, is asked a fixed yes/no question, and may
+     recompute first.
+   - **Confidence:** the yes-vs-no log-odds at a canonical `Verdict:` position.
+   - **Scoring:** on exactly X2's 5,390 pairs.
+3. **X4 is built and tested on CPU.**
+   - **Tests:** 14 new, including a tiny model end to end. X4 + X2 tests: 24 pass; the full suite: 470.
+   - **The X2 probe reference** is recomputed from X2's own outputs and reproduces X2's 0.5471 exactly.
+4. **Tonight's queue is prepared, NOT launched (D90):** `sft` → `shuffled` → `random_init` → the analysis.
+   - **Estimate:** 6.1–8.1 GPU-hours, so launch by about 23:00 for all three arms to finish before 09:00.
+5. **Four [REVIEW] items in D89 can still change before launch**, because no X4 data exists (§4).
 
 ---
 
-## 1. What ran (IST)
+## 1. What ran (IST, CPU only; the GPU was not used today)
 
-| time | stage | result | commit |
-|---|---|---|---|
-| 23:04 | launch checks (after the WSL restart) | clean: git synced, no lock, inputs' hashes match | `efbbce4` (D86) |
-| 23:06–23:07 | X2 batch probe (cap 5.75 GiB) | 128 / 96 / 64 / 48 OOM; **32 fits** (4.6 GiB, 35 s per worst-case batch) | queue |
-| 23:07–01:11 | X2 sampling, 6 chunks × 200 (about 20 min each) | 9,600 completions, 99.6% parsed, 0 backoffs | queue (×6) |
-| 01:11 | selection | **516** mixed problems, 5,390 pairs | queue |
-| 01:11–02:18 | X2 method 2, split credit σ suffixes | **BLOCKED: timeout** (WSL spill, D87) | queue |
-| 02:18–02:58 | hidden states, SFT and random init × fit and X2 | all 4 OK, Unsloth path (logit gap ≤ 0.5%) | queue |
-| 02:58–03:18 | X2 analysis (CPU, without method 2) | superseded by 06:08 | queue |
-| 02:58–03:45 | X3 student (a), 500 steps | exit 0, R2-1 fingerprint | queue |
-| 03:45–03:49 | (a) on the frozen sets | exit 0, R2-1 **pass** | queue |
-| 03:49–04:09 | (a) on the X2 answers | **BLOCKED: crash on a μ = 0 answer** (D88) | queue |
-| 04:09–04:54 | X3 student (b), 500 steps | exit 0 | queue |
-| 04:54–05:17 | (b) evals, the X3 analysis (without (a)'s X2) | exit 0 (the analysis was superseded) | queue |
-| 05:17–05:18 | **D78 pinned-base GPU check** | **PASS** | queue |
-| 05:18–05:37 | rerun: (a) on the X2 answers | exit 0 | reruns |
-| 05:37–05:54 | rerun: X2 method 2 (batch 16, capped) | exit 0, 17 min | reruns |
-| 05:37–06:08 | reruns: X3 analysis, X2 analysis (CPU) | exit 0 | reruns |
-
-- **Temperatures:** stage starts were 55–67 °C; the peak seen was 85 °C, during X3 training. Never above 87 °C, so no
-  pause.
-- **The reruns** (`scripts/queue_x2_x3_reruns.sh`, same guards) were chained to start when the queue's PID exited.
-
-## 2. Results
-
-**X2 (D74; `results/x2/summary.md`; FINDINGS #19):**
-
-| method | pairwise accuracy [95% CI] | Holm |
+| step | result | commit |
 |---|---|---|
-| 1. stated σ, SFT | 0.499 [0.474, 0.524] | no |
-| 2. stated σ, split credit seed 0 @287 | 0.491 [0.461, 0.521] | no |
-| 3. A5 p (4-bit) | 0.497 [0.481, 0.514] (ties on 64% of pairs) | no |
-| 4. problem-text-only (check) | 0.500 exactly | – |
-| 5. hidden-state probe, SFT | **0.547 [0.520, 0.574]** | **yes** |
-| 6. hidden-state probe, random init | 0.530 [0.503, 0.557] | no (p 0.013 vs threshold 0.0125) |
+| full test suite | 457 passed, 0 failed, 0 skipped (5 min 13 s) | `4e49eea` |
+| X4 pre-registration (D89) + the fixed prompt `x4_v1` | committed before any X4 code ran on data | `eddda39` |
+| X4 build: runs, analysis, config, tests, the X2 reference | 14 tests pass; the reference gap is 0.0 | `3b8057e` |
+| tonight's queue (D90) | dry-run checked; not launched | `89262ce` |
 
-- **Probe vs the other methods:**
-  - probe − random init: +0.017 [−0.015, +0.050], so it is **not** "probe succeeds" under D74;
-  - probe − SFT σ: +0.048 [+0.011, +0.086].
-- **What the probe reads:** the cross-fitted probe picks layer 1 in four of five folds, which suggests surface features
-  of the answer tokens.
-- **Reading:** A5's between-problem advantage (ρ ≈ 0.65) is difficulty prediction. Neither the model's σ nor the text
-  model knows which of its answers is right.
+## 2. X4 as pre-registered (D89; details in DECISIONS.md)
 
-**X3 pilot (D79; `results/x3/pilot.md`; FINDINGS #20)**, on the 399 frozen-set answers with μ fixed:
+- **The conversation (one per answer, 4,116 answers):**
+  1. the v4 system prompt;
+  2. the problem;
+  3. the answer's own sampled completion, as the assistant turn;
+  4. then, as a second user turn:
+     > Now check your solution above. Is the final value in your <answer> correct to within 1%? You may redo the
+     > calculation before you decide. Then end your reply with one line, either "Verdict: yes" (the value is correct)
+     > or "Verdict: no" (it is not).
+- **Recomputation:** greedy, up to 512 tokens.
+- **The read-out:**
+  - **The position:** the text is cut before its last "verdict" and `Verdict:` is appended. So every answer is read
+    at the same position, whether the model wrote a verdict or not.
+  - **The confidence:** the log-odds of the {yes, Yes, …} tokens vs the {no, No, …} tokens. It is computed from
+    float32 logits: lm_head is applied in float32 to the final hidden state, because bf16 logits would create spurious
+    ties within a problem.
+  - **The check:** the float32 logits are checked against the model's own logits on the first row of every run.
+- **Arms:**
+  - **`sft`:** primary.
+  - **`shuffled`:** the same model, but each answer is shown under the text of the next kept problem in the same
+    (family, depth) cell.
+  - **`random_init`:** X2's random-init model.
+- **Primary metric:** X2's within-problem pairwise accuracy on X2's pairs.
+  - **Holm** (α 0.05) over the three arms' "> 0.5" tests.
+  - **Paired CIs:** `sft − X2 probe`, `sft − random_init`, `sft − shuffled`.
+- **Secondary:** AUROC across problems; per depth; the raw P(yes); diagnostics; recomputation agreement (exploratory).
+- **Reading rules:**
+  - **"Succeeds":** `sft` is Holm-supported and beats random init.
+  - **"Problem-specific":** `sft` beats `shuffled`.
+  - **"Above the probe":** `sft` beats the X2 probe.
+  - **The labels:** five outcome labels, fixed now.
 
-| σ source | ρ(σ, err) [95% CI] | crps_log | 1σ cov | median σ | X2 pairwise |
-|---|---|---|---|---|---|
-| **student (a), A5 teacher** | **0.575 [0.499, 0.643]** | −0.306 | 66.4% | 10.8% | 0.513 [0.484, 0.543] |
-| student (b), true-error labels | 0.583 [0.509, 0.650] | −0.348 | 30.8% | 0.3% | 0.488 [0.460, 0.517] |
-| A5 teacher | 0.664 | −0.291 | 66.4% | 6.6% | – |
-| SFT stated σ | 0.038 | −0.322 | 12.0% | 0.1% | – |
+## 3. Tonight's queue (D90)
 
-- **Label:** "capacity likely", i.e. a point estimate ≥ 0.5 with a CI lower end of 0.499. That is the pre-registered
-  rule applied as written.
-- **Fidelity to the teacher:** 0.72.
-- **Student (b):** ranks as well as (a) but is badly overconfident. Greedy decoding takes the mode of its bimodal
-  targets.
+- **Launch:** `nohup scripts/queue_x4.sh > results/queue_x4/nohup.log 2>&1 &`. The 09:00 deadline is taken as the
+  next morning's.
+- **The VRAM cap is automatic:** before each GPU stage the queue reads `nvidia-smi` and sets total − used − 0.5 GiB,
+  clipped to [4, 7.5]. A host process holding VRAM (D86) is therefore handled without an edit. This morning's
+  reading: 7.2–7.35 GiB.
+- **Time:** soft limits keep 4 h for the two controls after `sft`, and 2 h for `random_init` after `shuffled`.
+  - **What a stopped arm leaves:** a stratified prefix, which D89 analyzes as such. Rerunning the same command
+    resumes it.
+- **Estimates (from last night's measurements; nothing of X4 has run on the GPU):**
+  - `sft` / `shuffled`: 1.7–2.7 h each;
+  - `random_init`: about 2.7 h.
+- **Not checked:** any GPU stage. If the float32-head check fails, an arm uses the model's own logits (slower, and
+  recorded); it does not stop.
 
-**Other checks:**
-- **D78 (`results/pinned_base_smoke/report.json`): PASS on all five checks.** The snapshot loads 4-bit, the adapter
-  names the snapshot dir, the reload gets the same base, and the provenance hash is `sha256:9939448b3a0fbe45`.
-- **R2-1, enforced:** both students pass. Log-prob ratios are 0.030 / 0.027 and σ-token ratios 0.023 / 0.039, against
-  a 0.25 limit. Split credit seed 0 (no fingerprint) got the "no_fingerprint" warning, as D77 specifies.
+## 4. Decisions to review before launch
 
-## 3. Decisions made tonight (please review)
+1. **[REVIEW] The prompt `x4_v1`'s wording.** Changing it means a new hash in the config and in D89.
+2. **[REVIEW] The confidence:** the yes-vs-no log-odds (= P(yes) renormalized over yes + no), with raw P(yes) as
+   secondary.
+   - **Why not raw P(yes) as primary:** mass on other tokens (formatting) would then count as "no".
+3. **[REVIEW] The donor rule** for `shuffled`: the next kept problem in the same cell, so the mismatch is in the
+   numbers, not the format.
+4. **[REVIEW] The control order:** `shuffled` before `random_init`. The shuffled control is the more informative one,
+   and `random_init` is the most expensive, since it never stops before 512 tokens.
+5. **D90's runtime detail:** after an OOM backoff, X4 keeps the halved batch for the rest of the run.
 
-1. **D86 (at launch):** X2's sampling cap 7.5 → 5.75 GiB, because a host-side process held 1.65 GB of VRAM. Deadline
-   09:00 via `GPU_DEADLINE` (your message). The queue script was unchanged.
-2. **D87: the method-2 stage spilled into WSL shared memory.**
-   - **Why:** batch 32 × ~1,300-token prompts with no cap; about 60 s per batch.
-   - **The fix:** σ-suffix evals now run at batch 16 under the 5.75 GiB cap, with Unsloth imported first and progress
-     lines. The X3 evals inherited it (399 suffixes in about 2 min).
-   - **The rerun:** after the queue.
-3. **D88: a ZeroDivisionError on the one X2 answer with μ = 0.**
-   - **The fix:** a direct comparison in the μ-changed check. μ = 0 has no relative σ, so it is a failed suffix, i.e.
-     a tie.
-   - **Effect elsewhere:** no existing E1 row is affected.
-   - **The rerun:** student (a)'s X2 eval.
-4. **Superseded outputs, committed and labelled:** the queue's first X2 analysis (method 2 as p = 1) and first X3
-   analysis (without (a)'s X2 numbers). Holm's X2 verdicts were the same in both.
+## 5. Housekeeping
 
-## 4. BLOCKED / housekeeping
+- **Not committed:** `PHASES_10-15.md` is still untracked, and X2's hidden-state arrays are still local. X4's
+  analysis does not need them; it uses the committed reference.
+- **The full suite now has 471 tests:** 470 ran in the full pass, plus the OOM-halving test added after it, which
+  passes with the X4/X2 tests.
 
-- **BLOCKED and then fixed and rerun:** `x2_suffix` (D87) and `x3_eval_a_x2` (D88). **Nothing remains BLOCKED.**
-- **Not committed (size):** the hidden-state arrays (`results/x2/hidden/**/*.npy`, about 1.4 GB), the X3 adapters and
-  the random-init weights. Their hashes and info files are committed.
-- **Tests:** 456 passed yesterday. Tonight's code changes (D87, D88) were covered by the targeted E1 / X3 / X2 tests
-  (25–28 pass); the full suite was not rerun overnight.
-- `PHASES_10-15.md` is still untracked.
+## 6. Recommendation
 
-## 5. Recommendation
-
-- **For the paper (R2-5):** X2 and X3 together give a clean negative-plus-mechanism result.
-  - **The model can be taught a calibrated, error-ranking σ** (X3: ρ 0.58 from the same base + LoRA). Split credit's
-    failure to reach it is an optimization / credit problem, not capacity.
-  - **But nothing in this setup carries answer-specific self-knowledge:** not stated σ, not text features, and not a
-    hidden-state readout beyond what a random-init network gets (X2).
-  - **This supports the R2-3 framing** (one σ asked to carry epistemic uncertainty fails), and it argues for judging
-    the c channel against the X2 bar, not pooled ρ.
-- **For Phase 12 (Round 3):** keep D83's τ question in view. At τ = 0.1% only 14.5% of answers count as
-  computation-correct. X2 shows within-problem correctness is hard to read at all, so a c channel scored on a
-  precision-heavy event would be harder still.
-- **Before more GPU work:** a full X3 (3 seeds), if wanted, needs its own specification (D79). And the full test suite
-  should be rerun once by day.
+- **Review the four [REVIEW] items, then launch by about 23:00.**
+- **What X4 adds to X2:** X2 showed that no passive readout ranks answers within a problem. X4 asks whether active
+  checking, with room to recompute, does.
+  - **If `sft` beats `shuffled`:** the model can check an answer against its problem when asked. That bears on how
+    the Phase 12 c channel is designed.
+  - **If it does not:** the negative result of FINDINGS #19 extends to self-verification, which strengthens the R2-3
+    framing.

@@ -2714,7 +2714,8 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     - **`sft` and `shuffled`:** about 1.7 h if a batch's longest recomputation is ~300 tokens, about 2.7 h if 512.
     - **`random_init`:** about 2.7 h. A random-init model does not stop before 512 tokens.
   - **The total: 6.1–8.1 h.** Launched at about 23:00, all three arms finish before 09:00 even at the upper estimate.
-    Launched after about 00:50, `random_init` will probably be cut (a prefix, analyzed as D89 says).
+  - **A later launch:** `random_init` is cut short (a prefix, analyzed as D89 says) after about 00:40 at the upper
+    estimate, or after about 02:40 at the lower one.
 - **Memory, expected:** 16 conversations × (~1,470 + 512) tokens.
   - **The nearest measurements:** the X2 probe's 32 × (1,108 + 512) peaked at 4.6 GiB, and D87's 16 × ~1,300 ran
     under the 5.75 GiB cap. So this should fit under ~7.2 GiB.
