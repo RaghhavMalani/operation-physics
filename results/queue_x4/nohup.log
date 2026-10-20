@@ -1,0 +1,6 @@
+[23:22:50] queue start; GPU deadline 11:30 IST; queue PID 7226
+[23:22:50] GPU at 51C
+[23:22:51] X4 sft: cap 6.34 GiB, soft limit 667 min (reserve 3600s), 0 rows so far
+[23:22:51] start x4_sft (timeout 40629s): uv run python -m physcal.eval.x4_verify run --arm sft --max-reserved-gib 6.34 --minutes 667
+[00:09:16] end x4_sft: exit 0
+[00:09:16] X4 sft: 4116 of 4116 rows

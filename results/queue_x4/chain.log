@@ -1,0 +1,11 @@
+[23:22:50] queue start; GPU deadline 11:30 IST; queue PID 7226
+[23:22:50] GPU at 51C
+[23:22:51] X4 sft: cap 6.34 GiB, soft limit 667 min (reserve 3600s), 0 rows so far
+[23:22:51] start x4_sft (timeout 40629s): uv run python -m physcal.eval.x4_verify run --arm sft --max-reserved-gib 6.34 --minutes 667
+[23:29:51] temperature guard attached to x4_sft (process group 7283; D91)
+[23:32:04] queue start; GPU deadline 11:30 IST; queue PID 15055; arms: direct perturbed shuffled random_init
+[23:32:04] waiting for PID 7226 to exit: bash scripts/queue_x4_main.sh 
+[23:42:56] guard(7283): GPU at 88C > 87C: stage stopped for 600s
+[23:53:52] guard(7283): stage continued (GPU at 56C)
+[00:09:16] end x4_sft: exit 0
+[00:09:16] X4 sft: 4116 of 4116 rows

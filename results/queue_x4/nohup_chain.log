@@ -1,0 +1,2 @@
+[23:32:04] queue start; GPU deadline 11:30 IST; queue PID 15055; arms: direct perturbed shuffled random_init
+[23:32:04] waiting for PID 7226 to exit: bash scripts/queue_x4_main.sh 
