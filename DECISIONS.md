@@ -3013,3 +3013,37 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     fails A6 and A6c and passes A6b. That is the reference point A6c exists to make.
   - **The comparison with X1 (D73) on A6c** needs X1's fitted model applied to the new set. It is left for the next
     day.
+
+### D96. Tonight's run, 2026-10-20/21: implementation decisions taken during the night (overnight rules: decision, alternatives, why)
+1. **Launching `sft` first.**
+   - **Problem:** D90's `queue_x4.sh` would have run `shuffled` right after `sft`, not D91's order.
+   - **Decision:** `sft` was launched from a frozen copy with only its stage (`scripts/queue_x4_main.sh`, committed),
+     at 23:22 IST, with the soft limit = time left − 1 h. `queue_x4.sh` was then rewritten for D91's order
+     (`X4_ARMS`, `WAIT_PID`), dry-run, and started as the chain, waiting on the frozen queue's PID.
+   - **Why a copy:** bash reads a running script as it goes, so the script a queue runs is never edited while it
+     runs. **Alternative:** adding an arm filter to the tested script before launch delays the GPU, and you said
+     launch now.
+2. **The GPU temperature rule inside a stage (`scripts/gpu_temp_guard.sh`).**
+   - **What D90's queues did:** checked temperature only before a stage. Tonight's stages are 15 min – 2.5 h long.
+   - **The guard:** polls every 30 s. Above 87 °C it SIGSTOPs the stage's process group (`timeout` → `uv` →
+     `python`) for 600 s, then SIGCONTs it. It is PID-based, tested on a dummy stage, and attached to `sft` by hand,
+     then to every chained stage by the queue.
+   - **It fired once:** 88 °C at 23:42:56; the stage continued at 23:53:52 with the GPU at 56 °C. The stage's soft
+     limit counts the pause; that was harmless tonight.
+   - **The cause** was mostly my CPU job: the refit below, 2 joblib workers at ~3 threads each. From then on, CPU jobs
+     ran on 1 thread at nice 19 while the GPU was busy.
+3. **X2 robustness (D92): the refits wait for the end of the queue.**
+   - **What happened:** under 1 thread, the cross-fitted probe recomputed 0.5390 vs X2's published 0.5396. D92's
+     reproduction check refused it, and the run stopped as designed. The random-init probe refit reproduced exactly.
+   - **Why:** the inner-CV (layer, C) selection is sensitive to BLAS summation order, i.e. to the thread count.
+   - **Decision:** the refits rerun after the GPU queue under X2's own settings (4 jobs, 4 BLAS threads), and the
+     reproduction rule stays as written. The results without the two refitted probes were committed first,
+     labelled "refits pending".
+   - **Alternative:** relaxing the 1e-9 rule for the cross-fit. Rejected: D92 fixed it before computing.
+4. **The A6c feasibility check** (construction only, no model) set `min_ratio` = 1.5. It is recorded in D95.
+5. **The noise heuristics are order-invariant:** the levels are sorted before max / mean / RSS.
+   - **Why:** the first run showed RSS "supported" on A6c with slope +0.000. Summing the same squares in a
+     different order made y ≈ 1e-17 instead of exactly 0. The fix ran before any result was committed.
+6. **A dry run of the D91 analysis** on the real `sft`, `direct` and partial `perturbed` rows, into the scratchpad,
+   checked the code path on real data before the queue's analysis stage. No file in `results/x4` was written; the
+   pre-registered analysis is the queue's.
