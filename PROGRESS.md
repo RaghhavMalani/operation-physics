@@ -674,3 +674,25 @@ Progress:
   - **Order:** `sft` → `shuffled` → `random_init` → the analysis (CPU).
   - **Settings:** a per-stage cap, measured at the stage start; soft limits that keep time for the controls.
 - [ ] **Next:** your review of D89's [REVIEW] items, then launch (by about 23:00 for all three arms to fit).
+
+## 2026-10-20/21 night: X4 with D91's amendments (GPU), X2 robustness, R3 amendments, E1c/E1d and A6c built (CPU)
+
+- [x] **D91 (before any X4 data):** the `direct` mode and the `perturbed` control (final μ × 1.25), a problem-level
+  cluster bootstrap for every X4 statistic, extra tokens per mode, Holm over five arms; GPU deadline 11:30 IST.
+- [x] **GPU: all five X4 arms complete** (`sft` 23:22–00:09, `direct` –00:22, `perturbed` –00:52, `shuffled` –01:26,
+  `random_init` –03:53), then the analysis at 03:57. No OOM.
+  - **One guard pause:** 88 °C at 23:43, resumed 23:53 (D96).
+  - **FINDINGS #21:** self-verification fails within problems (`sft` 0.524, not Holm-supported); recompute = direct;
+    the μ × 1.25 perturbation lowers P(yes) but uniformly.
+- [x] **X2 robustness (D92, post-hoc):** all X2 methods reproduce exactly.
+  - **FINDINGS #22:** self-consistency 0.643 within problems (0.861 on separated pairs); length-only 0.535; X2's CIs
+    were already problem-level.
+- [x] **R3-1 to R3-10 recorded (D93);** the review synthesis committed.
+- [x] **E1c / E1d pre-registered (D94):** configs, `e1.grpo_args`, `compare_pilots`, 6 tests. NOT launched.
+- [x] **A6c (D95) frozen:** 510 noise-allocation pairs, 15 full cells, exact replay, A6/A6b unchanged.
+  - **The noise heuristics (max / mean / RSS):** constant within every A6 / A6b / A6c pair, so they fail A6 and A6c and
+    pass A6b, as designed.
+  - **The A6c analysis** is in `a6_pairs`.
+- [x] **Full test suite:** 508 passed, 0 failed, 0 skipped (GPU visible).
+- [ ] **Next:** your review of D94's / D95's [REVIEW] items; E1c + E1d pilots (R3 schedule: Wed 21 night); X1 on
+  A6c; Phase 12 stage A.
