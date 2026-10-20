@@ -1,7 +1,8 @@
 """X4 (pre-registered in DECISIONS.md D89): self-verification on the X2 pairs.
 
     uv run python -m physcal.eval.x4_verify reference        # CPU, once, before any X4 data: X2's per-answer confidences
-    uv run python -m physcal.eval.x4_verify run --arm sft|shuffled|random_init [--max-reserved-gib G] [--minutes M]  # GPU
+    uv run python -m physcal.eval.x4_verify run --arm sft|direct|perturbed|shuffled|random_init \
+        [--max-reserved-gib G] [--minutes M]                 # GPU
     uv run python -m physcal.eval.x4_analysis analyze        # CPU: the D89 analysis
 
 Every answer of X2's kept problems (the answers that form X2's pairs) gets one verification conversation: the v4
@@ -12,8 +13,10 @@ is the yes-vs-no log-odds of the next token there, from float32 logits (lm_head 
 checked against the model's own logits on the first row of every run).
 
 Arms: `sft` (the corrected SFT model of X2, 4-bit), `shuffled` (the same model; the user turn shows a donor problem's
-text: the next kept problem of the same cell), `random_init` (X2's random-init model, loaded the same way). Rows are
-appended after every batch to `<output_dir>/<arm>/rows.jsonl`; a rerun resumes where the last one stopped.
+text: the next kept problem of the same cell), `random_init` (X2's random-init model, loaded the same way). D91 adds
+`direct` (the SFT model read right after the generation prompt: no recomputation tokens) and `perturbed` (the SFT
+model; the answer's final μ × 1.25 in its <answer>, σ, unit and steps unchanged). Rows are appended after every batch
+to `<output_dir>/<arm>/rows.jsonl`; a rerun resumes where the last one stopped.
 """
 
 from __future__ import annotations
@@ -27,10 +30,15 @@ import re
 import subprocess
 import time
 from pathlib import Path
+from types import SimpleNamespace
 
 from physcal.config import REPO_ROOT, load_config
 from physcal.eval import x2_pairs
 from physcal.prompt import SYSTEM_PROMPTS, VERIFY_PROMPTS, build_messages
+from physcal.verify.parse import ANSWER_RE, NUM, ParseError, parse_completion
+
+NO_GENERATION = SimpleNamespace(text="", n_tokens=0, truncated=False)  # D91 direct mode: nothing is generated
+MANTISSA = re.compile(r"([-+]?(?:\d+(?:\.\d*)?|\.\d+))([eE][-+]?\d+)?$")
 
 
 def _config() -> dict:
@@ -99,6 +107,51 @@ def conversation(problem_text: str, completion: str, prompt_id: str, verify_text
     """The verification conversation: system prompt, problem, the answer's completion, the verification prompt."""
     return build_messages(problem_text, prompt_id) + [{"role": "assistant", "content": completion},
                                                        {"role": "user", "content": verify_text}]
+
+
+# ------------------------------------------------------------------------------------------- the perturbed control
+def _sig_digits(mantissa: str) -> int:
+    """Significant digits of a plain decimal string (leading zeros dropped, trailing zeros kept)."""
+    return max(1, len(re.sub(r"[^0-9]", "", mantissa).lstrip("0")))
+
+
+def _plain(v: float, sig: int) -> str:
+    """`v` as a plain decimal with `sig` significant digits."""
+    return f"{v:.{max(0, sig - 1 - math.floor(math.log10(abs(v))))}f}"
+
+
+def perturb(completion: str, factor: float, min_sig: int) -> tuple[str | None, dict]:
+    """D91's `perturbed` edit: the μ number of the single <answer> block (the first number after the block's last
+    "=", or from its start) times `factor`, with the original's significant digits (at least `min_sig`) in its
+    notation (an `e` exponent or a following "× 10^k" is kept; only the mantissa changes). Every other character
+    stays. Checked: the edit re-parses to `factor` × μ within that rounding, with the same σ and units. Returns
+    (edited completion, info), or (None, info with the reason) for an answer D91 excludes."""
+    blocks = list(ANSWER_RE.finditer(completion))
+    if len(blocks) != 1:
+        return None, {"reason": "answer_blocks"}
+    inner = blocks[0].group(1)
+    m = re.compile(NUM).search(inner, inner.rfind("=") + 1)
+    if not m:
+        return None, {"reason": "no_number"}
+    old = m.group(0)
+    mant, exp = MANTISSA.match(old).groups()
+    v = float(mant) * factor
+    if v == 0:
+        return None, {"reason": "mu_zero", "old": old}
+    sig = max(min_sig, _sig_digits(mant))
+    new = _plain(v, sig) + (exp or "")
+    at = blocks[0].start(1) + m.start()
+    text = completion[:at] + new + completion[at + len(old):]
+    info = {"old": old, "new": new}
+    try:
+        a0, a1 = parse_completion(completion).answer, parse_completion(text).answer
+    except ParseError:
+        return None, info | {"reason": "reparse_fail"}
+    same = (a1.unit, a1.sigma, a1.sigma_unit, a1.sigma_is_percent) == (a0.unit, a0.sigma, a0.sigma_unit,
+                                                                       a0.sigma_is_percent)
+    if a0.value == 0 or not same or abs(a1.value / (factor * a0.value) - 1) > 0.5 * 10.0 ** (1 - sig) + 1e-12:
+        return None, info | {"reason": "reparse_mismatch"}
+    return text, info
 
 
 # ------------------------------------------------------------------------------------------- the reading
@@ -310,6 +363,20 @@ def run(arm: str, cfg: dict | None = None, backend=None, max_reserved_gib: float
     t0 = time.time()
     verify_text = check_prompt(cfg)
     every, keys = items(cfg)
+    mode, factor = cfg["arms"][arm].get("mode", "recompute"), cfg["arms"][arm].get("perturb_factor")
+    if mode not in ("recompute", "direct"):
+        raise ValueError(f"unknown mode {mode!r}")
+    excluded = []
+    if factor is not None:  # D91: the shown completion is the perturbed one; the label stays the original's
+        edited = []
+        for it in every:
+            text, info = perturb(it["completion"], factor, cfg["perturb"]["min_sig_digits"])
+            if text is None:
+                excluded.append([it["key"], it["sample"], info["reason"]])
+            else:
+                edited.append(it | {"completion": text, "mu_text": [info["old"], info["new"]]})
+        n_all, every = len(every), edited
+        print(f"X4 {arm}: {n_all - len(every)} of {n_all} answers excluded by the perturbation check", flush=True)
     its = every[:limit] if limit else every
     problems = {tuple(it["key"]): it["problem"] for it in every}
     don = donors(keys) if cfg["arms"][arm]["donor"] else {k: k for k in keys}
@@ -328,6 +395,10 @@ def run(arm: str, cfg: dict | None = None, backend=None, max_reserved_gib: float
         "verify_prompt": cfg["verify_prompt"], "verify_prompt_sha256": cfg["verify_prompt_sha256"],
         "generation": cfg["generation"], "model": cfg["model"], "reading": cfg["reading"], "n_answers": len(every),
         "segments": []}
+    if mode != "recompute" or factor is not None:  # D91's arms; D89's metas stay as they were
+        meta.setdefault("mode", mode)
+        meta.setdefault("perturb_factor", factor)
+        meta.setdefault("excluded", excluded)
     if meta["arm"] != arm or meta["verify_prompt_sha256"] != cfg["verify_prompt_sha256"]:
         raise ValueError(f"{meta_path} belongs to another run")
     if not todo:
@@ -363,7 +434,7 @@ def run(arm: str, cfg: dict | None = None, backend=None, max_reserved_gib: float
         batch = todo[n_new:n_new + bs]
         prompts = [prompt_of(it) for it in batch]
         before = getattr(backend, "oom_backoffs", 0)
-        gens = [g[0] for g in backend._generate(prompts, 1)]
+        gens = [g[0] for g in backend._generate(prompts, 1)] if mode == "recompute" else [NO_GENERATION] * len(batch)
         if getattr(backend, "oom_backoffs", 0) > before and bs > 1:  # the backoff halved this call only: keep it
             bs //= 2
             print(f"  X4 {arm}: OOM backoff; batch size {bs} from now on", flush=True)
@@ -374,7 +445,8 @@ def run(arm: str, cfg: dict | None = None, backend=None, max_reserved_gib: float
             "arm": arm, "key": it["key"], "sample": it["sample"], "shown_key": list(don[tuple(it["key"])]),
             "correct": it["correct"], **r, "path": path, "natural_verdict": natural,
             "prompt_tokens": len(tok(p)["input_ids"]), "gen_tokens": g.n_tokens, "truncated": g.truncated,
-            "context_tokens": len(c), "generation": g.text}) + "\n"
+            "context_tokens": len(c), "generation": g.text,
+            **({"mode": mode} if mode != "recompute" else {}), **({"mu_text": it["mu_text"]} if factor else {})}) + "\n"
             for it, p, g, (_, natural), r, c in zip(batch, prompts, gens, cuts, reads, ctx)]
         with (out / "rows.jsonl").open("a") as f:
             f.write("".join(lines))  # one write per batch
@@ -428,7 +500,7 @@ def reference(cfg: dict | None = None) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("action", choices=["reference", "run", "cap"])
-    ap.add_argument("--arm", choices=["sft", "shuffled", "random_init"], default="sft")
+    ap.add_argument("--arm", choices=["sft", "direct", "perturbed", "shuffled", "random_init"], default="sft")
     ap.add_argument("--max-reserved-gib", type=float, default=None, help="run: allocator cap (default: the config's)")
     ap.add_argument("--minutes", type=float, default=None, help="run: stop cleanly between batches after this long")
     ap.add_argument("--limit", type=int, default=None, help="run: only the first N answers (checks)")

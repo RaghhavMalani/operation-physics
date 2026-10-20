@@ -250,6 +250,85 @@ def test_a_failed_logit_check_falls_back_to_the_models_own_logits(cfg, tiny, mon
     assert rows[0]["path"] == "model_logits" and rows[0]["log_odds"] == pytest.approx(ind["log_odds"], abs=1e-6)
 
 
+@pytest.mark.parametrize("answer, edited", [
+    ("54.74 ± 0 cm/s^2", "68.42 ± 0 cm/s^2"),  # 68.425: the original's 4 significant digits
+    ("8541 ± 10 mm", "10676 ± 10 mm"),
+    ("v = 12.4 ± 0.8 m/s", "v = 15.5 ± 0.8 m/s"),  # after the last "="
+    ("2 ± 1 s", "2.50 ± 1 s"),  # at least 3 significant digits
+    ("0.0235 ± 0.0003 m", "0.0294 ± 0.0003 m"),
+    ("-3.2 ± 0.1 m", "-4.00 ± 0.1 m"),
+    ("1.2e-3 ± 1e-4 A", "1.50e-3 ± 1e-4 A"),  # only the mantissa of an e exponent
+    ("3.2 × 10^4 J ± 2%", "4.00 × 10^4 J ± 2%"),  # a following × 10^k is kept; a percent σ stays as written
+    ("(1.2 ± 0.1) × 10^3 m", "(1.50 ± 0.1) × 10^3 m"),
+])
+def test_perturb_scales_only_the_final_mu(answer, edited):
+    comp = f"Work: v = 12.4 m/s\n<steps>\nv = 12.4 m/s\n</steps>\n<answer>{answer}</answer>"
+    text, info = V.perturb(comp, 1.25, 3)
+    assert text == comp.replace(f"<answer>{answer}</answer>", f"<answer>{edited}</answer>")  # steps unchanged
+    a0, a1 = V.parse_completion(comp).answer, V.parse_completion(text).answer
+    assert a1.value == pytest.approx(1.25 * a0.value, rel=5e-3) and a1.sigma == a0.sigma and a1.unit == a0.unit
+
+
+def test_perturb_excludes_what_it_cannot_scale():
+    assert V.perturb("<answer>0 ± 0 m</answer>", 1.25, 3) == (None, {"reason": "mu_zero", "old": "0"})
+    assert V.perturb("no answer", 1.25, 3)[1]["reason"] == "answer_blocks"
+    assert V.perturb("<answer>1 m</answer><answer>2 m</answer>", 1.25, 3)[1]["reason"] == "answer_blocks"
+    assert V.perturb("<answer>about ten m</answer>", 1.25, 3)[1]["reason"] == "no_number"
+    assert V.perturb("<answer>1,250 ± 3 m</answer>", 1.25, 3)[1]["reason"] == "reparse_mismatch"  # thousands sep.
+
+
+def test_perturb_on_the_real_x2_answers():
+    its, _ = V.items(V._config())
+    out = [(it, *V.perturb(it["completion"], 1.25, 3)) for it in its]
+    bad = [info["reason"] for _, t, info in out if t is None]
+    assert bad == ["mu_zero"]  # D91: excluded and counted
+    for it, t, info in out[::37]:
+        if t is not None:
+            i = it["completion"].index("<answer>")
+            assert t[:i] == it["completion"][:i] and t != it["completion"]  # only the answer block changes
+
+
+def test_direct_arm_reads_right_after_the_generation_prompt(cfg, tiny, monkeypatch):
+    monkeypatch.setattr(tiny, "_generate", lambda *a: pytest.fail("direct mode must not generate"))
+    out = V.run("direct", cfg, backend=tiny, limit=8)
+    rows = V.read_rows("direct", cfg)
+    its, _ = V.items(cfg)
+    assert out["n_rows"] == 8 and len(rows) == 8
+    for r, it in zip(rows, its):
+        assert r["gen_tokens"] == 0 and r["generation"] == "" and r["mode"] == "direct" and not r["truncated"]
+        assert r["context_tokens"] == r["prompt_tokens"] + len(tiny.tok(cfg["reading"]["marker"],
+                                                                         add_special_tokens=False)["input_ids"])
+        ind = _context_reading(tiny, cfg, it["problem"]["text"], it["completion"], "")
+        assert r["log_odds"] == pytest.approx(ind["log_odds"], abs=1e-4)
+    meta = json.loads((V.arm_dir("direct", cfg) / "meta.json").read_text())
+    assert meta["mode"] == "direct" and meta["perturb_factor"] is None
+
+
+def test_perturbed_arm_shows_the_scaled_answer_and_keeps_the_label(cfg, tiny):
+    V.run("perturbed", cfg, backend=tiny, limit=8)
+    rows = V.read_rows("perturbed", cfg)
+    its, _ = V.items(cfg)
+    assert len(rows) == 8
+    for r, it in zip(rows, its):
+        text, info = V.perturb(it["completion"], 1.25, cfg["perturb"]["min_sig_digits"])
+        assert r["correct"] == it["correct"] and r["mu_text"] == [info["old"], info["new"]] and "mode" not in r
+        assert r["shown_key"] == r["key"]
+        ind = _context_reading(tiny, cfg, it["problem"]["text"], text, r["generation"])
+        assert r["log_odds"] == pytest.approx(ind["log_odds"], abs=1e-4)
+    meta = json.loads((V.arm_dir("perturbed", cfg) / "meta.json").read_text())
+    assert meta["perturb_factor"] == 1.25 and meta["excluded"] == [] and meta["mode"] == "recompute"
+
+
+def test_the_sft_rows_are_unchanged_by_d91(cfg, tiny):
+    """D91 adds arms; an sft row has exactly D89's fields (the main stage ran on the D89 code)."""
+    V.run("sft", cfg, backend=tiny, limit=4)
+    r = V.read_rows("sft", cfg)[0]
+    assert set(r) == {"arm", "key", "sample", "shown_key", "correct", "log_odds", "p_yes", "p_yes_raw", "p_no_raw",
+                      "top_token", "path", "natural_verdict", "prompt_tokens", "gen_tokens", "truncated",
+                      "context_tokens", "generation"}
+    assert "mode" not in json.loads((V.arm_dir("sft", cfg) / "meta.json").read_text())
+
+
 # ------------------------------------------------------------------------------------------- the analysis
 def _write_rows(cfg, arm, conf, keys=None):
     """Synthetic rows for an arm: conf(item) gives the log-odds."""

@@ -15,7 +15,17 @@ arms:                                  # D89: the same conversations, scored on 
   random_init:                         # control: X2's random-init model (seed 0), loaded the same way
     model_dir: results/x2/random_init_model
     donor: false
-order: [sft, shuffled, random_init]    # GPU order (D89)
+  direct:                              # D91: the SFT model read right after the generation prompt (no recomputation)
+    model_dir: results/sft/qwen2.5-math-1.5b-instruct/merged
+    donor: false
+    mode: direct                       # recompute (the default: D89) or direct
+  perturbed:                           # D91 control: the SFT model, recompute mode, the answer's final mu x factor
+    model_dir: results/sft/qwen2.5-math-1.5b-instruct/merged
+    donor: false
+    perturb_factor: 1.25               # sigma, unit and steps unchanged; the label stays the original answer's
+perturb:
+  min_sig_digits: 3                    # the new mu keeps the original's significant digits, at least this many
+order: [sft, direct, perturbed, shuffled, random_init]   # GPU order (D91)
 generation:                            # the recomputation: greedy, the answers' own budget
   max_new_tokens: 512
   batch_size: 16                       # conversations per generate call (2 problems x 8 answers); OOM halves it
@@ -41,7 +51,7 @@ reading:
 analysis:
   bootstrap: 10000                     # over problems (X2's)
   seed: 0
-  alpha: 0.05                          # Holm over the three arms' "> 0.5" tests
+  alpha: 0.05                          # Holm over the five arms' "> 0.5" tests (D91)
   probe_check_atol: 1.0e-9             # the X2 probe must reproduce results/x2/results.json (the same pairs)
   recompute_tolerance: 0.01            # exploratory recomputation agreement: |mu_re / mu - 1| <= 1%
 output_dir: results/x4                 # <arm>/rows.jsonl + meta.json; x2_reference.json; results.json, summary.md
