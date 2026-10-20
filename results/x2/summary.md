@@ -7,7 +7,7 @@
 | method | pairwise accuracy [95% CI] | p (> 0.5) | Holm | ties / missing |
 |---|---|---|---|---|
 | 1. stated σ, SFT | 0.499 [0.474, 0.524] | 0.54 | not supported | 8.9% |
-| 2. stated σ, split credit seed 0 @287 | missing | – | not supported (p = 1) | – |
+| 2. stated σ, split credit seed 0 @287 | 0.491 [0.461, 0.521] | 0.728 | not supported | 0.4% |
 | 3. A5 p channel (4-bit) | 0.497 [0.481, 0.514] | 0.63 | not supported | 64.2% |
 | 4. problem-text-only (check: must be 0.5) | 0.500 [0.500, 0.500] | 1 | – | 100.0% |
 | 5. hidden-state probe (SFT, 4-bit) | 0.547 [0.520, 0.574] | 0.0001 | supported | 0.5% |
@@ -24,6 +24,7 @@
 | method | depth 1 | depth 2 | depth 3 | depth 4 |
 |---|---|---|---|---|
 | 1. stated σ, SFT | 0.497 (n 109) | 0.460 (n 137) | 0.509 (n 137) | 0.530 (n 133) |
+| 2. stated σ, split credit seed 0 @287 | 0.506 (n 109) | 0.471 (n 137) | 0.467 (n 137) | 0.524 (n 133) |
 | 3. A5 p channel (4-bit) | 0.507 (n 109) | 0.492 (n 137) | 0.498 (n 137) | 0.493 (n 133) |
 | 4. problem-text-only (check: must be 0.5) | 0.500 (n 109) | 0.500 (n 137) | 0.500 (n 137) | 0.500 (n 133) |
 | 5. hidden-state probe (SFT, 4-bit) | 0.544 (n 109) | 0.539 (n 137) | 0.529 (n 137) | 0.577 (n 133) |
