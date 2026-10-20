@@ -2796,3 +2796,32 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **`sft`** starts at once with the tested D89/D90 code: a frozen copy of `scripts/queue_x4.sh` with only its `sft`
     stage. Its soft limit is the time left − 1 h (for `direct`).
   - **The rest** are built and CPU-tested while `sft` runs, then chained to start when its PID exits.
+
+### D92. X2 robustness checks: post-hoc and exploratory (your instructions, 2026-10-20 night; CPU only; defined before computing)
+- **Status:** not pre-registered. Every number from this entry is labelled post-hoc/exploratory and cannot change any
+  D74 (X2) or D89/D91 (X4) verdict.
+- **The data:** X2's 516 kept problems and 5,390 pairs; X2's per-answer confidences, recomputed with X2's own code
+  (`x2_analysis`). They must reproduce `results/x2/results.json` to 1e-9, or the check refuses to run. Code:
+  `physcal/eval/x2_robustness.py`; outputs in `results/x2/robustness/`.
+- **a. Clearly separated pairs:**
+  - **Which pairs:** the correct answer has |relative error| ≤ 0.25% and the incorrect one ≥ 10%. Both are
+    thresholds on the verifier's `abs_rel_error`, in config.
+  - **The metric:** pairwise accuracy as in X2. Per problem, the mean over its separated pairs (ties 0.5); the mean
+    over the problems that have at least one such pair.
+  - **Reported for:** every X2 method, the two new baselines (b, c) and, once their rows exist, the X4 arms.
+- **b. Completion length:**
+  - **Right vs wrong:** completion length in tokens (the SFT tokenizer), for correct and for incorrect answers.
+    Reported: the pooled means, and the within-problem difference (per problem, mean correct − mean incorrect,
+    averaged over problems).
+  - **The length-only baseline:** confidence = −length (shorter = more confident), X2's pairwise accuracy. The
+    opposite direction is 1 − that (the ties are the same).
+- **c. Self-consistency baseline:** confidence = the fraction of the problem's other 7 samples whose parsed μ agrees
+  with this answer within 1% (|μ_j / μ_i − 1| ≤ 1%, SI). An unparsed sample never agrees. X2's pairwise accuracy.
+- **d. X2's CIs, problem-level cluster bootstrap:**
+  - **What X2 already did:** X2's published CIs (`x2_pairs.summarize`, `x2_analysis.paired`) already resample
+    problems: the per-problem accuracy, mean over problems.
+  - **What is recomputed:** those numbers (they must match), and the pooled pair-weighted pairwise accuracy (all
+    pairs, each pair weighing the same) with a cluster bootstrap over problems: problems resampled with all their
+    pairs.
+- **Uncertainty everywhere:** a bootstrap over problems, B = 10,000, seed 0. The one-sided p for "> 0.5" is
+  reported, with no Holm family: exploratory.
