@@ -1064,3 +1064,39 @@ answers above its wrong ones.
   - **Rows:** `results/x4/<arm>/rows.jsonl` and `meta.json`.
   - **Results:** `results/x4/results.json`, `summary.md`.
   - **Queue:** `results/queue_x4/` (D90, D91, D96).
+
+## #22. X2 robustness (post-hoc, exploratory, D92): asking the other 7 samples beats every single-sample readout within problems; clearly separated pairs sharpen the ranking but change no verdict; X2's CIs were already problem-level (2026-10-21 night)
+
+**Status:** post-hoc; it cannot change a D74 or D89/D91 verdict. All eight X2 methods were recomputed with X2's own code
+and reproduce `results/x2/results.json` exactly. The random-init and cross-fitted probes needed X2's thread settings
+(D96). CIs: bootstrap over problems.
+
+| method | X2 pairwise acc. | pooled pair-weighted | separated pairs only (158 problems, 719 pairs) |
+|---|---|---|---|
+| **self-consistency:** share of the other 7 samples within 1% | **0.643 [0.616, 0.671]** | 0.681 [0.654, 0.708] | **0.861 [0.820, 0.901]** |
+| hidden-state probe (SFT) | 0.547 [0.520, 0.574] | 0.553 [0.526, 0.580] | 0.635 [0.570, 0.697] |
+| hidden-state probe (random init) | 0.530 [0.503, 0.557] | 0.535 [0.509, 0.561] | 0.584 [0.523, 0.645] |
+| length only (shorter = more confident) | 0.535 [0.511, 0.559] | 0.547 [0.524, 0.569] | 0.607 [0.549, 0.663] |
+| X4 `sft` (self-verification) | 0.524 [0.498, 0.550] | 0.513 [0.489, 0.539] | 0.544 [0.485, 0.603] |
+| SFT stated σ | 0.499 [0.474, 0.524] | 0.496 [0.472, 0.520] | 0.501 [0.442, 0.558] |
+| A5 p | 0.497 [0.481, 0.514] | 0.499 [0.482, 0.515] | 0.516 [0.470, 0.563] |
+
+- **a. Clearly separated pairs** (right ≤ 0.25%, wrong ≥ 10%): every readout with some signal gains, the probe
+  0.547 → 0.635. But the probe's lead over the random-init probe stays within noise (0.635 vs 0.584), and the stated σ
+  and A5 p stay at 0.50. The X2 reading does not depend on near-miss pairs.
+- **b. Length:**
+  - **Pooled,** correct answers are 17 tokens shorter (186 vs 203).
+  - **Within problems,** the difference is only −1.8 [−2.7, −1.0] tokens, and the correct answers are shorter in 55%
+    of problems.
+  - **As a baseline,** length alone reaches 0.535, statistically indistinguishable from the probe
+    (−0.012 [−0.045, +0.021]).
+- **c. Self-consistency** (ChatGPT's "independent re-solve"; it costs 8 samples per problem at inference):
+  - **The strongest within-problem signal in the project,** +0.096 [+0.058, +0.133] above the probe.
+  - **The likely reason:** right answers cluster; wrong answers scatter.
+  - **It needs the other samples:** it is not something the single answer, its σ or its hidden state carries.
+- **d. CIs:** X2's published CIs already resampled problems (the recomputed ones match to 3 decimals). The pooled
+  pair-weighted version gives the same picture.
+- **Provenance:**
+  - **Code and config:** `physcal/eval/x2_robustness.py`, `configs/x2_robustness.yaml`.
+  - **Results:** `results/x2/robustness/` (`results.json`, `summary.md`, the logs, including the 1-thread run the
+    reproduction check refused).
