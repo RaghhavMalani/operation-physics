@@ -10,7 +10,11 @@ A6b (`kind: invariance` in the construction) uses power-law templates only, wher
 on the values. Its two worlds differ in the target's magnitude (≥ `min_target_ratio`), and each pair is checked by
 MC to have the same σ*.
 
-    nice uv run python -m physcal.env.pairs export [a6|a6b]  # data/eval_sets/<version>/a6_pairs.jsonl / a6b_pairs.jsonl
+A6c (`kind: allocation`, D95) keeps one chain, one world and the same displayed values, and swaps which given
+carries the high noise level h (every other given has l): member lo puts h where it moves σ* least, member hi where
+it moves σ* most (delta method, ≥ `min_ratio`). The visible percentages are the same multiset; σ* differs.
+
+    nice uv run python -m physcal.env.pairs export [a6|a6b|a6c]  # data/eval_sets/<version>/a6{,b,c}_pairs.jsonl
 
 Pair members get problem seed 2·pair_seed + member_index (0 = lo, 1 = hi); `noise.pair` stores the pair seed, the
 member and the construction config, so `generator.regenerate` replays them exactly.
@@ -46,6 +50,8 @@ def generate_pair(family: str, depth: int, pair_seed: int, noise: float, env_cfg
     """The (lo, hi) pair for this seed, or None if no chain within `max_chains` qualifies."""
     if construction.get("kind") == "invariance":
         return _invariance_pair(family, depth, pair_seed, noise, env_cfg, construction)
+    if construction.get("kind") == "allocation":
+        return _allocation_pair(family, depth, pair_seed, noise, env_cfg, construction)
     check_split(family, depth, "eval", env_cfg)
     gen = env_cfg["generator"]
     ncfg = gen.get("noise")
@@ -180,11 +186,89 @@ def _invariance_pair(family: str, depth: int, pair_seed: int, noise: float, env_
     return None
 
 
-def _member(fam, chain, world, kappa, noise, z, zmc, units, target_unit, env_cfg, version, family, depth, pair_seed,
-            idx, meta, stream, t) -> Problem | None:
+def _allocation_pair(family: str, depth: int, pair_seed: int, noise: float, env_cfg: dict,
+                     construction: dict) -> tuple[Problem, Problem] | None:
+    """A6c (D95): the high level h on the given where it moves σ* least (lo) or most (hi), l on every other given;
+    one chain and world, identical displayed values (member hi's true givens are backed out of them with the same
+    z). None if no chain within `max_chains` qualifies."""
+    check_split(family, depth, "eval", env_cfg)
     gen = env_cfg["generator"]
-    e = noise * z
-    shown = [render.measured_in_unit(fam.quantities[g], world[g], float(e[i]), noise, units[g], gen["display"],
+    ncfg = gen.get("noise")
+    lo_level, hi_level = construction["levels"]
+    if ncfg is None or not 0.0 < lo_level < hi_level or noise != hi_level or \
+            not {lo_level, hi_level} <= set(ncfg["levels"]):
+        raise ValueError(f"A6c pairs need noisy levels l < h = noise of generator >= 2.0.0, got {construction['levels']}"
+                         f" with noise {noise}")
+    version = generator_version(env_cfg)
+    pv = pair_version(construction)
+    stream = lambda name: problem_rng(version, family, depth, pair_seed, f"pair|{pv}|{name}")
+    fam = get_family(family)
+    rng_chain, rng_world = stream("chain"), stream("world")
+    step, max_kappa = gen["condition_rel_step"], gen["max_condition_number"]
+
+    def valid(true: dict) -> float | None:  # κ if the chain is finite, positive and conditioned at these givens
+        out = fam.evaluate_chain(chain, true)
+        if not all(math.isfinite(v) and v > 0 for v in out.values()):
+            return None
+        kappa = fam.condition_number(chain, true, step)
+        return kappa if kappa <= max_kappa else None
+
+    for t in range(construction["max_chains"]):
+        chain = fam.sample_chain(depth, rng_chain)
+        if len(chain.givens) < 2:
+            continue
+        found = None
+        for _ in range(construction["candidate_worlds"]):
+            world = fam.sample_world(rng_world, gen["max_world_tries"])
+            kappa = valid({g: world[g] for g in chain.givens})
+            if kappa is not None:
+                found = (world, kappa)
+                break
+        if found is None:
+            continue
+        world, kappa = found
+        sens = noise_mode.log_sensitivities(fam, chain, {g: world[g] for g in chain.givens}, step)
+        alloc = lambda j: {g: (hi_level if g == j else lo_level) for g in chain.givens}
+        ds = [(noise_mode.delta_sigma_log(sens, alloc(g)), i, g) for i, g in enumerate(chain.givens)]
+        lo = min(ds)  # ties: the earlier given
+        hi = max(ds, key=lambda x: (x[0], -x[1]))
+        if hi[0] < construction["min_ratio"] * lo[0]:
+            continue
+        z = stream(f"z|{t}").standard_normal(len(chain.givens))
+        zmc = stream(f"mc|{t}").standard_normal((len(chain.givens), ncfg["n_mc"]))
+        rng_units = stream(f"units|{t}")
+        units = {g: render.choose_unit(fam.quantities[g], world[g], rng_units, tuple(gen["display"]["magnitude_range"]))
+                 for g in chain.givens}
+        lv_lo, lv_hi = alloc(lo[2]), alloc(hi[2])
+        measured = {g: world[g] * (1.0 + lv_lo[g] * float(z[i])) for i, g in enumerate(chain.givens)}
+        world_hi = {**world, **{g: measured[g] / (1.0 + lv_hi[g] * float(z[i])) for i, g in enumerate(chain.givens)}}
+        kappa_hi = valid({g: world_hi[g] for g in chain.givens})
+        if kappa_hi is None:
+            continue
+        meta = {"pair_seed": pair_seed, "pair_version": pv, "construction": construction, "chain_try": t,
+                "kind": "allocation", "delta_ratio": hi[0] / lo[0]}
+        members: list[Problem] = []
+        for idx, (w, k, lv, g_hi) in enumerate(((world, kappa, lv_lo, lo[2]), (world_hi, kappa_hi, lv_hi, hi[2]))):
+            target_unit = members[0].target_unit if members else None
+            p = _member(fam, chain, w, k, noise, z, zmc, units, target_unit, env_cfg, version, family, depth,
+                        pair_seed, idx, {**meta, "high_given": g_hi}, stream, t, levels=lv, distractor_level=lo_level)
+            if p is None:
+                break
+            members.append(p)
+        shown = lambda m: [(g["display"], g["unit"]) for g in m.givens]
+        if len(members) == 2 and shown(members[0]) == shown(members[1]):  # identical displayed values (D95)
+            return members[0], members[1]
+    return None
+
+
+def _member(fam, chain, world, kappa, noise, z, zmc, units, target_unit, env_cfg, version, family, depth, pair_seed,
+            idx, meta, stream, t, levels: dict | None = None, distractor_level: float | None = None) -> Problem | None:
+    """One pair member. `levels` (A6c, D95): per-given noise levels instead of `noise` for every given, with the
+    distractors shown at `distractor_level`; None (A6, A6b) leaves this path exactly as it was."""
+    gen = env_cfg["generator"]
+    e = noise * z if levels is None else np.array([levels[g] for g in chain.givens]) * z
+    lv = {g: noise for g in chain.givens} if levels is None else levels
+    shown = [render.measured_in_unit(fam.quantities[g], world[g], float(e[i]), lv[g], units[g], gen["display"],
                                      gen["noise"]["sig_figs"]) for i, g in enumerate(chain.givens)]
     truth_givens = {g: world[g] for g in chain.givens}
     outputs = fam.evaluate_chain_with_units(chain, truth_givens)
@@ -192,11 +276,13 @@ def _member(fam, chain, world, kappa, noise, z, zmc, units, target_unit, env_cfg
     outputs_meas = fam.evaluate_chain(chain, measured)
     if not all(math.isfinite(v) and v > 0 for v in list(outputs.values()) + list(outputs_meas.values())):
         return None
-    log_draws = noise_mode.predictive(fam, chain, measured, {g: noise for g in chain.givens}, zmc)
+    log_draws = noise_mode.predictive(fam, chain, measured, lv, zmc)
     if log_draws is None:
         return None
     # identical distractors and phrasing for both members: fresh streams with the same seeds
-    distractors = _sample_distractors(fam, stream(f"distractors|{t}"), gen, noise, stream(f"distractor-noise|{t}"))
+    distractors = _sample_distractors(fam, stream(f"distractors|{t}"), gen,
+                                      noise if distractor_level is None else distractor_level,
+                                      stream(f"distractor-noise|{t}"))
     target_q = fam.quantities[chain.target]
     target_si = outputs[chain.target]
     if target_unit is None:
@@ -206,6 +292,11 @@ def _member(fam, chain, world, kappa, noise, z, zmc, units, target_unit, env_cfg
                               stream(f"render|{t}"), gen["display"], render.no_steps_template(gen["version"]),
                               render.noise_note(gen["version"]))
     info = noise_record(fam, chain, gen, noise, world, e, measured, outputs, outputs_meas, log_draws)
+    if levels is not None:  # D95: the per-given levels (noise_record writes `noise` for every given)
+        for g in chain.givens:
+            info["givens"][g]["rel"] = levels[g]
+        info["sigma_star_log_delta"] = noise_mode.delta_sigma_log(
+            noise_mode.log_sensitivities(fam, chain, measured, gen["condition_rel_step"]), levels)
     info["pair"] = {**meta, "member": MEMBERS[idx], "member_index": idx}
     return Problem(
         text=text, target_symbol=chain.target, target_desc=target_q.desc, target_value_si=target_si,
@@ -221,20 +312,35 @@ def _member(fam, chain, world, kappa, noise, z, zmc, units, target_unit, env_cfg
 
 # ------------------------------------------------------------------------------------------- export
 SETS = {"a6": ("construction", "export", "a6_pairs"),
-        "a6b": ("invariance_construction", "invariance_export", "a6b_pairs")}
+        "a6b": ("invariance_construction", "invariance_export", "a6b_pairs"),
+        "a6c": ("allocation_construction", "allocation_export", "a6c_pairs")}
+
+
+def cell_construction(which: str, level, pcfg: dict) -> tuple[dict, float]:
+    """The construction stored in a cell's problems and the `noise` passed to generate_pair. A6c: a cell's level is
+    a pair [l, h]; its construction carries them (`levels`) and noise = h (D95)."""
+    con = pcfg[SETS[which][0]]
+    if which == "a6c":
+        return {**con, "levels": [float(level[0]), float(level[1])]}, float(level[1])
+    return con, level
+
+
+def _level_name(level) -> str:
+    return f"{level[0]:g}-{level[1]:g}" if isinstance(level, (list, tuple)) else f"{level:g}"
 
 
 def _attempt(args: tuple) -> tuple:
     cell, i, family, depth, level, pair_seed, which = args
     pcfg = load_config("pairs")
-    pair = generate_pair(family, depth, pair_seed, level, load_config(pcfg["env_config"]), pcfg[SETS[which][0]])
+    con, noise = cell_construction(which, level, pcfg)
+    pair = generate_pair(family, depth, pair_seed, noise, load_config(pcfg["env_config"]), con)
     return cell, i, None if pair is None else [p.to_dict() for p in pair]
 
 
 def _families(which: str, depth: int, pcfg: dict, env: dict) -> list[str]:
-    """A6: every configured family. A6b: only families with power-law templates at this depth."""
+    """A6, A6c: every configured family. A6b: only families with power-law templates at this depth."""
     fams = pcfg[SETS[which][1]]["families"]
-    if which == "a6":
+    if which in ("a6", "a6c"):
         return fams
     return [f for f in fams if power_law_chains(f, depth, pcfg[SETS[which][0]], env["generator"])]
 
@@ -256,24 +362,28 @@ def export(which: str = "a6") -> dict:
         failed = sum(1 for r in results if r[0] == c and r[1] < tried and r[2] is None)
         pairs += [r[2] for r in got]
         ratios = [p[1]["noise"]["sigma_star_log"] / p[0]["noise"]["sigma_star_log"] for _, _, p in got]
-        report[f"d{d}/s{lv:g}"] = {"pairs": len(got), "seeds_tried": tried, "seeds_without_pair": failed,
+        report[f"d{d}/s{_level_name(lv)}"] = {"pairs": len(got), "seeds_tried": tried, "seeds_without_pair": failed,
                                    "families": {f: sum(p[0]["family"] == f for _, _, p in got) for f in ex["families"]},
                                    "mc_ratio_median": float(np.median(ratios)) if ratios else None,
                                    "mc_ratio_min": float(np.min(ratios)) if ratios else None}
         if which == "a6b":
             tr = [p[0]["noise"]["pair"]["target_ratio"] for _, _, p in got]
             lr = [abs(p[0]["noise"]["pair"]["log_sigma_ratio_mc"]) for _, _, p in got]
-            report[f"d{d}/s{lv:g}"].update(
+            report[f"d{d}/s{_level_name(lv)}"].update(
                 target_ratio_median=float(np.median(tr)) if tr else None,
                 max_abs_log_sigma_ratio_mc=float(np.max(lr)) if lr else None,
                 mc_rejected=sum(p[0]["noise"]["pair"]["mc_rejected_before"] for _, _, p in got),
                 eligible_families=fams[d])
+        if which == "a6c":
+            dr = [p[0]["noise"]["pair"]["delta_ratio"] for _, _, p in got]
+            report[f"d{d}/s{_level_name(lv)}"].update(delta_ratio_median=float(np.median(dr)) if dr else None,
+                                                      delta_ratio_min=float(np.min(dr)) if dr else None)
     version = generator_version(env)
     out = REPO_ROOT / "data" / "eval_sets" / version
     out.mkdir(parents=True, exist_ok=True)
     blob = "".join(json.dumps(p, sort_keys=True) + "\n" for pair in pairs for p in pair)
     (out / f"{name}.jsonl").write_text(blob)
-    manifest = {"generator_version": version, "pair_version": pair_version(pcfg[con_key]),
+    manifest = {"generator_version": version, "pair_version": pair_version(pcfg[con_key]),  # A6c: + levels per cell
                 "construction": pcfg[con_key], "export": ex, "n_pairs": len(pairs), "n_problems": 2 * len(pairs),
                 "sha256": hashlib.sha256(blob.encode()).hexdigest(), "cells": report}
     (out / f"{name}_manifest.json").write_text(json.dumps(manifest, indent=2))

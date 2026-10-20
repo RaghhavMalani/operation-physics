@@ -14,6 +14,11 @@ A6b (D59, invariance pairs, relative σ* equal within each pair): the same y reg
 propagation predicts slope ≈ 0 (TOST with margin δ: the 90% bootstrap CI inside [−δ, δ]), a fixed absolute σ ≈ −1.
 `joint` gives the two-sided propagation verdict: "propagates" iff A6 is supported and A6b is equivalent to 0.
 
+A6c (D95, noise-allocation pairs: the same displayed values and level multiset, the high level moved): y on
+x = Δ ln σ*, primary on all pairs with both σ parsed (no selection on correctness, R3-6), one-sided slope > 0; also
+the computation-correct pairs, mean y > 0 and the through-origin slope. "Copy the largest / mean / RSS percentage"
+gives y = 0 on every pair.
+
 Slope labels (D61, D64): the A6 primary slope's 90% CI (`label_ci_level`) gives "full propagation" (excludes 0,
 contains 1), "partial propagation" (inside (0, 1)), "over-propagation" (above 1), "no propagation" (contains 0) or
 "anti-propagation" (below 0). `joint` reports a labelled verdict with these labels in place of "slope > 0", next to
@@ -88,6 +93,19 @@ def slope_test(pairs: list[dict], n_boot: int, seed: int, regressor: str = "sigm
             "share_dy_positive": float(np.mean(y > 0))}
 
 
+def mean_test(pairs: list[dict], n_boot: int, seed: int) -> dict:
+    """A6c secondary (D95): mean y = Δ ln σ_stated > 0 and the through-origin slope Σxy / Σx², pairs bootstrap."""
+    if len(pairs) < 3:
+        return {"n_pairs": len(pairs), "mean_dy": None, "through_origin_slope": None}
+    x = np.array([_x(p, "sigma_star") for p in pairs])
+    y = np.array([p["hi"]["stated_log"] - p["lo"]["stated_log"] for p in pairs])
+    idx = np.random.default_rng(seed).integers(0, len(x), (n_boot, len(x)))
+    my, so = y[idx].mean(axis=1), (x[idx] * y[idx]).sum(axis=1) / (x[idx] ** 2).sum(axis=1)
+    return {"n_pairs": len(pairs), "mean_dy": float(y.mean()), "mean_dy_ci95": np.percentile(my, [2.5, 97.5]).tolist(),
+            "p_mean_dy_gt_0": float(np.mean(my <= 0)), "through_origin_slope": float((x * y).sum() / (x * x).sum()),
+            "through_origin_ci95": np.percentile(so, [2.5, 97.5]).tolist(), "mean_dx": float(x.mean())}
+
+
 def slope_label(ci: list[float] | None) -> str | None:
     """D61 / D64 label of an A6 slope from its CI (endpoints count as contained)."""
     if ci is None:
@@ -123,6 +141,14 @@ def analyze_rows(rows: list[dict], cfg: dict, inv_cfg: dict | None = None) -> di
                    supported=primary_test["p_one_sided"] is not None and primary_test["p_one_sided"] < cfg["alpha"],
                    secondary_all_answered=slope_test(both_ok, nb, seed),
                    sensitivity_no_sigma_zero=slope_test(no_zero, nb, seed))
+        return out
+    if kind == "allocation":  # A6c (D95): all answered pairs primary (R3-6); slope on Δ ln σ* > 0
+        primary_test = slope_test(both_ok, nb, seed, ci_level=cfg["label_ci_level"])
+        out.update(primary_all_answered=primary_test, label=slope_label(primary_test["ci"]),
+                   supported=primary_test["p_one_sided"] is not None and primary_test["p_one_sided"] < cfg["alpha"],
+                   secondary_computation_correct=slope_test(primary, nb, seed), secondary_mean=mean_test(both_ok, nb, seed),
+                   sensitivity_no_sigma_zero=slope_test([p for p in both_ok if not (p["lo"]["sigma_zero"] or
+                                                                                    p["hi"]["sigma_zero"])], nb, seed))
         return out
     # A6b (D59): slope on Δ ln truth equivalent to 0 (TOST)
     delta, lvl = inv_cfg["equivalence_margin"], inv_cfg["ci_level"]
@@ -182,7 +208,7 @@ def main() -> None:
     paths = [Path(p) if Path(p).is_absolute() else REPO_ROOT / p for p in args.paths]
     if args.action == "analyze":
         res = analyze(paths[0], args.split)
-        name = f"{'a6' if res['kind'] == 'sensitivity' else 'a6b'}_pairs_analysis.json"
+        name = f"{ {'sensitivity': 'a6', 'invariance': 'a6b', 'allocation': 'a6c'}[res['kind']] }_pairs_analysis.json"
         out = Path(args.out) if args.out else paths[0].parent
     else:
         res = joint(json.loads(paths[0].read_text()), json.loads(paths[1].read_text()))

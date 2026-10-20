@@ -1,5 +1,6 @@
 """D50/A6 sensitivity pairs and D59/A6b invariance pairs: construction, exact replay, and the analyses on synthetic
-answers (A6: an honest propagator gives slope ≈ 1, a lookup ≈ 0; A6b: relative σ ≈ 0, a fixed absolute σ ≈ −1)."""
+answers (A6: an honest propagator gives slope ≈ 1, a lookup ≈ 0; A6b: relative σ ≈ 0, a fixed absolute σ ≈ −1).
+D95/A6c noise-allocation pairs: the same displayed values and level multiset, the high level moved."""
 
 import json
 import math
@@ -49,7 +50,7 @@ def test_pairs_replay_exactly(tmp_path):
     assert replay(path).ok
 
 
-@pytest.mark.parametrize("name", ["a6_pairs", "a6b_pairs"])
+@pytest.mark.parametrize("name", ["a6_pairs", "a6b_pairs", "a6c_pairs"])
 def test_frozen_pair_set_regenerates(name):
     root = REPO_ROOT / "data" / "eval_sets" / generator_version(ENV)
     if not (root / f"{name}.jsonl").exists():
@@ -168,3 +169,53 @@ def test_a6_labels_and_labelled_joint_verdict():
     j = joint(anti, rel)  # the D59 verdict is still reported alongside
     assert j["verdict"] == "no propagation (lookup-like)" and j["A6_label"] == "anti-propagation"
     assert j["table"][0]["label_ci"] == anti["primary_computation_correct"]["ci"]
+
+
+# ------------------------------------------------------------------------------------------- D95: A6c
+from physcal.env.pairs import cell_construction  # noqa: E402
+
+PCT = lambda s: re.sub(r"± \d+(\.\d+)?%", "± p%", s)
+
+
+@pytest.mark.parametrize("family,depth,levels", [("energy", 2, [0.01, 0.05]), ("dynamics", 4, [0.01, 0.02]),
+                                                 ("kinematics", 1, [0.02, 0.05]), ("kinematics", 5, [0.01, 0.05])])
+def test_allocation_pair_moves_only_the_high_level(family, depth, levels):
+    con, noise = cell_construction("a6c", levels, PC)
+    pair = next(p for p in (generate_pair(family, depth, 2_000_000_000 + i, noise, ENV, con) for i in range(10)) if p)
+    lo, hi = pair
+    assert lo.chain == hi.chain and lo.text != hi.text and PCT(lo.text) == PCT(hi.text)  # only the "± p%" differ
+    assert [(g["display"], g["unit"]) for g in lo.givens] == [(g["display"], g["unit"]) for g in hi.givens]
+    assert lo.distractors == hi.distractors and {d["noise_rel"] for d in lo.distractors} <= {levels[0]}
+    rel = lambda p: {g: v["rel"] for g, v in p.noise["givens"].items()}
+    assert sorted(rel(lo).values()) == sorted(rel(hi).values())  # the same multiset of visible levels
+    assert [g for g in rel(lo) if rel(lo)[g] == levels[1]] == [lo.noise["pair"]["high_given"]]
+    assert [g for g in rel(hi) if rel(hi)[g] == levels[1]] == [hi.noise["pair"]["high_given"]]
+    assert lo.noise["pair"]["high_given"] != hi.noise["pair"]["high_given"]
+    assert lo.noise["level"] == hi.noise["level"] == levels[1] and lo.noise["pair"]["construction"]["levels"] == levels
+    assert lo.noise["point_estimate_si"] == hi.noise["point_estimate_si"]  # the same measured values, the same f(x)
+    assert hi.noise["pair"]["delta_ratio"] >= con["min_ratio"]
+    assert hi.noise["sigma_star_log_delta"] / lo.noise["sigma_star_log_delta"] == pytest.approx(
+        hi.noise["pair"]["delta_ratio"], rel=0.05)  # at the measured vs the true givens
+    assert hi.noise["sigma_star_log"] > lo.noise["sigma_star_log"]  # MC
+    z = lambda p: {g: v["e"] / rel(p)[g] for g, v in p.noise["givens"].items()}
+    assert z(lo) == pytest.approx(z(hi))  # the same standardized errors
+    for m in pair:
+        assert regenerate(m.to_dict(), ENV).to_dict() == m.to_dict()
+
+
+def test_allocation_pair_checks_its_levels():
+    con, _ = cell_construction("a6c", [0.01, 0.05], PC)
+    with pytest.raises(ValueError):
+        generate_pair("energy", 2, 2_000_000_000, 0.02, ENV, con)  # noise must be h
+    with pytest.raises(ValueError):
+        generate_pair("energy", 2, 2_000_000_000, 0.05, ENV, {**con, "levels": [0.05, 0.01]})
+    assert cell_construction("a6", 0.02, PC) == (PC["construction"], 0.02)  # A6 / A6b cells are unchanged
+
+
+def test_a6_and_a6b_members_are_unchanged_by_d95():
+    """The per-given path (levels=None) leaves A6 / A6b exactly as frozen: every 25th frozen problem regenerates."""
+    root = REPO_ROOT / "data" / "eval_sets" / generator_version(ENV)
+    for name in ("a6_pairs", "a6b_pairs"):
+        lines = (root / f"{name}.jsonl").read_text().splitlines()
+        for line in lines[::25]:
+            assert json.dumps(regenerate(json.loads(line), ENV).to_dict(), sort_keys=True) == line

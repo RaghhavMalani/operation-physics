@@ -1,0 +1,259 @@
+{
+  "generator_version": "2.0.0+bdbb2279",
+  "pair_version": "1.0.0+c40522c3",
+  "construction": {
+    "version": "1.0.0",
+    "kind": "allocation",
+    "candidate_worlds": 24,
+    "min_ratio": 1.5,
+    "max_chains": 20
+  },
+  "export": {
+    "families": [
+      "kinematics",
+      "dynamics",
+      "energy"
+    ],
+    "depths": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "levels": [
+      [
+        0.01,
+        0.05
+      ],
+      [
+        0.02,
+        0.05
+      ],
+      [
+        0.01,
+        0.02
+      ]
+    ],
+    "pairs_per_cell": 34,
+    "max_seeds_per_cell": 136,
+    "seed_offset": 2000000000,
+    "cell_seed_stride": 100000,
+    "n_jobs": 2
+  },
+  "n_pairs": 510,
+  "n_problems": 1020,
+  "sha256": "b90455b0af1f98c7282ac7817e604b9547d6a6ed5e3a919f1131a7a0892ed152",
+  "cells": {
+    "d1/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.2581505546259097,
+      "mc_ratio_min": 1.8195117167250283,
+      "delta_ratio_median": 2.3071590998898643,
+      "delta_ratio_min": 1.866215051748229
+    },
+    "d1/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.8434117399060603,
+      "mc_ratio_min": 1.528483504263751,
+      "delta_ratio_median": 1.8556500799222166,
+      "delta_ratio_min": 1.506095782398124
+    },
+    "d1/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 37,
+      "seeds_without_pair": 3,
+      "families": {
+        "kinematics": 13,
+        "dynamics": 9,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.737414220093532,
+      "mc_ratio_min": 1.5283108852443568,
+      "delta_ratio_median": 1.728020181485682,
+      "delta_ratio_min": 1.5253755326331877
+    },
+    "d2/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.9918283789155908,
+      "mc_ratio_min": 1.3708966856739944,
+      "delta_ratio_median": 1.9460244142353433,
+      "delta_ratio_min": 1.5342792501479885
+    },
+    "d2/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.8694495046425685,
+      "mc_ratio_min": 1.5280697288954186,
+      "delta_ratio_median": 1.8697397424955122,
+      "delta_ratio_min": 1.549193338286765
+    },
+    "d2/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 36,
+      "seeds_without_pair": 2,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 10,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.614696730802926,
+      "mc_ratio_min": 1.49662507730811,
+      "delta_ratio_median": 1.6086211524811407,
+      "delta_ratio_min": 1.504757082036028
+    },
+    "d3/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.3043260557318774,
+      "mc_ratio_min": 1.7148497359572554,
+      "delta_ratio_median": 2.292650076414515,
+      "delta_ratio_min": 1.7484687179418983
+    },
+    "d3/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.7872741595208232,
+      "mc_ratio_min": 1.5055541436392295,
+      "delta_ratio_median": 1.7656364147958485,
+      "delta_ratio_min": 1.5118578919341437
+    },
+    "d3/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 38,
+      "seeds_without_pair": 4,
+      "families": {
+        "kinematics": 13,
+        "dynamics": 9,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.6110505103809118,
+      "mc_ratio_min": 1.5133119113261702,
+      "delta_ratio_median": 1.603386378174159,
+      "delta_ratio_min": 1.5028714857026624
+    },
+    "d4/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.726218031743869,
+      "mc_ratio_min": 1.6809893919390104,
+      "delta_ratio_median": 2.7290344399583972,
+      "delta_ratio_min": 1.716375817453757
+    },
+    "d4/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.806651795100461,
+      "mc_ratio_min": 1.5133213489849575,
+      "delta_ratio_median": 1.7629485742798139,
+      "delta_ratio_min": 1.511857892021494
+    },
+    "d4/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 36,
+      "seeds_without_pair": 2,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 10,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.6154200032220456,
+      "mc_ratio_min": 1.4683178621123596,
+      "delta_ratio_median": 1.6356895610131381,
+      "delta_ratio_min": 1.5077664768128902
+    },
+    "d5/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 3.5584459160580453,
+      "mc_ratio_min": 1.7433235304461878,
+      "delta_ratio_median": 3.502617176845349,
+      "delta_ratio_min": 1.7700725231962093
+    },
+    "d5/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.8065117005638691,
+      "mc_ratio_min": 1.352097448164742,
+      "delta_ratio_median": 1.806368385617336,
+      "delta_ratio_min": 1.5118578921653654
+    },
+    "d5/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.5915110858900459,
+      "mc_ratio_min": 1.522870415619206,
+      "delta_ratio_median": 1.598326238925741,
+      "delta_ratio_min": 1.5280619112241038
+    }
+  }
+}

@@ -45,3 +45,27 @@ invariance_export:                  # data/eval_sets/<generator_version>/a6b_pai
 invariance_analysis:                # D59: TOST of the slope of d ln(stated sigma) on ln(target_hi / target_lo)
   equivalence_margin: 0.3
   ci_level: 0.90                    # TOST at alpha = 0.05: the 90% CI must lie inside the margin
+
+# D95/A6c (R3-5): noise-allocation pairs. Same chain, world and displayed values; the high level h sits on the given
+# where it moves sigma* least (lo) or most (hi), every other given has l. Eval only.
+allocation_construction:            # stored in every A6c problem, plus the cell's `levels: [l, h]` (replay uses the copy)
+  version: "1.0.0"
+  kind: allocation
+  candidate_worlds: 24              # world draws per chain: the first valid one (kappa <= max) is used
+  min_ratio: 1.5                    # keep a pair only if sigma*_hi / sigma*_lo (delta method) >= this (D95: not 2)
+  max_chains: 20
+allocation_export:                  # data/eval_sets/<generator_version>/a6c_pairs.jsonl
+  families: [kinematics, dynamics, energy]   # round-robin over pair seeds
+  depths: [1, 2, 3, 4, 5]
+  levels: [[0.01, 0.05], [0.02, 0.05], [0.01, 0.02]]   # (l, h) per cell, from D54's main-experiment levels
+  pairs_per_cell: 34                # 15 cells x 34 = 510 pairs = 1,020 problems
+  max_seeds_per_cell: 136
+  seed_offset: 2000000000           # disjoint from A6 (1.8e9) and A6b (1.9e9)
+  cell_seed_stride: 100000
+  n_jobs: 2                         # built while the GPU queue runs (heat)
+
+# D95 (R3-4 A): the noise heuristics (max / mean / RSS of the visible levels), scored on the frozen pair sets.
+noise_heuristics:
+  generator_version: 2.0.0+bdbb2279
+  sets: [a6_pairs, a6b_pairs, a6c_pairs]
+  output_dir: results/noise_heuristics
