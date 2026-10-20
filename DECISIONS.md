@@ -2736,3 +2736,63 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     init), against the 2% limit; a failure only switches the arm to the slower model-logits path;
   - the memory and the speed above.
 - **Launch command (09:00 is taken as the next morning's):** `nohup scripts/queue_x4.sh > results/queue_x4/nohup.log 2>&1 &`
+
+### D91. Amendment to X4 (D89): a `direct` mode, a `perturbed` control, problem-level cluster bootstrap, token cost; tonight's order (your instructions, 2026-10-20 night; written before any X4 data exists)
+- **State when written:** `results/x4/` holds only `x2_reference.json` (CPU, from X2 outputs). No X4 verification,
+  reading or score exists. Everything in D89 stands unless changed here.
+- **a. Mode `direct` (new arm `direct`):** the SFT model, the answer's own problem, the same conversation as D89 (v4
+  system prompt, problem, the completion verbatim, `x4_v1`, the generation prompt), but **no generated tokens**:
+  - **The reading context** is the generation prompt followed directly by the canonical marker `Verdict:`. That is what
+    D89's reading rule gives for an empty generation, so both modes are read at the same canonical position.
+  - **Everything else is D89's:** float32 head, the first-row logit check, the yes/no token sets, the primary log-odds
+    and the secondary raw P(yes).
+  - **The verification prompt is unchanged,** although it says "You may redo the calculation": the only difference
+    between the modes is whether the recomputation tokens exist.
+  - **Reported side by side with recompute (`sft`):** every D89 metric for both, and the paired difference
+    `sft − direct` (what the recomputation tokens add).
+- **b. Control `perturbed` (new arm `perturbed`):** the SFT model, recompute mode (as `sft`), the answer's own problem,
+  the same steps; only the final value changes.
+  - **The edit:** in the completion's single `<answer>` block, the μ number (the first number after the block's last
+    `=`, or at its start) is replaced by μ × 1.25. σ, the unit and every other character of the completion stay as
+    they were.
+  - **The new number is written** with the original's significant digits (at least 3), in the original's notation: a
+    plain decimal stays plain; with an exponent (`e`, `× 10^k`), only the mantissa changes.
+  - **Checked on every answer:** the edited completion must re-parse (the verifier's parser) to μ′ within that rounding
+    of 1.25 μ, with the same σ and unit. An answer that fails the check, or has μ = 0 (no change), is excluded from
+    `perturbed`; the count is reported.
+  - **Labels:** each answer keeps its original label, as in `shuffled`. Its scores sit on the same X2 pairs. If the
+    verifier checks the shown final value, the ranking should collapse: every originally-correct answer is now 25% off.
+  - **Also reported (secondary):**
+    - **Detection:** for originally-correct answers, the share where the `perturbed` confidence is below the `sft`
+      confidence of the same answer (ties 0.5). Mean over problems.
+    - **How many perturbed answers are correct** against the truth (an originally-wrong answer can become right).
+- **c. Uncertainty for every X4 result: a cluster bootstrap over problems.**
+  - **The resampling:** the analyzed problems (516 when complete) are resampled with replacement; B = 10,000, seed 0.
+    Each statistic is recomputed from all pairs and answers of the resampled problems. Pairs and answers are never
+    resampled on their own.
+  - **What changes:** D89's headline (per-problem accuracy, mean over problems) and its AUROC already resample problems.
+    This makes the cluster bootstrap the rule for every X4 statistic, the new ones included (detection, diagnostics,
+    token counts).
+  - **Paired differences** use the same resampled problems for both arms.
+  - **Extra inference tokens per mode,** per answer (mean, median, 95th percentile; mean with a cluster-bootstrap CI):
+    - generated tokens (`direct`: 0);
+    - total extra tokens beyond the answer's own conversation: the verification turn, the generated tokens and the
+      marker.
+- **The Holm family, extended:** "> 0.5" for `sft`, `direct`, `perturbed`, `shuffled`, `random_init`; Holm at
+  α = 0.05 over these five. An arm with no rows counts as p = 1 (D89).
+- **Comparisons:** D89's stand (`sft − X2 probe`, `sft − random_init`, `sft − shuffled`; secondary `sft − X2 SFT stated
+  σ`). Added:
+  - `sft − perturbed` (primary for the new control);
+  - `sft − direct`; `direct − X2 probe`; `direct − random_init` (secondary).
+    - The last uses the recompute-mode `random_init`. No direct-mode random-init arm runs; this is a limit, stated.
+- **Reading rules added (D89's are unchanged):**
+  - **"Final-value-sensitive":** `sft − perturbed` has a CI above 0. If not, the `sft` ranking does not depend on the
+    shown final value (the model judges the steps or the surface of the completion).
+  - **"Direct self-verification succeeds":** `direct` is Holm-supported and `direct − random_init` has a CI above 0.
+  - **"Recomputation helps":** `sft − direct` has a CI above 0.
+- **Tonight's run order (GPU deadline 11:30 IST, replacing D90's 09:00):** `sft` (recompute, main), `direct`,
+  `perturbed`, `shuffled`, `random_init`, then the CPU analysis. Later stages may not fit. Each stage runs behind a time
+  gate, and a stage cut short leaves a prefix of the kept order (D89).
+  - **`sft`** starts at once with the tested D89/D90 code: a frozen copy of `scripts/queue_x4.sh` with only its `sft`
+    stage. Its soft limit is the time left − 1 h (for `direct`).
+  - **The rest** are built and CPU-tested while `sft` runs, then chained to start when its PID exits.
