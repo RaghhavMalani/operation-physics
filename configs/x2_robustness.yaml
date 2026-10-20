@@ -1,0 +1,16 @@
+# X2 robustness checks (DECISIONS.md D92): post-hoc and exploratory, CPU only. Nothing here changes a D74 / D89 / D91
+# verdict. The pairs are X2's (configs/x2.yaml); X2's confidences are recomputed with X2's own code and must reproduce
+# results/x2/results.json.
+x2_config: x2
+x4_config: x4                          # X4 arms are added to the separated-pairs check once an arm is complete
+separated:                             # a. clearly separated pairs (verifier abs_rel_error)
+  correct_max_error: 0.0025            # the correct answer: |relative error| <= 0.25%
+  incorrect_min_error: 0.10            # the incorrect answer: |relative error| >= 10%
+self_consistency:                      # c. confidence = share of the problem's other samples agreeing with this answer
+  agree_tolerance: 0.01                # |mu_j / mu_i - 1| <= 1% (SI); an unparsed sample never agrees
+refits: true                           # refit X2's random-init probe and cross-fitted probe (CPU, minutes); else skipped
+n_jobs: 2                              # joblib workers for the refits (the GPU queue runs alongside)
+bootstrap: 10000                       # over problems
+seed: 0
+reproduce_atol: 1.0e-9                 # every recomputed X2 method must match results/x2/results.json
+output_dir: results/x2/robustness
