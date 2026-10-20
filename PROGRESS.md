@@ -670,3 +670,7 @@ Progress:
   - **Tests:** `tests/test_x4.py` (14), including a tiny CPU model end to end. Its float32 head matches the model's own
     logits (gap ~1e-7); a run resumes, also after a cut-off line; the shuffled arm shows the donor's text.
   - **Full suite:** 470 passed before the last X4 test was added; the X4 + X2 tests (24) pass on the final code.
+- [x] **Tonight's queue (D90):** prepared, dry-run, NOT launched (`scripts/queue_x4.sh`).
+  - **Order:** `sft` → `shuffled` → `random_init` → the analysis (CPU).
+  - **Settings:** a per-stage cap, measured at the stage start; soft limits that keep time for the controls.
+- [ ] **Next:** your review of D89's [REVIEW] items, then launch (by about 23:00 for all three arms to fit).

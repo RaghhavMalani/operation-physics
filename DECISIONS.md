@@ -2680,3 +2680,58 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   2. the renormalized yes-vs-no log-odds as the primary confidence (raw P(yes) as secondary);
   3. the donor rule (next kept problem in the same cell);
   4. the order of the controls.
+
+### D90. Tonight's GPU queue, 2026-10-20/21: X4, then its controls (prepared, NOT launched; `scripts/queue_x4.sh`)
+- **Your instructions (2026-10-20):** prepare, do not launch: X4 on all X2 pairs, then the controls. Deadline 09:00
+  IST.
+- **Stages:**
+  0. **Input checks:** the X2 reference, `selected.json`, the random-init and the merged SFT models. A missing input
+     is logged BLOCKED. An arm that already has rows is noted; it resumes.
+  1. **GPU: `sft`** on all 4,116 X2 answers.
+  2. **GPU: `shuffled`.**
+  3. **GPU: `random_init`.**
+  4. **CPU: the D89 analysis** (`x4_analysis analyze`, nice, 4 threads).
+- **The allocator cap, per GPU stage:** measured just before the stage (`x4_verify cap`), as D89 specifies: total −
+  `nvidia-smi` memory.used − 0.5 GiB, clipped to [4.0, 7.5].
+  - **This morning's reading:** 7.23–7.35 GiB, with 171 MiB used and nothing running.
+  - **If a host process holds VRAM tonight** (D86: 1.65 GB), the cap falls with it, and no launch-time edit is needed.
+- **Time limits.** Each arm gets a soft limit (`--minutes`: it stops cleanly between batches) and a hard timeout
+  10 min later.
+  - **The soft limits:** `sft` = time left − 4 h (kept for the two controls); `shuffled` = time left − 2 h (kept for
+    `random_init`); `random_init` = time left − 15 min.
+  - **A stage that stops early, or fails,** leaves a prefix of the kept order. Its rows are committed. D89 analyzes the
+    problems each arm completed. Rerunning the same command resumes it.
+- **One runtime detail added to D89's "an OOM halves the batch":** the eval backoff halves only the call that failed.
+  X4 then keeps the halved size for the rest of the run, so it does not repeat the OOM on every batch (tested). The
+  final size is recorded in the run's meta.
+- **Time estimates.** Nothing of X4 has run on the GPU; these come from last night's measurements.
+  - **Prefill:** about 3–4 s per batch of 16 conversations of ~1,300–1,470 tokens. X2's σ-suffix rerun did 16
+    distinct ~1,300-token prompts at ≈ 3.8 s per batch, including 24 new tokens.
+  - **Decoding:** about 55–70 ms per step. X2's batch probe measured 32 sequences × (1,108 + 512) tokens at 35 s, i.e.
+    ≈ 68 ms per step. A batch decodes until its longest recomputation ends.
+  - **Reading:** about 3 s per batch: 4 forwards of 4 contexts each.
+  - **Per arm (258 batches):**
+    - **`sft` and `shuffled`:** about 1.7 h if a batch's longest recomputation is ~300 tokens, about 2.7 h if 512.
+    - **`random_init`:** about 2.7 h. A random-init model does not stop before 512 tokens.
+  - **The total: 6.1–8.1 h.** Launched at about 23:00, all three arms finish before 09:00 even at the upper estimate.
+    Launched after about 00:50, `random_init` will probably be cut (a prefix, analyzed as D89 says).
+- **Memory, expected:** 16 conversations × (~1,470 + 512) tokens.
+  - **The nearest measurements:** the X2 probe's 32 × (1,108 + 512) peaked at 4.6 GiB, and D87's 16 × ~1,300 ran
+    under the 5.75 GiB cap. So this should fit under ~7.2 GiB.
+  - **If it does not,** OOM halves it (above) instead of spilling into WSL shared memory.
+- **Guards** (as every queue so far):
+  - every stage is a child waited on by PID;
+  - GPU > 87 °C before a stage → a 10-minute pause;
+  - commit + push after every stage, under a flock;
+  - a failed stage is logged BLOCKED, and the next arm goes on (the arms are independent);
+  - `HF_HUB_OFFLINE=1`.
+- **Checked on CPU:**
+  - `bash -n`; `DRY_RUN=1`, at the real time (the deadline 16 min away, so every limit came out negative, as it
+    should) and with a deadline 10 h away (soft limits 360 / 480 / 585 min).
+  - `tests/test_x4.py` (14) with the X2 tests (24 pass); the full suite (470 before the last X4 test).
+- **Not checked: any GPU stage.** That covers:
+  - Unsloth's generate on two-turn conversations;
+  - the float32-head check on the 4-bit models. The expected gap is about X2's measured 0.13% (SFT) / 0.47% (random
+    init), against the 2% limit; a failure only switches the arm to the slower model-logits path;
+  - the memory and the speed above.
+- **Launch command (09:00 is taken as the next morning's):** `nohup scripts/queue_x4.sh > results/queue_x4/nohup.log 2>&1 &`
