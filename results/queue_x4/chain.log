@@ -29,3 +29,9 @@
 [00:52:44] start x4_shuffled (timeout 36136s): uv run python -m physcal.eval.x4_verify run --arm shuffled --max-reserved-gib 6.9 --minutes 592
 [01:26:04] end x4_shuffled: exit 0
 [01:26:04] X4 shuffled: 4116 of 4116 rows
+[01:26:06] commit 'X4 (D89/D91): shuffled arm, 4116 of 4,116 X2 answers verified (exit 0, cap 6.9 GiB)': pushed
+[01:26:07] GPU at 65C
+[01:26:07] X4 random_init: cap 6.9 GiB, soft limit 588 min (reserve 900s), 0 rows so far
+[01:26:07] start x4_random_init (timeout 35933s): uv run python -m physcal.eval.x4_verify run --arm random_init --max-reserved-gib 6.9 --minutes 588
+[03:53:00] end x4_random_init: exit 0
+[03:53:00] X4 random_init: 4116 of 4116 rows
