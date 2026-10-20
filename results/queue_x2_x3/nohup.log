@@ -88,3 +88,5 @@
 [05:17:37] GPU at 56C
 [05:17:37] start pin_smoke (timeout 900s): uv run python scripts/pinned_base_smoke.py
 [05:18:10] end pin_smoke: exit 0
+[05:18:12] commit 'D78 GPU check: the pinned 4-bit base loads from its snapshot dir; an adapter on it names that dir': pushed
+[05:18:12] queue done

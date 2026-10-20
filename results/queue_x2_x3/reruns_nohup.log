@@ -1,0 +1,4 @@
+[05:18:29] reruns start (D87, D88); GPU deadline 09:00 IST
+[05:18:30] GPU at 55C
+[05:18:30] start x3_eval_a_x2_rerun (timeout 2400s): uv run python -m physcal.train.x3 eval --arm a --set x2
+[05:37:21] end x3_eval_a_x2_rerun: exit 0

@@ -88,3 +88,9 @@
 [05:17:37] GPU at 56C
 [05:17:37] start pin_smoke (timeout 900s): uv run python scripts/pinned_base_smoke.py
 [05:18:10] end pin_smoke: exit 0
+[05:18:12] commit 'D78 GPU check: the pinned 4-bit base loads from its snapshot dir; an adapter on it names that dir': pushed
+[05:18:12] queue done
+[05:18:29] reruns start (D87, D88); GPU deadline 09:00 IST
+[05:18:30] GPU at 55C
+[05:18:30] start x3_eval_a_x2_rerun (timeout 2400s): uv run python -m physcal.train.x3 eval --arm a --set x2
+[05:37:21] end x3_eval_a_x2_rerun: exit 0
