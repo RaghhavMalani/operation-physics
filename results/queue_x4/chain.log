@@ -23,3 +23,9 @@
 [00:22:21] start x4_perturbed (timeout 36159s): uv run python -m physcal.eval.x4_verify run --arm perturbed --max-reserved-gib 6.75 --minutes 592
 [00:52:41] end x4_perturbed: exit 0
 [00:52:41] X4 perturbed: 4115 of 4116 rows
+[00:52:44] commit 'X4 (D89/D91): perturbed arm, 4115 of 4,116 X2 answers verified (exit 0, cap 6.75 GiB)': pushed
+[00:52:44] GPU at 66C
+[00:52:44] X4 shuffled: cap 6.9 GiB, soft limit 592 min (reserve 2700s), 0 rows so far
+[00:52:44] start x4_shuffled (timeout 36136s): uv run python -m physcal.eval.x4_verify run --arm shuffled --max-reserved-gib 6.9 --minutes 592
+[01:26:04] end x4_shuffled: exit 0
+[01:26:04] X4 shuffled: 4116 of 4116 rows
