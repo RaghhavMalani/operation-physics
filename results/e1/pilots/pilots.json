@@ -1,0 +1,130 @@
+{
+ "decision": "D94",
+ "n_problems": 400,
+ "tests": {
+  "E1c": {
+   "rho": 0.0017039253333489604,
+   "rho_reference": 0.012674069264585797,
+   "diff": -0.010970143931236838,
+   "ci95": [
+    -0.0920720612299785,
+    0.06874385892778212
+   ],
+   "p_one_sided": 0.6157
+  },
+  "E1d": {
+   "rho": 0.5859703237273522,
+   "rho_reference": 0.012674069264585797,
+   "diff": 0.5732962544627664,
+   "ci95": [
+    0.46493820810295594,
+    0.6801673118389991
+   ],
+   "p_one_sided": 0.0
+  }
+ },
+ "holm": {
+  "E1d": {
+   "p": 0.0,
+   "threshold": 0.025,
+   "rejected": true
+  },
+  "E1c": {
+   "p": 0.6157,
+   "threshold": 0.05,
+   "rejected": false
+  }
+ },
+ "describe": {
+  "E1c": {
+   "n": 400,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.3299945030440281,
+   "coverage_1sigma": 0.52,
+   "coverage_1sigma_error": 0.16269999999999996,
+   "coverage_2sigma": 0.615,
+   "spearman_sigma_error": 0.0017039253333489604,
+   "median_rel_sigma": 0.04291845493562232,
+   "sigma_zero_share": 0.0,
+   "bin_entropy_bits": 2.045674085406368
+  },
+  "E1d": {
+   "n": 400,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.328552151315783,
+   "coverage_1sigma": 0.2975,
+   "coverage_1sigma_error": 0.3852,
+   "coverage_2sigma": 0.425,
+   "spearman_sigma_error": 0.5859703237273522,
+   "median_rel_sigma": 0.009541984732824428,
+   "sigma_zero_share": 0.0,
+   "bin_entropy_bits": 2.6627935469579
+  },
+  "E1a (reference)": {
+   "n": 400,
+   "n_failed": 0,
+   "mu_changed": 0,
+   "mean_crps_log": -0.33088592765343305,
+   "coverage_1sigma": 0.485,
+   "coverage_1sigma_error": 0.1977,
+   "coverage_2sigma": 0.5825,
+   "spearman_sigma_error": 0.012674069264585797,
+   "median_rel_sigma": 0.032237266279819474,
+   "sigma_zero_share": 0.0,
+   "bin_entropy_bits": 2.0149271784444505
+  }
+ },
+ "family_E": {
+  "E1c": {
+   "P (vs SFT \u03c3)": {
+    "mean_diff": 0.00856336389236513,
+    "ci95": [
+     0.006617355984275489,
+     0.010529331185619299
+    ],
+    "p_one_sided": 0.0
+   },
+   "N (vs A5 \u03c3)": {
+    "mean_diff": -0.024866117804213925,
+    "ci95": [
+     -0.033242219010547414,
+     -0.017322423895343327
+    ],
+    "p_one_sided": 1.0
+   }
+  },
+  "E1d": {
+   "P (vs SFT \u03c3)": {
+    "mean_diff": 0.010005715620610103,
+    "ci95": [
+     0.008107500869118529,
+     0.011984757747000554
+    ],
+    "p_one_sided": 0.0
+   },
+   "N (vs A5 \u03c3)": {
+    "mean_diff": -0.023423766075968952,
+    "ci95": [
+     -0.03176431965828884,
+     -0.016006042714256843
+    ],
+    "p_one_sided": 1.0
+   }
+  }
+ },
+ "collapse": {
+  "E1c": {
+   "top_suffix": "10 cm/s^2</answer>",
+   "top_share": 0.0475,
+   "collapsed": false
+  },
+  "E1d": {
+   "top_suffix": "0.1 s</answer>",
+   "top_share": 0.0175,
+   "collapsed": false
+  }
+ },
+ "decision_rule": "E1d moves \u03c1: its setting becomes Phase 12's RL setting"
+}

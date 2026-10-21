@@ -26,3 +26,6 @@
 [10:38:29] GPU at 65C, memory.used 302 MiB
 [10:38:29] start e1d_eval_step150_4bit (timeout 1200s): uv run python -m physcal.train.e1 eval --run results/train/e1d-sigma-only-free-seed0 --adapter permanent_checkpoints/checkpoint-150 --out-name step150_4bit
 [10:43:04] end e1d_eval_step150_4bit: exit 0
+[10:43:07] commit 'e1d (D94): corrected eval step150_4bit, 4-bit unmerged (exit 0)': pushed
+[10:43:07] start compare_pilots (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -c from physcal.train.e1_compare import compare_pilots as c; import json; print(json.dumps(c()['decision_rule']))
+[10:43:23] end compare_pilots: exit 0
