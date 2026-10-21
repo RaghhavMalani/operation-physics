@@ -3047,3 +3047,72 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 6. **A dry run of the D91 analysis** on the real `sft`, `direct` and partial `perturbed` rows, into the scratchpad,
    checked the code path on real data before the queue's analysis stage. No file in `results/x4` was written; the
    pre-registered analysis is the queue's.
+
+### D97. Your decisions on the 2026-10-20/21 report, and today's GPU queue (2026-10-21 day; `scripts/queue_e1_pilots.sh`)
+- **Approved as written (your decisions, 2026-10-21 morning):**
+  1. **D94:** E1c as built (the per-prompt mean stays the baseline; the std is taken over the step's batch) and E1d's
+     learning rate 5e-5. D94's two [REVIEW] items are closed; the configs are unchanged.
+  2. **D95:** A6c's min ratio 1.5 and identical displayed values in both members. The frozen set is unchanged.
+  3. **D96:** the in-stage temperature guard. **Standing rule from now on:** CPU jobs run single-threaded
+     (OMP / OPENBLAS / MKL = 1, n_jobs = 1) at nice 19 whenever the GPU is busy.
+  4. **Self-consistency as the p baseline and teacher candidate:** recorded as its own entry, **D98**.
+- **The queue (written and launched 06:02 IST, GPU deadline 14:00 IST):**
+  1. **E1c train** (`grpo_e1c`) → its corrected evals (D67: `final_adapter` → `final_4bit`, `checkpoint-150` →
+     `step150_4bit`, 4-bit base, adapter unmerged);
+  2. **E1d train** (`grpo_e1d`) → its evals, **only if ≥ 3 h remain** before the deadline when E1c's evals end (your
+     rule; otherwise logged SKIP and E1d counts as p = 1, as D94 says);
+  3. **compare_pilots** (CPU, 1 thread, nice 19).
+  - **Mechanics as D90/D96:** PID-based waits; the in-stage guard on every GPU stage (> 87 °C → the stage's process
+    group stops for 10 min) plus the cool check before each; a failed stage is logged BLOCKED and the next
+    independent stage goes on (E1d does not depend on E1c; an eval needs its adapter); commit + push after every
+    stage under the shared flock (`.git/queue-commit.lock`, which my own commits also take).
+  - **Time:** training stops cleanly 20 min before the deadline (two evals at ~2 min each, measured in D67), with a
+    hard timeout 15 min later (the final save and fingerprint). E1a's own `wall_clock_limit_minutes: 240` still
+    applies.
+  - **Tapes:** `rollouts.jsonl` is gitignored and committed gzipped, as E1a's.
+- **The allocator cap stays E1a's 7.5 GiB.**
+  - **The WSL-spill rule would give** 8.0 − 0.39 (host use at launch) − 0.5 ≈ 7.1 GiB.
+  - **What E1a did at 7.5:** its peak allocated memory was 5.63 GiB. After the step-250 checkpoint save, reserved
+    memory went from 1.58 to 7.47 GiB, and steps went from ~25 s to ~80 s for the last 48 steps (most likely a
+    spill). It still finished 300 steps in 2.71 h.
+  - **Decision:** keep 7.5. It is the pre-registered config ("the 7.5 GiB cap"), the cap changes speed, not the
+    computation, and the 8 h window holds two E1a-length runs plus evals.
+  - **Alternative:** a 7.1 cap through a config change. It would likely avoid the slow end, but it edits a
+    pre-registered config and adds a small OOM risk that would kill the run. Step times are logged
+    (`memory.jsonl`, `train_metrics.jsonl`) and reported.
+- **Two temperature pauses can stack:** the trainer's own callback (E1a's: every 2 steps, 600 s above 87 °C) and the
+  in-stage guard are both active. That is harmless: the guard's pause cools the GPU, and the callback then passes.
+- **While the queue runs:** no edit to any module or config the stages import (checked by importing the stages'
+  entry points: `physcal.env.*`, `verify.*`, `tape`, `prompt`, `config`, `train.e1` / `grpo` / `e1_compare`,
+  `eval.run_eval` / `fingerprint` / `posthoc` / `signals` / `stats` / `calibration`, and the lazily imported `base`,
+  `adapters`, `train.sft_data`, `env.sampler`, `train.split_credit`). Today's CPU work goes into new files.
+
+### D98. Self-consistency is the p baseline and the teacher candidate for Phase 12 stage E; X4's self-verification is ruled out as a teacher (your decision, 2026-10-21)
+- **Background:**
+  - **R3-4 E** deferred p (D83's `<confidence>` channel) to a follow-up: "if X4 works, verification-derived p becomes
+    its teacher or baseline".
+  - **X4 did not work (FINDINGS #21):** within problems, `sft` reached 0.524 [0.498, 0.550], not Holm-supported. The
+    model says "yes" to 99.9% of its own answers, and across problems it is anti-informative (AUROC 0.469).
+  - **Self-consistency (D92c, FINDINGS #22, post-hoc):** 0.643 [0.616, 0.671] within problems (0.861 on the
+    separated pairs). That is the strongest within-problem signal so far, without training.
+- **Decision:**
+  1. **X4's verification is ruled out as a teacher for p.** It stays a reported baseline row wherever the X2 pairs
+     are scored, labelled as failed.
+  2. **Self-consistency is the p baseline.** Any p that stage E trains must be compared against it on the same
+     answers: X2's within-problem pairwise accuracy and the across-problem AUROC, paired bootstrap over problems.
+     The test and its Holm family are fixed in stage E's pre-registration.
+  3. **Self-consistency is the teacher candidate.** The target for a trained p is the share of the problem's other
+     samples that agree with the answer. Whether it is used as a distillation target, and how, is stage E's
+     pre-registration; this entry fixes only that it is the candidate.
+- **The definition carried forward:** D92c's. Confidence = the share of the problem's other k − 1 samples whose
+  parsed μ agrees with this answer within 1% (|μ_j / μ_i − 1| ≤ 1%, SI); an unparsed sample never agrees; k = 8 as
+  in X2. Code: `x2_robustness.self_consistency_conf`.
+  - **For noisy problems,** R3-6's event (|ŷ − y_display| / |y_display| ≤ 1%) is the correctness label. The
+    agreement rule itself does not change.
+- **Costs and caveats, reported with every use:**
+  - **Inference cost:** k = 8 samples per problem. A distilled p would remove it at inference, not in data generation.
+  - **The number is post-hoc:** FINDINGS #22 was computed after D74's X2 verdict, as D92 labels it. Stage E's
+    comparison is the first pre-registered test.
+  - **Overlap with Phase 13:** the k-sample agreement is close to DAR-style rollout spread (Phase 13 source 2).
+    The write-up must not count them as two independent sources.
+- **Not done now:** nothing is built, trained or run. Stage E stays deferred (R3-4).
