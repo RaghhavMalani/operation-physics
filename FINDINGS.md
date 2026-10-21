@@ -1235,3 +1235,45 @@ from a paired bootstrap over problems (B = 10,000), with Holm over the two pilot
   - **Runs:** `results/train/e1{c,d}-sigma-only-free-seed0/`, with `e1_eval/{final_4bit, step150_4bit}`.
   - **The comparison:** `results/e1/pilots/{pilots.json, pilots.md}`.
   - **The queue:** `scripts/queue_e1_pilots.sh`, logs in `results/queue_e1_pilots/`.
+
+## #26. E1d's σ does not rank a right answer above a wrong one to the same problem: within problems it sits exactly at X3's supervised level (0.512 vs 0.513), far below self-consistency (0.643) (D102; 2026-10-21/22 night)
+
+**Status:** pre-registered (D102). X2's 516 kept problems and their 4,116 sampled answers, each truncated after "±";
+E1d's final adapter writes a greedy σ suffix (4-bit base, unmerged). Confidence = −ln σ_rel; a failed suffix is a
+tie. D74's pairwise accuracy; cluster bootstrap over problems (B = 10,000); Holm over T1–T3. Every comparator
+reproduces its published number exactly (max gap 0.0).
+
+| σ / confidence source | within problems: pairwise acc. [95% CI] | separated pairs | across answers: ρ(σ, error) | AUROC (correct) |
+|---|---|---|---|---|
+| SFT stated σ (X2 method 1, sampled) | 0.499 [0.474, 0.524] | 0.501 | −0.001 | 0.490 |
+| SFT greedy σ suffix (no-RL control, same prefixes) | 0.489 [0.461, 0.515] | 0.461 | +0.024 | 0.499 |
+| X3 student (a) σ suffix (supervised, A5 teacher) | 0.513 [0.484, 0.543] | 0.525 | +0.346 | 0.678 |
+| **E1d σ suffix (RL, lr 5e-5, step 300)** | **0.512 [0.483, 0.541]** | 0.502 | **+0.350** | **0.679** |
+| self-consistency (k = 8, post-hoc baseline) | 0.643 [0.616, 0.671] | 0.861 | +0.672 | 0.823 |
+
+| test (D102) | estimate [95% CI] | p (one-sided) | Holm |
+|---|---|---|---|
+| T1: E1d > 0.5 | 0.512 [0.483, 0.541] | 0.21 | not supported |
+| T2: E1d − SFT stated σ > 0 | +0.013 [−0.021, +0.048] | 0.23 | not supported |
+| T3: E1d − X3 student (a) > 0 | −0.001 [−0.032, +0.031] | 0.52 | not supported |
+| E1d − self-consistency (reported) | −0.131 [−0.170, −0.091] | – | – |
+| E1d − SFT greedy suffix (reported) | +0.024 [−0.009, +0.056] | – | – |
+
+- **D102's reading: T1 not supported.** E1d's ρ (0.586 on the frozen eval, FINDINGS #25) is between-problem ranking
+  only, the X3 reading (FINDINGS #20).
+- **RL and supervised distillation land in the same place.** On the same 4,116 answers E1d and X3's student (a)
+  agree to the third decimal: 0.512 vs 0.513 within problems, ρ 0.350 vs 0.346 and AUROC 0.679 vs 0.678 across
+  answers.
+  - **What RL did:** it moved the SFT's σ from no ranking (ρ +0.02 on these answers) to the X3 kind of ranking
+    (+0.35).
+  - **What it did not do:** separate a right answer from a wrong one to the same problem. On clearly separated pairs
+    (right ≤ 0.25%, wrong ≥ 10%) E1d is at 0.502.
+- **Self-consistency stays the only within-problem signal** (0.643, 0.861 on separated pairs), 0.13 above E1d, at the
+  cost of 8 samples per problem (D98).
+- **Sanity:** 21 of 4,116 suffixes failed (0.5%; 13 moved μ), not collapsed (top suffix 2.1%), no OOM. The SFT
+  control's σ = 0 share is 18%; E1d's is 0%.
+- **Limits:** one seed, one adapter (step 300); σ-only suffix training on noise-free 1.1.0 problems; sampled X2
+  answers at T = 1 (E1d was trained on greedy SFT prefixes).
+- **Provenance:** `results/e1d_x2/{results.json, summary.md}`, suffix rows in `results/e1d_x2/{e1d_final,
+  sft_suffix}/`; code `physcal/eval/e1d_x2.py`, `physcal/eval/e1d_x2_analysis.py`; queue `scripts/queue_e1d_x2.sh`,
+  logs in `results/queue_e1d_x2/`.
