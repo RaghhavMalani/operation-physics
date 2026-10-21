@@ -8,3 +8,7 @@
 [23:49:20] commit 'E1d on the X2 pairs (D102): T1-T3, Holm, comparators reproduced': pushed
 [01:08:36] end stage_b_train_seed0: exit 0
 [01:08:36] seed 0: 750 steps of 750, 81 min
+[01:08:39] commit 'stage B seed 0 (D104): SFT on the supervised arm, 750 steps (exit 0)': pushed
+[01:08:39] GPU at 65C, memory.used 456 MiB
+[01:08:39] start stage_b_eval_seed0 (timeout 8400s): uv run python -m physcal.train.stage_b eval --seed 0
+[02:02:47] end stage_b_eval_seed0: exit 0
