@@ -722,3 +722,18 @@ Progress:
 - [ ] **Next:** your review of D100 / D101. E1d's within-problem ranking on the X2 pairs (~30 GPU-min, needs an
   entry). Then the R3 schedule (Thu 22): the Phase 12 SFT data check, supervised σ\* (3 seeds), and the Phase 12
   pre-registration.
+
+## 2026-10-21/22 night (unattended; GPU deadline 09:00 IST)
+
+- [x] **D102 (stage a) pre-registered, then launched at 23:14 IST** (`scripts/queue_e1d_x2.sh`): E1d's σ suffix on
+  X2's 4,116 answers (17 min, no OOM), then the SFT model's own suffix as the no-RL control.
+- [x] **D103:** your decisions (D100 confirmed; stage C trains σ E1d-style; a 7.1 GiB cap for Phase 12 runs after an
+  OOM check).
+- [x] **D104 (stage B) pre-registered and built:** `physcal/train/stage_b.py`, `physcal/eval/stage_b_analysis.py`,
+  8 CPU tests. The chain `scripts/queue_stage_b.sh` waits on stage (a)'s PID, then runs seeds 0 → 1 → 2 (each gated
+  on finishing before 09:00).
+- [x] **D105, verifier 1.3.0:** the σ reward against the predictive distribution centred at f(x_meas)
+  (`physcal/verify/sigma_reward.py`, `configs/reward_v13.yaml`); no existing module edited; old tapes replay exactly;
+  17 tests.
+- [x] **D106 (stage C pilot) pre-registered and built:** `physcal/train/stage_c.py`, `physcal/eval/stage_c_analysis.py`,
+  data (2,250 + 3,060 prefixes), 6 CPU tests; marked ready. It runs only if ≥ 3.5 h remain after stage B.
