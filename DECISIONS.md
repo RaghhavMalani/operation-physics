@@ -3374,3 +3374,45 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Queue:** `scripts/queue_stage_b.sh`, chained after stage (a)'s queue by PID: seed 0 → 1 → 2, each training run
   followed by its eval. A seed starts only if its training (2 epochs at the measured speed, else 75 min) plus its eval
   (70 min) plus 15 min of slack fit before 09:00 IST; otherwise it is logged SKIP.
+
+### D105. Verifier 1.3.0: the σ reward against the generator's predictive distribution, centred at f(x_meas) (your approval, 2026-10-21 night; built and tested, nothing trained with it)
+- **Your instruction:** a new reward config version whose σ reward is the expected crps_log against the generator's
+  predictive distribution, centred at f(x_meas); old tapes must replay unchanged; tests. FINDINGS #24 motivates it:
+  one realized truth barely separates σ\* from a 2×-off σ, the expected score does, with 5–23× less variance.
+- **The score (`physcal/verify/sigma_reward.py`, `configs/reward_v13.yaml`, version 1.3.0):**
+  - **score_sigma** = the mean, over fixed draws y_j of the problem's predictive distribution of ln(target), of the
+    verifier's crps_log of N(ln f(x_meas), σ_rel²) at y_j, with σ_rel = σ / |μ| as stated.
+  - **It depends on σ_rel and the problem only.** μ's error does not enter (R3-6's oracle centring), so the σ tokens
+    are credited without μ's noise or the realized truth's.
+  - **Proper:** an average of a proper score under the predictive distribution, so it peaks at that distribution's
+    CRPS-optimal scale (A2's σ\*). Tested on a 5% problem: the grid 0.5…2 × the optimum peaks at 1.
+  - **The draws:** N = 4,000 (stage A's N), from the problem's own stream, seeded by
+    sha256("verifier_1.3.0|family|depth|seed"). Not stage A's tag, so training rewards and the stage A / B eval
+    diagnostics never share draws. Cached per problem; deterministic, so 1.3.0 tapes replay exactly (tested).
+  - **Invalid draws:** a draw that leaves the valid domain is dropped and counted (`noise.predictive` instead
+    returns None for the whole set; that happened on 24 of stage A's 3,060 problems). Below 99% valid draws, the
+    draws become N(ln f(x_meas), σ\*²) on the same stream, flagged `gaussian_fallback`. With every draw valid, the
+    masked draws equal `noise.predictive`'s exactly (tested).
+  - **Exact givens:** the predictive is the truth itself (one draw), so σ_rel = 0 is optimal (D80, R2-3).
+  - **Failures:** a parse failure, a unit mismatch, or no relative σ (μ = 0) gets the crps_log floor, −5.
+- **[REVIEW] `weights.sigma = 0`.** The 1.3.0 total equals 1.2.0's; score_sigma is in the breakdown for training
+  code that credits the σ tokens with it, as D83 did for c.
+  - **Stage C (E1d-style, μ frozen)** would use score_sigma as its σ-only reward. That belongs in its own
+    pre-registration (D106).
+  - **A positive weight next to final = 1** would count σ twice (realized and expected). The validator allows it
+    only while steps + confidence + σ·span < final·span, the "never outweighs the answer" rule.
+- **No existing module was edited** (tonight's stages import `reward.py`, `tape.py`, `noise.py`; D97's rule).
+  - **The entry point:** `sigma_reward.reward(problem, completion, cfg)`. It calls the unchanged `reward.reward` and
+    adds the σ term only for configs ≥ 1.3.0. Older configs pass straight through (tested on four completion
+    kinds × 1.1.0 / 1.2.0).
+  - **Old tapes:** the two committed 1.1.0 tapes D83 used (400 + 400 rows) replay through the new entry point with
+    identical rewards **and** breakdowns.
+  - **Until `reward.reward` and `tape.replay` dispatch on the version** (a small daytime edit, after the queue),
+    1.3.0 configs must be scored and replayed through `sigma_reward` (`reward`, `replay`). `reward.reward` called
+    directly with a 1.3.0 config omits the σ term; `tape.replay` would then flag every 1.3.0 row with w_sigma > 0
+    as a mismatch, a loud failure, never a silent one. With w_sigma = 0 the totals agree.
+- **Tests (`tests/test_verify_sigma_reward.py`, 17):** the versions and the unchanged default; six invalid configs
+  refused; pass-through for 1.1.0 / 1.2.0; both 1.1.0 tapes replay exactly; 1.3.0's total = 1.2.0's at w_sigma = 0
+  and adds w·score_sigma otherwise; score_sigma ignores μ's error and equals stage A's expected score on
+  `noise.predictive`'s draws; the peak at the optimum; exact givens; failures; dropped draws and the fallback; a
+  1.3.0 tape replays exactly.
