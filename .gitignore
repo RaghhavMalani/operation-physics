@@ -41,3 +41,6 @@ results/x2/hidden/**/*.npy
 results/x2/random_init_model/
 results/queue_x2_x3/*.pid
 results/pinned_base_smoke/adapter/
+results/train/e1c-sigma-only-free-seed0/rollouts.jsonl
+results/train/e1d-sigma-only-free-seed0/rollouts.jsonl
+results/queue_e1_pilots/*.pid
