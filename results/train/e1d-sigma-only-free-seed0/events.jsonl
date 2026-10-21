@@ -1,0 +1,1 @@
+{"event": "fingerprint", "time": 1792559092.3268943, "status": "recorded", "file": "/home/flash2404/operation-physics/results/train/e1d-sigma-only-free-seed0/final_adapter/physcal_fingerprint.json", "adapter_effect": {"mean_abs_dlogp": 0.052282076206705816, "mean_sigma_tv": 0.22340156127796015}, "seconds": 87.89433860778809}

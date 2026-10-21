@@ -12,3 +12,9 @@
 [08:24:31] GPU at 63C, memory.used 302 MiB
 [08:24:31] start e1c_eval_step150_4bit (timeout 1200s): uv run python -m physcal.train.e1 eval --run results/train/e1c-sigma-only-free-seed0 --adapter permanent_checkpoints/checkpoint-150 --out-name step150_4bit
 [08:27:10] end e1c_eval_step150_4bit: exit 0
+[08:27:13] commit 'e1c (D94): corrected eval step150_4bit, 4-bit unmerged (exit 0)': pushed
+[08:27:13] GPU at 62C, memory.used 293 MiB
+[08:27:13] e1d: config grpo_e1d, soft stop 13:40 IST
+[08:27:13] start e1d_train (timeout 19667s): uv run python -m physcal.train.e1 train --config grpo_e1d --stop-at 2026-10-21T13:40:00+05:30
+[10:34:54] end e1d_train: exit 0
+[10:34:54] e1d: 300 steps completed; checkpoint-150 

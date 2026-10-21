@@ -1,0 +1,32 @@
+{
+  "run_id": "e1d-sigma-only-free-seed0",
+  "e1_mode": "free",
+  "steps_completed": 300,
+  "train_seconds": 7548.150391101837,
+  "seconds_per_step": 25.160501303672792,
+  "peak_vram": {
+    "torch_max_reserved_gib": 7.46875,
+    "torch_max_allocated_gib": 5.63273811340332,
+    "num_ooms": 0
+  },
+  "grpo_config_dropped_keys": [
+    "max_prompt_length"
+  ],
+  "train_loss": 0.001050396266024715,
+  "trainer_args": {
+    "scale_rewards": "group",
+    "learning_rate": 5e-05,
+    "loss_type": "dapo",
+    "beta": 0.0
+  },
+  "final_adapter": "/home/flash2404/operation-physics/results/train/e1d-sigma-only-free-seed0/final_adapter",
+  "fingerprint": {
+    "status": "recorded",
+    "file": "/home/flash2404/operation-physics/results/train/e1d-sigma-only-free-seed0/final_adapter/physcal_fingerprint.json",
+    "adapter_effect": {
+      "mean_abs_dlogp": 0.052282076206705816,
+      "mean_sigma_tv": 0.22340156127796015
+    },
+    "seconds": 87.89433860778809
+  }
+}
