@@ -3472,3 +3472,27 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Code and outputs:** `physcal/train/stage_c.py` (data / train / eval), `physcal/eval/stage_c_analysis.py`,
   `configs/stage_c.yaml`, `tests/test_stage_c.py`; outputs in `results/stage_c/`. The queue hook is
   `scripts/queue_stage_c_pilot.sh`, run by stage B's chain only if `results/queue_stage_b/STAGE_C_READY` exists.
+
+### D107. Tonight's run, 2026-10-21/22: implementation decisions taken during the night (overnight rules: decision, alternatives, why)
+1. **Stage (a) launched first, as its own queue; stage B chained by PID.**
+   - **Order:** D102 written and committed, then `scripts/queue_e1d_x2.sh` launched at 23:14 IST. Stage B was built
+     while (a) ran, and `scripts/queue_stage_b.sh` started at 23:25, waiting on (a)'s queue PID (as D96).
+   - **Why:** "get the GPU busy first". The GPU went from (a) to stage B seed 0 without idling (23:47).
+2. **The SFT model's own greedy σ suffix as (a)'s no-RL control** (pre-registered in D102, ~15 min). X2's method 1
+   is a sampled σ, so it is not the exact counterpart of E1d's greedy suffix. Reported, not tested.
+3. **D103's OOM check:** a forward + backward on the longest batch under the cap before step 1 (stage B: 2 × 1,640
+   tokens, 2.0 GiB reserved, passed). Alternative: run step 1 and see. Rejected because step 1's batch is not
+   necessarily the longest.
+4. **Stage B's eval batch is 32 distinct prompts,** under the 7.1 GiB cap with the OOM backoff. D87's 16 was for
+   a 5.75 cap and a WSL spill; 32 × ~1,700 tokens fits the 7.1 cap by the KV-cache estimate (~1.7 GiB).
+5. **Verifier 1.3.0 lives in a new module** (`physcal/verify/sigma_reward.py`). Editing `reward.py` / `tape.py` would
+   break D97's rule (tonight's stages import them). The dispatch edit is left for the day (D105).
+6. **Stage C amendment, before any rollout: `max_prompt_length` 1,536 → 2,016** (`configs/stage_c.yaml`
+   `grpo_overrides`).
+   - **Why:** v5 prompts plus prefixes reach 1,620 tokens (training) and 1,669 (eval), so E1d's 1,536 would cut
+     them.
+   - **Effect:** none on the computation. 2,016 + 24 new tokens fits E1d's `max_seq_length` 2,048, and nothing is
+     truncated, as 1,536 truncated nothing for E1.
+7. **Stage C marked ready after its CPU tests** (`results/queue_stage_b/STAGE_C_READY`). Your 3.5 h gate decides; with
+   stage B's three seeds at ~2 h each it is expected to be skipped tonight. Its GPU path is untested.
+8. **My own commits take the queue's flock** (`.git/queue-commit.lock`), as D97 says.
