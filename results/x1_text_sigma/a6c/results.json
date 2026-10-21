@@ -1,0 +1,2620 @@
+{
+ "decision": "D99 (X1 on A6c)",
+ "primary": "noise_text_magnitudes",
+ "a6c": "data/eval_sets/2.0.0+bdbb2279/a6c_pairs.jsonl",
+ "reproduction": {
+  "tolerance": 1e-09,
+  "feature_sets": {
+   "noise": {
+    "n_compared": 40,
+    "max_abs_diff": 0.0,
+    "worst": "/test_accuracy/n",
+    "ok": true
+   },
+   "noise_text": {
+    "n_compared": 40,
+    "max_abs_diff": 0.0,
+    "worst": "/test_accuracy/n",
+    "ok": true
+   },
+   "noise_text_magnitudes": {
+    "n_compared": 40,
+    "max_abs_diff": 0.0,
+    "worst": "/test_accuracy/n",
+    "ok": true
+   }
+  },
+  "ok": true
+ },
+ "feature_sets": {
+  "noise": {
+   "pairs": {
+    "kind": "allocation",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "label": "no propagation",
+    "supported": false,
+    "secondary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "secondary_mean": {
+     "n_pairs": 510,
+     "mean_dy": 0.0,
+     "mean_dy_ci95": [
+      0.0,
+      0.0
+     ],
+     "p_mean_dy_gt_0": 1.0,
+     "through_origin_slope": 0.0,
+     "through_origin_ci95": [
+      0.0,
+      0.0
+     ],
+     "mean_dx": 0.6906452894681829
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    }
+   },
+   "within_pair": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 0.6906452894681829,
+    "mean_d_ln_sigma_hat": 0.0,
+    "corr": null,
+    "share_same_sign": 0.0
+   },
+   "member_accuracy": {
+    "n": 1020,
+    "r2": 0.22180373626134098,
+    "median_abs_log_error": 0.46613962665332154,
+    "spearman": 0.44493730208537074
+   },
+   "identical": {
+    "n_pairs": 510,
+    "share_identical_features": 0.4745098039215686,
+    "share_identical_sigma_hat": 1.0
+   }
+  },
+  "noise_text": {
+   "pairs": {
+    "kind": "allocation",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": -0.001696015248203432,
+     "ci95": [
+      -0.007550049654009397,
+      0.004072289942289044
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.006594796022668817,
+      0.0031577829184996583
+     ],
+     "p_one_sided": 0.7201,
+     "p_two_sided": 0.5598,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": -0.0004364219493843749,
+     "mean_abs_dy": 0.009079542884586561,
+     "share_dy_positive": 0.1607843137254902
+    },
+    "label": "no propagation",
+    "supported": false,
+    "secondary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": -0.001696015248203432,
+     "ci95": [
+      -0.007550049654009397,
+      0.004072289942289044
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.007550049654009397,
+      0.004072289942289044
+     ],
+     "p_one_sided": 0.7201,
+     "p_two_sided": 0.5598,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": -0.0004364219493843749,
+     "mean_abs_dy": 0.009079542884586561,
+     "share_dy_positive": 0.1607843137254902
+    },
+    "secondary_mean": {
+     "n_pairs": 510,
+     "mean_dy": -0.0004364219493843749,
+     "mean_dy_ci95": [
+      -0.0018783715085865262,
+      0.0009924018492643823
+     ],
+     "p_mean_dy_gt_0": 0.7314,
+     "through_origin_slope": -0.0007917673646967835,
+     "through_origin_ci95": [
+      -0.002937182257931997,
+      0.0014009974191608978
+     ],
+     "mean_dx": 0.6906452894681829
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": -0.001696015248203432,
+     "ci95": [
+      -0.007550049654009397,
+      0.004072289942289044
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.007550049654009397,
+      0.004072289942289044
+     ],
+     "p_one_sided": 0.7201,
+     "p_two_sided": 0.5598,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": -0.0004364219493843749,
+     "mean_abs_dy": 0.009079542884586561,
+     "share_dy_positive": 0.1607843137254902
+    }
+   },
+   "within_pair": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 0.6906452894681829,
+    "mean_d_ln_sigma_hat": -0.0004364219493843749,
+    "corr": -0.02998183628084091,
+    "share_same_sign": 0.1607843137254902
+   },
+   "member_accuracy": {
+    "n": 1020,
+    "r2": 0.433211538553087,
+    "median_abs_log_error": 0.4009543301070657,
+    "spearman": 0.6532879167425174
+   },
+   "identical": {
+    "n_pairs": 510,
+    "share_identical_features": 0.17254901960784313,
+    "share_identical_sigma_hat": 0.6254901960784314
+   }
+  },
+  "noise_text_magnitudes": {
+   "pairs": {
+    "kind": "allocation",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": -0.001557514809046048,
+     "ci95": [
+      -0.003251655179893844,
+      6.445700014773043e-05
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0029640365925629217,
+      -0.00019083662955258804
+     ],
+     "p_one_sided": 0.9692,
+     "p_two_sided": 0.0616,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.00017155364713290446,
+     "mean_abs_dy": 0.0032895613552096073,
+     "share_dy_positive": 0.22156862745098038
+    },
+    "label": "anti-propagation",
+    "supported": false,
+    "secondary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": -0.001557514809046048,
+     "ci95": [
+      -0.003251655179893844,
+      6.445700014773043e-05
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.003251655179893844,
+      6.445700014773043e-05
+     ],
+     "p_one_sided": 0.9692,
+     "p_two_sided": 0.0616,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.00017155364713290446,
+     "mean_abs_dy": 0.0032895613552096073,
+     "share_dy_positive": 0.22156862745098038
+    },
+    "secondary_mean": {
+     "n_pairs": 510,
+     "mean_dy": 0.00017155364713290446,
+     "mean_dy_ci95": [
+      -0.00035568288343478736,
+      0.0007196903547241589
+     ],
+     "p_mean_dy_gt_0": 0.2659,
+     "through_origin_slope": -2.2908217509716396e-05,
+     "through_origin_ci95": [
+      -0.0007157805850292838,
+      0.0007119175778758525
+     ],
+     "mean_dx": 0.6906452894681829
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": -0.001557514809046048,
+     "ci95": [
+      -0.003251655179893844,
+      6.445700014773043e-05
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.003251655179893844,
+      6.445700014773043e-05
+     ],
+     "p_one_sided": 0.9692,
+     "p_two_sided": 0.0616,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.00017155364713290446,
+     "mean_abs_dy": 0.0032895613552096073,
+     "share_dy_positive": 0.22156862745098038
+    }
+   },
+   "within_pair": {
+    "n_pairs": 510,
+    "mean_d_ln_sigma_star": 0.6906452894681829,
+    "mean_d_ln_sigma_hat": 0.00017155364713290446,
+    "corr": -0.07163701475000145,
+    "share_same_sign": 0.22156862745098038
+   },
+   "member_accuracy": {
+    "n": 1020,
+    "r2": 0.48045412368406915,
+    "median_abs_log_error": 0.38552261908811114,
+    "spearman": 0.6878222612105492
+   },
+   "identical": {
+    "n_pairs": 510,
+    "share_identical_features": 0.17254901960784313,
+    "share_identical_sigma_hat": 0.5745098039215686
+   }
+  }
+ },
+ "reference_exact_sigma_star": {
+  "kind": "allocation",
+  "n_pairs_total": 510,
+  "n_pairs_both_answered": 510,
+  "primary_all_answered": {
+   "n_pairs": 510,
+   "regressor": "sigma_star",
+   "slope": 1.0,
+   "ci95": [
+    1.0,
+    1.0
+   ],
+   "ci_level": 0.9,
+   "ci": [
+    1.0,
+    1.0
+   ],
+   "p_one_sided": 0.0,
+   "p_two_sided": 0.0,
+   "mean_dx": 0.6906452894681829,
+   "mean_dy": 0.6906452894681829,
+   "mean_abs_dy": 0.6906452894681829,
+   "share_dy_positive": 1.0
+  },
+  "label": "full propagation",
+  "supported": true,
+  "secondary_computation_correct": {
+   "n_pairs": 510,
+   "regressor": "sigma_star",
+   "slope": 1.0,
+   "ci95": [
+    1.0,
+    1.0
+   ],
+   "ci_level": 0.95,
+   "ci": [
+    1.0,
+    1.0
+   ],
+   "p_one_sided": 0.0,
+   "p_two_sided": 0.0,
+   "mean_dx": 0.6906452894681829,
+   "mean_dy": 0.6906452894681829,
+   "mean_abs_dy": 0.6906452894681829,
+   "share_dy_positive": 1.0
+  },
+  "secondary_mean": {
+   "n_pairs": 510,
+   "mean_dy": 0.6906452894681829,
+   "mean_dy_ci95": [
+    0.6659076664457296,
+    0.7160408245062132
+   ],
+   "p_mean_dy_gt_0": 0.0,
+   "through_origin_slope": 1.0,
+   "through_origin_ci95": [
+    1.0,
+    1.0
+   ],
+   "mean_dx": 0.6906452894681829
+  },
+  "sensitivity_no_sigma_zero": {
+   "n_pairs": 510,
+   "regressor": "sigma_star",
+   "slope": 1.0,
+   "ci95": [
+    1.0,
+    1.0
+   ],
+   "ci_level": 0.95,
+   "ci": [
+    1.0,
+    1.0
+   ],
+   "p_one_sided": 0.0,
+   "p_two_sided": 0.0,
+   "mean_dx": 0.6906452894681829,
+   "mean_dy": 0.6906452894681829,
+   "mean_abs_dy": 0.6906452894681829,
+   "share_dy_positive": 1.0
+  }
+ },
+ "by_depth": {
+  "1": {
+   "primary_all_answered": {
+    "n_pairs": 102,
+    "regressor": "sigma_star",
+    "slope": -0.0029423702215883958,
+    "ci95": [
+     -0.007830036091534922,
+     0.0016769036466637486
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     -0.007019126630403095,
+     0.000912964719006921
+    ],
+    "p_one_sided": 0.8944,
+    "p_two_sided": 0.2112,
+    "mean_dx": 0.6904137307610324,
+    "mean_dy": 0.001376182818086983,
+    "mean_abs_dy": 0.004180489336999586,
+    "share_dy_positive": 0.3137254901960784
+   },
+   "supported": false,
+   "label": "no propagation"
+  },
+  "2": {
+   "primary_all_answered": {
+    "n_pairs": 102,
+    "regressor": "sigma_star",
+    "slope": -0.0007445925796437763,
+    "ci95": [
+     -0.004325480886195141,
+     0.002739572478578303
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     -0.0036803391599296376,
+     0.0021754113075940235
+    ],
+    "p_one_sided": 0.6654,
+    "p_two_sided": 0.6692,
+    "mean_dx": 0.6662613495210343,
+    "mean_dy": -0.0005280273168581492,
+    "mean_abs_dy": 0.0033719670377314387,
+    "share_dy_positive": 0.20588235294117646
+   },
+   "supported": false,
+   "label": "no propagation"
+  },
+  "3": {
+   "primary_all_answered": {
+    "n_pairs": 102,
+    "regressor": "sigma_star",
+    "slope": -0.0024791150696674086,
+    "ci95": [
+     -0.007282299571440475,
+     0.0015857374979525141
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     -0.006316082171196108,
+     0.00092090163691533
+    ],
+    "p_one_sided": 0.883,
+    "p_two_sided": 0.234,
+    "mean_dx": 0.6629892065309503,
+    "mean_dy": 0.0011391515864275727,
+    "mean_abs_dy": 0.002781395239244484,
+    "share_dy_positive": 0.24509803921568626
+   },
+   "supported": false,
+   "label": "no propagation"
+  },
+  "4": {
+   "primary_all_answered": {
+    "n_pairs": 102,
+    "regressor": "sigma_star",
+    "slope": -0.004670791852919793,
+    "ci95": [
+     -0.00836859431308094,
+     -0.0013068586950819529
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     -0.0077313362261222365,
+     -0.0018321582267915777
+    ],
+    "p_one_sided": 0.9968,
+    "p_two_sided": 0.0064,
+    "mean_dx": 0.693540154508465,
+    "mean_dy": -0.001100325409676737,
+    "mean_abs_dy": 0.003050925930002235,
+    "share_dy_positive": 0.12745098039215685
+   },
+   "supported": false,
+   "label": "anti-propagation"
+  },
+  "5": {
+   "primary_all_answered": {
+    "n_pairs": 102,
+    "regressor": "sigma_star",
+    "slope": 0.0014021482901072078,
+    "ci95": [
+     -0.0014348153254974203,
+     0.004367987958063396
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     -0.0009844808512312325,
+     0.003853313424033588
+    ],
+    "p_one_sided": 0.1702,
+    "p_two_sided": 0.3404,
+    "mean_dx": 0.740022006019432,
+    "mean_dy": -2.9213442315147084e-05,
+    "mean_abs_dy": 0.0030630292320702923,
+    "share_dy_positive": 0.21568627450980393
+   },
+   "supported": false,
+   "label": "no propagation"
+  }
+ },
+ "by_level_pair": {
+  "(0.01, 0.02)": {
+   "primary_all_answered": {
+    "n_pairs": 170,
+    "regressor": "sigma_star",
+    "slope": -0.0025772214150661704,
+    "ci95": [
+     -0.013875434634820586,
+     0.007835706033106458
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     -0.01181559343153283,
+     0.006200494642782435
+    ],
+    "p_one_sided": 0.6709,
+    "p_two_sided": 0.6582,
+    "mean_dx": 0.5099603963407036,
+    "mean_dy": 0.0005477885798191979,
+    "mean_abs_dy": 0.0011750425523996842,
+    "share_dy_positive": 0.12352941176470589
+   },
+   "supported": false,
+   "label": "no propagation"
+  },
+  "(0.01, 0.05)": {
+   "primary_all_answered": {
+    "n_pairs": 170,
+    "regressor": "sigma_star",
+    "slope": -0.000663477737322609,
+    "ci95": [
+     -0.0034967658663429078,
+     0.0020852103118558086
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     -0.0030439121310664257,
+     0.0016577978139531136
+    ],
+    "p_one_sided": 0.6919,
+    "p_two_sided": 0.6162,
+    "mean_dx": 0.9625574622448871,
+    "mean_dy": -0.0004145591611247233,
+    "mean_abs_dy": 0.004384811184319319,
+    "share_dy_positive": 0.2235294117647059
+   },
+   "supported": false,
+   "label": "no propagation"
+  },
+  "(0.02, 0.05)": {
+   "primary_all_answered": {
+    "n_pairs": 170,
+    "regressor": "sigma_star",
+    "slope": -0.0029012841941647893,
+    "ci95": [
+     -0.009366793920003308,
+     0.0036756354775634185
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     -0.008267660031144661,
+     0.0024893427559203813
+    ],
+    "p_one_sided": 0.8153,
+    "p_two_sided": 0.3694,
+    "mean_dx": 0.5994180098189579,
+    "mean_dy": 0.0003814315227042388,
+    "mean_abs_dy": 0.004308830328909817,
+    "share_dy_positive": 0.3176470588235294
+   },
+   "supported": false,
+   "label": "no propagation"
+  }
+ },
+ "heuristics": {
+  "decision": "D95 (R3-4 A)",
+  "sets": {
+   "a6_pairs": {
+    "n_problems": 1020,
+    "heuristics": {
+     "max/givens": {
+      "pairs": {
+       "kind": "sensitivity",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.9723677363715253,
+       "median_log_ratio": -0.9723677363715253,
+       "spearman": 0.6478879191005145,
+       "slope_on_log_sigma_star": 0.4911358640776956
+      }
+     },
+     "max/shown": {
+      "pairs": {
+       "kind": "sensitivity",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.9723677363715253,
+       "median_log_ratio": -0.9723677363715253,
+       "spearman": 0.6478879191005145,
+       "slope_on_log_sigma_star": 0.4911358640776956
+      }
+     },
+     "mean/givens": {
+      "pairs": {
+       "kind": "sensitivity",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.9723677363715253,
+       "median_log_ratio": -0.9723677363715253,
+       "spearman": 0.6478879191005145,
+       "slope_on_log_sigma_star": 0.4911358640776956
+      }
+     },
+     "mean/shown": {
+      "pairs": {
+       "kind": "sensitivity",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.9723677363715253,
+       "median_log_ratio": -0.9723677363715253,
+       "spearman": 0.6402917895459496,
+       "slope_on_log_sigma_star": 0.49113586407769555
+      }
+     },
+     "rss/givens": {
+      "pairs": {
+       "kind": "sensitivity",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.5531988637476672,
+       "median_log_ratio": -0.27457663140118027,
+       "spearman": 0.617613187023573,
+       "slope_on_log_sigma_star": 0.491449541309087
+      }
+     },
+     "rss/shown": {
+      "pairs": {
+       "kind": "sensitivity",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 1.0832283693764133,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.5591253860835173,
+       "median_log_ratio": -0.16521494796632497,
+       "spearman": 0.6199000591281846,
+       "slope_on_log_sigma_star": 0.4899422421310013
+      }
+     }
+    }
+   },
+   "a6b_pairs": {
+    "n_problems": 1020,
+    "heuristics": {
+     "max/givens": {
+      "pairs": {
+       "kind": "invariance",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "equivalence_margin": 0.3,
+       "equivalent_to_zero": true,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.572683716151297,
+       "median_log_ratio": -0.572683716151297,
+       "spearman": 0.8654925988247821,
+       "slope_on_log_sigma_star": 0.7758937635606874
+      }
+     },
+     "max/shown": {
+      "pairs": {
+       "kind": "invariance",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "equivalence_margin": 0.3,
+       "equivalent_to_zero": true,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.572683716151297,
+       "median_log_ratio": -0.572683716151297,
+       "spearman": 0.8654925988247821,
+       "slope_on_log_sigma_star": 0.7758937635606874
+      }
+     },
+     "mean/givens": {
+      "pairs": {
+       "kind": "invariance",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "equivalence_margin": 0.3,
+       "equivalent_to_zero": true,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.572683716151297,
+       "median_log_ratio": -0.572683716151297,
+       "spearman": 0.8654925988247821,
+       "slope_on_log_sigma_star": 0.7758937635606874
+      }
+     },
+     "mean/shown": {
+      "pairs": {
+       "kind": "invariance",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "equivalence_margin": 0.3,
+       "equivalent_to_zero": true,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.572683716151297,
+       "median_log_ratio": -0.572683716151297,
+       "spearman": 0.8474944977242148,
+       "slope_on_log_sigma_star": 0.7758937635606873
+      }
+     },
+     "rss/givens": {
+      "pairs": {
+       "kind": "invariance",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "equivalence_margin": 0.3,
+       "equivalent_to_zero": true,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.27802096336734916,
+       "median_log_ratio": -0.004647327883394947,
+       "spearman": 0.883223970460394,
+       "slope_on_log_sigma_star": 0.8172178179298181
+      }
+     },
+     "rss/shown": {
+      "pairs": {
+       "kind": "invariance",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "equivalence_margin": 0.3,
+       "equivalent_to_zero": true,
+       "secondary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "truth",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 4.629244212465011,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.25967486230159276,
+       "median_log_ratio": 0.11852127480975683,
+       "spearman": 0.8663606448584379,
+       "slope_on_log_sigma_star": 0.8050982667065322
+      }
+     }
+    }
+   },
+   "a6c_pairs": {
+    "n_problems": 1020,
+    "heuristics": {
+     "max/givens": {
+      "pairs": {
+       "kind": "allocation",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "secondary_mean": {
+        "n_pairs": 510,
+        "mean_dy": 0.0,
+        "mean_dy_ci95": [
+         0.0,
+         0.0
+        ],
+        "p_mean_dy_gt_0": 1.0,
+        "through_origin_slope": 0.0,
+        "through_origin_ci95": [
+         0.0,
+         0.0
+        ],
+        "mean_dx": 0.6906452894681829
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.5271053405850372,
+       "median_log_ratio": -0.25690784004545186,
+       "spearman": 0.4687865105229705,
+       "slope_on_log_sigma_star": 0.25810706034041103
+      }
+     },
+     "max/shown": {
+      "pairs": {
+       "kind": "allocation",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "secondary_mean": {
+        "n_pairs": 510,
+        "mean_dy": 0.0,
+        "mean_dy_ci95": [
+         0.0,
+         0.0
+        ],
+        "p_mean_dy_gt_0": 1.0,
+        "through_origin_slope": 0.0,
+        "through_origin_ci95": [
+         0.0,
+         0.0
+        ],
+        "mean_dx": 0.6906452894681829
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.5271053405850372,
+       "median_log_ratio": -0.25690784004545186,
+       "spearman": 0.4687865105229705,
+       "slope_on_log_sigma_star": 0.25810706034041103
+      }
+     },
+     "mean/givens": {
+      "pairs": {
+       "kind": "allocation",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "secondary_mean": {
+        "n_pairs": 510,
+        "mean_dy": 0.0,
+        "mean_dy_ci95": [
+         0.0,
+         0.0
+        ],
+        "p_mean_dy_gt_0": 1.0,
+        "through_origin_slope": 0.0,
+        "through_origin_ci95": [
+         0.0,
+         0.0
+        ],
+        "mean_dx": 0.6906452894681829
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.8917661357835069,
+       "median_log_ratio": -0.8886770542642344,
+       "spearman": 0.41156693670791616,
+       "slope_on_log_sigma_star": 0.19812115578606931
+      }
+     },
+     "mean/shown": {
+      "pairs": {
+       "kind": "allocation",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "secondary_mean": {
+        "n_pairs": 510,
+        "mean_dy": 0.0,
+        "mean_dy_ci95": [
+         0.0,
+         0.0
+        ],
+        "p_mean_dy_gt_0": 1.0,
+        "through_origin_slope": 0.0,
+        "through_origin_ci95": [
+         0.0,
+         0.0
+        ],
+        "mean_dx": 0.6906452894681829
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.960210524183952,
+       "median_log_ratio": -0.960210524183952,
+       "spearman": 0.4205087644278105,
+       "slope_on_log_sigma_star": 0.19001936295556787
+      }
+     },
+     "rss/givens": {
+      "pairs": {
+       "kind": "allocation",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "secondary_mean": {
+        "n_pairs": 510,
+        "mean_dy": 0.0,
+        "mean_dy_ci95": [
+         0.0,
+         0.0
+        ],
+        "p_mean_dy_gt_0": 1.0,
+        "through_origin_slope": 0.0,
+        "through_origin_ci95": [
+         0.0,
+         0.0
+        ],
+        "mean_dx": 0.6906452894681829
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.4945738519418721,
+       "median_log_ratio": -0.0989818879359361,
+       "spearman": 0.4677101447836149,
+       "slope_on_log_sigma_star": 0.23077745476582803
+      }
+     },
+     "rss/shown": {
+      "pairs": {
+       "kind": "allocation",
+       "n_pairs_total": 510,
+       "n_pairs_both_answered": 510,
+       "primary_all_answered": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "label": "no propagation",
+       "supported": false,
+       "secondary_computation_correct": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       },
+       "secondary_mean": {
+        "n_pairs": 510,
+        "mean_dy": 0.0,
+        "mean_dy_ci95": [
+         0.0,
+         0.0
+        ],
+        "p_mean_dy_gt_0": 1.0,
+        "through_origin_slope": 0.0,
+        "through_origin_ci95": [
+         0.0,
+         0.0
+        ],
+        "mean_dx": 0.6906452894681829
+       },
+       "sensitivity_no_sigma_zero": {
+        "n_pairs": 510,
+        "regressor": "sigma_star",
+        "slope": 0.0,
+        "ci95": [
+         0.0,
+         0.0
+        ],
+        "ci_level": 0.95,
+        "ci": [
+         0.0,
+         0.0
+        ],
+        "p_one_sided": 1.0,
+        "p_two_sided": 1.0,
+        "mean_dx": 0.6906452894681829,
+        "mean_dy": 0.0,
+        "mean_abs_dy": 0.0,
+        "share_dy_positive": 0.0
+       }
+      },
+      "per_problem": {
+       "n": 1020,
+       "median_abs_log_ratio": 0.49096212641664927,
+       "median_log_ratio": -0.04944497282555771,
+       "spearman": 0.4604808306857558,
+       "slope_on_log_sigma_star": 0.2221056841252104
+      }
+     }
+    }
+   }
+  }
+ },
+ "x1_a6_a6b": {
+  "noise": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "label": "no propagation",
+    "supported": false,
+    "secondary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    }
+   },
+   "joint": {
+    "verdict": "no propagation (lookup-like)",
+    "labelled_verdict": "no propagation",
+    "A6_label": "no propagation",
+    "A6_supported": false,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "label_ci": [
+       0.0,
+       0.0
+      ],
+      "label_ci_level": 0.9,
+      "label": "no propagation",
+      "n_pairs": 510,
+      "test": "slope > 0 (one-sided)",
+      "p": 1.0
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": 0.0,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "n_pairs": 510,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 1.0
+     }
+    ]
+   }
+  },
+  "noise_text": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.002089043836826273,
+     "ci95": [
+      -0.0003143660775678605,
+      0.005271661215034057
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -5.106378033777631e-05,
+      0.00462775063299243
+     ],
+     "p_one_sided": 0.0555,
+     "p_two_sided": 0.111,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 6.922684240000227e-06,
+     "mean_abs_dy": 0.0010930315215220685,
+     "share_dy_positive": 0.01764705882352941
+    },
+    "label": "no propagation",
+    "supported": false,
+    "secondary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.002089043836826273,
+     "ci95": [
+      -0.0003143660775678605,
+      0.005271661215034057
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.0003143660775678604,
+      0.005271661215034057
+     ],
+     "p_one_sided": 0.0555,
+     "p_two_sided": 0.111,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 6.922684240000227e-06,
+     "mean_abs_dy": 0.0010930315215220685,
+     "share_dy_positive": 0.01764705882352941
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.002089043836826273,
+     "ci95": [
+      -0.0003143660775678605,
+      0.005271661215034057
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      -0.0003143660775678604,
+      0.005271661215034057
+     ],
+     "p_one_sided": 0.0555,
+     "p_two_sided": 0.111,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 6.922684240000227e-06,
+     "mean_abs_dy": 0.0010930315215220685,
+     "share_dy_positive": 0.01764705882352941
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 5.436124717206139e-05,
+     "ci95": [
+      -0.00020064543068445116,
+      0.00029084676751521196
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.00015451877564970424,
+      0.0002546610583577965
+     ],
+     "p_one_sided": 0.3194,
+     "p_two_sided": 0.6388,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0001437358751143278,
+     "mean_abs_dy": 0.0005017941060476104,
+     "share_dy_positive": 0.011764705882352941
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 5.436124717206139e-05,
+     "ci95": [
+      -0.00020064543068445116,
+      0.00029084676751521196
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.00015451877564970424,
+      0.0002546610583577965
+     ],
+     "p_one_sided": 0.3194,
+     "p_two_sided": 0.6388,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0001437358751143278,
+     "mean_abs_dy": 0.0005017941060476104,
+     "share_dy_positive": 0.011764705882352941
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 5.436124717206139e-05,
+     "ci95": [
+      -0.00020064543068445116,
+      0.00029084676751521196
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.00015451877564970424,
+      0.0002546610583577965
+     ],
+     "p_one_sided": 0.3194,
+     "p_two_sided": 0.6388,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0001437358751143278,
+     "mean_abs_dy": 0.0005017941060476104,
+     "share_dy_positive": 0.011764705882352941
+    }
+   },
+   "joint": {
+    "verdict": "no propagation (lookup-like)",
+    "labelled_verdict": "no propagation",
+    "A6_label": "no propagation",
+    "A6_supported": false,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": 0.002089043836826273,
+      "ci95": [
+       -0.0003143660775678605,
+       0.005271661215034057
+      ],
+      "label_ci": [
+       -5.106378033777631e-05,
+       0.00462775063299243
+      ],
+      "label_ci_level": 0.9,
+      "label": "no propagation",
+      "n_pairs": 510,
+      "test": "slope > 0 (one-sided)",
+      "p": 0.0555
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": 5.436124717206139e-05,
+      "ci": [
+       -0.00015451877564970424,
+       0.0002546610583577965
+      ],
+      "n_pairs": 510,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 0.6388
+     }
+    ]
+   }
+  },
+  "noise_text_magnitudes": {
+   "A6": {
+    "kind": "sensitivity",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.06345098136887775,
+     "ci95": [
+      0.025473728175195283,
+      0.1035126938041103
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0311097649734361,
+      0.09723545394743963
+     ],
+     "p_one_sided": 0.0008,
+     "p_two_sided": 0.0016,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 0.022844313539097647,
+     "mean_abs_dy": 0.06010179270638158,
+     "share_dy_positive": 0.48627450980392156
+    },
+    "label": "partial propagation",
+    "supported": true,
+    "secondary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.06345098136887775,
+     "ci95": [
+      0.025473728175195283,
+      0.1035126938041103
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      0.025473728175195283,
+      0.1035126938041103
+     ],
+     "p_one_sided": 0.0008,
+     "p_two_sided": 0.0016,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 0.022844313539097647,
+     "mean_abs_dy": 0.06010179270638158,
+     "share_dy_positive": 0.48627450980392156
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.06345098136887775,
+     "ci95": [
+      0.025473728175195283,
+      0.1035126938041103
+     ],
+     "ci_level": 0.95,
+     "ci": [
+      0.025473728175195283,
+      0.1035126938041103
+     ],
+     "p_one_sided": 0.0008,
+     "p_two_sided": 0.0016,
+     "mean_dx": 1.0832283693764133,
+     "mean_dy": 0.022844313539097647,
+     "mean_abs_dy": 0.06010179270638158,
+     "share_dy_positive": 0.48627450980392156
+    }
+   },
+   "A6b": {
+    "kind": "invariance",
+    "n_pairs_total": 510,
+    "n_pairs_both_answered": 510,
+    "primary_computation_correct": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": -0.00041296101834935263,
+     "ci95": [
+      -0.002731491700814138,
+      0.0017208053359784438
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.002371168442226444,
+      0.0013892539107489145
+     ],
+     "p_one_sided": 0.6466,
+     "p_two_sided": 0.7068,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0048326082110978705,
+     "mean_abs_dy": 0.02679730970965944,
+     "share_dy_positive": 0.45294117647058824
+    },
+    "equivalence_margin": 0.3,
+    "equivalent_to_zero": true,
+    "secondary_all_answered": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": -0.00041296101834935263,
+     "ci95": [
+      -0.002731491700814138,
+      0.0017208053359784438
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.002371168442226444,
+      0.0013892539107489145
+     ],
+     "p_one_sided": 0.6466,
+     "p_two_sided": 0.7068,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0048326082110978705,
+     "mean_abs_dy": 0.02679730970965944,
+     "share_dy_positive": 0.45294117647058824
+    },
+    "sensitivity_no_sigma_zero": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": -0.00041296101834935263,
+     "ci95": [
+      -0.002731491700814138,
+      0.0017208053359784438
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.002371168442226444,
+      0.0013892539107489145
+     ],
+     "p_one_sided": 0.6466,
+     "p_two_sided": 0.7068,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0048326082110978705,
+     "mean_abs_dy": 0.02679730970965944,
+     "share_dy_positive": 0.45294117647058824
+    }
+   },
+   "joint": {
+    "verdict": "propagates",
+    "labelled_verdict": "partial propagation",
+    "A6_label": "partial propagation",
+    "A6_supported": true,
+    "A6b_equivalent_to_zero": true,
+    "table": [
+     {
+      "set": "A6 (sensitivity)",
+      "ideal_slope": 1.0,
+      "slope": 0.06345098136887775,
+      "ci95": [
+       0.025473728175195283,
+       0.1035126938041103
+      ],
+      "label_ci": [
+       0.0311097649734361,
+       0.09723545394743963
+      ],
+      "label_ci_level": 0.9,
+      "label": "partial propagation",
+      "n_pairs": 510,
+      "test": "slope > 0 (one-sided)",
+      "p": 0.0008
+     },
+     {
+      "set": "A6b (invariance)",
+      "ideal_slope": 0.0,
+      "slope": -0.00041296101834935263,
+      "ci": [
+       -0.002371168442226444,
+       0.0013892539107489145
+      ],
+      "n_pairs": 510,
+      "test": "TOST |slope| < 0.3",
+      "p_two_sided_vs_0": 0.7068
+     }
+    ]
+   }
+  }
+ }
+}

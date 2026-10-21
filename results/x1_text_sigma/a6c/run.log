@@ -1,0 +1,46 @@
+# X1 on A6c, the noise-allocation pairs (D99)
+
+X1 (D73) refit exactly: reproduction of D73's published numbers passed (max abs difference 0.0e+00, tolerance 1e-09). Every pair enters (X1 states no answer). Slope: OLS of Δ ln σ̂ on Δ ln σ* with an intercept, 90% CI, one-sided bootstrap over pairs (D95); ideal 1.
+
+| σ source | A6c slope [90% CI] | p (> 0) | supported | mean Δ ln σ̂ | through-origin slope | identical features | identical σ̂ |
+|---|---|---|---|---|---|---|---|
+| X1 noise | +0.000 [+0.000, +0.000] | 1.0 | False | +0.0000 | +0.0000 | 47.5% | 100.0% |
+| X1 noise_text | -0.002 [-0.007, +0.003] | 0.7201 | False | -0.0004 | -0.0008 | 17.3% | 62.5% |
+| X1 noise_text_magnitudes (primary) | -0.002 [-0.003, -0.000] | 0.9692 | False | +0.0002 | -0.0000 | 17.3% | 57.5% |
+| reference σ̂ = σ* | +1.000 [+1.000, +1.000] | 0.0 | True | +0.6906 | +1.0000 | – | – |
+
+## One table: A6 / A6b / A6c pair statistics (X1, the noise heuristics, σ*)
+
+A6 and A6c: slope on Δ ln σ* (ideal 1; A6 primary on computation-correct pairs, here all). A6b: slope on Δ ln truth (ideal 0, TOST margin 0.3).
+
+| σ source | A6 slope | A6b slope (≡ 0?) | A6c slope (supported?) |
+|---|---|---|---|
+| X1 noise | +0.000 [+0.000, +0.000] | +0.000 [+0.000, +0.000] (True) | +0.000 [+0.000, +0.000] (False) |
+| X1 noise_text | +0.002 [-0.000, +0.005] | +0.000 [-0.000, +0.000] (True) | -0.002 [-0.007, +0.003] (False) |
+| X1 noise_text_magnitudes | +0.063 [+0.031, +0.097] | -0.000 [-0.002, +0.001] (True) | -0.002 [-0.003, -0.000] (False) |
+| heuristic max/givens | +0.000 [+0.000, +0.000] | +0.000 [+0.000, +0.000] (True) | +0.000 [+0.000, +0.000] (False) |
+| heuristic max/shown | +0.000 [+0.000, +0.000] | +0.000 [+0.000, +0.000] (True) | +0.000 [+0.000, +0.000] (False) |
+| heuristic mean/givens | +0.000 [+0.000, +0.000] | +0.000 [+0.000, +0.000] (True) | +0.000 [+0.000, +0.000] (False) |
+| heuristic mean/shown | +0.000 [+0.000, +0.000] | +0.000 [+0.000, +0.000] (True) | +0.000 [+0.000, +0.000] (False) |
+| heuristic rss/givens | +0.000 [+0.000, +0.000] | +0.000 [+0.000, +0.000] (True) | +0.000 [+0.000, +0.000] (False) |
+| heuristic rss/shown | +0.000 [+0.000, +0.000] | +0.000 [+0.000, +0.000] (True) | +0.000 [+0.000, +0.000] (False) |
+| σ̂ = σ* | +1.000 | +0.000 | +1.000 [+1.000, +1.000] (True) |
+
+## Primary feature set by depth
+
+| depth | pairs | slope [90% CI] | supported |
+|---|---|---|---|
+| 1 | 102 | -0.003 [-0.007, +0.001] | False |
+| 2 | 102 | -0.001 [-0.004, +0.002] | False |
+| 3 | 102 | -0.002 [-0.006, +0.001] | False |
+| 4 | 102 | -0.005 [-0.008, -0.002] | False |
+| 5 | 102 | +0.001 [-0.001, +0.004] | False |
+
+## Primary feature set by level pair (l, h)
+
+| level pair (l, h) | pairs | slope [90% CI] | supported |
+|---|---|---|---|
+| (0.01, 0.02) | 170 | -0.003 [-0.012, +0.006] | False |
+| (0.01, 0.05) | 170 | -0.001 [-0.003, +0.002] | False |
+| (0.02, 0.05) | 170 | -0.003 [-0.008, +0.002] | False |
+

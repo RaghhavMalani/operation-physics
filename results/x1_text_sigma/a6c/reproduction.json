@@ -1,0 +1,24 @@
+{
+ "tolerance": 1e-09,
+ "feature_sets": {
+  "noise": {
+   "n_compared": 40,
+   "max_abs_diff": 0.0,
+   "worst": "/test_accuracy/n",
+   "ok": true
+  },
+  "noise_text": {
+   "n_compared": 40,
+   "max_abs_diff": 0.0,
+   "worst": "/test_accuracy/n",
+   "ok": true
+  },
+  "noise_text_magnitudes": {
+   "n_compared": 40,
+   "max_abs_diff": 0.0,
+   "worst": "/test_accuracy/n",
+   "ok": true
+  }
+ },
+ "ok": true
+}
