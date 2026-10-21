@@ -3496,3 +3496,11 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 7. **Stage C marked ready after its CPU tests** (`results/queue_stage_b/STAGE_C_READY`). Your 3.5 h gate decides; with
    stage B's three seeds at ~2 h each it is expected to be skipped tonight. Its GPU path is untested.
 8. **My own commits take the queue's flock** (`.git/queue-commit.lock`), as D97 says.
+9. **Stage B's eval loader reports `tokenizer_matches.backend: False`** (every earlier eval on the merged SFT base:
+   True). Checked on CPU while seed 0's eval ran:
+   - **The training tokenizer** (saved with the adapter by Unsloth) and **the eval's** (the pinned dir's) differ
+     only in the post-processor: `TemplateProcessing` with no special tokens vs `ByteLevel`. Neither adds a token.
+   - **The vocab, added tokens, chat template, pad (151665) and eos (151645) are equal.** Encodings are identical on
+     300 prompt + completion texts of the training data.
+   - **Decision:** benign; the eval goes on. Alternative: stop and rebuild the eval tokenizer from the adapter dir.
+     Rejected, since nothing it encodes differs.
