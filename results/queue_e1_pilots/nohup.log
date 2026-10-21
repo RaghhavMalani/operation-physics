@@ -18,3 +18,7 @@
 [08:27:13] start e1d_train (timeout 19667s): uv run python -m physcal.train.e1 train --config grpo_e1d --stop-at 2026-10-21T13:40:00+05:30
 [10:34:54] end e1d_train: exit 0
 [10:34:54] e1d: 300 steps completed; checkpoint-150 
+[10:34:58] commit 'e1d (D94): training, 300 steps (exit 0)': pushed
+[10:34:58] GPU at 62C, memory.used 299 MiB
+[10:34:58] start e1d_eval_final_4bit (timeout 1200s): uv run python -m physcal.train.e1 eval --run results/train/e1d-sigma-only-free-seed0 --adapter final_adapter --out-name final_4bit
+[10:38:27] end e1d_eval_final_4bit: exit 0
