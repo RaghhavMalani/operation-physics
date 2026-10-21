@@ -1,0 +1,30 @@
+# Phase 12 stage A (DECISIONS.md D100; R3-4 A, R3-6): the scoring audit and the oracle-centred diagnostic. CPU only,
+# descriptive (no hypothesis test). physcal/eval/oracle_centred.py (the diagnostic), physcal/eval/stage_a.py (the audit).
+generator_version: 2.0.0+bdbb2279
+pair_sets: [a6_pairs, a6b_pairs, a6c_pairs]   # data/eval_sets/<generator_version>/<name>.jsonl, checksums checked
+gate_rows: results/sigma_star_gate_capped/rows.jsonl   # 10,005 noisy problems (+ 500 noise-0 rows, left out)
+mc:
+  n_draws: 4000                     # fresh predictive draws per problem (the generator's n_mc); an MC estimate
+  seed_tag: stage_a                 # per-problem stream: sha256("<tag>|family|depth|seed") -> its own seed
+coverage_k: [1, 2]                  # ln truth inside ln f(x_meas) +/- k sigma (nominal 68.27% / 95.45%)
+bootstrap: 2000                     # over clusters: pairs on the pair sets (R3-7), problems on the gate sample
+seed: 0
+optimum:                            # question 1: sigma = c * sigma*, realized crps_log, mu = f(x_meas)
+  c_min: 0.125
+  c_max: 8.0
+  n_grid: 241                       # log-spaced
+  report_c: [0.5, 1.0, 2.0]
+alternatives:                       # question 2: paired score differences against sigma*
+  scales: [0.5, 2.0]                # c * sigma*
+  heuristics: [max, mean, rss]      # D95's noise heuristics
+  heuristic_scope: givens           # D95's primary scope
+  x1_predictions: results/x1_text_sigma/a6c/predictions.jsonl   # D99; used only if its reproduction passed
+  x1_reproduction: results/x1_text_sigma/a6c/reproduction.json
+  constant: median_sigma_star       # an oracle constant: the pooled median sigma* of the pair sets
+mu_error:                           # descriptive: mu = f(x_meas) * (1 + delta)
+  deltas: [0.0, 0.001, 0.005, 0.01, 0.05]
+  sources: [sigma_star, heuristic_rss]
+identity_check:                     # question 4: the diagnostic's realized score vs reward()'s score_final
+  n_per_set: 50
+  sources: [sigma_star, heuristic_rss]
+output_dir: results/stage_a

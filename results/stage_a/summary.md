@@ -1,0 +1,127 @@
+# Phase 12 stage A: scoring audit and oracle-centred diagnostic (D100)
+
+Verifier 1.1.0 crps_log, every forecast centred at μ = f(x_meas). Descriptive, no tests.
+
+## 1. Optimum: σ = c·σ*, mean realized crps_log (capped gate sample)
+
+10005 noisy problems; c on a log grid 0.125–8 (241 points); vectorized vs scalar verifier score: max abs diff 9.5e-17.
+
+| cell (depth, level) | n | argmax c [95% CI] | score at c = 1 | loss at c = 0.5 | loss at c = 2 |
+|---|---|---|---|---|---|
+| pooled | 10005 | 1.000 [0.966, 1.017] | -0.03420 | +0.00271 | +0.00567 |
+| 1|0.01 | 667 | 1.000 [0.933, 1.072] | -0.00963 | +0.00083 | +0.00155 |
+| 1|0.02 | 667 | 1.000 [0.949, 1.072] | -0.01925 | +0.00161 | +0.00306 |
+| 1|0.05 | 667 | 1.000 [0.933, 1.053] | -0.04555 | +0.00365 | +0.00752 |
+| 2|0.01 | 667 | 1.035 [0.966, 1.110] | -0.01263 | +0.00107 | +0.00186 |
+| 2|0.02 | 667 | 0.983 [0.917, 1.053] | -0.02326 | +0.00174 | +0.00386 |
+| 2|0.05 | 667 | 0.983 [0.901, 1.053] | -0.05510 | +0.00395 | +0.00932 |
+| 3|0.01 | 667 | 1.035 [0.966, 1.091] | -0.01383 | +0.00123 | +0.00209 |
+| 3|0.02 | 667 | 1.035 [0.983, 1.110] | -0.02709 | +0.00250 | +0.00402 |
+| 3|0.05 | 667 | 1.000 [0.933, 1.072] | -0.06438 | +0.00516 | +0.01073 |
+| 4|0.01 | 667 | 1.000 [0.933, 1.072] | -0.01532 | +0.00127 | +0.00257 |
+| 4|0.02 | 667 | 0.983 [0.933, 1.035] | -0.02906 | +0.00253 | +0.00533 |
+| 4|0.05 | 667 | 0.966 [0.901, 1.035] | -0.06792 | +0.00477 | +0.01181 |
+| 5|0.01 | 667 | 1.072 [1.000, 1.129] | -0.01868 | +0.00183 | +0.00244 |
+| 5|0.02 | 667 | 1.000 [0.933, 1.072] | -0.03414 | +0.00282 | +0.00566 |
+| 5|0.05 | 667 | 0.966 [0.901, 1.035] | -0.07711 | +0.00563 | +0.01332 |
+
+## Oracle-centred diagnostic, pooled A6 + A6b + A6c (3060 problems, 1530 pairs; CIs: bootstrap over pairs)
+
+X1: used: D99's reproduction passed. MC check: fresh CRPS-optimal σ* vs stored, median |ln ratio| 0.0124 (max 0.0682).
+
+| source | realized crps_log | expected crps_log | median ln(σ/σ*) | median abs ln(σ/σ*) | vol beta | 1σ cov. | 2σ cov. |
+|---|---|---|---|---|---|---|---|
+| sigma_star | -0.0384 [-0.0406, -0.0363] | -0.0365 [-0.0378, -0.0351] | +0.000 | 0.000 | +1.000 [+1.000, +1.000] | 0.678 | 0.949 |
+| 0.5x_sigma_star | -0.0415 [-0.0442, -0.0391] | -0.0394 [-0.0408, -0.0379] | -0.693 | 0.693 | +1.000 [+1.000, +1.000] | 0.364 | 0.678 |
+| 2x_sigma_star | -0.0440 [-0.0460, -0.0422] | -0.0423 [-0.0439, -0.0408] | +0.693 | 0.693 | +1.000 [+1.000, +1.000] | 0.949 | 0.999 |
+| heuristic_max | -0.0436 [-0.0464, -0.0411] | -0.0414 [-0.0429, -0.0398] | -0.610 | 0.687 | +0.474 [+0.451, +0.496] | 0.446 | 0.684 |
+| heuristic_mean | -0.0444 [-0.0473, -0.0418] | -0.0423 [-0.0439, -0.0407] | -0.795 | 0.796 | +0.462 [+0.443, +0.482] | 0.370 | 0.619 |
+| heuristic_rss | -0.0412 [-0.0438, -0.0388] | -0.0394 [-0.0408, -0.0379] | -0.081 | 0.398 | +0.489 [+0.469, +0.509] | 0.616 | 0.838 |
+| constant_median_sigma_star | -0.0430 [-0.0458, -0.0405] | -0.0409 [-0.0424, -0.0393] | +0.000 | 0.605 | +0.000 [+0.000, +0.000] | 0.680 | 0.855 |
+| x1_noise | -0.0412 [-0.0437, -0.0389] | -0.0394 [-0.0408, -0.0379] | -0.088 | 0.374 | +0.469 [+0.450, +0.488] | 0.617 | 0.842 |
+| x1_noise_text | -0.0406 [-0.0431, -0.0384] | -0.0388 [-0.0402, -0.0374] | -0.038 | 0.322 | +0.559 [+0.540, +0.577] | 0.637 | 0.865 |
+| x1_noise_text_magnitudes | -0.0405 [-0.0430, -0.0383] | -0.0386 [-0.0400, -0.0372] | -0.026 | 0.329 | +0.589 [+0.570, +0.606] | 0.640 | 0.873 |
+
+## 2. Resolution: σ* − alternative, per problem (pooled)
+
+n₂ = (2·SD / mean)²: problems for the mean difference to sit two standard errors from 0 (problems treated as independent; members of a pair are not).
+
+| alternative | realized mean diff | realized SD | realized n₂ | expected mean diff | expected SD | expected n₂ | Var ratio (realized / expected) | σ* better: realized | σ* better: expected |
+|---|---|---|---|---|---|---|---|---|---|
+| 0.5x_sigma_star | +0.00313 | 0.01140 | 53 | +0.00291 | 0.00239 | 3 | 22.7 | 56.5% | 100.0% |
+| 2x_sigma_star | +0.00567 | 0.01513 | 28 | +0.00584 | 0.00478 | 3 | 10.0 | 76.5% | 100.0% |
+| heuristic_max | +0.00527 | 0.01685 | 41 | +0.00487 | 0.00741 | 9 | 5.2 | 59.3% | 98.4% |
+| heuristic_mean | +0.00607 | 0.01795 | 35 | +0.00581 | 0.00829 | 8 | 4.7 | 60.5% | 98.9% |
+| heuristic_rss | +0.00281 | 0.01248 | 79 | +0.00286 | 0.00495 | 12 | 6.4 | 58.0% | 91.3% |
+| constant_median_sigma_star | +0.00461 | 0.01551 | 45 | +0.00437 | 0.00663 | 9 | 5.5 | 65.2% | 98.4% |
+| x1_noise | +0.00280 | 0.01246 | 79 | +0.00285 | 0.00493 | 12 | 6.4 | 58.8% | 97.6% |
+| x1_noise_text | +0.00228 | 0.01123 | 97 | +0.00229 | 0.00422 | 14 | 7.1 | 59.5% | 96.5% |
+| x1_noise_text_magnitudes | +0.00214 | 0.01076 | 101 | +0.00212 | 0.00389 | 13 | 7.6 | 60.7% | 97.0% |
+
+## Per set (oracle-centred)
+
+| set | source | realized crps_log | expected crps_log | median abs ln(σ/σ*) | vol beta | 1σ cov. |
+|---|---|---|---|---|---|---|
+| a6_pairs | sigma_star | -0.0514 | -0.0454 | 0.000 | +1.000 | 0.652 |
+| a6_pairs | 0.5x_sigma_star | -0.0561 | -0.0490 | 0.693 | +1.000 | 0.337 |
+| a6_pairs | 2x_sigma_star | -0.0577 | -0.0525 | 0.693 | +1.000 | 0.939 |
+| a6_pairs | heuristic_max | -0.0613 | -0.0537 | 0.972 | +0.491 | 0.317 |
+| a6_pairs | heuristic_mean | -0.0613 | -0.0537 | 0.972 | +0.491 | 0.317 |
+| a6_pairs | heuristic_rss | -0.0564 | -0.0500 | 0.553 | +0.491 | 0.523 |
+| a6_pairs | constant_median_sigma_star | -0.0589 | -0.0515 | 0.664 | +0.000 | 0.578 |
+| a6_pairs | x1_noise | -0.0564 | -0.0499 | 0.548 | +0.475 | 0.520 |
+| a6_pairs | x1_noise_text | -0.0558 | -0.0494 | 0.551 | +0.524 | 0.541 |
+| a6_pairs | x1_noise_text_magnitudes | -0.0555 | -0.0491 | 0.539 | +0.539 | 0.547 |
+| a6b_pairs | sigma_star | -0.0299 | -0.0292 | 0.000 | +1.000 | 0.680 |
+| a6b_pairs | 0.5x_sigma_star | -0.0324 | -0.0316 | 0.693 | +1.000 | 0.365 |
+| a6b_pairs | 2x_sigma_star | -0.0344 | -0.0340 | 0.693 | +1.000 | 0.951 |
+| a6b_pairs | heuristic_max | -0.0328 | -0.0320 | 0.573 | +0.776 | 0.420 |
+| a6b_pairs | heuristic_mean | -0.0328 | -0.0320 | 0.573 | +0.776 | 0.420 |
+| a6b_pairs | heuristic_rss | -0.0307 | -0.0300 | 0.278 | +0.817 | 0.659 |
+| a6b_pairs | constant_median_sigma_star | -0.0330 | -0.0324 | 0.591 | +0.000 | 0.747 |
+| a6b_pairs | x1_noise | -0.0307 | -0.0301 | 0.261 | +0.780 | 0.673 |
+| a6b_pairs | x1_noise_text | -0.0304 | -0.0297 | 0.170 | +0.837 | 0.672 |
+| a6b_pairs | x1_noise_text_magnitudes | -0.0303 | -0.0297 | 0.157 | +0.855 | 0.672 |
+| a6c_pairs | sigma_star | -0.0338 | -0.0351 | 0.000 | +1.000 | 0.702 |
+| a6c_pairs | 0.5x_sigma_star | -0.0360 | -0.0379 | 0.693 | +1.000 | 0.391 |
+| a6c_pairs | 2x_sigma_star | -0.0400 | -0.0407 | 0.693 | +1.000 | 0.957 |
+| a6c_pairs | heuristic_max | -0.0368 | -0.0388 | 0.527 | +0.258 | 0.602 |
+| a6c_pairs | heuristic_mean | -0.0392 | -0.0416 | 0.892 | +0.198 | 0.375 |
+| a6c_pairs | heuristic_rss | -0.0364 | -0.0383 | 0.495 | +0.231 | 0.667 |
+| a6c_pairs | constant_median_sigma_star | -0.0369 | -0.0389 | 0.572 | +0.000 | 0.714 |
+| a6c_pairs | x1_noise | -0.0364 | -0.0383 | 0.466 | +0.226 | 0.660 |
+| a6c_pairs | x1_noise_text | -0.0357 | -0.0375 | 0.401 | +0.397 | 0.698 |
+| a6c_pairs | x1_noise_text_magnitudes | -0.0356 | -0.0373 | 0.386 | +0.448 | 0.702 |
+
+## 3. Ranking
+
+- by mean realized crps_log: sigma_star, x1_noise_text_magnitudes, x1_noise_text, x1_noise, heuristic_rss, 0.5x_sigma_star, constant_median_sigma_star, heuristic_max, 2x_sigma_star, heuristic_mean
+- by median abs ln(σ/σ*): sigma_star, x1_noise_text, x1_noise_text_magnitudes, x1_noise, heuristic_rss, constant_median_sigma_star, heuristic_max, 0.5x_sigma_star, 2x_sigma_star, heuristic_mean
+- Kendall τ = +0.854 (p = 0.000644)
+
+## 4. Verifier details
+
+| source | share at the −5 clip | share where the 1e-6 floor binds | share σ = 0 |
+|---|---|---|---|
+| sigma_star | 0.0000 | 0.0000 | 0.0000 |
+| 0.5x_sigma_star | 0.0000 | 0.0000 | 0.0000 |
+| 2x_sigma_star | 0.0000 | 0.0000 | 0.0000 |
+| heuristic_max | 0.0000 | 0.0000 | 0.0000 |
+| heuristic_mean | 0.0000 | 0.0000 | 0.0000 |
+| heuristic_rss | 0.0000 | 0.0000 | 0.0000 |
+| constant_median_sigma_star | 0.0000 | 0.0000 | 0.0000 |
+| x1_noise | 0.0000 | 0.0000 | 0.0000 |
+| x1_noise_text | 0.0000 | 0.0000 | 0.0000 |
+| x1_noise_text_magnitudes | 0.0000 | 0.0000 | 0.0000 |
+
+Identity check (reward()'s score_final vs the diagnostic, rendered answers in SI): 300 answers, 300 exact, max abs diff 0.0, 0 parse/unit failures.
+
+## μ error against σ signal (μ = f(x_meas)·(1 + δ), pooled mean realized crps_log)
+
+| δ | sigma_star | heuristic_rss | difference |
+|---|---|---|---|
+| 0.0% | -0.03835 | -0.04116 | +0.00281 |
+| 0.1% | -0.03837 | -0.04117 | +0.00280 |
+| 0.5% | -0.03859 | -0.04135 | +0.00276 |
+| 1.0% | -0.03921 | -0.04189 | +0.00268 |
+| 5.0% | -0.05436 | -0.05630 | +0.00195 |
