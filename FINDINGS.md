@@ -1100,3 +1100,93 @@ and reproduce `results/x2/results.json` exactly. The random-init and cross-fitte
   - **Code and config:** `physcal/eval/x2_robustness.py`, `configs/x2_robustness.yaml`.
   - **Results:** `results/x2/robustness/` (`results.json`, `summary.md`, the logs, including the 1-thread run the
     reproduction check refused).
+
+## #23. X1 and the noise heuristics on A6c: no surface reader propagates noise allocation; X1's A6 "partial propagation" does not transfer (D95 + D99; 2026-10-21)
+
+**Status:** descriptive. These are bars for Phase 12, not tests. X1 was refit exactly (D73's fit set and
+hyperparameters; every published D73 number reproduced with max difference 0.0) and applied to the frozen A6c set
+(510 pairs; checksum checked). Every pair enters, since none of these sources states an answer. Slope: OLS of
+Δ ln σ̂ on Δ ln σ\* with an intercept, 90% CI, one-sided bootstrap over pairs (ideal 1).
+
+| σ source | A6 slope (FINDINGS #17) | A6b slope (≡ 0?) | **A6c slope** (supported?) |
+|---|---|---|---|
+| X1 noise | +0.000 | +0.000 (yes) | +0.000 [+0.000, +0.000] (no) |
+| X1 noise_text | +0.002 [−0.000, +0.005] | +0.000 (yes) | −0.002 [−0.007, +0.003] (no) |
+| **X1 noise_text_magnitudes (primary)** | **+0.063 [+0.031, +0.097]** | −0.000 (yes) | **−0.002 [−0.003, −0.000] (no)** |
+| heuristics max / mean / RSS (givens or shown) | +0.000 | +0.000 (yes) | +0.000 (no) |
+| reference σ̂ = σ\* | +1.000 | +0.000 | +1.000 (yes) |
+
+- **What A6c removes:**
+  - **The surface:** within an A6c pair the shown values and the multiset of "± p%" are identical, so a reader of
+    the surface has nothing to move on.
+  - **X1:** its σ̂ is bit-identical within 57.5% of pairs. The rest differ only through TF-IDF tokens with attached
+    punctuation ("5%," vs "5%."), and the mean Δ ln σ̂ is +0.0002.
+- **X1's A6 slope came from the magnitudes.** On A6 the displayed values differ within a pair, so magnitude
+  features can follow σ\*. On A6c they cannot.
+- **The bar for Phase 12:** any positive A6c slope beats every surface baseline built so far. A6c is the cleanest
+  of the three tests of "the model propagates noise through the chain".
+- **A detail:** X1's noise-only feature vectors are bit-identical in only 47.5% of pairs, yet its σ̂ is identical in
+  100%. The mean and RSS of the same levels differ in the last bit with summation order (the D96 effect), and the
+  GBT's binning absorbs that.
+- **Provenance:**
+  - **Code:** `physcal/eval/x1_a6c.py`, `tests/test_x1_a6c.py`.
+  - **Results:** `results/x1_text_sigma/a6c/`: `reproduction.json`, `results.json`, `summary.md`, and
+    `predictions.jsonl` (σ̂ per member).
+  - **Heuristics:** `results/noise_heuristics/`.
+
+## #24. Phase 12 stage A: crps_log targets σ\*, but one realized truth barely tells a 2×-off σ from σ\*; the expected score against the known predictive distribution is 5–23× less noisy (D100; 2026-10-21)
+
+**Status:** descriptive; no hypothesis test. Every forecast is centred at μ = f(x_meas) (R3-6's oracle-centred
+diagnostic), so no problem is selected on the correctness of an answer. Verifier 1.1.0 crps_log, unchanged; the
+diagnostic's realized score equals `reward()`'s `score_final` exactly (300 / 300 rendered answers).
+
+- **1. The optimum (capped gate sample, 10,005 noisy problems):**
+  - **Pooled:** the mean realized crps_log over σ = c·σ\* peaks at **c = 1.000 [0.966, 1.017]**, and every one of
+    the 15 depth × level cells has a CI containing 1. The verifier's score, realized against the noise-free truth,
+    rewards σ\* on average.
+  - **The curve is flat and asymmetric:**
+    - **c = 0.5** loses 0.0027, about 8% of the score at c = 1 (−0.034);
+    - **c = 2** loses 0.0057, about 17%.
+    - **This is the Gaussian CRPS itself:** E CRPS = √(2(1 + c²)/π) − c/√π, in units of σ\*. In log terms,
+      understating σ by 2× costs half as much as overstating it by 2×.
+- **2. The resolution per problem (A6 + A6b + A6c, 3,060 problems):**
+
+  | σ − alternative | realized mean diff | realized SD | σ\* better, realized | σ\* better, expected | Var ratio realized / expected |
+  |---|---|---|---|---|---|
+  | 0.5·σ\* | +0.0031 | 0.0114 | 56.5% | 100% | 22.7 |
+  | 2·σ\* | +0.0057 | 0.0151 | 76.5% | 100% | 10.0 |
+  | RSS heuristic | +0.0028 | 0.0125 | 58.0% | 91.3% | 6.4 |
+  | X1 primary | +0.0021 | 0.0108 | 60.7% | 97.0% | 7.6 |
+  | constant (median σ\*) | +0.0046 | 0.0155 | 65.2% | 98.4% | 5.5 |
+
+  - **On one realized truth,** σ\* beats an alternative off by 2× on only 56–77% of problems. That is the
+    per-prompt signal a σ-RL step sees.
+  - **Against the predictive distribution** (fresh MC, N = 4,000), σ\* wins on 91–100% of problems, and the score
+    differences have 5–23× less variance. This confirms R3's consensus point 6 numerically.
+  - **To separate σ\* from RSS by two standard errors** takes ~80 problems realized and ~12 expected.
+- **3. The ranking:** ranking the sources by mean realized score agrees with ranking them by median |ln(σ / σ\*)|
+  (Kendall τ = 0.85). The disagreements all come from the asymmetry: 0.5·σ\* outscores sources that are closer to
+  σ\* in log terms.
+- **4. The verifier's details:** no oracle-centred score reaches the −5 clip, and the 1e-6 floor never binds.
+- **Oracle-centred baselines (pooled):**
+  - **X1 primary:** the best non-oracle source, with median |ln(σ / σ\*)| 0.33, vol beta 0.59 and 1σ coverage 0.64.
+  - **RSS heuristic:** median |ln(σ / σ\*)| 0.40, vol beta 0.49, coverage 0.62.
+  - **Max:** median |ln(σ / σ\*)| 0.69, coverage 0.45.
+  - **The vol beta here is across problems.** Because the noise level drives σ\*, the heuristics reach ~0.5 across
+    problems while their within-pair slopes are exactly 0 (#23).
+- **μ error against σ signal:** with μ = f(x_meas)·(1 + δ):
+  - **δ = 1%** costs σ\* 0.0009, a third of the σ\*-vs-RSS gap.
+  - **δ = 5%** costs it 0.016, six times that gap.
+  - **So in an RL group whose samples' μ vary by a few percent,** μ dominates the reward, which is why R3-6 centres
+    the σ diagnostic at f(x_meas).
+- **For Phase 12's pre-registration (my reading, to decide):**
+  1. **Report σ propagation primarily with the oracle-centred expected score,** plus A6 / A6b / A6c. Realized
+     crps_log needs ~10× more problems for the same resolution.
+  2. **For σ-RL,** a reward of the expected score against the generator's predictive distribution would be far less
+     noisy than the realized one. That is a verifier change; it is not made, only flagged.
+- **MC check:** the fresh draws' CRPS-optimal σ\* is within a median 1.2% (max 6.8%) of the stored one.
+- **Provenance:**
+  - **Code:** `physcal/eval/oracle_centred.py` (the diagnostic, reusable), `physcal/eval/stage_a.py`,
+    `configs/stage_a.yaml`.
+  - **Tests:** `tests/test_oracle_centred.py`, `tests/test_stage_a.py`.
+  - **Results:** `results/stage_a/`.
