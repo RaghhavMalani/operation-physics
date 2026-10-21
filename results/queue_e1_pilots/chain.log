@@ -1,0 +1,6 @@
+[06:02:05] queue start; GPU deadline 14:00 IST (477 min left); queue PID 65216
+[06:02:05] GPU at 51C, memory.used 391 MiB
+[06:02:05] e1c: config grpo_e1c, soft stop 13:40 IST
+[06:02:05] start e1c_train (timeout 28375s): uv run python -m physcal.train.e1 train --config grpo_e1c --stop-at 2026-10-21T13:40:00+05:30
+[08:21:10] end e1c_train: exit 0
+[08:21:10] e1c: 300 steps completed; checkpoint-150 
