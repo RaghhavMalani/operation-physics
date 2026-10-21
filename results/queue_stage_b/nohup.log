@@ -12,3 +12,8 @@
 [01:08:39] GPU at 65C, memory.used 456 MiB
 [01:08:39] start stage_b_eval_seed0 (timeout 8400s): uv run python -m physcal.train.stage_b eval --seed 0
 [02:02:47] end stage_b_eval_seed0: exit 0
+[02:02:51] commit 'stage B seed 0 (D104): greedy eval on A6 / A6b / A6c, 4-bit pinned base, adapter unmerged (exit 0)': pushed
+[02:02:51] GPU at 59C, memory.used 455 MiB
+[02:02:51] start stage_b_train_seed1 (timeout 11276s): uv run python -m physcal.train.stage_b train --seed 1 --stop-at 2026-10-22T07:45:52+05:30
+[03:16:25] end stage_b_train_seed1: exit 0
+[03:16:25] seed 1: 750 steps of 750, 73 min
