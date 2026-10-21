@@ -1,0 +1,21 @@
+W1021 18:17:15.010000 31199 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1021 18:17:15.056000 31199 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  18%|█▊        | 61/338 [00:00<00:00, 588.31it/s]Loading weights:  40%|███▉      | 135/338 [00:00<00:00, 666.00it/s]Loading weights:  61%|██████    | 205/338 [00:00<00:00, 679.46it/s]Loading weights:  81%|████████  | 273/338 [00:00<00:00, 637.24it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 655.71it/s]
+Unsloth 2026.10.3 patched 28 layers with 28 QKV layers, 28 O layers and 28 MLP layers.
+Unsloth: Will smartly offload gradients to save VRAM!
+OOM check passed: {'batch': 2, 'tokens': 1640, 'loss': 0.6781045198440552, 'seconds': 7.065921068191528, 'max_reserved_gib': 1.998046875}
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/unsloth/models/_utils.py:443: UserWarning: Unsloth: detected a manual forward/backward run before trainer.train(); reset the torch.compile graph cache it poisoned so training starts clean. To avoid this, run any pre-train probe under `with torch.no_grad():`.
+  warnings.warn(
+==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
+   \\   /|    Num examples = 3,000 | Num Epochs = 2 | Total steps = 750
+O^O/ \_/ \    Batch size per device = 2 | Gradient accumulation steps = 4
+\        /    Data Parallel GPUs = 1 | Total batch size (2 x 4 x 1) = 8
+ "-____-"     Trainable parameters = 18,464,768 of 1,562,179,072 (1.18% trained)
+  0%|          | 0/750 [00:00<?, ?it/s]  0%|          | 1/750 [00:04<1:00:18,  4.83s/it]  0%|          | 2/750 [00:09<57:56,  4.65s/it]    0%|          | 3/750 [00:14<58:11,  4.67s/it]  1%|          | 4/750 [00:18<59:21,  4.77s/it]  1%|          | 5/750 [00:23<59:51,  4.82s/it]  1%|          | 6/750 [00:28<1:00:14,  4.86s/it]  1%|          | 7/750 [00:36<1:12:33,  5.86s/it]  1%|          | 8/750 [00:41<1:08:54,  5.57s/it]  1%|          | 9/750 [00:46<1:06:23,  5.38s/it]  1%|▏         | 10/750 [00:51<1:04:26,  5.22s/it]                                                    1%|▏         | 10/750 [00:51<1:04:26,  5.22s/it]  1%|▏         | 11/750 [00:56<1:02:47,  5.10s/it]  2%|▏         | 12/750 [01:01<1:02:19,  5.07s/it]  2%|▏         | 13/750 [01:09<1:12:03,  5.87s/it]  2%|▏         | 14/750 [01:13<1:07:56,  5.54s/it]  2%|▏         | 15/750 [01:18<1:06:26,  5.42s/it]  2%|▏         | 16/750 [01:23<1:03:59,  5.23s/it]  2%|▏         | 17/750 [01:28<1:02:27,  5.11s/it]  2%|▏         | 18/750 [01:33<1:01:10,  5.01s/it]

@@ -1,0 +1,7 @@
+[23:25:22] chain start; GPU deadline 09:00 IST (574 min left); chain PID 18083
+[23:25:22] waiting for PID 3537 (stage (a)'s queue)
+[23:47:08] PID 3537 has exited
+[23:47:08] start e1d_x2_analysis (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.e1d_x2_analysis analyze
+[23:47:08] GPU at 57C, memory.used 600 MiB
+[23:47:08] start stage_b_train_seed0 (timeout 9900s): uv run python -m physcal.train.stage_b train --seed 0 --stop-at 2026-10-22T07:35:00+05:30
+[23:49:18] end e1d_x2_analysis: exit 0
