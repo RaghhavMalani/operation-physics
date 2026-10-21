@@ -696,3 +696,21 @@ Progress:
 - [x] **Full test suite:** 508 passed, 0 failed, 0 skipped (GPU visible).
 - [ ] **Next:** your review of D94's / D95's [REVIEW] items; E1c + E1d pilots (R3 schedule: Wed 21 night); X1 on
   A6c; Phase 12 stage A.
+
+## 2026-10-21 day: E1c / E1d pilots (GPU queue), X1 on A6c and Phase 12 stage A (CPU)
+
+- [x] **Your decisions recorded (D97):** D94 (E1c as built, E1d at 5e-5), D95 and D96 approved. CPU jobs run
+  single-threaded at nice 19 whenever the GPU is busy.
+- [x] **D98:** self-consistency is the p baseline and teacher candidate for stage E; X4 is ruled out as a teacher.
+- [x] **Queue `scripts/queue_e1_pilots.sh`,** launched at 06:02 IST (GPU deadline 14:00).
+  - **Order:** E1c train → its evals (final_4bit, step150_4bit) → E1d (if ≥ 3 h left) → its evals → compare_pilots.
+  - **Mechanics:** PID-based waits, the in-stage temperature guard, a commit + push after every stage.
+- [x] **X1 on A6c (D99, FINDINGS #23):** the refit reproduces D73 exactly. The primary slope on A6c is
+  −0.002 [−0.003, −0.000], not supported, as the construction predicts.
+- [x] **Phase 12 stage A (D100, FINDINGS #24):** the scoring audit and the oracle-centred diagnostic
+  (`physcal/eval/oracle_centred.py`, reusable).
+  - **The optimum:** realized crps_log peaks at σ\* (c = 1.000 [0.966, 1.017]).
+  - **Per problem:** σ\* beats a 2×-off σ on only 56–77% of problems (realized).
+  - **Expected scoring:** 5–23× less variance.
+  - **Identity:** the diagnostic matches `reward()` exactly.
+- [ ] **E1c / E1d results and compare_pilots:** in the queue.
