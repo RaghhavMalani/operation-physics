@@ -3416,3 +3416,59 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   and adds w·score_sigma otherwise; score_sigma ignores μ's error and equals stage A's expected score on
   `noise.predictive`'s draws; the peak at the optimum; exact givens; failures; dropped draws and the fallback; a
   1.3.0 tape replays exactly.
+
+### D106. Pre-registration of the Phase 12 stage C pilot: E1d-style σ-only RL with verifier 1.3.0's σ reward (written before any stage C prefix, rollout or score exists; built and CPU-tested tonight; runs tonight only if ≥ 3.5 h remain after stage B)
+- **Question (R3-4 C, D103):** with the answer frozen and the reward on σ alone, does GRPO at learning rate 5e-5,
+  rewarded by the expected crps_log against the predictive distribution (D105), learn a σ that propagates the
+  measurement noise (A6 / A6b / A6c), beyond the surface readers and beyond its own SFT-only start?
+- **Base [REVIEW]: E1d's, exactly** (D101 / D103 "E1d-style"): the merged SFT model (content hash
+  `0b435c0ebaed36e2`) loaded 4-bit by Unsloth, plus a fresh LoRA (r 16, α 16, dropout 0, the 7 modules, seed 0).
+  - **Not D70 / D78's pinned base,** which stage B uses (D104). So stage B and stage C differ in base. Stage C's
+    within-stage control is its SFT-only start (below); its comparison with stage B is descriptive only.
+  - **The alternative:** the pinned base with an implicit-arm SFT adapter that RL continues (D70). It adds an SFT
+    run (~1.2 h) and is untested on the GPU with GRPO.
+- **Prompt [REVIEW]:** `v5_two_channel` (it defines σ as the propagated measurement uncertainty). The merged SFT
+  model was trained on v4; v5 is new to it, as it is to every Phase 12 model.
+- **Training prefixes:** D80's implicit-arm completions (generator-written; the answer is f(x_meas) at 4 s.f.) of the
+  2,250 noisy problems (noise 1, 2, 5%), truncated right after "±" (E1's `truncate_after_pm`). The manifest's
+  SHA-256 is checked first. Shuffled once (seed 0); 300 steps × 4 prefixes = 1,200 prefixes (53% of an epoch).
+- **RL: E1d's settings unchanged** (`configs/grpo_e1d.yaml`): learning rate 5e-5 constant after 5 warmup steps,
+  AdamW 8-bit, grad-norm 0.1, β = 0, `loss_type` dapo, `scale_rewards` group, 8 samples per prefix, 2 × 16
+  accumulation (4 prefixes per step), ≤ 24 new tokens, T = 1, top-p 1, top-k off.
+  - **Changed (one bundle, stated):** the prefixes and the prompt (above), the reward (below), and D103's 7.1 GiB
+    cap with its OOM check (a forward + backward on the longest prompt before step 1) instead of E1a's 7.5.
+- **The training reward:** score_sigma of verifier 1.3.0 (`sigma_reward.reward`, `reward_v13`). The floor (−5)
+  goes to a suffix that fails to parse, mismatches the unit, or moves μ (E1's μ-changed rule: a same-dimension unit
+  change moves μ in SI, which score_sigma alone would not see).
+  - **The tape** logs the 1.3.0 verifier reward and breakdown (score_sigma included), replayable with
+    `sigma_reward.replay`, plus the training reward and the suffix.
+- **Eval (μ fixed):** a greedy σ suffix (24 tokens, E1's eval) on prefixes of the frozen A6, A6b and A6c problems
+  (3,060), built exactly like the training prefixes: each problem's implicit-arm completion (answer f(x_meas)),
+  truncated after "±".
+  - **Three arms on the same prefixes:** stage C's final adapter; its step-150 checkpoint (secondary); and the
+    SFT-only control (the merged SFT, no adapter).
+  - **Loading:** 4-bit, adapter unmerged (D67 / D68), batch 16, the 7.1 GiB cap. A failed suffix (parse, unit, μ
+    changed) leaves the member unanswered: σ_rel = 0 in the oracle-centred score, as D104.
+- **Tests (family C, Holm at α = 0.05 over six; the final adapter):**
+  - **C1–C5:** D104's B1–B5 with stage C's σ in place of stage B's (one seed): A6 slope > 0 on computation-correct
+    pairs; A6c slope > 0 on all answered pairs; expected crps_log − RSS > 0; − X1 > 0; A6 slope − X1's > 0. Same code
+    (`stage_b_analysis`), same bootstrap over pairs.
+  - **C6, the RL effect:** the mean per-problem expected crps_log, stage C − its SFT-only control, > 0 (paired,
+    bootstrap over pairs).
+- **Labels and verdicts (reported, as D104):** A6's label, A6b's TOST and D59's joint verdict, A6c's secondaries,
+  R3-6's σ secondary, the oracle-centred diagnostic for all three arms.
+- **Reading rules (fixed now):**
+  - **"σ-RL propagates":** C1 and C2 supported, A6b equivalent to 0, and an A6 label of partial, full or
+    over-propagation.
+  - **"RL moved σ toward the predictive distribution":** C6 supported.
+  - **C6 supported, C2 not:** RL improved the score without learning allocation (e.g. a better global scale).
+  - **Stage B (D104), descriptive:** stage C's numbers sit next to stage B's seed mean, with the base caveat.
+  - **One seed:** a pilot. "3 seeds only if it shows signal" (R3-4 C): signal = C6 or C2 supported.
+- **Sanity (reported, not tested):** the collapse check (one σ string in > 90% of eval suffixes); μ-changed and
+  parse rates; > 10% failed suffixes at step 1 is a pipeline failure, not a result; per-step training reward,
+  σ = 0 share, zero-variance groups.
+- **Budget:** about 2.1 h of training at E1d's speed (25 s/step) and 3 evals of ~12 min (3,060 suffixes at E1d's
+  X2 rate of 4.4/s). The queue starts it only if ≥ 3.5 h remain before the deadline (your rule).
+- **Code and outputs:** `physcal/train/stage_c.py` (data / train / eval), `physcal/eval/stage_c_analysis.py`,
+  `configs/stage_c.yaml`, `tests/test_stage_c.py`; outputs in `results/stage_c/`. The queue hook is
+  `scripts/queue_stage_c_pilot.sh`, run by stage B's chain only if `results/queue_stage_b/STAGE_C_READY` exists.
