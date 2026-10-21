@@ -3280,3 +3280,97 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Queue:** `scripts/queue_e1d_x2.sh` (GPU_DEADLINE 09:00): E1d suffixes → SFT suffixes, each with the in-stage
   temperature guard, a PID wait, and commit + push after the stage. The CPU analysis runs when both exist, at
   1 thread and nice 19 (D97).
+
+### D103. Your decisions on the 2026-10-21 day report (recorded 2026-10-21 night)
+1. **D100 confirmed:** the scoring audit is "does the scoring Phase 12 will use reward σ propagation on noisy
+   problems". The [REVIEW] mark on D100's reading is closed; FINDINGS #24 stands as stage A's audit.
+2. **D101 refined: stage C trains σ E1d-style.** The answer is frozen (prefixes truncated after "±", as E1), only σ
+   is trained by RL, at learning rate 5e-5, on noisy problems. D101's [REVIEW] item 1 (a 10× learning rate on whole
+   completions may destabilize μ) is thereby resolved: μ is never trained in stage C. Items 2–4 (step budget,
+   overconfidence, one seed) stay open for stage C's pre-registration.
+3. **A 7.1 GiB allocator cap for Phase 12 runs, after an OOM check.**
+   - **The value:** the WSL-spill rule (D86/D87), total − host − 0.5 GiB, with the day's host use (0.39 GiB).
+   - **Tonight's host use:** 0.59 GiB (601 MiB with nothing running, 23:14 IST), so 7.1 leaves a 0.3 GiB margin
+     instead of 0.5. Kept at 7.1 as decided: stage B's SFT peaked at 4.7 GiB device-wide in Phase 3.6 (the same base
+     and LoRA), far below either value.
+   - **The OOM check (how it is applied):** every Phase 12 training run starts with one forward + backward pass on
+     its longest batch under the cap. An OOM there stops the run before step 1 (logged BLOCKED), instead of failing
+     or spilling hours in. Evals keep their OOM backoff (the batch halves).
+   - **Does not apply to** E1-machinery or X-series stages (their caps are pre-registered), only to Phase 12 runs.
+
+### D104. Pre-registration of Phase 12 stage B: the supervised σ\* ceiling, 3 seeds (written before any stage-B model, completion or score exists)
+- **Question (R3-4 B):** if SFT shows the model σ\* itself on noisy problems, does its stated σ propagate the
+  measurement noise through the chain on new problems? This is the ceiling stage C's σ-RL is read against.
+- **Data: D80's supervised arm,** unchanged (`results/phase12_sft_data/supervised.jsonl`, the manifest's SHA-256
+  checked before training).
+  - 3,000 generator-2.0.0 training problems (seeds 6e7+), noise {0, 1, 2, 5}%; the answer is f(x_meas); σ\* written
+    after "±" and **trained** (`.2g`); the `<confidence>` block (uniform c, trained; D80) as built.
+  - **Prompt:** `v5_two_channel` with D85's placeholder. Rows longer than the loader's 2,048 tokens are dropped and
+    counted.
+- **Model (D70 / D78, your decisions):** a fresh LoRA (r 16, α 16, dropout 0, the 7 modules) on the **pinned 4-bit
+  base** (`configs/base_4bit.yaml`, `unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit@e24e953`, content hash
+  `9939448b3a0fbe45`), checked before and after loading. Never merged; the eval applies the adapter unmerged. The
+  R2-1 fingerprint is recorded after the save (D72 / D77).
+  - **[REVIEW] the base.** D70 / D78 make Phase 12 SFT one adapter on the pinned base, which RL continues. The
+    alternative is the merged SFT model (E1d's and X3's base); it would make stage B and an E1d-style stage C share a
+    base exactly. I followed D70 / D78; stage C's pre-registration must state which base it uses and how the two
+    are compared.
+- **Training (identical across seeds except the seed):** `configs/sft.yaml`'s optimizer settings (AdamW 8-bit, LR 1e-4
+  constant after 10 warmup steps, batch 2 × 4 accumulation, grad-norm 1.0, weight decay 0, bf16).
+  - **[REVIEW] the budget: 2 epochs (750 optimizer steps), X3's σ-learning budget.** The Phase 3.6 SFT ran 0.87
+    epoch on noise-free data; stage B starts from the base, and σ is a few tokens per example.
+  - **Seeds 0, 1, 2:** the seed sets the LoRA init, the shuffle and the trainer's seed.
+  - **D103's cap (7.1 GiB) and OOM check;** the trainer's temperature callback (87 °C → 600 s) plus the in-stage
+    guard.
+- **Eval (per seed):** greedy completions (512 tokens, prompt v5) on the frozen A6, A6b and A6c sets (3,060 problems;
+  `run_eval` regenerates each problem and checks it against the file), 4-bit pinned base + adapter unmerged, batch 32
+  with the 7.1 GiB cap (OOM → the batch halves). Scored by the verifier 1.1.0 path (`run_eval`'s default; the
+  `<confidence>` block is ignored by it, D83).
+- **The model's σ for the analyses:** the stated relative σ = σ / |μ| of the parsed answer (crps_log's scale).
+  - **Pair statistics (D59 / D95):** `a6_pairs.member_row`'s conventions (σ = 0 → the 1e-6 floor; a parse failure or
+    μ ≤ 0 → the member is unanswered).
+  - **The oracle-centred score (D100):** the same σ_rel scored at μ = f(x_meas). An unanswered problem gets σ_rel = 0
+    (the floor), the verifier's convention for no stated spread, and is counted.
+- **The comparators, through the same code:** X1 primary (D73's model as D99 refit it,
+  `results/x1_text_sigma/a6c/predictions.jsonl`), the RSS heuristic over the givens (D95's primary scope), and
+  σ̂ = σ\* (the ideal). They state no answer, so for the pair statistics they enter on the same pairs as the model.
+- **The seed statistic (R2-4 / R3-7):** each primary statistic is the **mean over the 3 seeds** of the per-seed
+  estimate. One cluster bootstrap over pairs (B = 10,000, seed 0) resamples the same pairs for all seeds;
+  p = the one-sided share of resamples ≤ 0. This is pooled problem-level evidence, never described as seed-level
+  significance. Every per-seed estimate is reported with its own CI.
+- **Tests (family B, Holm at α = 0.05 over five; a seed that did not run is left out of the mean, and a test with no
+  seed counts as p = 1):**
+  - **B1, A6 (D59 / D61):** the slope of Δ ln σ on Δ ln σ\* over the computation-correct pairs (A1, τ from
+    `configs/pairs.yaml`) > 0.
+  - **B2, A6c (D95):** the slope over all answered pairs > 0.
+  - **B3, expected score vs RSS (FINDINGS #24):** the mean per-problem difference in oracle-centred **expected**
+    crps_log (model − RSS) over A6 + A6b + A6c > 0. The expected score uses fresh MC draws of the predictive
+    distribution (N = 4,000, stage A's per-problem streams).
+  - **B4, expected score vs X1 primary:** as B3.
+  - **B5, A6 vs X1:** model slope − X1 slope on the model's computation-correct pairs > 0. (RSS's slope is 0 by
+    construction, so B1 is already "beats RSS on A6"; on A6c X1's slope is −0.002, so B2 ≈ "beats X1 on A6c".)
+- **Labels and verdicts (reported per seed and on the seed mean; not in the Holm family):**
+  - **A6's label (D61 / D64)** from the 90% CI of the slope;
+  - **A6b's TOST (D59)** with `pairs.yaml`'s margin, and D59's joint verdict;
+  - **A6c's secondaries (D95):** computation-correct pairs, mean Δ ln σ > 0, the through-origin slope;
+  - **R3-6's σ secondary:** A6 and A6c restricted to pairs computation-correct at τ_σ = max(0.25%, 0.25·σ\*).
+- **Reported, not tested:**
+  - the oracle-centred diagnostic (D100) per seed and source: realized and expected scores, median ln(σ / σ\*) and
+    |ln(σ / σ\*)|, the vol beta, 1σ / 2σ coverage, the clip and floor shares; per set;
+  - training loss and steps; parse-fail and unit-mismatch rates; the A1 computation-correct rate; σ = 0 share;
+    the `<confidence>` block's parse rate (format only).
+- **Reading rules (fixed now):**
+  - **"The ceiling propagates":** B1 and B2 Holm-supported, A6b equivalent to 0 on the seed mean, and an A6 label of
+    partial, full or over-propagation.
+  - **"The ceiling beats the surface readers":** B3 and B4 supported.
+  - **B2 not supported:** supervised σ\* does not teach noise allocation with this base and budget. Stage C's bar
+    is then X1 / RSS, not stage B.
+  - **Any other combination** is reported as observed.
+- **What stage B does not test:** RL, and whether the model "knows" its σ beyond imitation. It is a capacity and
+  transfer ceiling (as X3 was for between-problem ranking).
+- **Code and outputs:** `physcal/train/stage_b.py` (train / eval), `physcal/eval/stage_b_analysis.py`,
+  `configs/stage_b.yaml`, `tests/test_stage_b.py`; outputs in `results/stage_b/seed{0,1,2}/` and
+  `results/stage_b/{results.json, summary.md}`.
+- **Queue:** `scripts/queue_stage_b.sh`, chained after stage (a)'s queue by PID: seed 0 → 1 → 2, each training run
+  followed by its eval. A seed starts only if its training (2 epochs at the measured speed, else 75 min) plus its eval
+  (70 min) plus 15 min of slack fit before 09:00 IST; otherwise it is logged SKIP.
