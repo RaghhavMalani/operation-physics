@@ -3116,3 +3116,89 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Overlap with Phase 13:** the k-sample agreement is close to DAR-style rollout spread (Phase 13 source 2).
     The write-up must not count them as two independent sources.
 - **Not done now:** nothing is built, trained or run. Stage E stays deferred (R3-4).
+
+### D99. X1 on A6c (D95's deferred comparison, R3-5): defined before any X1 prediction on A6c exists
+- **The model is X1 exactly as D73 fitted it.** Its fitted models were not saved, so they are refit:
+  - the same fit set (regenerated from D73's seeds) and the same features;
+  - the hyperparameters D73's grouped CV selected (`results/x1_text_sigma/selection.json`, best grid point per
+    feature set). There is no new selection.
+- **The reproduction check comes before any A6c prediction.** For every feature set, the refit must reproduce
+  `results/x1_text_sigma/results.json` within 1e-9:
+  - the test accuracy (R², median abs ln error, Spearman), and the A6 / A6b member accuracy;
+  - the A6 and A6b primary pair slopes and their CIs.
+  - **If it fails:** nothing on A6c is computed now. The refit reruns after the GPU queue under X1's own settings
+    (4 workers, 4 BLAS/OpenMP threads), as D96 did for X2.
+- **On A6c** (510 pairs, the manifest's SHA-256 checked):
+  - **σ̂:** σ̂ = exp(ŷ) is each member's stated σ (log space).
+  - **The analysis:** D95's, through `a6_pairs.analyze_rows`, as for the noise heuristics. X1 states no answer, so
+    every pair enters. The primary is the OLS slope of Δ ln σ̂ on Δ ln σ\* with an intercept, a one-sided bootstrap
+    over pairs (B = 10,000, seed 0), "supported" at α = 0.05. The secondaries are the mean Δ ln σ̂ > 0 and the
+    through-origin slope.
+  - **References, through the same analysis:** σ̂ = σ\* (slope 1), and the noise-only feature set.
+  - **Breakdowns:** per depth and per level pair.
+- **What follows from the construction (stated before computing):**
+  - Within an A6c pair, the displayed values and the multiset of "± p%" are identical. X1's noise and magnitude
+    features are therefore identical within a pair.
+  - Only TF-IDF can differ: whitespace tokens carry attached punctuation, so a swapped "5%" may become "5%." in one
+    member and "5%," in the other.
+  - **So X1's within-pair Δ ln σ̂ is expected to be ≈ 0.** A nonzero slope would come from token-position artifacts,
+    not from propagation.
+- **Reported in one table** with the heuristics (D95) and σ\*: the A6, A6b and A6c pair statistics.
+- **Settings:** 1 worker, 1 thread, nice 19 (D97's rule while the GPU is busy).
+- **Outputs and code:**
+  - **Outputs:** `results/x1_text_sigma/a6c/` with `reproduction.json`, `results.json`, `summary.md`, and
+    `predictions.jsonl` (σ̂ for every A6 / A6b / A6c member, for stage A, D100).
+  - **Code:** `physcal/eval/x1_a6c.py`, a new module. It imports `x1_text_sigma` and does not edit it.
+
+### D100. Phase 12 stage A: the scoring audit and the oracle-centred diagnostic (R3-4 A, R3-6); defined before computing; descriptive, CPU only
+- **[REVIEW]: my reading of "scoring audit".** R3-4 names it without a definition.
+  - **My reading:** an audit of whether the scoring Phase 12 will use rewards σ propagation on noisy problems,
+    before any RL night relies on it.
+  - **Which scoring:** the verifier's crps_log realized against the noise-free truth, and the expected CRPS against
+    the MC predictive distribution (R3's consensus point 6).
+  - **No hypothesis test.** Every number here is descriptive. It informs Phase 12's pre-registration (the primary
+    metric and the sample sizes).
+- **The oracle-centred diagnostic (R3-6's primary for σ propagation)** is defined for any source of a stated
+  relative σ on noisy problems, on all problems (no selection on correctness):
+  - **The centre:** μ = f(x_meas), the stored `noise.point_estimate_si`.
+  - **Realized score:** the verifier's crps_log of (μ, σ_rel·μ) at the truth: `scoring.score`, unchanged, clip
+    included.
+  - **Expected score:** the mean CRPS of N(ln μ, σ_rel²) over fresh MC draws of the predictive distribution
+    (`noise.predictive`, N = 4,000, a per-problem seed of its own). This is not the generator's own stream, so it
+    is an MC estimate, not exact.
+  - **ln(σ / σ\*):** median and median absolute value.
+  - **Vol beta:** the OLS slope of ln σ on ln σ\*.
+  - **Coverage:** of ln truth by ln μ ± k·σ_rel, k = 1, 2, against 68.27% / 95.45%.
+  - **Uncertainty:** a bootstrap over clusters (B = 2,000, seed 0). A cluster is a pair on the pair sets (R3-7)
+    and a problem otherwise.
+  - **Code:** `physcal/eval/oracle_centred.py`, a new module, reusable by Phase 12's evals, with tests.
+- **The scoring audit asks four questions:**
+  1. **The optimum.** With μ = f(x_meas), is the mean realized crps_log maximized at σ = σ\*?
+     - **Data:** the capped gate sample (`results/sigma_star_gate_capped/rows.jsonl`): 10,005 independent noisy
+       problems, depth 1–5 × {1, 2, 5}%. Its rows hold ln truth − ln f(x_meas) and σ\*.
+     - **The method:** σ = c·σ\* on a log grid, c from 1/8 to 8 (241 points). Reported: the argmax c, pooled and
+       per cell, with a bootstrap CI over problems, and the scores at c = 0.5, 1 and 2.
+     - **What is already known:** by A2's construction the expected score peaks at c = 1. The realized peak is the
+       check; it combines A3's calibration with the score.
+  2. **The resolution.** Per problem, the paired score difference between σ\* and each alternative:
+     - **The alternatives:** c·σ\* for c = 0.5 and 2; the heuristics (max, mean and RSS over the givens; D95); X1's
+       three feature sets (from D99, only if its reproduction passes); and a constant σ = the set's median σ\*
+       (an oracle constant).
+     - **Reported, realized and expected:** the mean difference, its SD, and n₂ = (2·SD / mean)², the number of
+       problems a mean difference needs to sit two standard errors from 0. Also the variance ratio
+       Var(realized) / Var(expected).
+     - **Data:** the frozen A6, A6b and A6c sets (3,060 noisy problems, checksums checked), pooled and per set.
+       They carry the texts and givens that the heuristics and X1 need. Nothing is fitted on them.
+  3. **The ranking.** Do the sources ranked by mean realized crps_log follow their ranking by median
+     |ln(σ / σ\*)|? Both orders are reported, with Kendall's τ.
+  4. **The verifier's details:**
+     - the share of oracle-centred scores at the −5 clip, and the share where the 1e-6 floor binds;
+     - an identity check: the diagnostic's realized score equals `reward()`'s `score_final` on a rendered answer,
+       for a subset of problems (exact).
+- **Plus one descriptive table: μ error against σ signal.**
+  - **The method:** μ = f(x_meas)·(1 + δ) for δ ∈ {0, 0.1%, 0.5%, 1%, 5%}. Reported: the mean realized crps_log of
+    σ\* and of the RSS heuristic, and their difference.
+  - **Why:** it shows how quickly μ error swamps the σ signal, i.e. why R3-6 centres at f(x_meas).
+- **Settings and output:**
+  - **Settings:** 1 thread, nice 19 while the GPU is busy (D97).
+  - **Output:** `results/stage_a/{results.json, summary.md}`; config `configs/stage_a.yaml`, a new file.
