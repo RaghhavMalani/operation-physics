@@ -1,0 +1,4 @@
+[23:14:44] queue start; GPU deadline 09:00 IST (585 min left); queue PID 3537
+[23:14:44] GPU at 49C, memory.used 601 MiB
+[23:14:44] start e1d_x2_e1d (timeout 3600s): uv run python -m physcal.eval.e1d_x2 suffix --which e1d
+[23:32:08] end e1d_x2_e1d: exit 0
