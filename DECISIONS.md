@@ -3221,3 +3221,62 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   3. **E1d's σ is badly overconfident:** 1σ coverage 0.30, median relative σ 0.95%. A post-hoc scale or a
      calibration term belongs in Phase 12's plan.
   4. **One seed.** These were pilots (D94). The R3-7 wording applies.
+
+## Night of 2026-10-21/22 (unattended; your instructions at 23:10 IST, GPU deadline 09:00 IST)
+
+### D102. Pre-registration of the E1d within-problem test on the X2 pairs (written before any E1d suffix on an X2 answer exists)
+- **Question:** E1d's σ ranks errors between problems (ρ 0.586, FINDINGS #25). Does it rank a correct answer above an
+  incorrect answer **to the same problem**? X3's supervised student (a) does not (0.513 [0.484, 0.543], FINDINGS #20);
+  self-consistency does (0.643, post-hoc, FINDINGS #22).
+- **Answers:** X2's 516 kept problems and their 4,116 sampled answers (D74), each truncated after "±" by E1's
+  `rows_from_records` (prompt v4), exactly as X2's method 2 and X3's X2 eval. No new selection.
+- **σ source:** E1d's `final_adapter` (step 300, FINDINGS #25's adapter).
+  - **Loading:** the merged SFT model loaded 4-bit by Unsloth, the adapter unmerged (D67 / D68), with E1d's own loader
+    settings from its tape's `train_config`. R2-1's check as in every E1 eval (D77).
+  - **Decoding:** E1's eval, a greedy σ suffix of ≤ 24 tokens. Batch 16 and the 5.75 GiB allocator cap (D87's X2
+    suffix settings: OOM + backoff instead of WSL spill).
+- **Confidence:** −ln max(σ_rel, 1e-6), as X2's method 2. A failed suffix (no parse, unit mismatch, μ changed, μ = 0;
+  D88) is a tie.
+- **Metric:** D74's pairwise accuracy: per problem the share of its (correct, incorrect) pairs where the correct
+  answer is more confident (ties 0.5), mean over problems.
+  - **Uncertainty:** a problem-level cluster bootstrap (B = 10,000, seed 0): problems are resampled with all their
+    pairs (R3-7). Paired differences resample the same problems for both methods.
+- **The comparators (scored on the same pairs):**
+  - **SFT stated σ:** X2's method 1, the σ in each sampled completion (published 0.499).
+  - **X3 student (a):** its σ suffix on the same 4,116 prefixes (`results/x3/a/eval_x2`, published 0.513).
+  - **Self-consistency:** D92c / D98's definition, the share of the problem's other 7 samples agreeing within 1%
+    (published 0.643).
+  - **Reproduction first:** each comparator is recomputed from its rows and must reproduce its published pairwise
+    accuracy within 1e-9, or the analysis stops.
+- **Tests (family E1d-X2, Holm at α = 0.05 over three, one-sided bootstrap p):**
+  - **T1:** E1d's pairwise accuracy > 0.5 (p = the share of resamples ≤ 0.5).
+  - **T2:** E1d − SFT stated σ > 0 (p = the share of paired resamples ≤ 0).
+  - **T3:** E1d − X3 student (a) > 0.
+  - **Not tested:** E1d − self-consistency, reported with its paired CI. Self-consistency is a post-hoc baseline
+    (D92) that costs 8 samples per problem; its first test is stage E's (D98).
+- **Reading rules (fixed now):**
+  - **T1 not supported:** E1d's ρ is between-problem ranking only, the same reading as X3 (FINDINGS #20, #22). RL
+    at 5e-5 learned the X3 kind of σ, not answer-specific awareness.
+  - **T1 and T3 supported:** RL produced within-problem information that supervised distillation of the A5 teacher
+    did not. Reported next to self-consistency's level.
+  - **T1 supported, T3 not:** a within-problem signal that is not distinguishable from X3's.
+  - **Any other combination** is reported as observed.
+- **Secondary control (reported, no test): the SFT model's own greedy σ suffix on the same prefixes** (no adapter;
+  the same loader, decoding and cap). It is D67's family-E "SFT stated σ" control, the exact no-RL counterpart of
+  E1d's greedy suffix (method 1 is sampled). Reported: its pairwise accuracy and E1d − it, paired. It runs after
+  E1d's stage (~18 min) and does not block anything.
+- **Reported, not tested (E1d and every comparator):**
+  - D92's pooled pair-weighted accuracy (cluster bootstrap) and the separated pairs (correct ≤ 0.25%, incorrect
+    ≥ 10%); per depth;
+  - the tie / failure share; the collapse check (one σ string in > 90% of suffixes → "collapsed", whatever the
+    number); μ-changed and parse rates;
+  - across problems, on all 4,116 answers: Spearman ρ(σ_rel, |ln(μ / truth)|) and the AUROC of the confidence for
+    "correct", both with the cluster bootstrap.
+- **Pipeline sanity:** more than 10% failed suffixes is reported as a pipeline problem next to the number; the test
+  is still computed as pre-registered (failures are ties).
+- **Code and outputs:** `physcal/eval/e1d_x2.py` (GPU: the suffixes), `physcal/eval/e1d_x2_analysis.py` (CPU),
+  `configs/e1d_x2.yaml`, `tests/test_e1d_x2.py`; outputs in `results/e1d_x2/` (`e1d_final/`, `sft_suffix/`,
+  `results.json`, `summary.md`).
+- **Queue:** `scripts/queue_e1d_x2.sh` (GPU_DEADLINE 09:00): E1d suffixes → SFT suffixes, each with the in-stage
+  temperature guard, a PID wait, and commit + push after the stage. The CPU analysis runs when both exist, at
+  1 thread and nice 19 (D97).

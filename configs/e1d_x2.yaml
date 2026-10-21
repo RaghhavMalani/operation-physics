@@ -1,0 +1,22 @@
+# E1d on the X2 pairs (DECISIONS.md D102, pre-registered): does E1d's sigma (lr 5e-5, FINDINGS #25) rank a correct
+# answer above an incorrect one to the same problem? X2's 4,116 kept answers truncated after "+-" (D74), a greedy
+# sigma suffix (E1's eval), D74's pairwise accuracy, a problem-level cluster bootstrap.
+x2_config: x2
+x2_robustness_config: x2_robustness    # self-consistency's agreement tolerance and the separated-pairs thresholds
+run: results/train/e1d-sigma-only-free-seed0
+adapter: final_adapter                 # step 300, FINDINGS #25's adapter
+suffix:
+  batch_size: 16                       # D87: the X2 suffix stage's batch
+  max_reserved_gib: 5.75               # D87: OOM + backoff instead of WSL spill
+x3_rows: results/x3/a/eval_x2/rows.jsonl   # X3 student (a)'s sigma suffix on the same prefixes (D79)
+published:                             # each comparator must reproduce its published pairwise accuracy
+  sft_sigma: results/x2/results.json
+  x3_a: results/x3/pilot.json
+  self_consistency: results/x2/robustness/results.json
+reproduce_atol: 1.0e-9
+bootstrap: 10000                       # over problems (cluster bootstrap)
+seed: 0
+alpha: 0.05                            # Holm over T1-T3
+collapse_share: 0.9                    # one sigma suffix string in > 90% of suffixes -> "collapsed"
+fail_share_flag: 0.10                  # > 10% failed suffixes -> flagged as a pipeline problem
+output_dir: results/e1d_x2
