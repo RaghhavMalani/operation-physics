@@ -3202,3 +3202,22 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **Settings and output:**
   - **Settings:** 1 thread, nice 19 while the GPU is busy (D97).
   - **Output:** `results/stage_a/{results.json, summary.md}`; config `configs/stage_a.yaml`, a new file.
+
+### D101. D94's decision rule applied: E1d's learning rate (5e-5) is Phase 12's RL setting; E1c's batch scaling is not adopted (2026-10-21, after compare_pilots; FINDINGS #25)
+- **The outcome (`results/e1/pilots/`):**
+  - **E1d:** ρ 0.586 vs E1a's 0.013, Δρ +0.573 [+0.465, +0.680], p < 1e-4. Holm-supported.
+  - **E1c:** ρ 0.002, Δρ −0.011 [−0.092, +0.069], p = 0.62. Not supported.
+  - **The rule:** exactly one pilot is supported, so its setting becomes Phase 12's RL setting. Neither run is
+    collapsed (top suffix 1.8% / 4.8%).
+- **Applied:**
+  - **Phase 12 RL** uses learning rate 5e-5 (E1d's), with E1's other settings, `scale_rewards: group` included.
+  - **No config is edited now.** Phase 12's RL configs do not exist yet; they get the value when they are written.
+- **[REVIEW] for Phase 12's pre-registration (not decided here):**
+  1. **The 5e-5 was validated only on σ-only suffix training** (24 tokens, μ fixed).
+     - **The risk:** Phase 12's stage C trains whole completions, and a 10× learning rate on reasoning tokens may
+       destabilize μ.
+     - **The options:** run stage C's pilot at 5e-5 as the rule says, with a μ-accuracy guard; or add a 1e-5 arm.
+  2. **E1d is still improving at step 300** (ρ 0.27 at step 150). The step budget for Phase 12 may need to grow.
+  3. **E1d's σ is badly overconfident:** 1σ coverage 0.30, median relative σ 0.95%. A post-hoc scale or a
+     calibration term belongs in Phase 12's plan.
+  4. **One seed.** These were pilots (D94). The R3-7 wording applies.

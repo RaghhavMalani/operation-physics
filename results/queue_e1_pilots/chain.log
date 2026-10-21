@@ -29,3 +29,5 @@
 [10:43:07] commit 'e1d (D94): corrected eval step150_4bit, 4-bit unmerged (exit 0)': pushed
 [10:43:07] start compare_pilots (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -c from physcal.train.e1_compare import compare_pilots as c; import json; print(json.dumps(c()['decision_rule']))
 [10:43:23] end compare_pilots: exit 0
+[10:43:24] commit 'E1c / E1d pilots (D94): rho vs E1a, Holm, decision rule': pushed
+[10:43:24] queue done
