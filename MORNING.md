@@ -1,33 +1,26 @@
-# Report: 2026-10-20/21 night: X4 with direct + perturbed (GPU), X2 robustness, R3 amendments, E1c/E1d and A6c built
+# Report: 2026-10-21 day: the E1c / E1d pilots (GPU), X1 on A6c and Phase 12 stage A (CPU)
 
-The previous report (2026-10-20 day) is in git history: `git show 53585b2:MORNING.md`.
+The previous report (2026-10-20/21 night) is in git history: `git show bf16bc4:MORNING.md`.
 
 **Short version.**
-1. **The GPU finished at 03:57 IST** (deadline 11:30).
-   - **All five X4 arms** ran on all 4,116 X2 answers, and the analysis is committed.
-   - **No OOM, no BLOCKED.** There was one 10-minute temperature pause.
-2. **X4 result (FINDINGS #21): self-verification fails within problems.** That is D89's outcome 4, consistent with
-   X2.
-   - **`sft`:** 0.524 [0.498, 0.550], p = 0.033. It is not Holm-supported under D91's five-arm family, nor under
-     D89's original three-arm one.
-   - **The model says "yes" to 99.9% of its own answers.** It recomputes only ~13 tokens (median), so direct =
-     recompute (−0.002).
-   - **μ × 1.25 lowers P(yes)** on 98.6% of the correct answers, but uniformly, so the ranking does not move. It
-     checks "does the answer match the steps", not "are the steps right".
-3. **X2 robustness (FINDINGS #22, post-hoc):** agreement with the problem's other 7 samples ranks right above wrong at
-   **0.643** (0.861 on clearly separated pairs).
-   - That is the strongest within-problem signal so far: +0.096 over the probe.
-   - **Length alone:** 0.535, about the probe's level.
-   - **X2's CIs** were already problem-level (recomputed = published).
-4. **CPU builds:**
-   - R3-1 to R3-10 recorded (D93);
-   - E1c / E1d pre-registered and built, **not launched** (D94);
-   - A6c frozen (510 pairs) plus the noise heuristics (D95).
-   - **Tests:** 508 passed, 0 failed, 0 skipped.
-5. **To review (§5):**
-   - D94: E1c's reading of "normalized across the batch"; E1d's learning rate 5e-5.
-   - D95: min ratio 1.5; identical displayed values.
-   - R3-3 said RL's learning rate is ~40× below SFT's; it is 20×.
+1. **The GPU finished at 10:43 IST** (deadline 14:00). Both pilots ran 300 steps and all four evals completed. No
+   OOM, no temperature pause, nothing BLOCKED.
+2. **E1d works (FINDINGS #25).** At learning rate 5e-5, ρ(σ, |error|) is **0.586** against E1a's 0.013:
+   Δρ +0.573 [+0.465, +0.680], Holm-supported.
+   - **E1c** (batch-std scaling) is null: ρ 0.002.
+   - **D94's rule:** 5e-5 becomes Phase 12's RL setting (D101).
+   - **But:** E1d's σ ranks errors only between problems, at X3's supervised level (0.58). It is overconfident (1σ
+     coverage 0.30) and still below the A5 text baseline (ρ 0.70; crps_log −0.023).
+3. **X1 on A6c (FINDINGS #23):** the exact refit reproduces D73 exactly (max difference 0.0). On A6c X1's slope is
+   −0.002, as the construction predicts. No surface reader propagates noise allocation. X1's A6 "partial
+   propagation" came from the displayed magnitudes.
+4. **Phase 12 stage A (FINDINGS #24):** crps_log is maximized at σ\* (c = 1.000 [0.966, 1.017]). But on one realized
+   truth, σ\* beats a 2×-off σ on only 56–77% of problems. Against the known predictive distribution it does on
+   ~100%, with 5–23× less variance.
+5. **Decisions:** your four items are recorded (D97, D98). D99 / D100 were defined before computing; D101 applies
+   D94's rule.
+6. **To review (§5):** D100's reading of "scoring audit"; D101's caveats on using 5e-5 for whole completions.
+7. **Tests:** 519 passed, 0 failed, 0 skipped (GPU visible, after the queue). That is 508 + 11 new.
 
 ---
 
@@ -35,124 +28,108 @@ The previous report (2026-10-20 day) is in git history: `git show 53585b2:MORNIN
 
 | time | step | result | commit |
 |---|---|---|---|
-| 23:22 | D91 (X4 amendment) committed **before any X4 data**; main stage launched | frozen sft-only queue copy (D96) | `4f016c6`, `3599ebb` |
-| 23:22–00:09 | GPU: X4 `sft` (recompute) | 4,116 / 4,116; 46 min; peak 6.3 GiB of a 6.34 cap; paused 23:43–23:53 (88 °C) | `3473157` |
-| 23:32 | direct + perturbed built and tested; the chain armed (waits on the PID) | 28 X4 tests; 4,115 / 4,116 answers pass the perturbation check | `c19f890`, `29c8030` |
-| 00:09–00:22 | GPU: X4 `direct` | 4,116; 0 generated tokens | `01fbd97` |
-| 00:22–00:52 | GPU: X4 `perturbed` | 4,115 (1 μ = 0 excluded, as D91 says) | `757f514` |
-| 00:52–01:26 | GPU: X4 `shuffled` | 4,116 | `6823bfe` |
-| 01:26–03:53 | GPU: X4 `random_init` | 4,116 (always 512 tokens) | `2007bb9` |
-| 03:53–03:57 | CPU: the X4 analysis (D89 + D91) | `results/x4/summary.md` | `8210778` |
-| night | D92 X2 robustness: defined, built, run; refits under X2's thread settings | every X2 method reproduces exactly | `5b868f3` … `ef87525` |
-| night | D93 (R3-1…R3-10), D94 (E1c/E1d), D95 (A6c + heuristics), D96 (tonight's decisions) | built and tested, none launched | `1faf388`, `43cc2af`, `5edf1eb`, `4fd3c77` |
-| 04:00 | full test suite (GPU visible) | **508 passed**, 0 failed, 0 skipped | – |
+| 06:02 | queue written, dry-run, launched (`scripts/queue_e1_pilots.sh`, deadline 14:00) | – | `5c20ca3` |
+| 06:03 | D97 (your approvals + the queue) and D98 (self-consistency = p baseline / teacher candidate) | – | `0a0f718` |
+| 06:02–08:21 | GPU: E1c train | 300 steps, 2.29 h; `scale_rewards: batch` confirmed in `summary.json` | `221e231` |
+| 08:21–08:27 | GPU: E1c evals (`final_4bit`, `step150_4bit`) | 400 / 400 each | `f67b4fc`, `3ba8432` |
+| 08:27–10:35 | GPU: E1d train (started with 5 h 33 min left; your rule needs ≥ 3 h) | 300 steps, 2.10 h | `d505321` |
+| 10:35–10:43 | GPU: E1d evals | 400 / 400 each | `7430a61`, `f359561` |
+| 10:43 | CPU: compare_pilots (D94) | E1d supported, E1c not | `c1fa6f7` |
+| 06:07 | D99 (X1 on A6c) and D100 (stage A), before computing | – | `7792502` |
+| 06:07–06:13 | CPU, 1 thread, nice 19: X1 refit + A6c | reproduction exact; A6c slope −0.002 | `144eab7` |
+| 06:14–06:15 | CPU: stage A (16 s) | FINDINGS #24 | `5cda743`, `19e7a33` |
+| 10:44–10:45 | D101, FINDINGS #25 | – | `b24a782`, `6ed5fe6` |
 
-## 2. X4: self-verification on the X2 pairs (D89 + D91; FINDINGS #21)
+## 2. E1c / E1d (D94; FINDINGS #25)
 
-| arm (516 problems, 5,390 pairs; CIs: bootstrap over problems) | pairwise accuracy | p (> 0.5) | Holm (5 arms) | AUROC across problems | extra tokens / answer |
-|---|---|---|---|---|---|
-| `sft`: recompute (primary) | 0.524 [0.498, 0.550] | 0.033 | not supported | 0.469 [0.442, 0.496] | 93.4 (18.4 generated) |
-| `direct`: no recomputation | 0.526 [0.500, 0.553] | 0.025 | not supported | 0.463 [0.436, 0.490] | 75.0 (0 generated) |
-| `perturbed`: final μ × 1.25 | 0.524 [0.498, 0.551] | 0.038 | not supported | 0.450 [0.423, 0.477] | 94.5 |
-| `shuffled`: another problem's text | 0.513 [0.488, 0.539] | 0.153 | not supported | 0.463 [0.435, 0.491] | 99.9 |
-| `random_init` | 0.489 [0.465, 0.514] | 0.81 | not supported | 0.517 [0.495, 0.539] | 587 |
-| X2 probe (reference) | 0.547 [0.520, 0.574] | – | – | 0.727 [0.708, 0.745] | – |
+| run (300 steps, 1 seed) | ρ final | Δρ vs E1a [95% CI] | Holm | ρ step 150 | 1σ cov. | median rel. σ | crps_log | vs A5 σ (crps_log) |
+|---|---|---|---|---|---|---|---|---|
+| E1a (reference) | 0.013 | – | – | −0.001 | 0.485 | 3.2% | −0.3309 | – |
+| E1c: batch std | 0.002 | −0.011 [−0.092, +0.069] | no (p = 0.62) | 0.052 | 0.520 | 4.3% | −0.3300 | −0.025 [−0.033, −0.017] |
+| **E1d: lr 5e-5** | **0.586** | **+0.573 [+0.465, +0.680]** | **yes (p < 1e-4)** | 0.269 | 0.298 | 0.95% | −0.3286 | −0.023 [−0.032, −0.016] |
 
-- **Paired differences:**
-  - `sft − X2 probe` −0.023 [−0.060, +0.013];
-  - `sft − random_init` +0.035 [−0.001, +0.071];
-  - `sft − shuffled` +0.011 [−0.021, +0.042];
-  - `sft − perturbed` −0.000 [−0.028, +0.028];
-  - `sft − direct` −0.002 [−0.008, +0.004];
-  - `direct − random_init` +0.037 [+0.001, +0.073]. Its CI is above 0, but `direct` is not Holm-supported, so
-    "direct succeeds" is False.
-- **The D91 flags are all False:** final-value-sensitive, direct succeeds, recomputation helps.
-- **What the model does:**
-  - **"Verdict: yes"** on 99.9% of correct and 99.8% of incorrect answers.
-  - **Mean P(yes):** 0.80 on correct answers and 0.82 on incorrect ones.
-  - **Perturbing μ** lowers P(yes) by ~0.08 on both: detection is 0.986 [0.977, 0.994] on the correct answers.
-  - **Another problem's text** lowers it to ~0.6.
-- **Limits:**
-  - one model and one prompt, greedy;
-  - direct mode keeps the prompt's "You may redo the calculation";
-  - the random-init model puts no mass on yes/no, so it is a weak control;
-  - R3-1's yes/no order variant and the deterministic checker ceiling are still to do.
+- **Sanity:**
+  - 400 / 400 rows in each eval; no parse failure, unit mismatch or μ change.
+  - Neither run is collapsed (top suffix 1.8% / 4.8%).
+  - The trainer used the intended settings.
+- **What it means:** E1's flat σ (R3-3's question) was largely the learning rate. Batch-std scaling did nothing.
+- **What it does not mean:**
+  - **Between problems only:** one answer per problem, so this is the X3 kind of ranking.
+  - **Below the baseline:** E1d does not beat the A5 text baseline.
+  - **Not calibrated:** coverage 0.30.
+  - **Not converged:** ρ is still rising at step 300.
+- **Memory:** both runs repeat E1a's pattern. After the step-250 save, reserved memory reaches 7.47 GiB and steps go
+  from ~23 s to ~50 s. I kept E1a's 7.5 GiB cap for parity (D97); it cost ~20 min per run.
 
-## 3. X2 robustness (D92, post-hoc; FINDINGS #22)
+## 3. X1 on A6c (D99; FINDINGS #23)
 
-| method | X2 pairwise acc. | separated pairs (right ≤ 0.25%, wrong ≥ 10%; 158 problems / 719 pairs) |
-|---|---|---|
-| **self-consistency** (share of the other 7 samples within 1%) | **0.643 [0.616, 0.671]** | **0.861 [0.820, 0.901]** |
-| hidden-state probe (SFT) | 0.547 [0.520, 0.574] | 0.635 [0.570, 0.697] |
-| hidden-state probe (random init) | 0.530 [0.503, 0.557] | 0.584 [0.523, 0.645] |
-| length only (shorter = more confident) | 0.535 [0.511, 0.559] | 0.607 [0.549, 0.663] |
-| X4 `sft` | 0.524 [0.498, 0.550] | 0.544 [0.485, 0.603] |
-| SFT stated σ | 0.499 [0.474, 0.524] | 0.501 [0.442, 0.558] |
+| σ source | A6 slope | A6b ≡ 0 | A6c slope (supported?) |
+|---|---|---|---|
+| X1 primary (text + magnitudes) | +0.063 [+0.031, +0.097] | yes | −0.002 [−0.003, −0.000] (no) |
+| X1 noise / noise_text | +0.000 / +0.002 | yes | +0.000 / −0.002 (no) |
+| heuristics max / mean / RSS | +0.000 | yes | +0.000 (no) |
+| σ̂ = σ\* | +1.000 | yes | +1.000 (yes) |
 
-- **Length:**
-  - **Pooled,** correct answers are 17 tokens shorter (186 vs 203).
-  - **Within problems,** only 1.8 [1.0, 2.7] tokens.
-  - **Against the probe,** length alone is −0.012 [−0.045, +0.021], i.e. indistinguishable.
-- **The pooled pair-weighted cluster-bootstrap version** gives the same picture (`results/x2/robustness/summary.md`).
-- **X2's published CIs** already resampled problems; the recomputed ones match.
+- **The refit:** 40 published numbers per feature set reproduce with max difference 0.0.
+- **Within A6c pairs:** X1's σ̂ is bit-identical in 57.5% of pairs. The rest differ only through punctuation-carrying
+  tokens.
+- **The bar for Phase 12:** any positive A6c slope beats every surface baseline built so far.
 
-## 4. Built tonight, not run
+## 4. Phase 12 stage A (D100; FINDINGS #24)
 
-- **E1c / E1d (D94, the R3-3 pilots):** each is E1a with one change.
-  - **E1c:** `scale_rewards: batch`. The baseline stays the prompt's own mean; the std is taken over the step's 32
-    completions.
-  - **E1d:** learning rate 5e-5, against 5e-6.
-  - **The test:** ρ(σ, |error|) vs E1a's 0.013 on the corrected eval. Paired bootstrap over problems, Holm over the two.
-    The winner sets Phase 12's RL configuration; if neither wins, E1's settings stay.
-  - **Launch (about 2.7 h each):**
-    - `uv run python -m physcal.train.e1 train --config grpo_e1c` (then `grpo_e1d`);
-    - `uv run python -m physcal.train.e1 eval --run results/train/e1c-sigma-only-free-seed0 --out-name final_4bit`
-      (and for step 150);
-    - then `uv run python -c "from physcal.train.e1_compare import compare_pilots as c; c()"`.
-  - **No queue script is prepared yet.**
-- **A6c (D95):** `data/eval_sets/2.0.0+bdbb2279/a6c_pairs.jsonl` (sha256 `b90455b0…`).
-  - **The pairs:** 510 noise-allocation pairs, 34 in each of the 15 cells (depth 1–5 × (1, 5)%, (2, 5)%, (1, 2)%).
-    Both members show identical values and the same multiset of "± p%". Only the given that carries the high level
-    moves.
-  - **σ\* ratios:** MC σ\*_hi / σ\*_lo has a median of 1.6–3.6 per cell, minimum 1.35.
-  - **Replay** is exact, and A6/A6b regenerate unchanged.
-- **The noise heuristics on the frozen sets** (`results/noise_heuristics/summary.md`):
-  - every heuristic gives Δ = 0 within every pair, so it fails A6 and A6c and passes A6b;
-  - per problem, RSS over the givens has a median |ln(σ_h / σ\*)| of 0.55 on A6, 0.28 on A6b and 0.50 on A6c.
-  - **The comparison with X1 on A6c** is not done yet (D95).
+- **The optimum:** on 10,005 gate problems, the mean realized crps_log over σ = c·σ\* peaks at
+  **c = 1.000 [0.966, 1.017]**. All 15 cells' CIs contain 1.
+- **The curve is flat and asymmetric:** c = 0.5 costs 8% of the score and c = 2 costs 17%. That is the Gaussian CRPS
+  formula.
+- **The resolution per problem** (A6 + A6b + A6c, 3,060 problems):
+
+  | σ\* vs | σ\* better, realized | σ\* better, expected | variance ratio realized / expected | problems for 2 SE (realized / expected) |
+  |---|---|---|---|---|
+  | 0.5·σ\* | 56.5% | 100% | 22.7 | 53 / 3 |
+  | 2·σ\* | 76.5% | 100% | 10.0 | 28 / 3 |
+  | RSS heuristic | 58.0% | 91.3% | 6.4 | 79 / 12 |
+  | X1 primary | 60.7% | 97.0% | 7.6 | 101 / 13 |
+
+- **μ error swamps σ:** a 5% μ error costs 6× the σ\*-vs-RSS gap. That is why R3-6 centres at f(x_meas).
+- **The verifier's details:**
+  - no clip and no floor binds;
+  - the diagnostic reproduces `reward()`'s `score_final` exactly (300 / 300).
+- **The oracle-centred baselines:** X1 primary has median |ln(σ / σ\*)| 0.33 and RSS 0.40. Both have an
+  across-problem vol beta of ~0.5–0.6, with within-pair slopes of 0.
+- **New, reusable code:**
+  - `physcal/eval/oracle_centred.py` (the diagnostic);
+  - `physcal/eval/stage_a.py`, `configs/stage_a.yaml`;
+  - 11 new tests across `tests/test_oracle_centred.py`, `tests/test_stage_a.py` and `tests/test_x1_a6c.py`.
 
 ## 5. Decisions to review
 
-1. **D94 [REVIEW], E1c:** "normalized across the whole batch". I kept the per-prompt mean as the baseline and
-   scaled by the batch std (TRL `batch`). Centering at the batch mean as well would mix μ error back into σ's
-   advantage. It can change before launch.
-2. **D94 [REVIEW], E1d:** the learning rate is 5e-5 (10×). The alternatives are 2.5e-5 and 1e-4 (SFT's).
-3. **D95:**
-   - **min ratio 1.5,** not A6's 2. With (1%, 2%) no allocation reaches 2.
-   - **Identical displayed values:** member hi's true givens are backed out of them, so the swap is the only visible
-     change.
-   - **Distractors** are shown at the low level.
-4. **D93, R3-6:** D83's τ = 0.1% becomes 1% (sensitivity analyses at 0.1% and 0.5%). It needs a `reward_v12.yaml`
-   change. Not done: verifier, and p is deferred.
-5. **D96: the in-stage temperature guard** is new; earlier queues checked only before a stage. It fired once.
+1. **D100 [REVIEW]: my reading of "scoring audit."**
+   - **R3-4 names it without a definition.** I read it as: does the scoring Phase 12 will use reward σ propagation
+     on noisy problems?
+   - **The four questions:** the optimum, the per-problem resolution, the ranking, and the clip / floor details.
+   - **If you meant something else** (e.g. an audit of the verifier's code paths), it still needs doing.
+2. **D101 [REVIEW]: E1d's 5e-5 for Phase 12.**
+   - **Validated only on 24-token σ suffixes with μ fixed.** On whole completions it may destabilize μ.
+   - **The options:** run stage C's pilot at 5e-5 with a μ-accuracy guard (the rule as written), or add a 1e-5 arm.
+   - **Also:** the step budget (still improving at 300), and a calibration fix for coverage 0.30.
+3. **FINDINGS #24 → Phase 12's pre-registration (my suggestion):**
+   - **The metric:** report σ propagation primarily with the oracle-centred expected score, plus A6 / A6b / A6c.
+   - **The reward:** consider the expected score against the generator's predictive distribution as stage C's σ
+     reward. That would be a verifier change; I made none.
+4. **D97: the 7.5 GiB cap was kept for E1a parity,** at a cost of ~20 min per run. For Phase 12, a 7.1 cap
+   (total − host − 0.5) probably avoids the post-checkpoint spill. It would need a check that it does not OOM.
 
 ## 6. BLOCKED / problems
 
-- **Nothing is BLOCKED.**
-- **The X2 refits were refused under 1 thread** (cross-fitted probe 0.5390 vs 0.5396). The reproduction check did
-  its job, and the rerun under X2's thread settings reproduced exactly (D96).
-- **A heuristic float-order bug** (RSS "supported" with slope +0.000) was caught and fixed before any result was
-  committed.
+- **Nothing is BLOCKED.** No stage failed or was skipped.
 
 ## 7. Recommendation
 
-- **Self-consistency is the confidence source to take seriously.**
-  - **What it does:** 0.643 within problems, without any training.
-  - **For R3-4 E:** X4 failed, so verification-derived p is not a candidate teacher. Agreement across k samples is.
-    Its cost is k samples at inference, and a k-sample consensus σ is close to DAR's rollout spread (Phase 13 source
-    2).
-  - **Next step:** I suggest a short D-entry making it the p baseline and teacher candidate before Phase 12 stage E.
-- **Tomorrow night (R3 schedule):** E1c + E1d after you answer §5.1–5.2. I can write the queue script by day.
-- **Daytime CPU:** X1 on A6c; Phase 12 stage A (scoring audit, the oracle-centred diagnostic).
-- **Optional, cheap X4 follow-ups (R3-1 "later"):** the yes/no order variant, and `perturbed` in direct mode
-  (about 13 GPU minutes).
+- **Phase 12 RL now has a learning rate that moves σ.** The next question is whether E1d's σ ranks answers within a
+  problem.
+  - **The experiment:** the X2 pairs with an E1d-style σ-only adapter (X2's 4,116 answers as prefixes).
+  - **Cost:** about 30 GPU-min, inference only (400 prefixes took ~3 min).
+  - **Why first:** it is the cheapest test of whether RL learned something X3 did not.
+- **Then, per the R3 schedule (Thu 22):** the Phase 12 SFT data check and supervised σ\* (3 seeds), and the Phase 12
+  pre-registration with D101's caveats decided.
+- **Before any σ-RL night:** settle §5.3. FINDINGS #24 says a realized-score σ reward is a noisy teacher.

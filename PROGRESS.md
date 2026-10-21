@@ -713,4 +713,12 @@ Progress:
   - **Per problem:** σ\* beats a 2×-off σ on only 56–77% of problems (realized).
   - **Expected scoring:** 5–23× less variance.
   - **Identity:** the diagnostic matches `reward()` exactly.
-- [ ] **E1c / E1d results and compare_pilots:** in the queue.
+- [x] **GPU queue done at 10:43 IST** (deadline 14:00). E1c: 300 steps, 2.29 h. E1d: 300 steps, 2.10 h. All four evals
+  completed. No OOM, no pause, nothing BLOCKED.
+- [x] **FINDINGS #25:** E1d (lr 5e-5) ρ 0.586 vs E1a's 0.013, Holm-supported; E1c (batch std) is null.
+  - **D101:** 5e-5 becomes Phase 12's RL setting, with [REVIEW] caveats: it was validated on σ-only suffixes; σ is
+    overconfident (coverage 0.30); ρ is still rising.
+- [x] **Full test suite:** 519 passed, 0 failed, 0 skipped (GPU visible).
+- [ ] **Next:** your review of D100 / D101. E1d's within-problem ranking on the X2 pairs (~30 GPU-min, needs an
+  entry). Then the R3 schedule (Thu 22): the Phase 12 SFT data check, supervised σ\* (3 seeds), and the Phase 12
+  pre-registration.
