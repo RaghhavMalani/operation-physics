@@ -52,3 +52,10 @@ results/stage_b/*/checkpoints/
 results/stage_b/*/eval/rollouts.jsonl
 results/queue_e1d_x2/*.pid
 results/queue_stage_b/*.pid
+results/stage_c/data/*.jsonl
+results/stage_c/run/checkpoints/
+results/stage_c/run/final_adapter/
+results/stage_c/run/permanent_checkpoints/
+results/stage_c/run/rollouts.jsonl
+results/stage_c/*/seed0/eval/rollouts.jsonl
+results/queue_stage_c/*.pid

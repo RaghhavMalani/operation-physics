@@ -1,0 +1,29 @@
+{
+ "decision": "D106",
+ "excluded": {
+  "train": 0,
+  "eval": 0
+ },
+ "train": {
+  "n_rows": 2250,
+  "prompt_tokens_max": 1620,
+  "prompt_tokens_median": 1387.0,
+  "sha256": "cfad2d542c22c593e2653515cf4cd930068318166bfafa3c8a92c3843a38cb3e",
+  "noise_levels": [
+   0.01,
+   0.02,
+   0.05
+  ]
+ },
+ "eval": {
+  "n_rows": 3060,
+  "prompt_tokens_max": 1669,
+  "prompt_tokens_median": 1425.5,
+  "sha256": "ae2cc529f5ab07b3f5af9beac482f058e97a755ea5cfba761f7a90664fd08e67",
+  "sets": {
+   "a6_pairs": 1020,
+   "a6b_pairs": 1020,
+   "a6c_pairs": 1020
+  }
+ }
+}

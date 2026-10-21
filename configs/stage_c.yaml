@@ -1,0 +1,27 @@
+# Phase 12 stage C pilot (DECISIONS.md D106, pre-registered): E1d-style sigma-only RL (mu frozen) on noisy problems,
+# rewarded by verifier 1.3.0's score_sigma (D105). E1d's settings (configs/grpo_e1d.yaml) with the changes below.
+base_config: grpo_e1d                  # model (merged SFT, 4-bit), LoRA, GRPO and guards: E1d's exactly
+run_id: stage-c-pilot-seed0
+output_dir: results/stage_c            # run/ (training), data/, final/ step150/ sft_control/ (evals)
+prompt: v5_two_channel                 # [REVIEW] D106
+reward_config: reward_v13              # D105: the training reward is the breakdown's score_sigma
+sft_phase12_config: sft_phase12        # D80's data (the implicit arm's completions, checked against the manifest)
+data_arm: implicit
+noisy_only: true                       # training prefixes: noise 1 / 2 / 5% only (2,250 of 3,000)
+max_reserved_gib: 7.1                  # D103 (instead of E1a / E1d's 7.5), after the OOM check
+grpo_overrides:                        # D106 amendment (before any stage C rollout): v5 prompts are longer than v4's;
+  max_prompt_length: 2016              # E1d's 1,536 would cut prompts. 2,048 (max_seq_length) - 24 new tokens - 8.
+                                       # Never truncates (data_report.json: prompt_tokens_max), as 1,536 never did for E1
+eval:
+  sets_config: stage_a                 # the frozen A6 / A6b / A6c files (generator_version, pair_sets; checksums)
+  batch_size: 16                       # D87's suffix batch
+  max_reserved_gib: 7.1
+  arms:                                # name -> adapter (relative to run/); null = the SFT-only control
+    final: final_adapter
+    step150: permanent_checkpoints/checkpoint-150
+    sft_control: null
+analysis:
+  stage_b_config: stage_b              # C1-C5 = D104's B1-B5 code on stage C's sigma
+  bootstrap: 10000
+  seed: 0
+  alpha: 0.05                          # Holm over C1-C6
