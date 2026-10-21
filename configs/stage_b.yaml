@@ -1,0 +1,48 @@
+# Phase 12 stage B (DECISIONS.md D104, pre-registered; R3-4 B): the supervised sigma* ceiling, 3 seeds. A fresh LoRA on
+# the pinned 4-bit base (D70 / D78) is SFT-trained on D80's supervised arm (sigma* written and trained), then evaluated
+# greedily on the frozen A6 / A6b / A6c sets with prompt v5.
+sft_phase12_config: sft_phase12        # the data's config (prompt v5_two_channel, the arms' masks, the data dir)
+arm: supervised
+pinned_base: base_4bit                 # D78: the pinned snapshot dir, checked before and after loading
+lora:                                  # the RL runs' / Phase 3.6 SFT's settings
+  r: 16
+  alpha: 16
+  dropout: 0.0
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+seeds: [0, 1, 2]                       # the seed sets the LoRA init, the shuffle and the trainer's seed
+train:                                 # configs/sft.yaml's optimizer settings; 2 epochs ([REVIEW] D104)
+  epochs: 2
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4
+  lr_scheduler_type: constant_with_warmup
+  warmup_steps: 10
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optim: adamw_8bit
+  logging_steps: 10
+guards:
+  max_gpu_temp_c: 87
+  pause_seconds: 600
+  check_every_steps: 10
+max_reserved_gib: 7.1                  # D103: the Phase 12 allocator cap (after the OOM check on the longest batch)
+eval:
+  frozen_sets_config: eval_frozen_sets # A6 / A6b files, env_v2, greedy 512 tokens; A6c added below
+  extra_splits:
+    a6c_pairs:
+      file: data/eval_sets/2.0.0+bdbb2279/a6c_pairs.jsonl   # D95, checksum in a6c_pairs_manifest.json
+      verify_regenerate: -1
+  prompt: v5_two_channel
+  batch_size: 32                       # distinct prompts per generate call; OOM backoff halves it
+  max_reserved_gib: 7.1
+analysis:
+  pairs_config: pairs                  # D59 / D61 / D64 / D95: tau, floor, label CI level, alpha, the TOST margin
+  stage_a_config: stage_a              # D100: the MC draws (N, per-problem streams), X1 / heuristic sources
+  rss_source: heuristic_rss
+  x1_source: x1_noise_text_magnitudes   # X1 primary (text + magnitudes; D73, refit by D99)
+  r36_tau_floor: 0.0025                # R3-6's sigma secondary: tau_sigma = max(0.25%, 0.25 * sigma*)
+  r36_tau_sigma_share: 0.25
+  bootstrap: 10000                     # over pairs (clusters), the same resampled pairs for every seed
+  seed: 0
+  alpha: 0.05                          # Holm over B1-B5
+output_dir: results/stage_b

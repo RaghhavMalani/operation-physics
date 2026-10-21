@@ -44,3 +44,11 @@ results/pinned_base_smoke/adapter/
 results/train/e1c-sigma-only-free-seed0/rollouts.jsonl
 results/train/e1d-sigma-only-free-seed0/rollouts.jsonl
 results/queue_e1_pilots/*.pid
+# 2026-10-21/22 night (D102, D104): large local outputs; gzipped tapes, summaries and adapter configs are committed
+results/e1d_x2/*/rollouts.jsonl
+results/stage_b/*/final_adapter/adapter_model.safetensors
+results/stage_b/*/final_adapter/tokenizer.json
+results/stage_b/*/checkpoints/
+results/stage_b/*/eval/rollouts.jsonl
+results/queue_e1d_x2/*.pid
+results/queue_stage_b/*.pid
