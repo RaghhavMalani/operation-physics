@@ -737,3 +737,7 @@ Progress:
   17 tests.
 - [x] **D106 (stage C pilot) pre-registered and built:** `physcal/train/stage_c.py`, `physcal/eval/stage_c_analysis.py`,
   data (2,250 + 3,060 prefixes), 6 CPU tests; marked ready. It runs only if ≥ 3.5 h remain after stage B.
+- [x] **Stage (a) done (FINDINGS #26):** E1d within problems 0.512 [0.483, 0.541]; T1–T3 not supported. It is
+  identical to X3 student (a) (0.513), far below self-consistency (0.643).
+- [x] **Stage B seed 0:** 750 / 750 steps (81 min, one 10-min temperature pause at 00:37); eval 3,060 / 3,060 in 53
+  min; fingerprint check passes. Seed 1 started at 02:02.
