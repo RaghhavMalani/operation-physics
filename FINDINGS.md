@@ -1190,3 +1190,48 @@ diagnostic's realized score equals `reward()`'s `score_final` exactly (300 / 300
     `configs/stage_a.yaml`.
   - **Tests:** `tests/test_oracle_centred.py`, `tests/test_stage_a.py`.
   - **Results:** `results/stage_a/`.
+
+## #25. E1c / E1d pilots (R3-3): at a 10× learning rate, GRPO with clean credit learns a σ that ranks errors (ρ 0.59 vs E1a's 0.01), at X3's supervised level, but overconfident and still below the text baseline; batch-std scaling does nothing (D94 → D101; 2026-10-21)
+
+**Status:** pre-registered (D94), one seed each (pilots). The eval is D67's corrected eval: 400 frozen eval prefixes,
+the greedy σ suffix, the 4-bit base, the adapter unmerged. ρ = Spearman(relative σ, |log error|). The p-values come
+from a paired bootstrap over problems (B = 10,000), with Holm over the two pilots.
+
+| run (300 steps each) | ρ final | Δρ vs E1a [95% CI] | Holm | ρ at step 150 | 1σ coverage | median rel. σ | mean crps_log | vs SFT σ | vs A5 σ |
+|---|---|---|---|---|---|---|---|---|---|
+| E1a (reference: lr 5e-6, group std) | 0.013 | – | – | −0.001 | 0.485 | 3.2% | −0.3309 | – | – |
+| E1c: `scale_rewards: batch` | 0.002 | −0.011 [−0.092, +0.069] | not supported (p = 0.62) | 0.052 | 0.520 | 4.3% | −0.3300 | +0.0086 [+0.0066, +0.0105] | −0.0249 [−0.0332, −0.0173] |
+| **E1d: learning rate 5e-5** | **0.586** | **+0.573 [+0.465, +0.680]** | **supported (p < 1e-4)** | 0.269 | 0.298 | 0.95% | −0.3286 | +0.0100 [+0.0081, +0.0120] | −0.0234 [−0.0318, −0.0160] |
+
+- **R3-3's question, answered for the learning rate:** E1's near-constant σ was largely an optimization artifact.
+  - **What changed:** with μ fixed and clean credit, a 10× learning rate takes ρ from 0.01 to 0.59.
+  - **What did not:** scaling advantages by the batch std instead of the group std (E1c) leaves ρ at 0.00.
+  - **Under D94's rule,** 5e-5 becomes Phase 12's RL setting (D101).
+- **It ranks; it is not calibrated:**
+  - **Ranking:** ρ 0.586 is X3's supervised level (0.58, FINDINGS #20). It is below the A5 text-baseline σ on the
+    same answers (0.70).
+  - **Scoring:** mean crps_log improves by only +0.002 over E1a. It beats the SFT σ (+0.010) but stays below A5
+    (−0.023, CI below 0).
+  - **Level:** E1d's σ is narrow. The median relative σ is 0.95% against E1a's 3.2%, and 1σ coverage is 0.30
+    against the 0.68 target.
+- **Between problems only.** Each eval problem has one answer, so this ρ ranks problems, not answers to the same
+  problem.
+  - X2 / X3 showed that between-problem ranking does not imply within-problem ranking (FINDINGS #19, #20).
+  - E1d's within-problem ranking is untested.
+- **Not converged:** ρ is 0.27 at step 150 and 0.59 at step 300.
+- **Not collapsed:** the top suffix string covers 1.8% of E1d's eval suffixes, with 2.66 bits of 9-bin entropy, the
+  most spread of the three runs.
+- **No pipeline problems:**
+  - 400 / 400 rows; no parse failure, unit mismatch or μ change.
+  - The trainer used the intended settings (`summary.json` → `trainer_args`).
+  - No OOM and no temperature pause.
+  - **Times:** E1c 2.29 h, E1d 2.10 h. Both repeat E1a's memory pattern: after the step-250 save, reserved memory
+    reaches 7.47 GiB and steps take ~2× as long.
+- **Limits:**
+  - one seed;
+  - σ-only suffix training (24 tokens, μ fixed): the learning rate is untested on whole completions (D101 [REVIEW]);
+  - noise-free 1.1.0 problems; one model.
+- **Provenance:**
+  - **Runs:** `results/train/e1{c,d}-sigma-only-free-seed0/`, with `e1_eval/{final_4bit, step150_4bit}`.
+  - **The comparison:** `results/e1/pilots/{pilots.json, pilots.md}`.
+  - **The queue:** `scripts/queue_e1_pilots.sh`, logs in `results/queue_e1_pilots/`.
