@@ -22,3 +22,7 @@
 [10:34:58] GPU at 62C, memory.used 299 MiB
 [10:34:58] start e1d_eval_final_4bit (timeout 1200s): uv run python -m physcal.train.e1 eval --run results/train/e1d-sigma-only-free-seed0 --adapter final_adapter --out-name final_4bit
 [10:38:27] end e1d_eval_final_4bit: exit 0
+[10:38:29] commit 'e1d (D94): corrected eval final_4bit, 4-bit unmerged (exit 0)': pushed
+[10:38:29] GPU at 65C, memory.used 302 MiB
+[10:38:29] start e1d_eval_step150_4bit (timeout 1200s): uv run python -m physcal.train.e1 eval --run results/train/e1d-sigma-only-free-seed0 --adapter permanent_checkpoints/checkpoint-150 --out-name step150_4bit
+[10:43:04] end e1d_eval_step150_4bit: exit 0
