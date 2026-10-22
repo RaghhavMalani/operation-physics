@@ -1,0 +1,7 @@
+[23:44:17] stage D chain start; GPU deadline 09:00 IST (555 min left); chain PID 18157
+[23:44:17] waiting for PID 6944 (the stage C pilot's queue)
+[02:52:18] PID 6944 has exited (367 min left)
+[02:52:18] GPU at 54C, memory.used 242 MiB
+[02:52:18] start stage_d_train_pos (timeout 11100s): uv run python -m physcal.train.stage_d train --arm pos --stop-at 2026-10-23T07:40:00+05:30
+[03:59:43] end stage_d_train_pos: exit 0
+[03:59:43] arm pos: 750 steps of 750, 67 min
