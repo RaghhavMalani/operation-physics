@@ -1,0 +1,36 @@
+{
+ "decision": "D106 (stage C pilot)",
+ "run_id": "stage-c-pilot-seed0",
+ "steps_completed": 300,
+ "train_seconds": 9699.34611916542,
+ "seconds_per_step": 32.3311537305514,
+ "oom_check": {
+  "batch": 2,
+  "tokens": 1644,
+  "seconds": 5.0026304721832275,
+  "max_reserved_gib": 2.021484375
+ },
+ "peak_vram": {
+  "torch_max_reserved_gib": 7.0390625,
+  "torch_max_allocated_gib": 6.163207054138184
+ },
+ "grpo_config_dropped_keys": [
+  "max_prompt_length"
+ ],
+ "train_loss": 0.001458750187108914,
+ "trainer_args": {
+  "scale_rewards": "group",
+  "learning_rate": 5e-05,
+  "loss_type": "dapo",
+  "beta": 0.0
+ },
+ "fingerprint": {
+  "status": "recorded",
+  "file": "/home/flash2404/operation-physics/results/stage_c/run/final_adapter/physcal_fingerprint.json",
+  "adapter_effect": {
+   "mean_abs_dlogp": 0.016927450767257136,
+   "mean_sigma_tv": 0.08120503683042608
+  },
+  "seconds": 82.5476176738739
+ }
+}

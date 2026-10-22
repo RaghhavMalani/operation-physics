@@ -2,3 +2,7 @@
 [23:28:36] GPU at 48C, memory.used 635 MiB
 [23:28:36] start stage_c_train (timeout 32184s): uv run python -m physcal.train.stage_c train --stop-at 2026-10-23T08:10:00+05:30
 [02:12:18] end stage_c_train: exit 0
+[02:12:22] commit 'stage C pilot (D106): training (exit 0)': pushed
+[02:12:23] GPU at 63C, memory.used 217 MiB
+[02:12:23] start stage_c_eval_final (timeout 2400s): uv run python -m physcal.train.stage_c eval --arm final
+[02:26:09] end stage_c_eval_final: exit 0
