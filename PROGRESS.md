@@ -741,3 +741,11 @@ Progress:
   identical to X3 student (a) (0.513), far below self-consistency (0.643).
 - [x] **Stage B seed 0:** 750 / 750 steps (81 min, one 10-min temperature pause at 00:37); eval 3,060 / 3,060 in 53
   min; fingerprint check passes. Seed 1 started at 02:02.
+- [x] **Stage B seeds 1 and 2:** 750 / 750 steps each (73 min), evals 3,060 / 3,060 (54 min each). Analysis at 06:19.
+  - **FINDINGS #27:** no B test survives Holm. Supervised σ\* reads the stated percentages (ρ 0.72 with RSS), states
+    σ ≈ 0.65·σ\* at every depth, and its expected score is below RSS and X1.
+- [x] **Stage C pilot: SKIP** by your 3.5 h rule (160 min left at 06:19). It is built, CPU-tested and marked ready.
+- [x] **GPU done at 06:19 IST** (deadline 09:00). Nothing BLOCKED; one 10-min temperature pause.
+- [x] **Full test suite:** 553 passed, 0 failed, 0 skipped (GPU visible).
+- [ ] **Next:** your review of D104 / D105 / D106 [REVIEW] items; the stage C pilot; the 1.3.0 dispatch edit;
+  R3-4 D's positive control as the propagation ceiling.

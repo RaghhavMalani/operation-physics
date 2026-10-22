@@ -59,3 +59,6 @@ results/stage_c/run/permanent_checkpoints/
 results/stage_c/run/rollouts.jsonl
 results/stage_c/*/seed0/eval/rollouts.jsonl
 results/queue_stage_c/*.pid
+results/stage_b/*/final_adapter/README.md
+results/stage_b/*/final_adapter/chat_template.jinja
+results/stage_b/*/final_adapter/tokenizer_config.json
