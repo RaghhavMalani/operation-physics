@@ -749,3 +749,21 @@ Progress:
 - [x] **Full test suite:** 553 passed, 0 failed, 0 skipped (GPU visible).
 - [ ] **Next:** your review of D104 / D105 / D106 [REVIEW] items; the stage C pilot; the 1.3.0 dispatch edit;
   R3-4 D's positive control as the propagation ceiling.
+
+## 2026-10-22/23 night (unattended; GPU deadline 09:00 IST)
+
+- [x] **D108:** your decisions on MORNING.md §6 (no stage B extension; stage C's base approved as a pilot;
+  `weights.sigma = 0`; the 1.3.0 dispatch edit tomorrow only). No module a running stage imports is edited tonight.
+- [x] **Stage C pilot launched at 23:28 IST** (`scripts/queue_stage_c_pilot.sh`, queue PID 6944). OOM check passed
+  (2 × 1,644 tokens, 2.0 GiB); ~30 s/step after warm-up (E1d: 25).
+- [x] **D109 (stage D) pre-registered and built before any stage D result:** `physcal/train/stage_d.py`,
+  `physcal/eval/stage_d_analysis.py`, `configs/stage_d.yaml`, 10 CPU tests.
+  - **D-pos:** the line's numbers and the answer's σ trained. **D-fmt:** D84's masks.
+  - **Tests:** D1–D7 and F1–F6 (Holm within each family), plus line diagnostics (copy fidelity, sensitivities).
+- [x] **Stage D chain launched at 23:44 IST** (`scripts/queue_stage_d.sh`, PID 18157), waiting on stage C's queue PID.
+- [x] **Stage C pilot done at 02:52 IST:** 300 / 300 steps (32 s / step, one 10-min pause at 00:05, 88 °C), three
+  evals of 3,060 suffixes (12–14 min each), analysis.
+  - **FINDINGS #28:** C6 is supported (+0.045 over the SFT control, whose σ is 0 on 79%); C1–C5 are not.
+  - **What the policy does:** it states the smallest given percentage; it is below RSS and X1; it was deterministic
+    per prefix from step ~40.
+- [x] **Stage D pos training started at 02:52** (OOM check 2 × 1,719 tokens, 2.05 GiB; ~6.6 s / step).

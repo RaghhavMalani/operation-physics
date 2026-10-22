@@ -1338,3 +1338,71 @@ seed (B = 10,000); Holm over B1–B5. This is pooled problem-level evidence, not
     `eval/` with the gzipped tape, metrics and plots).
   - **Code:** `physcal/train/stage_b.py`, `physcal/eval/stage_b_analysis.py`.
   - **The queue:** `scripts/queue_stage_b.sh`, logs in `results/queue_stage_b/`.
+
+## #28. Phase 12 stage C pilot: σ-only RL with the predictive σ reward beats its SFT start but learns to copy the smallest stated percentage; it does not propagate, scores below RSS and X1, and its policy turns deterministic by step ~40 (D106; 2026-10-22/23 night)
+
+**Status:** pre-registered pilot (D106), one seed.
+- **The run:** E1d's settings (merged SFT base, fresh LoRA, lr 5e-5, 300 steps), μ frozen (prefixes cut after "±"),
+  reward = verifier 1.3.0's score_sigma (the expected crps_log against the predictive distribution centred at
+  f(x_meas)), prompt v5, 2,250 noisy training prefixes.
+- **The evals:** greedy σ suffixes on the frozen A6 / A6b / A6c prefixes (3,060) for the final adapter, step 150, and
+  the SFT-only control.
+- **The statistics:** bootstrap over pairs (B = 10,000); Holm over C1–C6.
+
+| test (D106) | estimate [95% CI] | p (one-sided) | Holm |
+|---|---|---|---|
+| C1: A6 slope > 0 | −0.000 [−0.000, +0.000] | 0.55 | not supported |
+| C2: A6c slope > 0 | +0.086 [−0.158, +0.324] | 0.24 | not supported |
+| C3: expected crps_log − RSS > 0 | −0.003 [−0.004, −0.003] | 1 | not supported |
+| C4: expected crps_log − X1 > 0 | −0.004 [−0.004, −0.004] | 1 | not supported |
+| C5: A6 slope − X1's > 0 | −0.063 [−0.103, −0.025] | 0.9993 | not supported |
+| **C6: expected crps_log, RL − SFT-only control > 0** | **+0.045 [+0.029, +0.062]** | < 1e-4 | **supported** |
+
+| σ source (oracle-centred, 3,060 problems) | expected crps_log | median ln(σ / σ\*) | vol beta | 1σ / 2σ coverage | σ = 0 |
+|---|---|---|---|---|---|
+| stage C final (step 300) | −0.0427 | −0.81 | 0.44 | 36% / 59% | 0% |
+| stage C step 150 | −0.0427 | −0.81 | 0.44 | 36% / 59% | 0.03% |
+| SFT-only control (merged SFT, prompt v5) | −0.0874 | −10.5 | −0.76 | 9% / 11% | 79% |
+| X1 primary / RSS / σ\* | −0.0386 / −0.0394 / −0.0365 | −0.03 / −0.08 / 0 | 0.59 / 0.49 / 1 | 64% / 62% / 68% (1σ) | – |
+
+- **D106's reading:** "RL moved σ toward the predictive distribution (C6 supported); C6 supported, C2 not: a better
+  score without learning allocation."
+  - **Its signal rule fires** (C6 or C2 supported → 3 seeds warranted, R3-4 C).
+  - **But C6 mostly measures the SFT control's failure:** with prompt v5 the merged SFT model states "± 0" on 79% of
+    these noisy problems. RL removes that (training σ = 0 share 0.24 → 0 within 50 steps).
+  - **Labels:** A6 "no propagation" (510 computation-correct pairs); A6b equivalent to 0; D59's joint verdict "no
+    propagation".
+- **What the policy learned (exploratory, computed after the analysis; not pre-registered):**
+  - **Its σ takes exactly three values:** 1% (39%), 2% (35%), 5% (26%), i.e. one of the stated percentages.
+  - **Which one:** the smallest stated level on 93% of problems (78% of the mixed-level A6c problems). It is the
+    largest level on 22% of mixed-level problems.
+  - **Hence the zero slopes:** on A6 / A6b, each problem's givens share one level, so σ equals it and the A6 slope is
+    exactly 0. On A6c the "min" rule gives a small, noisy slope.
+  - **Correlations:** Spearman ρ(σ, RSS) 0.78, ρ(σ, σ\*) 0.55 (RSS vs σ\*: 0.68). σ ≈ 0.44·σ\*: overconfident.
+- **Training dynamics (reported; D106's sanity list):**
+  - **Steps 1–50:** mean training reward −0.149 → −0.045; 50% zero-variance groups; σ = 0 share 0.24, then 0.
+  - **From step ~40:** 98–100% of groups have zero reward variance. All 8 samples of a prefix are the same string at
+    T = 1, so TRL logs loss 0 and grad-norm 0 on most steps. Steps 51–300 changed almost nothing: step 150 and step
+    300 are indistinguishable.
+  - **E1d** (same settings, the realized-score reward) kept 3–17% zero-variance groups for all 300 steps.
+  - **[hypothesis, untested]** score_sigma is a near-deterministic function of σ (low reward noise). With per-group
+    std normalization (`scale_rewards: group`), small but consistent differences become ±1 advantages and sharpen
+    the policy fast. E1d's realized-score reward kept its groups noisy.
+- **Sanity:**
+  - **Suffixes:** 0% failed (step 150: 0.03%); μ never moved; parse rate in training ≥ 0.985.
+  - **Run mechanics:** 300 / 300 steps at 32 s / step, including one 10-min temperature pause at 00:05 (88 °C, GPU
+    load alone). Peak 7.04 GiB reserved under the 7.1 cap, no OOM.
+  - **D107.6 had no effect:** `max_prompt_length` is not a GRPOConfig field in this TRL version (logged as a dropped
+    key), so no prompt was truncated either way.
+- **What it means:**
+  - **With μ frozen and a proper expected σ reward, RL found the cheapest surface reader** (copy one stated
+    percentage) and then stopped exploring.
+  - **The reward ranks σ\* correctly** (FINDINGS #24, D105's tests). So the failure is exploration / credit (a
+    deterministic policy after ~40 steps), not the reward's target.
+  - **Before 3 seeds [my recommendation, your decision]:** the run that seeds would replicate learned nothing after
+    step ~40. An entropy or exploration change (e.g. a KL term, temperature, or batch-level reward scaling) would be
+    one variable to change first.
+- **Provenance:**
+  - **Results:** `results/stage_c/{results.json, summary.md}`; per arm `results/stage_c/{final,step150,sft_control}/`.
+  - **Training:** `results/stage_c/run/` (`summary.json`, `train_metrics.jsonl`, `memory.jsonl`, the gzipped tape).
+  - **Code:** `physcal/train/stage_c.py`, `physcal/eval/stage_c_analysis.py`; queue logs in `results/queue_stage_c/`.
