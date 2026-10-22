@@ -1,0 +1,20 @@
+# Phase 12 stage C pilot (D106): E1d-style σ-only RL with verifier 1.3.0's σ reward
+
+**Reading (D106):** RL moved σ toward the predictive distribution (C6 supported); C6 supported, C2 not: a better score without learning allocation; signal: 3 seeds are warranted (R3-4 C).
+
+| test | estimate [95% CI] | p (one-sided) | Holm |
+|---|---|---|---|
+| C1: A6 slope > 0 | -0.000 [-0.000, +0.000] | 0.5456 | not supported |
+| C2: A6c slope > 0 | +0.086 [-0.158, +0.324] | 0.2426 | not supported |
+| C3: expected crps_log − RSS > 0 | -0.003 [-0.004, -0.003] | 1 | not supported |
+| C4: expected crps_log − X1 > 0 | -0.004 [-0.004, -0.004] | 1 | not supported |
+| C5: A6 slope − X1's > 0 | -0.063 [-0.103, -0.025] | 0.9993 | not supported |
+| C6: expected crps_log, RL − SFT-only control > 0 | +0.045 [+0.029, +0.062] | 0 | supported |
+
+| arm | A6 slope (label) | A6b slope | A6c slope | expected crps_log | median abs ln(σ/σ*) | vol beta | 1σ / 2σ cov. | μ-changed / failed |
+|---|---|---|---|---|---|---|---|---|
+| final | -0.000 (no propagation) | -0.000 | +0.086 | -0.0427 | 0.821 | 0.440 | 36.0% / 59.1% | 0.0% |
+| step150 | -0.000 (no propagation) | -0.000 | +0.137 | -0.0427 | 0.819 | 0.442 | 36.1% / 59.2% | 0.0% |
+| sft_control | -0.621 (no propagation) | +0.245 | -1.028 | -0.0874 | 10.527 | -0.763 | 8.5% / 10.5% | 0.0% |
+
+Stage B (D104; another base, descriptive): B1 +0.449 [-0.049, +0.892], B2 +0.044 [-0.066, +0.157], B3 -0.002 [-0.003, -0.001].
