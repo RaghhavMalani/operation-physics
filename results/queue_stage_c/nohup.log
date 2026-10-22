@@ -6,3 +6,7 @@
 [02:12:23] GPU at 63C, memory.used 217 MiB
 [02:12:23] start stage_c_eval_final (timeout 2400s): uv run python -m physcal.train.stage_c eval --arm final
 [02:26:09] end stage_c_eval_final: exit 0
+[02:26:13] commit 'stage C pilot (D106): sigma suffixes on A6 / A6b / A6c, final (exit 0)': pushed
+[02:26:14] GPU at 61C, memory.used 213 MiB
+[02:26:14] start stage_c_eval_sft_control (timeout 2400s): uv run python -m physcal.train.stage_c eval --arm sft_control
+[02:38:37] end stage_c_eval_sft_control: exit 0
