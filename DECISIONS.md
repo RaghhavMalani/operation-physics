@@ -3504,3 +3504,145 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
      300 prompt + completion texts of the training data.
    - **Decision:** benign; the eval goes on. Alternative: stop and rebuild the eval tokenizer from the adapter dir.
      Rejected, since nothing it encodes differs.
+
+## Night of 2026-10-22/23 (unattended; your instructions at ~23:25 IST, GPU deadline 09:00 IST)
+
+### D108. Your decisions on the 2026-10-21/22 report (MORNING.md §6), and tonight's launch (recorded 2026-10-22, 23:45 IST)
+1. **Stage B is not extended** (D104's [REVIEW] on base and budget). Stage D's positive control is the ceiling test
+   (D109).
+2. **Stage C's pilot base is approved as a pilot** (D106's [REVIEW]): the merged SFT model, prompt v5, as E1d.
+3. **`weights.sigma = 0` is approved** as verifier 1.3.0's default (D105's [REVIEW]).
+4. **The verifier hookup (the version dispatch in `reward.reward` / `tape.replay` for 1.3.0) is approved for
+   tomorrow only.** Tonight no module a running stage imports is edited. Stage D is new files only
+   (`physcal/train/stage_d.py`, `physcal/eval/stage_d_analysis.py`, `configs/stage_d.yaml`, `tests/test_stage_d.py`,
+   `scripts/queue_stage_d.sh`); it imports `stage_b`, `stage_b_analysis`, `sft_phase12` and the verifier unchanged.
+5. **The stage C pilot was launched at 23:28 IST** (`GPU_DEADLINE=09:00 bash scripts/queue_stage_c_pilot.sh`, queue PID
+   6944, training PID 6967 under the in-stage guard).
+   - **Host VRAM before launch:** 1,602 MiB, then 1,090, then 622–637 MiB over 15 s, with nothing running in WSL
+     (a Windows-side spike). D103's 7.1 GiB cap was kept as pre-registered: the steady host use matches last night's
+     0.59 GiB, for which the 0.3 GiB margin was accepted. Alternative: lower the cap to ~5.9 GiB for the 1.6 GiB
+     reading. Rejected, because E1d's allocated peak was 5.63 GiB, so ~5.9 risked an OOM on every step for a spike
+     that had passed.
+   - **The OOM check passed:** 2 × 1,644 tokens, 2.0 GiB reserved. The first training step reserved 6.05 GiB (5.60
+     allocated), 7.08 GiB device-wide.
+   - **Speed:** steps 1–2 took ~48 s, then ~29–31 s (E1d: 25 s). The first steps include the score_sigma predictive
+     cache's warm-up. 300 steps at ~30 s end ~02:05 IST.
+   - **σ = 0 share (Phase 9.5's monitoring rule, > 50% alerts):** 0.52–0.97 over steps 1–7, then 0.03–0.69 per step
+     through step 20, with 0–75% zero-variance groups. This is logged as an alert for the morning, not acted on (the
+     reward is the pre-registered score_sigma; D106's sanity rule is about parse failures, and the parse rate is 1.0).
+6. **Stage D (D109) is chained after stage C's queue by PID:** pos, then fmt. Each arm starts only if its training,
+   eval and slack fit before 09:00.
+
+### D109. Pre-registration of Phase 12 stage D: explicit propagation, the positive control and the format-only ablation, 1 seed per arm (written before any stage D model, completion or score exists; built and CPU-tested tonight)
+- **Question (R3-4 D, R3-9; your decision D108.1, "stage D's positive control is the ceiling test"):**
+  - **D-pos (positive control):** if SFT teaches the model to write the first-order propagation line with its numbers
+    (log-sensitivities, levels, result X) and to copy X·|μ| into the answer's σ, does the stated σ propagate the
+    measurement noise on new problems (A6 / A6b / A6c)? Does it beat the surface readers, stage B's supervised σ\*,
+    and the format alone?
+  - **D-fmt (ablation):** the same line with its numbers masked (D84's data). What does the format alone do? It is
+    also the SFT-only start that a later explicit-arm RL would continue from (R3-9).
+- **Data: D80's explicit arm as built under D84** (`results/phase12_sft_data/explicit.jsonl`, SHA-256 `bc9861ea…`, and
+  `problems.jsonl`, both checked against the manifest).
+  - **The problems:** the same 3,000 as stage B (noise 0 / 1 / 2 / 5%; the answer f(x_meas) at 4 s.f.).
+  - **The line, at the end of `<steps>`:** `sigma_rel = sqrt((a1*s1)^2 + …) = X`, with a_i = |d ln f / d ln x_i| at
+    the displayed values (`.2g`), s_i the stated levels, the noisy givens in problem order, and X computed from the
+    shown terms (`.2g`). Exact givens give `sigma_rel = 0`.
+  - **The answer:** σ = X·|f(x_meas)| at `.2g`; the `<confidence>` block (uniform c, trained; D80) as built.
+  - **The arms differ only in the loss mask; the text is identical.**
+    - **D-pos:** nothing in the σ channel is masked. The line's numbers and the answer's σ are trained
+      (`train_line_numbers: true`, `train_sigma: true`: D80's trained variant; R3-9's "SFT teaches the copy step").
+      The rows' recorded D84 masks are replaced in memory (all 3,000 rows); the file is not rebuilt.
+    - **D-fmt:** D84's masks exactly (every number on the line and the answer's σ masked; `sqrt`, the brackets, `*`,
+      `^2` and `=` trained), the rows' recorded masks, checked equal (7.2 spans, 24.2 tokens per row).
+  - **Tokenized (prompt v5, the pinned base's tokenizer):** 3,000 rows each, none dropped; sequences ≤ 1,719 tokens
+    (mean 1,420; stage B's 1,380). The longest training completion is 460 tokens, under the eval's 512.
+- **Model and training: stage B seed 0's exactly, except the data** (`configs/stage_d.yaml`; tested equal to
+  `configs/stage_b.yaml`).
+  - **The setup:** the pinned 4-bit base (D70 / D78), checked before and after loading; a fresh LoRA (r 16, α 16,
+    dropout 0, the 7 modules); seed 0 (LoRA init, shuffle, trainer).
+  - **The optimizer and budget:** 2 epochs (750 steps), `configs/sft.yaml`'s optimizer.
+  - **The guards:** D103's 7.1 GiB cap and OOM check, the temperature callback and the in-stage guard, the R2-1
+    fingerprint after the save.
+  - **[REVIEW] the base and budget are stage B's.** So D-pos vs stage B seed 0 changes one thing: how the σ channel is
+    supervised (an explicit computation plus a copy, vs the σ\* number). Stage C uses another base (the merged SFT,
+    D106), so D vs C is descriptive.
+- **Eval: stage B's exactly** (`stage_b.eval_config` with the arm's adapter):
+  - greedy, 512 tokens, prompt v5, on the frozen A6 / A6b / A6c sets (3,060);
+  - the pinned base with the adapter unmerged, batch 32, the 7.1 GiB cap with OOM backoff;
+  - scored by the verifier 1.1.0 path. The line is an unrequested step and does not affect scoring.
+- **The model's σ (as D104):**
+  - **The σ tested** is the answer's stated σ_rel = σ / |μ|.
+  - **Pair statistics:** `a6_pairs.member_row`'s conventions.
+  - **The oracle-centred score:** σ_rel scored at μ = f(x_meas). An unanswered problem gets the floor.
+- **Tests (bootstrap over pairs, B = 10,000, seed 0; one seed, so problem-level evidence only):**
+  - **Family D, the positive control (Holm at α = 0.05 over seven):**
+    - **D1–D5:** D104's B1–B5 on D-pos's σ, through stage B's code unchanged (`stage_b_analysis.analyze`):
+      - A6 slope > 0 on computation-correct pairs;
+      - A6c slope > 0 on all answered pairs;
+      - expected crps_log − RSS > 0, and − X1 > 0;
+      - A6 slope − X1's > 0.
+    - **D6, vs stage B:** the mean per-problem expected crps_log, D-pos − stage B > 0. Stage B's per-problem score is
+      the mean over its 3 seeds, held fixed in the bootstrap.
+    - **D7, the numbers' training effect:** expected crps_log, D-pos − D-fmt > 0 (paired).
+  - **Family F, the ablation (Holm over six):** F1–F5 = B1–B5 on D-fmt's σ; F6 = D-fmt − stage B > 0.
+  - **[REVIEW] two families instead of one Holm over 13.** The positive control's family then does not depend on
+    whether D-fmt runs tonight.
+  - **An arm that did not run:** its tests count as p = 1 (D104's rule).
+- **Labels and verdicts (reported per arm, as D104):** A6's label, A6b's TOST and D59's joint verdict, A6c's
+  secondaries, R3-6's σ secondary, the oracle-centred diagnostic (expected and realized scores, ln(σ / σ\*), vol beta,
+  coverage), the tape's rates.
+- **Line diagnostics (your request; reported, not tested):** computed per arm on all eval completions, also by depth
+  and set.
+  - **The parser (fixed now):** the last line before `<answer>` that starts with `sigma_rel =`. It is parsed if its
+    right side is `0`, or `sqrt((a*s)^2 + …) = X` with decimal or scientific numbers. Anything else is "present,
+    malformed".
+  - **The reference:** the line D80's builder writes for the same eval problem (`sft_phase12.propagation_line`), i.e.
+    perfect imitation. It reproduces the stored training lines exactly (tested on 200). On the eval sets its X has
+    median |ln(X / σ\*)| 0.013, and every eval problem is noisy.
+  - **Copy fidelity** is measured among answered completions with a parsed line.
+    - **The test:** is the stated σ a valid 2-s.f. rounding of X·|μ|, both in the answer's unit, widened by μ's own
+      4-s.f. rounding (5e-4 relative, from D80's `mu_sig_figs`)? X = 0 requires σ = 0.
+    - **Also reported:** the median |ln(σ_rel / X)|, and the share with σ = 0 while X > 0.
+    - **Not checkable:** a σ stated in another unit or as a percentage, counted separately.
+    - **On the SFT data:** all 3,000 completions pass (tested).
+  - **Sensitivity correctness** is measured on lines with the reference's number of terms, matched by position (the
+    line names no symbols, D80).
+    - **The primary match is exact:** the a_i equal the reference's `.2g` value. Reported per term, and as the share of
+      problems with every term exact.
+    - **[REVIEW] a lenient match** within 10% relative (`analysis.sensitivity_rel_tol`).
+    - **Also reported:** the order-free (multiset) exact share, the levels s_i correct in order, the term count
+      correct, and the zero line on noisy problems (a claim of exact givens).
+  - **Arithmetic:** is X a valid 2-s.f. rounding of sqrt(Σ(a_i s_i)²) of the line's own terms?
+  - **X against the reference X and σ\*:** the median |ln(X / X_ref)| and |ln(X / σ\*)|.
+  - **The line's X as the σ (secondary):** X per problem (unparsed → 0, the floor) goes through the comparators' path.
+    That gives A6 / A6b / A6c slopes over all pairs and the oracle-centred summary. If X propagates but the answer's σ
+    does not, the copy is what fails.
+- **Reading rules (fixed now):**
+  - **"Trained explicit propagation propagates (the ceiling)":** D1 and D2 supported, A6b equivalent to 0, and an A6
+    label of partial, full or over-propagation.
+  - **"It beats the surface readers":** D3 and D4 supported.
+  - **"It beats stage B's supervised σ\*":** D6 supported.
+  - **"The trained numbers matter beyond the format":** D7 supported.
+  - **D2 not supported:** trained first-order propagation does not transfer noise allocation to new problems with
+    this base and budget.
+    - **The line diagnostics then locate the failure** (sensitivities, copy, arithmetic), descriptively. No threshold
+      for that attribution is pre-registered.
+  - **"The format alone propagates":** F1 and F2 supported, A6b equivalent to 0, and an A6 label that propagates.
+  - **Seeds ([REVIEW] my reading of R3-4 D's "full seeds only if it resolves B vs C"):** D-pos gets 3 seeds if D2 or
+    D6 is supported, i.e. a ceiling that propagates or differs from stage B. Otherwise stage D stays a one-seed
+    diagnostic.
+- **Not in stage D:**
+  - **RL.** R3-9's split credit (the σ reward routed to the line's number tokens as well as the answer's σ) belongs
+    to an explicit-arm RL run, which needs its own entry.
+  - **p** is not trained.
+- **Budget and queue (`scripts/queue_stage_d.sh`, after stage C's queue by PID; pos, then fmt):**
+  - **The gate:** an arm starts only if training + eval + 15 min fit before 09:00 IST, otherwise SKIP.
+  - **The estimates:** 85 + 65 min (stage B's measured 74–81 min and 54 min, scaled for the line's tokens), then
+    D-pos's measured times.
+  - **The training's clean stop:** at the deadline minus the eval estimate and the slack.
+  - **The analysis** runs on the CPU (1 thread, nice 19) after both arms.
+- **Code and outputs:**
+  - **The code:** `physcal/train/stage_d.py` (data / train / eval), `physcal/eval/stage_d_analysis.py`,
+    `configs/stage_d.yaml`, `tests/test_stage_d.py` (10 tests).
+  - **Outputs:** `results/stage_d/{pos,fmt}/seed0/` (training, eval, per-arm `results.json`) and
+    `results/stage_d/{results.json, summary.md}`.

@@ -1,0 +1,55 @@
+# Phase 12 stage D (DECISIONS.md D109, pre-registered; R3-4 D, R3-9): explicit propagation, 1 diagnostic seed per arm.
+# Both arms SFT a fresh LoRA on the pinned 4-bit base with D80's explicit-arm data (the propagation line
+# `sigma_rel = sqrt((a1*s1)^2 + ...) = X` at the end of <steps>, the answer's sigma = X * |mu|), then are evaluated
+# greedily on the frozen A6 / A6b / A6c sets. Stage B's settings (configs/stage_b.yaml) everywhere except the data:
+# the arms differ only in the loss mask.
+sft_phase12_config: sft_phase12        # the data's config (prompt v5_two_channel, the data dir and its manifest)
+data_arm: explicit                     # D80's explicit-arm file, as built under D84 (its SHA-256 checked)
+arms:                                  # the sigma channel's loss mask per arm (sft_phase12.masked_spans' keys)
+  pos:                                 # positive control: the line's numbers AND the answer's sigma trained
+    train_line_numbers: true           # (D80's trained variant; R3-9: SFT teaches the copy step)
+    train_sigma: true
+  fmt:                                 # ablation: D84's masks exactly (format only; the numbers and sigma masked)
+    train_line_numbers: false
+    train_sigma: false
+order: [pos, fmt]                      # the queue's order (your instruction)
+seed: 0                                # one diagnostic seed per arm (R3-4 D)
+pinned_base: base_4bit                 # D78 (stage B's base) [REVIEW] D109
+lora:                                  # stage B's
+  r: 16
+  alpha: 16
+  dropout: 0.0
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+train:                                 # stage B's: configs/sft.yaml's optimizer settings, 2 epochs ([REVIEW] D109)
+  epochs: 2
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4
+  lr_scheduler_type: constant_with_warmup
+  warmup_steps: 10
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optim: adamw_8bit
+  logging_steps: 10
+guards:
+  max_gpu_temp_c: 87
+  pause_seconds: 600
+  check_every_steps: 10
+max_reserved_gib: 7.1                  # D103
+eval:                                  # stage B's eval exactly (stage_b.eval_config)
+  frozen_sets_config: eval_frozen_sets
+  extra_splits:
+    a6c_pairs:
+      file: data/eval_sets/2.0.0+bdbb2279/a6c_pairs.jsonl
+      verify_regenerate: -1
+  prompt: v5_two_channel
+  batch_size: 32
+  max_reserved_gib: 7.1
+analysis:
+  stage_b_config: stage_b              # D1-D5 / F1-F5 = D104's B1-B5 (stage_b_analysis, unchanged), one seed
+  stage_b_root: results/stage_b        # D6 / F6: stage B's per-problem expected crps_log, mean of its 3 seeds
+  sensitivity_rel_tol: 0.10            # the lenient sensitivity match ([REVIEW] D109); the primary is exact .2g
+  bootstrap: 10000
+  seed: 0
+  alpha: 0.05                          # Holm within each family: D1-D7 (positive control), F1-F6 (ablation)
+output_dir: results/stage_d            # pos/seed0/, fmt/seed0/ (training + eval), results.json, summary.md
