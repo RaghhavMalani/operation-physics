@@ -30,3 +30,6 @@
 [05:24:19] GPU at 66C, memory.used 456 MiB
 [05:24:19] start stage_b_eval_seed2 (timeout 7140s): uv run python -m physcal.train.stage_b eval --seed 2
 [06:18:41] end stage_b_eval_seed2: exit 0
+[06:18:45] commit 'stage B seed 2 (D104): greedy eval on A6 / A6b / A6c, 4-bit pinned base, adapter unmerged (exit 0)': pushed
+[06:18:45] start stage_b_analysis (timeout 5400s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.stage_b_analysis analyze
+[06:19:02] end stage_b_analysis: exit 0
