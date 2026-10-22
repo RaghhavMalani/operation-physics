@@ -5,3 +5,7 @@
 [02:52:18] start stage_d_train_pos (timeout 11100s): uv run python -m physcal.train.stage_d train --arm pos --stop-at 2026-10-23T07:40:00+05:30
 [03:59:43] end stage_d_train_pos: exit 0
 [03:59:43] arm pos: 750 steps of 750, 67 min
+[03:59:46] commit 'stage D pos (D109): SFT on the explicit arm, 750 steps (exit 0)': pushed
+[03:59:46] GPU at 65C, memory.used 215 MiB
+[03:59:46] start stage_d_eval_pos (timeout 7800s): uv run python -m physcal.train.stage_d eval --arm pos
+[04:54:51] end stage_d_eval_pos: exit 0
