@@ -1277,3 +1277,64 @@ reproduces its published number exactly (max gap 0.0).
 - **Provenance:** `results/e1d_x2/{results.json, summary.md}`, suffix rows in `results/e1d_x2/{e1d_final,
   sft_suffix}/`; code `physcal/eval/e1d_x2.py`, `physcal/eval/e1d_x2_analysis.py`; queue `scripts/queue_e1d_x2.sh`,
   logs in `results/queue_e1d_x2/`.
+
+## #27. Phase 12 stage B: SFT on σ\* itself does not teach propagation; the supervised "ceiling" reads the stated percentages, states σ ≈ 0.65·σ\*, and scores below the RSS heuristic and X1 (D104; 2026-10-22 night)
+
+**Status:** pre-registered (D104); 3 seeds. Each seed is a fresh LoRA on the pinned 4-bit base, SFT for 2 epochs (750
+steps) on D80's supervised arm (σ\* written and trained), then evaluated greedily on the frozen A6 / A6b / A6c sets
+(3,060 problems, prompt v5, adapter unmerged). The statistics are seed means; one bootstrap over pairs, shared by every
+seed (B = 10,000); Holm over B1–B5. This is pooled problem-level evidence, not seed-level significance (R2-4 / R3-7).
+
+| test (D104) | seed mean [95% CI] | seeds 0 / 1 / 2 | p (one-sided) | Holm |
+|---|---|---|---|---|
+| B1: A6 slope > 0 (computation-correct pairs, ~58 per seed) | +0.449 [−0.049, +0.892] | +0.18 / +0.17 / +1.00 | 0.037 | not supported |
+| B2: A6c slope > 0 (all answered pairs) | +0.044 [−0.066, +0.157] | +0.13 / +0.01 / −0.01 | 0.21 | not supported |
+| B3: expected crps_log − RSS > 0 | −0.002 [−0.003, −0.001] | −0.003 / −0.002 / −0.002 | 1 | not supported |
+| B4: expected crps_log − X1 > 0 | −0.003 [−0.004, −0.002] | −0.004 / −0.002 / −0.002 | 1 | not supported |
+| B5: A6 slope − X1's > 0 | +0.371 [−0.141, +0.855] | +0.13 / +0.04 / +0.94 | 0.072 | not supported |
+
+| σ source (oracle-centred, all 3,060 problems) | expected crps_log | median ln(σ / σ\*) | median abs | vol beta | 1σ / 2σ coverage |
+|---|---|---|---|---|---|
+| stage B, seeds 0 / 1 / 2 | −0.0423 / −0.0409 / −0.0411 | −0.40 / −0.45 / −0.31 | 0.53 / 0.53 / 0.48 | 0.64 / 0.63 / 0.65 | ~50% / ~74% |
+| X1 primary | −0.0386 | −0.03 | 0.33 | 0.59 | 64% / 87% |
+| RSS heuristic | −0.0394 | −0.08 | 0.40 | 0.49 | 62% / 84% |
+| σ̂ = σ\* (ideal) | −0.0365 | 0 | 0 | 1 | 68% / 95% |
+
+- **D104's reading: B2 not supported.** Supervised σ\* does not teach noise allocation with this base and budget.
+  Stage C's bar is X1 / RSS, not stage B. No B test survives Holm, so "the ceiling propagates" and "the ceiling beats
+  the surface readers" both fail.
+- **The labels (reported, not tested):**
+  - **A6, seed mean:** 90% CI [+0.04, +0.81], "partial propagation". It rests on ~58 computation-correct pairs per
+    seed: only 15–16% of answers are within A1's τ = 0.1% of f(x_meas). One seed (2) reads "full", two read "no
+    propagation".
+  - **A6b:** equivalent to 0 (TOST at ±0.3), slope −0.06.
+  - **R3-6's τ_σ secondary:** A6 +0.32 [+0.11, +0.54]; A6c +0.09 [−0.07, +0.25].
+- **What the model learned (exploratory, computed after the analysis; not pre-registered):**
+  - **It reads the percentages:** its σ correlates with the RSS of the stated levels (Spearman 0.72 in every seed) more
+    than with σ\* (0.63–0.65).
+  - **Its level:** between "copy the largest percentage" and RSS (median ln(σ / max) ≈ +0.23, ln(σ / RSS) ≈ −0.27).
+  - **The underestimate is a constant scale,** not under-propagation with depth: median ln(σ / σ\*) is −0.34 to −0.46 at
+    every depth (1–5) and every level (1, 2, 5%).
+  - **Why it scores worse than RSS and X1** although it ranks σ\* at least as well across problems (vol beta 0.64 vs
+    0.49 / 0.59): it is ~35% too narrow (1σ coverage ~50%).
+- **What it means for Phase 12:**
+  - **SFT with σ\* in the targets (2 epochs, 3,000 examples, token cross-entropy on a `.2g` number) does not produce
+    propagation.** It produces an overconfident surface reader, like X1 but worse calibrated.
+  - **"Ceiling" was the wrong word for this arm:** a stated σ that propagates is not shown to be reachable by SFT
+    imitation at this budget. D80's [REVIEW] on the token loss as a "log-scale" baseline is the obvious suspect.
+  - **Stage C (σ-RL with the predictive reward, D105 / D106)** is therefore read against RSS / X1 and its own SFT
+    control (C6), as D104's rule says.
+- **Sanity:**
+  - **Training:** every seed ran 750 / 750 steps (train loss 0.114), with one 10-min temperature pause (seed 0).
+  - **Evals:** 3,060 / 3,060 completions per seed; 0.0–0.3% parse failures, 0–0.1% unit mismatches; the
+    `<confidence>` block well formed in 100%; σ = 0 never stated.
+  - **Loading:** the fingerprint checks pass; the base identity is the pinned hash.
+- **Limits:**
+  - one base (the pinned base, not the merged SFT of E1d / stage C; D104 [REVIEW]), one budget, one data size;
+  - the A6 primary has few pairs (computation-correct at 0.1%);
+  - token cross-entropy, not a log-scale loss.
+- **Provenance:**
+  - **Results:** `results/stage_b/{results.json, summary.md}`; per seed `results/stage_b/seed{0,1,2}/` (`summary.json`;
+    `eval/` with the gzipped tape, metrics and plots).
+  - **Code:** `physcal/train/stage_b.py`, `physcal/eval/stage_b_analysis.py`.
+  - **The queue:** `scripts/queue_stage_b.sh`, logs in `results/queue_stage_b/`.

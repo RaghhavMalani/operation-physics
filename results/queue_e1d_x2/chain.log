@@ -6,3 +6,5 @@
 [23:32:12] GPU at 61C, memory.used 609 MiB
 [23:32:12] start e1d_x2_sft (timeout 3600s): uv run python -m physcal.eval.e1d_x2 suffix --which sft
 [23:46:39] end e1d_x2_sft: exit 0
+[23:46:42] commit 'e1d_x2_sft (D102): greedy sigma suffixes on the 4,116 X2 answers (exit 0)': pushed
+[23:46:42] queue done

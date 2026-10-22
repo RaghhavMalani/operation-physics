@@ -33,3 +33,6 @@
 [06:18:45] commit 'stage B seed 2 (D104): greedy eval on A6 / A6b / A6c, 4-bit pinned base, adapter unmerged (exit 0)': pushed
 [06:18:45] start stage_b_analysis (timeout 5400s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.stage_b_analysis analyze
 [06:19:02] end stage_b_analysis: exit 0
+[06:19:04] commit 'Phase 12 stage B (D104): B1-B5, Holm, labels, oracle-centred diagnostic': pushed
+[06:19:04] SKIP stage C pilot: ready, 160 min left (needs 210)
+[06:19:04] chain done
