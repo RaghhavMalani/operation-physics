@@ -1,0 +1,4 @@
+[23:28:36] stage C pilot queue start; GPU deadline 09:00 IST (571 min left)
+[23:28:36] GPU at 48C, memory.used 635 MiB
+[23:28:36] start stage_c_train (timeout 32184s): uv run python -m physcal.train.stage_c train --stop-at 2026-10-23T08:10:00+05:30
+[02:12:18] end stage_c_train: exit 0

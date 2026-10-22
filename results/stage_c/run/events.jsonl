@@ -1,0 +1,1 @@
+{"event": "fingerprint", "time": 1792701733.9581053, "status": "recorded", "file": "/home/flash2404/operation-physics/results/stage_c/run/final_adapter/physcal_fingerprint.json", "adapter_effect": {"mean_abs_dlogp": 0.016927450767257136, "mean_sigma_tv": 0.08120503683042608}, "seconds": 82.5476176738739}
