@@ -1,0 +1,61 @@
+/home/flash2404/operation-physics/physcal/eval/stage_b_analysis.py:138: RuntimeWarning: Mean of empty slice
+  b = np.nanmean(np.array(boots), axis=0)
+# Phase 12 stage D (D109): explicit propagation, positive control (pos) and format-only ablation (fmt)
+
+**Reading (D109):** it beats stage B's supervised σ* (D6 supported); the trained numbers matter beyond the format (D7 supported); D2 not supported: trained first-order propagation does not transfer noise allocation to new problems with this base and budget (the line diagnostics locate the failure, descriptively); 3 seeds of D-pos are warranted (D2 or D6 supported; R3-4 D).
+
+One seed per arm: CIs from a bootstrap over pairs (B = 10,000), problem-level evidence only.
+
+**Family D (positive control; Holm over seven)**
+
+| test | estimate [95% CI] | p (one-sided) | Holm |
+|---|---|---|---|
+| D1: A6 slope > 0 (computation-correct pairs) | -0.184 [-1.134, +0.385] | 0.6988 | not supported |
+| D2: A6c slope > 0 (all answered pairs) | -0.034 [-0.295, +0.228] | 0.6042 | not supported |
+| D3: expected crps_log − RSS > 0 | -0.001 [-0.001, -0.001] | 1 | not supported |
+| D4: expected crps_log − X1 > 0 | -0.002 [-0.002, -0.002] | 1 | not supported |
+| D5: A6 slope − X1's > 0 | -0.301 [-1.243, +0.259] | 0.8262 | not supported |
+| D6: expected crps_log − stage B (3-seed mean) > 0 | +0.001 [+0.000, +0.002] | 0.0016 | supported |
+| D7: expected crps_log, pos − fmt > 0 | +0.155 [+0.124, +0.186] | 0 | supported |
+
+**Family F (format-only ablation; Holm over six)**
+
+| test | estimate [95% CI] | p (one-sided) | Holm |
+|---|---|---|---|
+| F1: A6 slope > 0 (computation-correct pairs) | +2.043 [-2.052, +7.975] | 0.2072 | not supported |
+| F2: A6c slope > 0 (all answered pairs) | -0.257 [-1.768, +1.261] | 0.6329 | not supported |
+| F3: expected crps_log − RSS > 0 | -0.156 [-0.188, -0.125] | 1 | not supported |
+| F4: expected crps_log − X1 > 0 | -0.157 [-0.188, -0.126] | 1 | not supported |
+| F5: A6 slope − X1's > 0 | +1.890 [-2.176, +7.874] | 0.2348 | not supported |
+| F6: expected crps_log − stage B (3-seed mean) > 0 | -0.154 [-0.186, -0.123] | 1 | not supported |
+
+| σ source | A6 slope (label) | A6b slope | A6c slope | expected crps_log | median ln(σ/σ*) | median abs | vol beta | 1σ / 2σ cov. |
+|---|---|---|---|---|---|---|---|---|
+| pos: answer σ | -0.184 (n 50, no propagation) | -0.001 | -0.034 | -0.0405 | -0.114 | 0.309 | 0.625 | 53.9% / 78.2% |
+| pos: the line's X (all pairs) | +0.213 | +0.001 | -0.161 | -0.0398 | -0.128 | 0.295 | 0.641 | 53.3% / 78.0% |
+| fmt: answer σ | +2.043 (n 55, no propagation) | -0.471 | -0.257 | -0.1951 | -10.249 | 10.249 | -0.023 | 18.2% / 20.1% |
+| fmt: the line's X (all pairs) | +0.153 | +0.021 | -0.515 | -0.0549 | -10.825 | 10.825 | -0.053 | 1.5% / 1.5% |
+| sigma_star (all pairs) | +1.000 | +0.000 | +1.000 | -0.0365 | +0.000 | 0.000 | 1.000 | 67.8% / 94.9% |
+| rss (all pairs) | +0.000 | +0.000 | +0.000 | -0.0394 | -0.081 | 0.398 | 0.489 | 61.6% / 83.8% |
+| x1 (all pairs) | +0.063 | -0.000 | -0.002 | -0.0386 | -0.026 | 0.329 | 0.589 | 64.0% / 87.3% |
+
+Stage B (D104, seeds [0, 1, 2]): mean expected crps_log -0.0415 (D6 / F6's per-problem reference).
+
+**The propagation line (reported, not tested; against the line D80's builder writes for the same problem):**
+
+| arm | present / parsed | zero line: noisy / exact | terms ok | levels ok | sensitivities exact: per term / all (lenient) | arithmetic ok | median abs ln(X/X_ref) | copy ok (n) | σ = 0 while X > 0 |
+|---|---|---|---|---|---|---|---|---|---|
+| pos | 100.0% / 99.9% | 0.2% / – | 99.9% | 67.0% | 42.6% / 30.7% (32.3%) | 54.1% | 0.295 | 82.3% (3043) | 0.0% |
+| fmt | 100.0% / 7.1% | 0.9% / – | 100.0% | 0.0% | 24.8% / 6.0% (6.0%) | 84.7% | 3.297 | 79.7% (212) | 3.3% |
+
+pos, by depth (sensitivities all exact / copy ok): depth 1: 42.3% / 84.4%; depth 2: 33.7% / 81.8%; depth 3: 33.3% / 81.6%; depth 4: 24.3% / 82.7%; depth 5: 19.6% / 80.8%
+
+fmt, by depth (sensitivities all exact / copy ok): depth 1: 0.0% / 95.0%; depth 2: 15.2% / 77.8%; depth 3: 3.1% / 66.7%; depth 4: 10.4% / 70.8%; depth 5: 0.0% / 87.0%
+
+| arm | steps | train loss | answered | parse fail | unit mismatch | A1 comp.-correct | σ = 0 | confidence block | D59 verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| pos | 750 (750) | 0.125 | 99.4% | 0.4% | 0.1% | 15.3% | 0.0% | 100.0% | no propagation |
+| fmt | 750 (750) | 0.097 | 97.7% | 2.1% | 0.0% | 15.5% | 69.0% | 98.3% | no propagation |
+
+Reference line on the eval sets: 3060 noisy of 3060 problems; median |ln(X_ref / σ*)| = 0.013.
+
