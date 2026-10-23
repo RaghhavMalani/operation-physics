@@ -14,6 +14,7 @@
 #         DRY_RUN=1 QUEUE_LOG=<scratch dir> bash scripts/queue_stage_d.sh
 set -u
 cd "$(dirname "$0")/.."
+. scripts/disk_guard.sh   # the free-space guard (D111): disk_guard before every stage
 LOG=${QUEUE_LOG:-results/queue_stage_d}
 GIT_LOCK=${GIT_LOCK:-.git/queue-commit.lock}
 TRAIN_EST_S=${TRAIN_EST_S:-5100}     # stage B's measured 74-81 min per seed (load + 750 steps + fingerprint), +3% tokens
@@ -35,6 +36,7 @@ cool() { [ "$DRY_RUN" = 1 ] && return; while t=$(nvidia-smi --query-gpu=temperat
 
 run_stage() {  # run_stage NAME TIMEOUT_S CMD...: child process, PID file, wait; returns the child's exit code
   local name=$1 limit=$2; shift 2
+  disk_guard "$name" || exit 75   # < MIN_FREE_GB on MLStorage (or unreadable): stop the queue (D111)
   if [ "$DRY_RUN" = 1 ]; then log "DRY $name (timeout ${limit}s): $*"; return 0; fi
   if [ "$limit" -lt 300 ]; then log "skip $name: only ${limit}s left"; return 98; fi
   log "start $name (timeout ${limit}s): $*"

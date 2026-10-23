@@ -13,6 +13,7 @@
 #         DRY_RUN=1 scripts/queue_corrected_evals.sh   # print the plan, run nothing
 set -u
 cd "$(dirname "$0")/.."
+. scripts/disk_guard.sh   # the free-space guard (D111): disk_guard before every stage
 LABEL=qwen2.5-math-1.5b-instruct
 T=results/train
 SPLIT=$T/split-credit-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed
@@ -41,6 +42,7 @@ cool() { [ "$DRY_RUN" = 1 ] && return; while t=$(nvidia-smi --query-gpu=temperat
 
 run_gpu() {  # run_gpu NAME ESTIMATE_S CMD...: skip if it does not fit before the deadline; else child + PID + wait
   local name=$1 est=$2; shift 2
+  disk_guard "$name" || exit 75   # < MIN_FREE_GB on MLStorage (or unreadable): stop the queue (D111)
   local need; need=$(python3 -c "print(int($est * $SAFETY))")
   if [ "$DRY_RUN" = 1 ]; then log "DRY $name (est ${est}s): $*"; return 0; fi
   cool
@@ -57,6 +59,7 @@ run_gpu() {  # run_gpu NAME ESTIMATE_S CMD...: skip if it does not fit before th
 
 run_cpu() {  # run_cpu NAME CMD...
   local name=$1; shift
+  disk_guard "$name" || exit 75   # < MIN_FREE_GB on MLStorage (or unreadable): stop the queue (D111)
   if [ "$DRY_RUN" = 1 ]; then log "DRY $name: $*"; return 0; fi
   log "start $name: $*"
   "$@" > "$LOG/$name.log" 2>&1 &

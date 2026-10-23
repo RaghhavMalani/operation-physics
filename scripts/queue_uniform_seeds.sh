@@ -17,6 +17,7 @@
 #         DRY_RUN=1 scripts/queue_uniform_seeds.sh   # print the plan, run nothing
 set -u
 cd "$(dirname "$0")/.."
+. scripts/disk_guard.sh   # the free-space guard (D111): disk_guard before every stage
 LABEL=qwen2.5-math-1.5b-instruct
 RUN_PREFIX=results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512-seed
 CALIB=results/posthoc_calibration_4bit
@@ -40,6 +41,7 @@ cool() { [ "$DRY_RUN" = 1 ] && return; while t=$(nvidia-smi --query-gpu=temperat
 
 run_stage() {  # run_stage NAME TIMEOUT_S CMD...: child process, PID file, wait; returns the child's exit code
   local name=$1 limit=$2; shift 2
+  disk_guard "$name" || exit 75   # < MIN_FREE_GB on MLStorage (or unreadable): stop the queue (D111)
   if [ "$DRY_RUN" = 1 ]; then log "DRY $name (timeout ${limit}s): $*"; return 0; fi
   if [ "$limit" -lt 300 ]; then log "skip $name: only ${limit}s left before the GPU deadline"; return 98; fi
   log "start $name (timeout ${limit}s): $*"

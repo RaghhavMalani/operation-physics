@@ -767,3 +767,26 @@ Progress:
   - **What the policy does:** it states the smallest given percentage; it is below RSS and X1; it was deterministic
     per prefix from step ~40.
 - [x] **Stage D pos training started at 02:52** (OOM check 2 × 1,719 tokens, 2.05 GiB; ~6.6 s / step).
+- [x] **Stage D pos:** 750 / 750 steps (67 min, 02:52–03:59), eval 3,060 / 3,060 (55 min).
+- [x] **Stage D fmt:** 750 / 750 steps (69 min, 04:54–06:04), eval 3,060 / 3,060 (67 min). Analysis at 07:12.
+  - **FINDINGS #29:** D1–D5 are not supported; D6 is supported (+0.001 over stage B) and D7 too (+0.155 over a
+    degenerate D-fmt).
+  - **What D-pos does:** it writes the line (100%) and copies X·|μ| (97% within 6%), but its sensitivities are
+    exponent templates (77% exact on power-law terms, 5% on value-dependent ones). It never reads mixed levels.
+  - **D-fmt:** 93% unparseable lines, σ = 0 on 69%.
+  - **Found tonight:** no Phase 12 SFT problem mixes levels, so A6c is out of distribution for B / C / D.
+- [x] **GPU done at 07:12 IST** (deadline 09:00). Nothing BLOCKED; one 10-min temperature pause (stage C, 00:05).
+- [ ] **Next:** the 1.3.0 dispatch edit (approved for today); your review of D109's [REVIEW] items and of the
+  3-seed rules (C6 and D6 fire, on effects I read as too weak); mixed-level SFT data (a generator change, your
+  decision).
+
+## 2026-10-23 morning (after the disk-full crash; your instructions at ~10:37 IST)
+
+- [x] **Integrity checks** on the 167 files written last night (`scripts/integrity_check.py`; D111): git fsck clean;
+  every JSONL line, gzip CRC, safetensors header / tensor, torch archive and PNG checks out. Nothing is damaged.
+- [x] **`.gitignore` for `results/stage_d/`**, matching stage B.
+- [x] **Free-space guard** (`scripts/disk_guard.sh`) in all 14 queue scripts: BLOCKED and a clean stop below 15 GiB
+  free on MLStorage (via `powershell.exe`); 20 tests.
+- [x] **Reclaimable space listed in MORNING.md §5** (≈ 6.5 GB safe, ≈ 16.4 GB more on your call). Nothing deleted.
+- [x] **Full test suite:** 584 passed, 0 failed, 0 skipped (GPU visible).
+- [ ] **Next:** steps 3–6 of this morning's prompt (not in any transcript; please resend); the 1.3.0 dispatch edit.

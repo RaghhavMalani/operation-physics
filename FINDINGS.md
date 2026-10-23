@@ -1406,3 +1406,105 @@ seed (B = 10,000); Holm over B1–B5. This is pooled problem-level evidence, not
   - **Results:** `results/stage_c/{results.json, summary.md}`; per arm `results/stage_c/{final,step150,sft_control}/`.
   - **Training:** `results/stage_c/run/` (`summary.json`, `train_metrics.jsonl`, `memory.jsonl`, the gzipped tape).
   - **Code:** `physcal/train/stage_c.py`, `physcal/eval/stage_c_analysis.py`; queue logs in `results/queue_stage_c/`.
+
+## #29. Phase 12 stage D: training the explicit propagation line does not give propagation either. The model writes the line every time but has learned exponent templates, not derivatives, never reads mixed levels, and its σ stays below RSS and X1; format-only SFT yields degenerate lines and σ = 0 (D109; 2026-10-23 night)
+
+**Status:** pre-registered (D109), one diagnostic seed per arm.
+- **The setup:** stage B's base, budget and eval exactly (pinned 4-bit base, fresh LoRA, 2 epochs = 750 steps, seed
+  0; greedy on the frozen A6 / A6b / A6c, 3,060 problems, prompt v5), on D80's explicit-arm data.
+  - **The data:** the line `sigma_rel = sqrt((a1*s1)^2 + …) = X` at the end of `<steps>`; the answer's σ = X·|μ|.
+  - **D-pos** trains the line's numbers and the answer's σ. **D-fmt** masks them (D84).
+- **The statistics:** bootstrap over pairs (B = 10,000); Holm within family D (7 tests) and family F (6 tests).
+
+| test (D109) | D-pos (family D) [95% CI] | Holm | D-fmt (family F) [95% CI] | Holm |
+|---|---|---|---|---|
+| 1: A6 slope > 0 (computation-correct pairs) | −0.18 [−1.13, +0.39] (50 pairs) | no | +2.04 [−2.05, +7.98] (55 pairs) | no |
+| 2: A6c slope > 0 (all answered pairs) | −0.03 [−0.30, +0.23] | no | −0.26 [−1.77, +1.26] | no |
+| 3: expected crps_log − RSS > 0 | −0.001 [−0.001, −0.001] | no | −0.156 [−0.188, −0.125] | no |
+| 4: expected crps_log − X1 > 0 | −0.002 [−0.002, −0.002] | no | −0.157 [−0.188, −0.126] | no |
+| 5: A6 slope − X1's > 0 | −0.30 [−1.24, +0.26] | no | +1.89 [−2.18, +7.87] | no |
+| 6: expected crps_log − stage B (3-seed mean) > 0 | **+0.001 [+0.000, +0.002]**, p 0.002 | **supported** | −0.154 [−0.186, −0.123] | no |
+| D7: expected crps_log, D-pos − D-fmt > 0 | **+0.155 [+0.124, +0.186]** | **supported** | – | – |
+
+| σ source (oracle-centred, 3,060 problems) | expected crps_log | median ln(σ / σ\*) | vol beta | 1σ / 2σ coverage |
+|---|---|---|---|---|
+| X1 primary | **−0.0386** | −0.03 | 0.59 | 64% / 87% |
+| RSS heuristic | −0.0394 | −0.08 | 0.49 | 62% / 84% |
+| D-pos, the line's X used as σ | −0.0398 | −0.13 | 0.64 | 53% / 78% |
+| **D-pos, the answer's σ** | **−0.0405** | −0.11 | 0.63 | 54% / 78% |
+| stage B (3-seed mean, FINDINGS #27) | −0.0415 | −0.31 to −0.45 | 0.63–0.65 | ~50% / ~74% |
+| stage C final (FINDINGS #28) | −0.0427 | −0.81 | 0.44 | 36% / 59% |
+| D-fmt, the answer's σ | −0.1951 | −10.2 (σ = 0 on 69%) | −0.02 | 18% / 20% |
+| σ̂ = σ\* (ideal) | −0.0365 | 0 | 1 | 68% / 95% |
+
+- **D109's reading:**
+  - **The positive control does not propagate:** D1 and D2 are not supported; the A6 label is "no propagation";
+    D59's verdict is "no propagation".
+  - **D-pos does not beat the surface readers:** D3 and D4 are not supported.
+  - **Two tests are supported:** D6 (D-pos > stage B) and D7 (D-pos > D-fmt).
+  - **The seed rule fires on D6** ("3 seeds warranted if D2 or D6"), but D6 is +0.001. That closes ~20% of stage B's
+    gap to σ\* and still leaves D-pos below RSS. **[REVIEW] my recommendation: no 3 seeds of this configuration**
+    (see "What it means").
+  - **D7 is against a degenerate ablation** (below).
+- **The line, against the line D80's builder writes for the same problem (reported, not tested):**
+
+| | D-pos | D-fmt |
+|---|---|---|
+| line present / parsed | 100% / 99.9% | 100% / 7.1% |
+| term count right | 99.9% | 100% (of parsed) |
+| levels right, in order | 67.0% | 0% |
+| sensitivities exact: per term / every term of the line (within 10%) | 42.6% / 30.7% (32.3%) | 24.8% / 6.0% |
+| X a valid 2-s.f. result of its own terms | 54.1% | 84.7% |
+| median abs ln(X / X_ref) | 0.30 | 3.30 |
+| **copy: answer σ = X·\|μ\| at 2 s.f.** | **82.3%** (of 3,043) | 79.7% (of 212) |
+
+- **Where D-pos fails (exploratory, computed after the analysis; not pre-registered):**
+  - **Sensitivities are templates, not derivatives:**
+    - **Exponent-like terms:** where the true log-sensitivity is a multiple of 0.5, 77% of terms are exact.
+    - **Value-dependent terms** (e.g. u / v in a sum): 5% are exact.
+    - **By set, every term of the line exact:** A6 1.2% (its pairs differ in value-dependent sensitivities, by
+      design), A6b 77%, A6c 13%. Every-term-exact falls with depth: 42% at depth 1, 20% at depth 5.
+  - **Levels: it never reads per-given levels.** On A6c (mixed levels in one problem), the levels are right in order
+    on 1% of lines; the model repeats one level for every term. On A6 / A6b (one level per problem) they are right on
+    100%.
+  - **Hence σ under-propagates with depth:** median ln(σ / σ\*) is −0.02, −0.05, −0.08, −0.14, −0.29 at depths 1–5.
+    Stage B's underestimate was a constant scale instead.
+  - **Correlations:** ρ(σ, σ\*) 0.66 vs ρ(σ, RSS) 0.63 (stage B: 0.64 vs 0.72).
+  - **The arithmetic and the copy are approximately right:**
+    - The sqrt is close (median |ln(X / own terms)| 0.017; 10.5% off by more than 10%).
+    - 97.4% of answers state σ within 6% of X·|μ|. The other 2.6% are ×10 slips (median ln ratio +2.29).
+    - So the copy step (R3-9) is learned. The failure sits upstream, in the numbers the line contains.
+- **Where D-fmt fails:**
+  - **With the numbers masked, SFT teaches only the line's skeleton.** The model fills it with degenerate values,
+    e.g. `sigma_rel = sqrt((0*sqrt(1))**2 + (1*sqrt(1))**2) = 1`; 93% of lines do not parse.
+  - **Its answers then say "± 0" on 69%.** D84's format-only arm is therefore a very poor starting point for an
+    explicit-arm RL; R3-9's split credit would start from noise.
+- **A design limit found tonight (exploratory; applies to FINDINGS #27 B2, #28 C2, and D2 / F2 here):**
+  - **Every one of the 2,250 noisy Phase 12 SFT problems states one level for all of its givens**
+    (`results/phase12_sft_data/problems.jsonl`). D-pos's line copies that one level everywhere.
+  - **So A6c tests transfer to an unseen level mix:** no arm ever saw per-given levels that differ. A null on A6c
+    is partly a distribution shift, not only a failure to propagate.
+  - **The generator can represent mixed levels but does not generate them yet** (DECISIONS line 809). Changing
+    that is a generator change and needs your approval.
+- **Sanity:**
+  - **Training:** both arms ran 750 / 750 steps (67 / 69 min, losses 0.125 / 0.097) with no temperature pause.
+    Peak 4.2 GiB device-wide.
+  - **Evals:** 3,060 / 3,060 (55 / 67 min). Parse failures: D-pos 0.4%, D-fmt 2.1%. Unit mismatches ≤ 0.1%.
+  - **Computation:** A1 computation-correct 15.3% / 15.5% (stage B: 15–16%). The `<confidence>` block parses in 100%
+    / 98%.
+- **What it means:**
+  - **Across stages B, C and D, no trained σ beats the two surface readers (X1, RSS) on the oracle-centred expected
+    score, and none propagates** on A6 or A6c.
+  - **The best trained σ is D-pos's,** and it ranks behind both readers.
+  - **The explicit line localises the failure:** the model copies and adds roughly right; it does not compute
+    value-dependent sensitivities, and it does not read per-given levels.
+  - **More seeds of the same arm would not address either.** The candidate changes, each one variable and each
+    needing an entry:
+    - mixed-level problems in the SFT data (a generator change);
+    - the line naming its symbols (D80's open [REVIEW]);
+    - or a chain-rule scratchpad that computes each sensitivity from the solution's own intermediate values.
+- **Provenance:**
+  - **Results:** `results/stage_d/{results.json, summary.md}`; per arm `results/stage_d/{pos,fmt}/` (`results.json`;
+    `seed0/` with the training summary and the eval's gzipped tape).
+  - **Code:** `physcal/train/stage_d.py`, `physcal/eval/stage_d_analysis.py`, `configs/stage_d.yaml`.
+  - **The queue:** `scripts/queue_stage_d.sh`, logs in `results/queue_stage_d/`.

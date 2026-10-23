@@ -62,3 +62,12 @@ results/queue_stage_c/*.pid
 results/stage_b/*/final_adapter/README.md
 results/stage_b/*/final_adapter/chat_template.jinja
 results/stage_b/*/final_adapter/tokenizer_config.json
+# 2026-10-22/23 night (D109): stage D as stage B (adapter configs, fingerprints, gzipped tapes, plots committed)
+results/stage_d/*/seed0/final_adapter/adapter_model.safetensors
+results/stage_d/*/seed0/final_adapter/tokenizer.json
+results/stage_d/*/seed0/final_adapter/README.md
+results/stage_d/*/seed0/final_adapter/chat_template.jinja
+results/stage_d/*/seed0/final_adapter/tokenizer_config.json
+results/stage_d/*/seed0/checkpoints/
+results/stage_d/*/seed0/eval/rollouts.jsonl
+results/queue_stage_d/*.pid

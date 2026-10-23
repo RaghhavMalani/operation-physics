@@ -3646,3 +3646,83 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     `configs/stage_d.yaml`, `tests/test_stage_d.py` (10 tests).
   - **Outputs:** `results/stage_d/{pos,fmt}/seed0/` (training, eval, per-arm `results.json`) and
     `results/stage_d/{results.json, summary.md}`.
+
+### D110. Tonight's run, 2026-10-22/23: implementation decisions taken during the night (overnight rules: decision, alternatives, why)
+1. **Stage C was launched before stage D was written** ("launch NOW"). D109 was written and committed (`ff59b4a`,
+   23:43) before any stage D model existed; the stage D chain started at 23:44, waiting on stage C's queue PID.
+2. **D103's 7.1 GiB cap was kept despite a 1.6 GB host reading** (D108.5: a transient spike; steady 0.6 GiB).
+   Outcome: stage C reserved at most 7.04 GiB with no OOM and no spill; stage D's SFT peaked at 4.2 GiB device-wide.
+3. **Stage D is new files only and reuses stage B's code unchanged** (`check_data`, `oom_check`, `fit`, `eval_config`,
+   `stage_b_analysis.analyze`). D108.4: no module a running stage imports was edited.
+   - **Alternative:** a stage-D option in `stage_b.py`. Rejected: stage B's module is stage B's record, and stage C
+     imported its neighbours tonight.
+4. **D-pos's masks are applied in memory;** `explicit.jsonl` is not rebuilt. Its text is the same as D-fmt's; only the
+   mask differs. Its SHA-256 is checked, and D-fmt must reproduce the recorded D84 masks exactly (tested).
+   - **Alternative:** a second data file. Rejected: a second file of identical text, and the manifest would change.
+5. **The copy-fidelity band includes μ's own 4-s.f. rounding** (5e-4 relative, derived from D80's `mu_sig_figs`).
+   - **When:** decided while building, before D109 and before any stage D completion.
+   - **Why:** D80 formats σ from the unrounded f(x_meas), while the check can only use the stated μ. Without the
+     slack, 10 of the 3,000 SFT completions (the generator's own text) failed at rounding boundaries; with it, all
+     pass.
+6. **Stage C's policy turned deterministic from step ~40; nothing was changed** (FINDINGS #28). D106 fixes 300
+   steps. The remaining ~250 steps (~2.2 h of GPU) learned almost nothing, but stage D still fit before the
+   deadline. Alternative: stop at step ~60 and start stage D earlier. Rejected: a protocol change mid-run.
+7. **A preliminary stage D analysis on D-pos alone was run into the scratchpad (05:00)** while D-fmt trained, to
+   draft the write-up. Nothing pre-registered changed; the official results are the queue's analysis after both
+   arms.
+8. **Exploratory checks after the analyses (not pre-registered; in FINDINGS #28 / #29):**
+   - what stage C's σ copies;
+   - D-pos's line errors by set and by term type;
+   - **the training problems never mix levels:** all 2,250 noisy SFT problems state one level for every given, so
+     A6c (B2 / C2 / D2 / F2) tests transfer to an unseen level mix.
+9. **The full test suite ran on the CPU** (1 thread, nice 19, GPU hidden) during stage C (23:44–23:53): exit 0,
+   563 collected. pytest's count line was missing because `pyproject.toml`'s `addopts = "-q"` plus my own `-q`
+   gives `-qq`, which suppresses it (found on 2026-10-23; later runs drop the extra `-q`).
+
+## 2026-10-23 morning, after the disk-full crash (your instructions at ~10:37 IST)
+
+### D111. Integrity checks, stage D's ignore patterns and a free-space guard in every queue script (your instructions; recorded 2026-10-23, before anything from last night was committed)
+- **What happened (your account):** the MLStorage volume filled (STATUS_DISK_FULL). It has been extended and e2fsck
+  re-run.
+  - **The volume:** `D:\MLStorage`. It holds the Ubuntu disk image (`wsl_ubuntu\ext4.vhdx`, 53.6 GB; 51.1 GB used
+    inside it).
+  - **This session's transcript** has no entries between 07:14 and 10:37 IST. The prompt you gave this morning
+    (steps 1–6) is not in it or in any other local transcript. Only the steps in today's message were done; steps
+    3–6 wait for you.
+- **Integrity checks** on the 167 files written since 2026-10-22 17:50 UTC, plus the memory notes
+  (`scripts/integrity_check.py`, read-only). Nothing is damaged:
+  - **`git fsck --full --strict`:** exit 0. Its one dangling commit is a 2026-10-19 stash, unrelated.
+  - **Text and logs:** no NUL bytes, every file valid UTF-8, no truncated last line.
+  - **JSONL:** 34,683 lines in 14 files, every one parses.
+  - **gzip:** all 6 files pass their CRCs and are byte-identical to their uncompressed copies.
+  - **safetensors (6):** headers and offsets consistent with the file size; no all-zero tensor, no NaN / Inf, no
+    all-zero 4 KiB block.
+  - **torch archives (9):** zip CRCs pass. **PNGs (8):** every chunk CRC matches; IEND present.
+  - **Tracked files:** the 77 that git calls unchanged hash to their HEAD blobs.
+  - **Not checked:** `/lost+found` (it needs root).
+- **`.gitignore`, stage D as stage B (approved):**
+  - **Ignored:** the adapter weights, tokenizer files, README and chat template; `checkpoints/`; the uncompressed eval
+    tapes; the queue's PID files.
+  - **Committed:** adapter configs, fingerprints, gzipped tapes, metrics, summaries, plots.
+- **The free-space guard (`scripts/disk_guard.sh`):**
+  - **Where it runs:** all 14 `scripts/queue_*.sh` source it right after their `cd`. Every stage launcher calls
+    `disk_guard NAME || exit 75` as its first statement (`run_stage`; `run_gpu` / `run_cpu` in
+    `queue_corrected_evals.sh`).
+  - **The reading:** the free bytes of the one volume labelled `MLStorage`, via `powershell.exe` (`Get-Volume`,
+    ~1 s). `df` inside WSL shows the image's virtual 1 TB, not the host's space.
+  - **The rule:** below 15 GiB, BLOCKED is logged and the queue exits 75. No new stage starts; running children are
+    not touched; nothing is committed. GiB is the stricter reading of "15 GB".
+  - **[REVIEW] fail closed:** if the free space cannot be read (3 tries, 5 s apart), that is also BLOCKED.
+    - **Alternative:** warn and go on. Rejected because a broken check would then let the failure that corrupts
+      files come back unseen.
+  - **Overrides:** `DRY_RUN=1` only logs the reading. `DISK_GUARD=off` is an explicit bypass and is logged.
+    `MIN_FREE_GB` and `DISK_GUARD_LABEL` can be set.
+  - **Not added to the non-queue helpers** (`phase37_morning.sh`, `eval_after_training.sh`, …), which are not
+    queues.
+  - **Tests (`tests/test_disk_guard.py`, 20):**
+    - with a fake `powershell.exe`: enough space, low space (the 15 GiB edge), unreadable, dry run, bypass,
+      settable threshold and label;
+    - every queue script sources the guard and guards every launcher;
+    - the real stage D queue, with 1 GiB reported, stops with BLOCKED and exit 75 before its first stage.
+- **Reclaimable space:** listed in MORNING.md; nothing deleted. Deleting inside WSL frees blocks the image reuses, but
+  the image on MLStorage does not shrink unless it is compacted.

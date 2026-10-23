@@ -19,3 +19,5 @@
 [02:51:17] commit 'stage C pilot (D106): sigma suffixes on A6 / A6b / A6c, step150 (exit 0)': pushed
 [02:51:17] start stage_c_analysis (timeout 5400s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.stage_c_analysis analyze
 [02:51:50] end stage_c_analysis: exit 0
+[02:51:52] commit 'stage C pilot (D106): C1-C6, Holm': pushed
+[02:51:52] stage C pilot queue done

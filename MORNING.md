@@ -1,32 +1,36 @@
-# Report: 2026-10-21/22 night: E1d on the X2 pairs, Phase 12 stage B (3 seeds), verifier 1.3.0, the stage C pilot built
+# Report: 2026-10-22/23 night: the stage C pilot, Phase 12 stage D, and this morning's disk-full recovery
 
-The previous report (2026-10-21 day) is in git history: `git show 97fba4d:MORNING.md`.
+The previous report (2026-10-21/22 night) is in git history: `git show 54644f2:MORNING.md`.
 
 **Short version.**
-1. **The GPU was busy from 23:14 to 06:19 IST** (deadline 09:00). Every stage exited 0; nothing is BLOCKED.
-   - **Stage (a)** ran first (launched 4 min after your brief).
-   - **Stage B** then ran all 3 seeds back to back: 750 / 750 steps each, plus all evals.
-   - **One temperature pause:** 10 min at 00:37, from GPU load alone.
-   - **The stage C pilot was skipped by your 3.5 h rule** (160 min left at 06:19). It is built, CPU-tested and
-     marked ready.
-2. **(a) E1d does not rank answers within problems (FINDINGS #26).** On the X2 pairs E1d scores 0.512 [0.483, 0.541];
-   T1–T3 are not supported.
-   - **It is X3's student, to the third decimal:** 0.513 within problems; ρ 0.350 vs 0.346 and AUROC 0.679 vs 0.678
-     across answers.
-   - **Self-consistency (0.643) stays the only within-problem signal.**
-3. **(b) Stage B: SFT on σ\* itself does not teach propagation (FINDINGS #27).** No B test survives Holm.
-   - **A6c:** +0.04.
-   - **A6:** +0.45 on ~58 pairs per seed, p 0.037, labelled "partial" from its 90% CI.
-   - **What the model does instead:** it reads the stated percentages (ρ 0.72 with RSS), states σ ≈ 0.65·σ\*, and its
-     expected score is below both RSS and X1.
-   - **So** the "ceiling" is a surface reader, and stage C's bar is X1 / RSS (D104's rule).
-4. **Verifier 1.3.0 is built (D105):** σ reward = expected crps_log against the predictive distribution, centred at
-   f(x_meas).
-   - **Nothing existing was edited:** it is a new module and a new config.
-   - **Old tapes** replay exactly through it. 17 tests.
-5. **Decisions:** D102–D107. To review (§6): stage B's base and budget, stage C's base and prompt, `weights.sigma`, and
-   the pending one-line dispatch edits in `reward.py` / `tape.py`.
-6. **Tests:** 553 passed, 0 failed, 0 skipped (GPU visible, after the queue); 34 are new.
+1. **The GPU ran from 23:28 to 07:12 IST** (deadline 09:00). Every stage exited 0 and nothing is BLOCKED. There was
+   one 10-min temperature pause (00:05, 88 °C, GPU load alone).
+2. **Stage C pilot (FINDINGS #28):**
+   - **Tests:** C6 is supported (+0.045 over its SFT control); C1–C5 are not.
+   - **What RL learned:** to state the smallest given percentage (1, 2 or 5%), σ ≈ 0.44·σ\*, which scores below RSS
+     and X1.
+   - **The policy turned deterministic per problem by step ~40** (98–100% zero-variance groups); steps 51–300
+     changed nothing.
+3. **Stage D (FINDINGS #29):**
+   - **D-pos, the line's numbers trained:** it does not propagate (D1 / D2 not supported) and is below RSS and X1
+     (D3 / D4 not supported).
+   - **Two tests pass, both weakly:** D6, +0.001 over stage B; D7, +0.155 over D-fmt.
+   - **The line locates the failure:**
+     - the copy and the arithmetic are roughly right;
+     - the sensitivities are exponent templates (77% exact on power-law terms, 5% on value-dependent ones);
+     - it never reads per-given levels.
+   - **D-fmt, numbers masked:** degenerate lines; "± 0" on 69% of answers.
+4. **Across stages B, C and D, no trained σ beats X1 or the RSS heuristic** on the oracle-centred expected score
+   (§4).
+5. **A design limit found tonight:** none of the 2,250 noisy Phase 12 SFT problems mixes noise levels. So A6c (B2 /
+   C2 / D2 / F2) tests transfer to an unseen level mix.
+6. **This morning: the MLStorage volume had filled.**
+   - **Integrity:** all 167 files from last night pass every check; nothing is damaged.
+   - **Added:** a free-space guard in all 14 queue scripts (BLOCKED below 15 GiB), and stage D's ignore patterns.
+   - **Space:** about 6.5 GB can be reclaimed safely, and up to ~16.4 GB more on your call (§5). Nothing was
+     deleted.
+7. **Please resend steps 3–6 of this morning's prompt.** That prompt is in no transcript on disk (§6.1).
+8. **Decisions:** D108–D111. **Tests:** 584 passed, 0 failed, 0 skipped (GPU visible).
 
 ---
 
@@ -34,132 +38,185 @@ The previous report (2026-10-21 day) is in git history: `git show 97fba4d:MORNIN
 
 | time | step | result | commit |
 |---|---|---|---|
-| 23:14 | D102 (stage a) pre-registered, queue launched | – | `2970d07` |
-| 23:14–23:32 | GPU: E1d σ suffixes on X2's 4,116 answers | 4,116 / 4,116, no OOM | `8e3fb3d` |
-| 23:32–23:46 | GPU: the SFT model's own σ suffixes (D102's no-RL control) | 4,116 / 4,116 | (queue) |
-| 23:25 | D103 (your decisions), D104 (stage B) pre-registered; stage B built (8 CPU tests); chain launched on (a)'s PID | – | `dcd9b12`, `2407cb4`, `bfd651a` |
-| 23:47–23:49 | CPU: (a)'s analysis | FINDINGS #26 | (queue), `48da91a` |
-| 23:47–01:08 | GPU: stage B seed 0 SFT | 750 steps, 81 min (incl. a 10-min pause at 00:37, 88 °C) | (queue) |
-| 01:08–02:02 | GPU: seed 0 eval (A6 / A6b / A6c) | 3,060 / 3,060; fingerprint check passes | (queue) |
-| 02:02–04:10 | GPU: seed 1 SFT (73 min) + eval (54 min) | as seed 0 | (queue) |
-| 04:11–06:18 | GPU: seed 2 SFT (73 min) + eval (54 min) | as seed 0 | (queue) |
-| 06:19 | CPU: stage B analysis (17 s) | FINDINGS #27 | (queue), `77ebfe7` |
-| 06:19 | stage C pilot | SKIP: 160 min left, your rule needs 210 | – |
-| ~23:35–00:00 | CPU: verifier 1.3.0 (D105), 17 tests | – | `1c84e9a` |
-| ~23:40–00:10 | CPU: stage C pre-registered (D106), built, 6 tests, marked ready | – | `34738a1`, `49f70bc` |
-| night | D107 (implementation decisions), PROGRESS | – | `647f73a`, `9dd9038` |
+| 23:28 | stage C pilot launched (`queue_stage_c_pilot.sh`, PID 6944) | OOM check 2 × 1,644 tokens, 2.0 GiB | – |
+| 23:30–23:43 | CPU: D108 (your decisions); D109 (stage D) pre-registered; stage D built, 10 CPU tests | – | `ff59b4a` |
+| 23:44 | stage D chain launched (`queue_stage_d.sh`, PID 18157), waiting on stage C's PID | – | – |
+| 23:28–02:12 | GPU: stage C training, 300 / 300 steps (32 s / step; paused 10 min at 00:05, 88 °C) | 7.04 GiB peak, no OOM | (queue) |
+| 02:12–02:51 | GPU: stage C σ suffixes on 3,060 prefixes: final (14 min), SFT control (12), step 150 (13) | 3,060 / 3,060 each | (queue) |
+| 02:51 | CPU: stage C analysis | FINDINGS #28 | `e31997d`, `a9f145d` |
+| 02:52–03:59 | GPU: D-pos SFT, 750 / 750 steps (67 min) | loss 0.125 | `06f710f` |
+| 03:59–04:54 | GPU: D-pos eval (55 min) | 3,060 / 3,060 | `8203747` |
+| 04:54–06:04 | GPU: D-fmt SFT, 750 / 750 steps (69 min) | loss 0.097 | `3320d85` |
+| 06:04–07:11 | GPU: D-fmt eval (67 min) | 3,060 / 3,060 | `32b2eef` |
+| 07:12 | CPU: stage D analysis | FINDINGS #29 | `f7caa40` |
+| ~07:14 | FINDINGS #29, D110, PROGRESS written (not yet committed); the full test suite started; then the session ended (disk full) | – | – |
+| 10:37 | your message: integrity checks, ignore patterns, free-space guard, space list (D111) | nothing damaged | (this commit) |
 
-## 2. (a) E1d on the X2 pairs (D102; FINDINGS #26)
+## 2. Stage C pilot (D106; FINDINGS #28)
 
-| source (same 516 problems, 4,116 answers) | within problems [95% CI] | separated pairs | ρ(σ, error) across answers | AUROC (correct) |
+| test | estimate [95% CI] | Holm |
+|---|---|---|
+| C1: A6 slope > 0 | −0.000 [−0.000, +0.000] | not supported |
+| C2: A6c slope > 0 | +0.086 [−0.158, +0.324] | not supported |
+| C3 / C4: expected crps_log − RSS / − X1 > 0 | −0.003 / −0.004 | not supported |
+| C5: A6 slope − X1's > 0 | −0.063 [−0.103, −0.025] | not supported |
+| **C6: RL − SFT-only control > 0** | **+0.045 [+0.029, +0.062]** | **supported** |
+
+- **D106's signal rule fires on C6** ("3 seeds warranted"). But the control is the merged SFT model with prompt v5,
+  which says "± 0" on 79% of these noisy problems. Most of C6 is RL removing that.
+- **What the policy does (exploratory):** σ takes three values (1 / 2 / 5%). It equals the smallest stated level on
+  93% of problems. On A6 / A6b, where every given shares one level, that makes the slope exactly 0. Coverage is
+  36% / 59%.
+- **Dynamics:**
+  - **Steps 1–50:** reward −0.149 → −0.045, and σ = 0 went from 24% to 0%.
+  - **From step ~40:** 98–100% of groups had zero reward variance, so TRL logged loss 0 and grad-norm 0 on most steps.
+    E1d, with the realized-score reward, never went above 17%.
+  - **[hypothesis]** score_sigma is nearly noise-free, so per-group std normalization turns tiny consistent
+    differences into ±1 advantages and the policy sharpens fast.
+- **D107.6 did nothing:** this TRL has no `max_prompt_length` (logged as a dropped key), so no prompt was cut either
+  way.
+
+## 3. Stage D (D109; FINDINGS #29)
+
+| test | D-pos [95% CI] | Holm | D-fmt [95% CI] | Holm |
 |---|---|---|---|---|
-| SFT stated σ (X2 method 1) | 0.499 [0.474, 0.524] | 0.501 | −0.001 | 0.490 |
-| SFT greedy σ suffix (no-RL control) | 0.489 [0.461, 0.515] | 0.461 | +0.024 | 0.499 |
-| X3 student (a) | 0.513 [0.484, 0.543] | 0.525 | +0.346 | 0.678 |
-| **E1d (lr 5e-5)** | **0.512 [0.483, 0.541]** | 0.502 | **+0.350** | **0.679** |
-| self-consistency (k = 8) | 0.643 [0.616, 0.671] | 0.861 | +0.672 | 0.823 |
+| 1: A6 slope > 0 | −0.18 [−1.13, +0.39] (50 pairs) | no | +2.04 [−2.05, +7.98] (55 pairs) | no |
+| 2: A6c slope > 0 | −0.03 [−0.30, +0.23] | no | −0.26 [−1.77, +1.26] | no |
+| 3: − RSS > 0 | −0.001 | no | −0.156 | no |
+| 4: − X1 > 0 | −0.002 | no | −0.157 | no |
+| 5: A6 slope − X1's | −0.30 | no | +1.89 | no |
+| 6: − stage B > 0 | **+0.001 [+0.000, +0.002]** | **yes** | −0.154 | no |
+| D7: D-pos − D-fmt > 0 | **+0.155 [+0.124, +0.186]** | **yes** | – | – |
 
-- **T1** (E1d > 0.5): p 0.21. **T2** (− SFT σ): +0.013 [−0.021, +0.048]. **T3** (− X3): −0.001 [−0.032, +0.031].
-  Holm: none supported.
-- **Reading (D102):** E1d's ρ is between-problem ranking only. RL at 5e-5 moved σ from no ranking to exactly the X3
-  kind, not beyond.
-- **Sanity:** 21 / 4,116 failed suffixes; not collapsed (top suffix 2.1%). Every comparator reproduced its published
-  number exactly.
+| the line (vs the builder's own line for the same problem) | D-pos | D-fmt |
+|---|---|---|
+| present / parsed | 100% / 99.9% | 100% / 7.1% |
+| levels right, in order | 67% (A6 / A6b 100%, A6c 1%) | 0% |
+| every sensitivity exact (per term: power-law 77%, value-dependent 5%) | 31% | 6% |
+| copy: σ = X·\|μ\| at 2 s.f. (within 6%) | 82% (97%) | 80% of 212 |
 
-## 3. (b) Phase 12 stage B, the supervised σ\* "ceiling" (D104; FINDINGS #27)
+- **What D-pos learned:**
+  - **The format, the copy step (R3-9) and approximate arithmetic:** yes.
+  - **Value-dependent sensitivities** (e.g. u / v in a sum): no.
+  - **Per-given levels:** no. It repeats one level on every term.
+- **The consequence:** σ under-propagates with depth (median ln(σ / σ\*) −0.02 at depth 1 to −0.29 at depth 5).
+  Stage B's error was a constant scale.
+- **D-fmt:** masked numbers get no training signal. The model writes e.g.
+  `sqrt((0*sqrt(1))**2 + (1*sqrt(1))**2) = 1` and answers "± 0". D84's format-only arm is a poor starting point for
+  explicit-arm RL.
+- **D109's seed rule fires on D6** (+0.001, ~20% of stage B's gap to σ\*). See §6.
 
-| test (seed mean of 3) | estimate [95% CI] | p | Holm |
-|---|---|---|---|
-| B1: A6 slope > 0 | +0.449 [−0.049, +0.892] (seeds +0.18 / +0.17 / +1.00) | 0.037 | not supported |
-| B2: A6c slope > 0 | +0.044 [−0.066, +0.157] | 0.21 | not supported |
-| B3: expected crps_log − RSS | −0.002 [−0.003, −0.001] | 1 | not supported |
-| B4: expected crps_log − X1 | −0.003 [−0.004, −0.002] | 1 | not supported |
-| B5: A6 slope − X1's | +0.371 [−0.141, +0.855] | 0.072 | not supported |
+## 4. Every Phase 12 σ source so far (oracle-centred, the same 3,060 problems)
 
-- **The labels (reported):**
-  - **A6:** "partial propagation" on the seed mean (90% CI [+0.04, +0.81]), but from ~58 computation-correct pairs per
-    seed (A1's τ = 0.1%; only ~15% of answers qualify). Seed 2 reads "full", seeds 0 and 1 "no propagation".
-  - **A6b:** equivalent to 0.
-  - **A6c:** ≈ 0.
-- **Oracle-centred:**
-  - **Expected crps_log:** −0.041 to −0.042 per seed, against RSS −0.039, X1 −0.039 and σ\* −0.037.
-  - **Calibration:** median ln(σ / σ\*) is −0.31 to −0.45; 1σ coverage ~50%.
-- **Exploratory, computed after the analysis:**
-  - **It tracks the stated percentages:** σ correlates with RSS (ρ 0.72) more than with σ\* (0.64); its level sits
-    between "max" and RSS.
-  - **The ~35% underestimate is the same at every depth and noise level.**
-- **What it means:**
-  - **SFT imitation of a `.2g` σ\* with token cross-entropy, 2 epochs, does not yield propagation** on this base. It
-    yields an overconfident surface reader.
-  - **Under D104's rule,** stage C is read against RSS / X1 and its own SFT control, not against stage B.
+| source | expected crps_log | median ln(σ / σ\*) | 1σ coverage | A6c slope |
+|---|---|---|---|---|
+| σ̂ = σ\* (ideal) | −0.0365 | 0 | 68% | +1.00 |
+| **X1 primary (text model)** | **−0.0386** | −0.03 | 64% | −0.00 |
+| **RSS of the stated levels** | **−0.0394** | −0.08 | 62% | 0 |
+| D-pos (stage D, explicit, numbers trained) | −0.0405 | −0.11 | 54% | −0.03 |
+| stage B (supervised σ\*, 3-seed mean) | −0.0415 | −0.31 to −0.45 | ~50% | +0.04 |
+| stage C (σ-only RL, predictive reward) | −0.0427 | −0.81 | 36% | +0.09 |
+| stage C's SFT-only control | −0.0874 | −10.5 (σ = 0 on 79%) | 9% | −1.03 |
+| D-fmt (stage D, format only) | −0.1951 | −10.2 (σ = 0 on 69%) | 18% | −0.26 |
 
-## 4. Verifier 1.3.0 (D105)
+## 5. This morning: the disk-full crash (D111)
 
-- **score_sigma** = the mean over 4,000 fixed predictive draws of crps_log(N(ln f(x_meas), σ_rel²), draw).
-  - It depends only on the stated σ_rel and the problem, never on μ's error or one realized truth.
-  - It peaks at the predictive's CRPS-optimal scale (tested).
-- **Invalid draws are dropped** (24 of stage A's 3,060 problems had some); below 99% valid, a Gaussian fallback is used.
-  Exact givens → σ = 0 is optimal.
-- **`weights.sigma = 0` [REVIEW]:** the 1.3.0 total equals 1.2.0's; score_sigma sits in the breakdown for σ-only
-  training (stage C), as c did in D83.
-- **Not edited:** `reward.py`, `tape.py`, `noise.py` (tonight's stages imported them).
-  - **Until then,** 1.3.0 must be scored and replayed through `physcal.verify.sigma_reward`.
-  - **Pending (daytime):** the version dispatch in `reward.reward` / `tape.replay`.
-- **Replay:** both committed 1.1.0 tapes replay through the new entry point with identical rewards and breakdowns, and
-  so does a 1.3.0 tape.
+- **Cause (your account):** the MLStorage volume (`D:\MLStorage`) filled (STATUS_DISK_FULL). It holds the Ubuntu
+  disk image `wsl_ubuntu\ext4.vhdx` (53.6 GB; 51.1 GB used inside). It has been extended (now 53 GiB free of
+  104 GiB) and e2fsck re-run.
+- **Integrity checks** (`scripts/integrity_check.py`, read-only) on the 167 files written since 23:20 IST last
+  night, plus the memory notes. **Nothing is damaged:**
+  - **`git fsck --full --strict`:** exit 0. The one dangling commit is a 2026-10-19 stash.
+  - **Text / logs:** no NUL bytes, no truncated last line.
+  - **JSONL:** 34,683 lines in 14 files, all parse.
+  - **gzip (6):** CRCs pass, byte-identical to their uncompressed copies.
+  - **safetensors (6 adapters and checkpoints):** header and offsets consistent; no all-zero tensor, NaN / Inf or
+    all-zero 4 KiB block.
+  - **Torch archives (9):** zip CRCs pass. **PNGs (8):** every chunk CRC matches.
+  - **Tracked files:** the 77 that git calls unchanged hash to their HEAD blobs.
+  - **Not checked:** `/lost+found` (needs root): `sudo ls -la /lost+found`.
+- **`.gitignore`:** stage D now matches stage B. The large adapter files, `checkpoints/`, the uncompressed tapes and
+  PID files are ignored. Configs, fingerprints, `.gz` tapes, summaries and plots are committed.
+- **The free-space guard** (`scripts/disk_guard.sh`, sourced by all 14 `scripts/queue_*.sh`):
+  - **The rule:** before every stage, it reads MLStorage's free space via `powershell.exe` (~1 s). Below 15 GiB it
+    logs `BLOCKED <stage>: N GiB free on MLStorage < 15 GiB; queue stopped`; the queue exits 75 without touching
+    running children.
+  - **[REVIEW] it fails closed:** an unreadable volume (3 tries) is also BLOCKED.
+  - **Overrides:** `DRY_RUN=1` only logs the reading; `DISK_GUARD=off` bypasses it (logged).
+  - **Tests:** 20, including the real stage D queue stopping before its first stage when 1 GiB is reported.
+- **What can be deleted** (nothing was deleted; sizes are of untracked files only, committed files stay; rows do not
+  overlap):
 
-## 5. (c) The stage C pilot (D106): built, tested, not run
+| # | what | size | why it is safe | what you would lose |
+|---|---|---|---|---|
+| 1 | trainer `checkpoints/` (resume state) in 20 finished runs: `results/train/*`, `results/sft/qwen2.5-math-1.5b-instruct`, `results/stage_c/run` | 3.96 GB | final adapters and `permanent_checkpoints/` stay; no config or code reads these | resuming or extending those runs from their last save |
+| 2 | 7 smoke runs: `resume-smoke-A/B`, `smoke-split-credit`, `smoke-overnight2-mb2`, `sft-continue-smoke`, `phase4-smoke-qwen3.5-2b`, `results/pinned_base_smoke` | 1.53 GB | finished machinery checks; their 44 committed files stay | nothing a rerun of the smoke test would not recreate |
+| 3 | `results/discarded/` (the 2026-10-16 crashed split-credit seed 1) | 0.39 GB | discarded by name | – |
+| 4 | 21 uncompressed `rollouts.jsonl` whose committed `.gz` is byte-identical (stage B / C / D evals, stage C, E1a–E1d, overnight2, split-credit training tapes, `e1d_x2`) | 0.66 GB | `gunzip -k` restores them exactly | `e1d_x2_analysis`, `posthoc_cond`, `e1.py`'s `read_meta` and tape replay read the uncompressed file: gunzip first |
+| 5 | `unsloth_compiled_cache/`, `.hypothesis/`, `.pytest_cache/` | < 3 MB | regenerated | – |
+| | **safe subtotal** | **≈ 6.5 GB** | | |
+| 6 | Qwen3.5-2B: its HF cache (4.57 GB) + `results/sft/qwen3.5-2b` and the phase-4 run (4.08 GB) | 8.65 GB | re-downloadable; not used since Phase 4 | it is still named in `grpo_phase4` / `model_probe` / `sft` configs and one test |
+| 7 | `results/x2/random_init_model` | 3.10 GB | seeded (seed 0), regenerable | X2's and X4's random-init controls load it; regeneration may not be bit-identical |
+| 8 | `results/x2/hidden` (cached hidden states) | 1.09 GB | GPU re-extraction | X2 probe refits until re-extracted |
+| 9 | `results/probe_sft` (probe caches) | 0.43 GB | GPU re-extraction | Phase 9.5 probe refits |
+| 10 | `Qwen/Qwen2.5-1.5B-Instruct` HF cache | 3.10 GB | re-downloadable | CLAUDE.md's named model, in 8 configs |
 
-- **What it is:** E1d's exact settings (merged SFT base, fresh LoRA, lr 5e-5, 300 steps, σ-only suffixes), with the
-  bundle D106 lists:
-  - prompt v5;
-  - D80's implicit-arm prefixes (answer = f(x_meas)), 2,250 noisy training prefixes;
-  - training reward = score_sigma (the floor for a failed or μ-moving suffix);
-  - D103's 7.1 GiB cap and OOM check.
-- **Evals:** σ suffixes on 3,060 A6 / A6b / A6c prefixes for the final adapter, step 150 and the SFT-only control.
-- **Tests:** C1–C5 (stage B's code) + C6 (RL − control), Holm over six.
-- **Amendment before any rollout (D107.6):** `max_prompt_length` 1,536 → 2,016. v5 prompts reach 1,669 tokens; nothing
-  is truncated.
-- **Run it:** `GPU_DEADLINE=HH:MM bash scripts/queue_stage_c_pilot.sh` (~2.7 h: training ~2.1 h at E1d's speed, three
-  evals of ~12 min). Its GPU path has not been exercised.
+  - **Not worth it:** `.cache/uv` looks like 6.7 GB, but only 0.05 GB of it is not hard-linked into `.venv`.
+  - **Keep:**
+    - the merged SFT model (3.1 GB: stage C's, E1d's, X2 / X4's base);
+    - the pinned 4-bit base (1.15 GB);
+    - the Qwen2.5-Math base (3.1 GB, for merges);
+    - every final adapter and permanent checkpoint, `data/` and `.git`.
+  - **Deleting inside WSL does not give the space back to MLStorage.** The freed blocks are reused, so the image stops
+    growing, but `ext4.vhdx` does not shrink. To shrink it:
+    - **Compact:** `wsl --shutdown`, then in an admin PowerShell
+      `Optimize-VHD -Path D:\MLStorage\wsl_ubuntu\ext4.vhdx -Mode Full` (or diskpart `compact vdisk`).
+    - **Or make it sparse:** `wsl --manage Ubuntu --set-sparse true`.
 
 ## 6. Decisions to review
 
-1. **D104 [REVIEW], stage B's base and budget.** I used D70 / D78's pinned base and 2 epochs.
-   - **After FINDINGS #27,** the open question is the loss rather than the base: token cross-entropy on a `.2g` number
-     (D80's own [REVIEW]).
-   - **A real ceiling test is probably R3-4 D's positive control,** the explicit propagation line with its numbers
-     trained, or a log-scale σ loss.
-2. **D106 [REVIEW], stage C's base (merged SFT, E1d-style) and prompt v5 on a v4-trained model.**
-   - **The alternative:** the pinned base with an implicit-arm SFT adapter that RL continues (D70). It costs ~1.2 h
-     more, and its GRPO path is untested.
-3. **D105 [REVIEW]: `weights.sigma = 0`, and approval to add the version dispatch to `reward.reward` and `tape.replay`**
-   (a few lines; with it, `tape.replay` covers 1.3.0 tapes).
-4. **D103 as applied:**
-   - **Host use tonight was 0.59 GiB,** so 7.1 left a 0.3 GiB margin.
-   - **Training** peaked at 4.45 GiB device-wide. **The evals** (batch 32) reserved up to 6.72 GiB, 7.30 GiB
-     device-wide, under the 8 GiB physical: no OOM backoff, and no sign of a spill (53–54 min each, steady).
-   - **The OOM check passed:** 2.0 GiB reserved on the longest batch.
-5. **D107.9:** stage B's eval loader flags `tokenizer_matches.backend: False`. It is benign: only the post-processor
-   differs, and the encodings are identical on 300 texts.
+1. **Steps 3–6 of this morning's prompt.**
+   - **Where they are not:** this session's transcript has no entries between 07:14 and 10:37 IST, and no other
+     local transcript contains a morning prompt. It was probably never written because the disk was full.
+   - **So far:** only the steps in your 10:37 message were done. Please resend 3–6.
+   - **Still open from your D108 approvals, if they were among them:** the 1.3.0 dispatch edit in `reward.reward` /
+     `tape.replay`, approved for today.
+2. **Two pre-registered 3-seed rules fire on effects I read as too weak.**
+   - **Stage C (C6):** against a control that says "± 0".
+   - **Stage D (D6):** +0.001, still below RSS.
+   - **My recommendation:** no 3-seed replications of either configuration as they are. Each failure has a specific
+     cause that more seeds would not change.
+3. **Mixed-level SFT data** (a generator change: mixed per-given levels are representable but never generated).
+   Without it, A6c cannot separate "no propagation" from "never saw a level mix".
+4. **D109 [REVIEW] items:**
+   - stage B's base and budget for stage D;
+   - two Holm families;
+   - the 10% lenient sensitivity match;
+   - my reading of R3-4 D's seed rule.
+5. **D111 [REVIEW]:** the free-space guard fails closed.
+6. **D110.6:** stage C's 300 steps were kept after the policy froze at step ~40 (~2.2 GPU-h with no learning). The
+   alternative was a mid-run protocol change.
 
 ## 7. BLOCKED / problems / tests
 
-- **Nothing is BLOCKED.** One temperature pause (seed 0, 00:37, 88 °C with no CPU job running; memory note updated).
-  Stage C was skipped by the 3.5 h rule, as expected when the night was planned.
-- **Tests:** 553 passed, 0 failed, 0 skipped (GPU visible, after the queue). That is 519 + 34 new: E1d-X2 3, stage B
-  5 + 3, verifier 1.3.0 17, stage C 6.
+- **Nothing is BLOCKED.** One temperature pause (stage C, 00:05). No OOM, no spill; stage C peaked at 7.04 GiB
+  reserved, stage D at 4.2 GiB device-wide.
+- **The disk-full crash** happened after the GPU queue ended (07:12). No GPU stage was affected.
+  - **The only work interrupted:** last night's uncommitted write-up, which is intact, and the full test run.
+- **Tests:** 584 passed, 0 failed, 0 skipped (GPU visible, 10:44 IST): the full suite (583) plus the integrity
+  checker's test, run on its own. 21 are new today: 20 for the guard, 1 for the checker.
 
 ## 8. Recommendation
 
-- **The σ-only RL line has now answered its own question twice.**
-  - **Within problems (FINDINGS #26):** E1d's RL σ ranks problems, not answers.
-  - **Propagation (FINDINGS #27):** supervised σ\* imitation alone gives a surface reader.
-- **Tonight (if you agree with D106's base):** the stage C pilot, ~2.7 h. It is the first test of the predictive σ
-  reward. C6 (RL vs its SFT control) and C2 (A6c) decide whether 3 seeds are warranted.
-- **In parallel (CPU, daytime):**
-  - the 1.3.0 dispatch edit (if approved);
-  - building R3-4 D's positive control (explicit line, numbers trained) as the propagation ceiling that stage B
-    turned out not to be.
-- **For p (stage E):** self-consistency remains the baseline to beat (0.643 within problems). Nothing tonight came
-  close.
+- **Phase 12's σ line has now failed three ways on this base,** each now with a specific cause:
+  - supervised imitation (B): a constant-scale surface reader;
+  - σ-only RL (C): copies the smallest percentage, then stops exploring;
+  - an explicit trained line (D): exponent templates, no per-given levels.
+- **Before any more GPU nights, one change per arm, each with its own entry:**
+  1. **Mixed-level SFT data** (generator change, your approval). It fixes A6c's distribution shift for every arm.
+  2. **For explicit propagation, a chain-rule scratchpad:** each sensitivity computed from the solution's own
+     intermediate values, with symbol names (D80's open [REVIEW]). D-pos shows the copy works and the derivatives
+     don't.
+  3. **For σ-RL, one exploration change** (a KL term, or batch-level reward scaling) against stage C's
+     deterministic collapse.
+- **Today (CPU), once you confirm steps 3–6:** the 1.3.0 dispatch edit, and the space clean-up you choose from §5.

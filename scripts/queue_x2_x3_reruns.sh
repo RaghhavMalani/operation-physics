@@ -10,6 +10,7 @@
 # usage:  GPU_DEADLINE=09:00 nohup scripts/queue_x2_x3_reruns.sh > results/queue_x2_x3/reruns_nohup.log 2>&1 &
 set -u
 cd "$(dirname "$0")/.."
+. scripts/disk_guard.sh   # the free-space guard (D111): disk_guard before every stage
 LOG=${QUEUE_LOG:-results/queue_x2_x3}
 GIT_LOCK=.git/queue-commit.lock
 DRY_RUN=${DRY_RUN:-0}
@@ -25,6 +26,7 @@ cool() { [ "$DRY_RUN" = 1 ] && return; while t=$(nvidia-smi --query-gpu=temperat
            log "GPU at ${t}C > 87C: pausing 600s"; sleep 600; done; log "GPU at ${t}C"; }
 run_stage() {
   local name=$1 limit=$2; shift 2
+  disk_guard "$name" || exit 75   # < MIN_FREE_GB on MLStorage (or unreadable): stop the queue (D111)
   if [ "$DRY_RUN" = 1 ]; then log "DRY $name (timeout ${limit}s): $*"; return 0; fi
   if [ "$limit" -lt 300 ]; then log "skip $name: only ${limit}s left"; return 98; fi
   log "start $name (timeout ${limit}s): $*"
