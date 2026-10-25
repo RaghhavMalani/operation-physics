@@ -790,3 +790,24 @@ Progress:
 - [x] **Reclaimable space listed in MORNING.md §5** (≈ 6.5 GB safe, ≈ 16.4 GB more on your call). Nothing deleted.
 - [x] **Full test suite:** 584 passed, 0 failed, 0 skipped (GPU visible).
 - [ ] **Next:** steps 3–6 of this morning's prompt (not in any transcript; please resend); the 1.3.0 dispatch edit.
+
+## 2026-10-25/26: the Round-4 review (your instructions at ~17:00 IST; GPU deadline 09:00 IST)
+
+- [x] **The review file committed; D112 records R4-1 to R4-9**, the two 3-seed rules not run (stage C, stage D), and
+  the free-space guard staying fail-closed.
+- [x] **Leftovers:** the D78 GPU check re-run, PASS (37 s). A trained adapter (D-pos) loads and reproduces its first
+  eval batch, 32 / 32 exact (`scripts/adapter_load_check.py`).
+- [x] **D113 pre-registered R4-1 to R4-5 before anything was built:** the data format, the three σ values, R4-3's
+  criteria and go rule, R1–R8, MC-A's estimators and stopping rule, the confirmatory set.
+- [x] **Built and CPU-tested (D114), 17 new tests:**
+  - the generator's mixed per-given levels (an option; the default is unchanged);
+  - the R4-1 data (3,000 problems; 2,067 mix noisy levels);
+  - stage R4; D113's analysis; MC-A;
+  - the frozen R4-5 confirmatory set (510 pairs per set) and its guard.
+  - **Two deviations:** the eval budget is 1,280 tokens; 6 rows are too long and dropped.
+- [x] **The R4 chain launched at 17:32 IST** (`scripts/queue_r4.sh`, PID 22552): D-pos-v2 → B-v2 → analysis. The cap
+  is 5.9 GiB (host VRAM 1.6 GiB, D115).
+- [x] **The MC-A chain launched at 17:43 IST** (`scripts/queue_mc_a.sh`, PID 31529), waiting for the R4 chain's GPU
+  stages.
+- [x] **Full test suite (CPU, 1 thread, GPU hidden, during D-pos-v2's training):** 602 passed, 0 failed, 1 skipped
+  (`test_split_credit`: unsloth needs a GPU to import).
