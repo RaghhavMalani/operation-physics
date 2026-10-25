@@ -1,3 +1,14 @@
 [17:43:46] MC-A chain start; GPU deadline 09:00 IST (916 min left); chain PID 31529
 [17:43:46] waiting for PID 22552 (the R4 chain) to reach its analysis or exit
 [19:06:39] stopped by hand (D116): replaced by scripts/queue_r4_tail.sh, which reruns D-pos-v2's eval first and then starts this chain
+[23:18:38] MC-A chain start; GPU deadline 09:00 IST (581 min left); chain PID 71625
+[23:18:38] waiting for PID 22552 (the R4 chain) to reach its analysis or exit
+[23:18:38] R4 chain's GPU stages are done (581 min left)
+[23:18:38] GPU at 59C, memory.used 1062 MiB
+[23:18:38] MC-A a6c_pairs: estimate 172 min (1.244s per completion)
+[23:18:40] disk: 53 GiB free on MLStorage
+[23:18:40] start mc_a_run_a6c_pairs (timeout 33982s): uv run python -m physcal.eval.mc_a run --set a6c_pairs
+[01:15:55] end mc_a_run_a6c_pairs: exit 0
+[01:15:57] disk: 53 GiB free on MLStorage
+[01:15:57] start mc_a_analyze_a6c_pairs (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.mc_a analyze --set a6c_pairs
+[01:16:34] end mc_a_analyze_a6c_pairs: exit 0

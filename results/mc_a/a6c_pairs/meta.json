@@ -1,0 +1,90 @@
+{
+ "decision": "D113 \u00a77 (R4-4: MC-A)",
+ "set": "a6c_pairs",
+ "model": "stage R4 b2 (B-v2), seed 0",
+ "lora": "/home/flash2404/operation-physics/results/stage_r4/b2/seed0/final_adapter",
+ "lora_hash": "24148d530ebb57e6",
+ "provenance": {
+  "base": {
+   "model_id": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+   "name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+   "commit": "e24e9530845f4e3a6648343796883cb509935039",
+   "content_sha256": "9939448b3a0fbe45"
+  },
+  "quantization_config": {
+   "bnb_4bit_compute_dtype": "torch.bfloat16",
+   "bnb_4bit_quant_type": "nf4",
+   "bnb_4bit_use_double_quant": true,
+   "llm_int8_enable_fp32_cpu_offload": false,
+   "llm_int8_has_fp16_weight": false,
+   "llm_int8_skip_modules": null,
+   "llm_int8_threshold": 6.0,
+   "load_in_4bit": true,
+   "load_in_8bit": false,
+   "quant_method": "bitsandbytes"
+  },
+  "compute_dtype": {
+   "bnb_4bit_compute_dtype": "torch.bfloat16",
+   "model_dtype": "torch.bfloat16"
+  },
+  "versions": {
+   "torch": "2.14.1",
+   "transformers": "5.17.0",
+   "peft": "0.21.2",
+   "trl": "1.13.0",
+   "accelerate": "1.15.0",
+   "bitsandbytes": "0.50.2",
+   "unsloth": "2026.10.3",
+   "unsloth_zoo": "2026.10.3"
+  },
+  "adapter": {
+   "dir": "/home/flash2404/operation-physics/results/stage_r4/b2/seed0/final_adapter",
+   "file": "24148d530ebb57e6",
+   "tensors": "9791309f731914f7",
+   "base_model_name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+   "r": 16,
+   "lora_alpha": 16,
+   "target_modules": [
+    "down_proj",
+    "gate_proj",
+    "k_proj",
+    "o_proj",
+    "q_proj",
+    "up_proj",
+    "v_proj"
+   ]
+  },
+  "base_identity": "sha256:9939448b3a0fbe45",
+  "bitsandbytes": "0.50.2",
+  "pinned_base": {
+   "dir": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+   "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+   "revision": "e24e9530845f4e3a6648343796883cb509935039",
+   "content_sha256": "9939448b3a0fbe45",
+   "adapter": null
+  },
+  "loader": "unsloth_4bit",
+  "adapter_merged": false
+ },
+ "generation": {
+  "max_new_tokens": 1280,
+  "batch_size": 16,
+  "do_sample": false,
+  "repetition_penalty": 1.0,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "top_k": 0,
+  "num_samples": 1,
+  "seed": 0
+ },
+ "prompt": "v5_two_channel",
+ "run0_tape": "results/stage_r4/b2/seed0/eval",
+ "k": 8,
+ "n_problems": 1020,
+ "excluded_problems": [],
+ "already_done": 0,
+ "started": "2026-10-25T17:50:19+0000",
+ "seconds": 7024.464440584183,
+ "n_runs_new": 8160,
+ "finished": "2026-10-25T19:45:53+0000"
+}
