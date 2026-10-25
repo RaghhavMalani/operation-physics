@@ -16,3 +16,8 @@
 [19:01:59] start r4_train_b2 (timeout 10700s): uv run python -m physcal.train.stage_r4 train --arm b2 --stop-at 2026-10-26T07:35:00+05:30
 [20:22:07] end r4_train_b2: exit 0
 [20:22:07] arm b2: 750 steps of 750, 80 min
+[20:22:10] commit 'R4 b2 (D113): SFT on the R4-1 data, 750 steps (exit 0)': pushed
+[20:22:10] GPU at 66C, memory.used 1501 MiB
+[20:22:13] disk: 53 GiB free on MLStorage
+[20:22:13] start r4_eval_b2 (timeout 8400s): uv run python -m physcal.train.stage_r4 eval --arm b2
+[21:26:49] end r4_eval_b2: exit 0
