@@ -164,3 +164,62 @@ def test_confirmatory_seeds_disjoint_from_development_sets():
     for s, key in (("a6", "export"), ("a6b", "invariance_export"), ("a6c", "allocation_export")):
         lo, hi = span({**pc[key], "seed_offset": pc["confirmatory"]["seed_offsets"][s]})
         assert all(hi <= a or lo >= b for a, b in dev)
+
+
+# ------------------------------------------------------------------------------------------- the analysis (D113)
+def test_parse_s_lines_and_the_three_sigmas():
+    from physcal.eval import r4_analysis as R
+    from physcal.eval.stage_d_analysis import parse_line
+
+    comp = ("v = a1*t1 = 2*3 = 6 m/s\nS_t1 = -t1/t2 = -11.34/24.51 = -0.463\nS_m = 1\nS_x = garbage (\n"
+            "<steps>\nsigma_rel = sqrt((-0.463*0.05)^2 + (1*0.02)^2) = 0.03\n</steps>\n<answer>6 ± 0.18 m/s</answer>")
+    assert R.parse_s_lines(comp) == {"t1": -0.463, "m": 1.0}
+    ln = parse_line(comp)
+    assert ln["x"] == 0.03 and R.exact_from_terms(ln) == pytest.approx(math.hypot(0.463 * 0.05, 0.02))
+    assert R.exact_from_terms({"parsed": False}) == 0.0 and R.exact_from_terms({"parsed": True, "zero": True}) == 0.0
+    prob = {"givens": [{"symbol": "t1", "noise_rel": 0.05}, {"symbol": "m", "noise_rel": 0.02},
+                       {"symbol": "u"}, {"symbol": "k", "noise_rel": 0.01}]}
+    assert R.from_s_lines(R.parse_s_lines(comp), prob) == pytest.approx(math.hypot(0.463 * 0.05, 0.02))
+
+
+def test_criteria_rules():
+    from physcal.eval import r4_analysis as R
+
+    ac = {"bootstrap": 300, "seed": 0, "criterion_ci_level": 0.90, "practical_slope": 0.5}
+    rng = __import__("numpy").random.default_rng(0)
+
+    def pairs(slope, n=60, reg="sigma_star"):
+        out = []
+        for i in range(n):
+            x = float(rng.uniform(0.3, 1.5))
+            lo = {"sigma_star_log": 0.01, "truth": 1.0, "stated_log": math.log(0.01)}
+            hi = {"sigma_star_log": 0.01 * math.exp(x) if reg == "sigma_star" else 0.01,
+                  "truth": math.exp(x) if reg == "truth" else 1.0,
+                  "stated_log": math.log(0.01) + slope * x + float(rng.normal(0, 0.05))}
+            out.append({"lo": lo, "hi": hi})
+        return out
+    good = R.criteria(pairs(0.9), pairs(0.0, reg="truth"), ac, 0.3)
+    assert good["C1"] and good["C2"] and good["C3"] and good["meets"]
+    weak = R.criteria(pairs(0.2), pairs(0.0, reg="truth"), ac, 0.3)
+    assert weak["C1"] and not weak["C2"] and weak["label"] == "propagates below the practical threshold"
+    lookup = R.criteria(pairs(0.9), pairs(0.9, reg="truth"), ac, 0.3)
+    assert not lookup["C3"] and not lookup["meets"]
+
+
+@pytest.mark.skipif(not (R4 / "manifest.json").exists(), reason="R4-1 data not built")
+def test_builder_completions_grade_as_perfect_imitation():
+    """The builder's own completion for an eval problem: every S line exact, (b) = the line's X, (c) within X's
+    rounding."""
+    from physcal.eval import r4_analysis as R
+    from physcal.eval.stage_d_analysis import parse_line, valid_2sf
+    from physcal.train import sft_r4
+
+    cfg = sft_r4._config()
+    pairs = [json.loads(line) for line in (REPO_ROOT / "data/eval_sets/2.0.0+bdbb2279/a6c_pairs.jsonl").open()][:40]
+    refs = R.references([{**p, "_set": "a6c_pairs"} for p in pairs], cfg)
+    for p, ref in zip(pairs, refs):
+        row = sft_r4.build_example(problem_from_dict(p), "explicit", cfg, 50)
+        got = R.parse_s_lines(row["completion"])
+        assert got == {k: t["value"] for k, t in ref["sens"].items()}
+        ln = parse_line(row["completion"])
+        assert ln["x"] == ref["x"] and valid_2sf(ln["x"], R.exact_from_terms(ln))

@@ -46,3 +46,13 @@ eval:                                  # stage B's eval (stage_b.eval_config)
   long_max_new_tokens: 1280            # D114 (deviation from D113's 768): the longest D-pos-v2 training completion is
                                        # 855 tokens, the builder's longest on the eval sets 1,165 (A6c, depth 5)
 output_dir: results/stage_r4           # dpos2/seed0/, b2/seed0/ (training + eval), results.json, summary.md
+analysis:                              # D113 (physcal.eval.r4_analysis)
+  stage_b_config: stage_b              # each arm through stage B's analysis (B1-B5 etc.), one seed; the comparators
+  stage_b_root: results/stage_b        # B-v2 - stage B (3-seed mean), descriptive
+  stage_d_root: results/stage_d        # D-pos-v2 - D-pos, descriptive
+  sensitivity_rel_tol: 0.10            # the lenient sensitivity match (D109's)
+  bootstrap: 10000
+  seed: 0
+  alpha: 0.05                          # Holm over R1-R8
+  criterion_ci_level: 0.90             # R4-3: C1's lower bound and C3's TOST interval
+  practical_slope: 0.5                 # R4-3: C2

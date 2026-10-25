@@ -1,0 +1,20 @@
+# R4-4 (DECISIONS.md D112; pre-registered in D113 section 7): MC-A, a diagnostic, inference only. Each noisy given is
+# perturbed by its stated noise with the generator's own predictive draw (x = x_meas / (1 + s z)), k runs per
+# problem, greedy; the spread of the model's ln answers is the sigma. Variants: raw (SD), robust (runs whose step-name
+# sequence equals the unperturbed run's, MAD x 1.4826), oracle (the exact chain on the same perturbations).
+k: 8
+seed_tag: mc-a                         # z_ij from SHA-256 of "mc-a|set|family|depth|seed|j"
+k_curve: [2, 4, 8]                     # the first k runs of the same logs
+min_runs: 2                            # fewer valid (kept) runs -> sigma undefined -> 0, the floor
+mad_scale: 1.4826
+model:                                 # B-v2 (stage R4 b2, seed 0) with its eval settings; stage B seed 0 if absent
+  arm: b2
+  fallback_stage_b_seed: 0
+sets: [a6c_pairs, a6_pairs, a6b_pairs] # A6c first (the stopping rule's set), then A6, A6b if time remains
+chunk_problems: 64                     # problems per generation call (k runs each); appended, so a stopped run resumes
+analysis:
+  bootstrap: 10000
+  seed: 0
+  alpha: 0.05                          # the stopping rule: robust (k = 8) - RSS, one-sided cluster-bootstrap p < alpha
+  criterion_ci_level: 0.90
+output_dir: results/mc_a               # <set>/runs.jsonl (+ .gz), meta.json, results.json, summary.md
