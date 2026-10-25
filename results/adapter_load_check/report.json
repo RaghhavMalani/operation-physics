@@ -1,0 +1,305 @@
+{
+ "check": "trained adapter load",
+ "arm": "pos",
+ "adapter": "/home/flash2404/operation-physics/results/stage_d/pos/seed0/final_adapter",
+ "tape": "results/stage_d/pos/seed0/eval/rollouts.jsonl",
+ "lora_hash": "c631c4e5c216ec54",
+ "tape_lora_hash": "c631c4e5c216ec54",
+ "provenance": {
+  "base": {
+   "model_id": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+   "name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+   "commit": "e24e9530845f4e3a6648343796883cb509935039",
+   "content_sha256": "9939448b3a0fbe45"
+  },
+  "quantization_config": {
+   "bnb_4bit_compute_dtype": "torch.bfloat16",
+   "bnb_4bit_quant_type": "nf4",
+   "bnb_4bit_use_double_quant": true,
+   "llm_int8_enable_fp32_cpu_offload": false,
+   "llm_int8_has_fp16_weight": false,
+   "llm_int8_skip_modules": null,
+   "llm_int8_threshold": 6.0,
+   "load_in_4bit": true,
+   "load_in_8bit": false,
+   "quant_method": "bitsandbytes"
+  },
+  "compute_dtype": {
+   "bnb_4bit_compute_dtype": "torch.bfloat16",
+   "model_dtype": "torch.bfloat16"
+  },
+  "versions": {
+   "torch": "2.14.1",
+   "transformers": "5.17.0",
+   "peft": "0.21.2",
+   "trl": "1.13.0",
+   "accelerate": "1.15.0",
+   "bitsandbytes": "0.50.2",
+   "unsloth": "2026.10.3",
+   "unsloth_zoo": "2026.10.3"
+  },
+  "adapter": {
+   "dir": "/home/flash2404/operation-physics/results/stage_d/pos/seed0/final_adapter",
+   "file": "c631c4e5c216ec54",
+   "tensors": "1d189e141ca8d0cc",
+   "base_model_name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+   "r": 16,
+   "lora_alpha": 16,
+   "target_modules": [
+    "down_proj",
+    "gate_proj",
+    "k_proj",
+    "o_proj",
+    "q_proj",
+    "up_proj",
+    "v_proj"
+   ]
+  },
+  "base_identity": "sha256:9939448b3a0fbe45",
+  "bitsandbytes": "0.50.2",
+  "pinned_base": {
+   "dir": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+   "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+   "revision": "e24e9530845f4e3a6648343796883cb509935039",
+   "content_sha256": "9939448b3a0fbe45",
+   "adapter": null
+  },
+  "loader": "unsloth_4bit",
+  "adapter_merged": false
+ },
+ "checks": {
+  "lora_hash_matches_tape": true,
+  "completions_reproduce": true,
+  "exact_ones_rescore_to_tape": true
+ },
+ "n": 32,
+ "exact_share": 1.0,
+ "per_completion": [
+  {
+   "tape_line": 960,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.08076979511865716,
+   "tape_reward": 0.08076979511865716
+  },
+  {
+   "tape_line": 961,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": -0.04499336800767528,
+   "tape_reward": -0.04499336800767528
+  },
+  {
+   "tape_line": 844,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.030524288885722995,
+   "tape_reward": 0.030524288885722995
+  },
+  {
+   "tape_line": 845,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": -0.19050567402334062,
+   "tape_reward": -0.19050567402334062
+  },
+  {
+   "tape_line": 467,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.10937620990979292,
+   "tape_reward": 0.10937620990979292
+  },
+  {
+   "tape_line": 466,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.0879510163521015,
+   "tape_reward": 0.0879510163521015
+  },
+  {
+   "tape_line": 820,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.14013588643614106,
+   "tape_reward": 0.14013588643614106
+  },
+  {
+   "tape_line": 1986,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": -0.19901497768107637,
+   "tape_reward": -0.19901497768107637
+  },
+  {
+   "tape_line": 821,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": -0.6788668257452433,
+   "tape_reward": -0.6788668257452433
+  },
+  {
+   "tape_line": 1987,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": -0.03341168719612096,
+   "tape_reward": -0.03341168719612096
+  },
+  {
+   "tape_line": 2896,
+   "split": "a6c_pairs",
+   "exact": true,
+   "reward": -0.4489400356463354,
+   "tape_reward": -0.4489400356463354
+  },
+  {
+   "tape_line": 2897,
+   "split": "a6c_pairs",
+   "exact": true,
+   "reward": -0.4800657422656524,
+   "tape_reward": -0.4800657422656524
+  },
+  {
+   "tape_line": 2970,
+   "split": "a6c_pairs",
+   "exact": true,
+   "reward": -0.13884156262876268,
+   "tape_reward": -0.13884156262876268
+  },
+  {
+   "tape_line": 2971,
+   "split": "a6c_pairs",
+   "exact": true,
+   "reward": -0.1321942598301485,
+   "tape_reward": -0.1321942598301485
+  },
+  {
+   "tape_line": 996,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.11875460010654137,
+   "tape_reward": 0.11875460010654137
+  },
+  {
+   "tape_line": 997,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": -0.2886487115395018,
+   "tape_reward": -0.2886487115395018
+  },
+  {
+   "tape_line": 1687,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": 0.05786303306183953,
+   "tape_reward": 0.05786303306183953
+  },
+  {
+   "tape_line": 1682,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": 0.009350781500557424,
+   "tape_reward": 0.009350781500557424
+  },
+  {
+   "tape_line": 1686,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": 0.1870441328214591,
+   "tape_reward": 0.1870441328214591
+  },
+  {
+   "tape_line": 1683,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": -4.649873081040248,
+   "tape_reward": -4.649873081040248
+  },
+  {
+   "tape_line": 949,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": -0.12499698493411777,
+   "tape_reward": -0.12499698493411777
+  },
+  {
+   "tape_line": 948,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.005900981941524289,
+   "tape_reward": 0.005900981941524289
+  },
+  {
+   "tape_line": 1874,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": 0.14225546727827093,
+   "tape_reward": 0.14225546727827093
+  },
+  {
+   "tape_line": 1875,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": 0.07680323088831925,
+   "tape_reward": 0.07680323088831925
+  },
+  {
+   "tape_line": 1786,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": 0.048538676773874925,
+   "tape_reward": 0.048538676773874925
+  },
+  {
+   "tape_line": 1787,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": 0.07305372315505076,
+   "tape_reward": 0.07305372315505076
+  },
+  {
+   "tape_line": 1838,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": 0.09231429240590476,
+   "tape_reward": 0.09231429240590476
+  },
+  {
+   "tape_line": 1839,
+   "split": "a6b_pairs",
+   "exact": true,
+   "reward": -2.1271098795790144,
+   "tape_reward": -2.1271098795790144
+  },
+  {
+   "tape_line": 671,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.1137605811130486,
+   "tape_reward": 0.1137605811130486
+  },
+  {
+   "tape_line": 670,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": -0.33756373281976315,
+   "tape_reward": -0.33756373281976315
+  },
+  {
+   "tape_line": 894,
+   "split": "a6_pairs",
+   "exact": true,
+   "reward": 0.14779904965697147,
+   "tape_reward": 0.14779904965697147
+  },
+  {
+   "tape_line": 2946,
+   "split": "a6c_pairs",
+   "exact": true,
+   "reward": -0.47535547401017136,
+   "tape_reward": -0.47535547401017136
+  }
+ ],
+ "seconds": 134.70056223869324,
+ "status": "PASS"
+}

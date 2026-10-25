@@ -3726,3 +3726,83 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     - the real stage D queue, with 1 GiB reported, stops with BLOCKED and exit 75 before its first stage.
 - **Reclaimable space:** listed in MORNING.md; nothing deleted. Deleting inside WSL frees blocks the image reuses, but
   the image on MLStorage does not shrink unless it is compacted.
+
+## 2026-10-25: the Round-4 review (your instructions at ~17:00 IST; GPU deadline 09:00 IST on 2026-10-26)
+
+### D112. Round-4 review decisions R4-1 to R4-9 (`REVIEW_SYNTHESIS_ROUND4_2026-10-25.md`), two seed rules not run, the guard stays fail-closed (your decisions; recorded before any result they affect)
+- **The review file** is committed with this entry. R4-1 to R4-9 below are your decisions as written there; the
+  specifics R4-1 to R4-5 need before anything is built (data format, tests, criteria, stop/go) are pre-registered in
+  D113, written before any D-pos-v2 / B-v2 / MC-A data, model or score exists.
+- **R4-1. D-pos-v2 pilot and its matched implicit control B-v2, 1 seed each, tonight.**
+  - **The same new data for both:** noise levels 0 / 1 / 2 / 5% assigned independently per given. Every
+    value-dependent sensitivity is derived as its own visible step (e.g. `s_a = a/(a−b) = … = 1.50`); power-law
+    sensitivities are stated as exponents.
+  - **The same SFT recipe, budget and pinned base as D-pos** (D109).
+  - **A6c is in-distribution for these arms** (mixed levels are in their training data), unlike every earlier arm
+    (FINDINGS #29: no Phase 12 SFT problem mixed levels). Every A6c result for them says so.
+  - **This approves a generator change** (MORNING.md 2026-10-23 §6.3): mixed per-given levels are generated, not only
+    represented. D113 fixes how, without changing any existing problem.
+- **R4-2. Grade the line, not only the answer.** For D-pos-v2, three σ values are scored: (a) the answer's stated σ;
+  (b) the σ the line states (its X); (c) a verifier-computed σ from the model's own written sensitivities and levels,
+  combined exactly. If (c) propagates and (a) does not, the failure is arithmetic, not propagation.
+- **R4-3. Success criteria and stop/go, fixed now** (the exact statistics are in D113):
+  - **Propagation:** the A6c slope has a 90% CI lower bound above 0; a point estimate ≥ 0.5 is the practical threshold
+    for "meaningful". The A6b slope is equivalent to 0 (D59's margin).
+  - **Reporting:** everything split by sensitivity type and by depth.
+  - **Stop/go:** 3 seeds of both arms only if D-pos-v2 meets the propagation criterion on (a), (b) or (c); which one is
+    recorded.
+- **R4-4. MC-A, a diagnostic (inference only).** On A6c first (all 1,020 problems), then A6 / A6b if time allows:
+  - each displayed given perturbed by its stated noise, k = 8 fixed seeds, greedy decoding;
+  - **variants:** raw (SD of ln answers); robust (runs whose sequence of intermediate step names differs from the
+    unperturbed run are dropped, then MAD × 1.4826); oracle (the exact solver on the same perturbations: the attainable
+    bound);
+  - the drop rate, and the k = 2 / 4 / 8 curve from the same logs;
+  - **stopping rule:** if robust MC-A does not beat the RSS heuristic on A6c, k is not increased.
+  - **Status:** a diagnostic with oracle and robust variants; promoted to a contribution only if the results justify it.
+- **R4-5. A frozen confirmatory set:** new sensitivity, invariance and allocation pairs from fresh seeds, untouched until
+  a 3-seed confirmatory run. A6 / A6b / A6c become development sets from now on.
+- **R4-6. Three estimands, reported separately from now on:**
+  - **aleatoric:** σ vs σ\* on valid computations, oracle-centred;
+  - **epistemic:** correctness discrimination;
+  - **end-to-end:** the proper score of the delivered answer, unconditional.
+- **R4-7. Later, each with its own pre-registration (not tonight):**
+  - a cross-family inference replication (X2, X4, MC-A);
+  - more E1d seeds, plus one unfrozen joint run at lr 5e-5;
+  - an MC-B prototype (the model writes a simulation program; few-shot first). PAL and Program-of-Thoughts limit its
+    novelty;
+  - compositional transfer (train depths 1–3, test 4–5, held-out optics);
+  - X4 with native chain-of-thought.
+- **R4-8. The paper's framing** is the review's wording: "Predicting uncertainty is not the same as computing it. In a
+  controlled small-model physics benchmark, confidence about whether a particular answer is correct is revealed by
+  cross-sample agreement rather than by single-response estimators, while propagation of measurement uncertainty is
+  hard to learn implicitly, motivating a controlled comparison with explicit and executable computation."
+  - **Not claimed:** "uncertainty is not felt inside one forward pass". E1d's capability appeared after a
+    learning-rate change, which argues against intrinsic-capability conclusions.
+  - **The headline figure:** "Where does uncertainty information come from?", with panels for correctness
+    discrimination vs sampling cost, the sensitivity-pair response, and invariance.
+  - **Claims are scoped** to this model and this benchmark.
+  - **Write-up items (both reviewers):** a provenance ledger of every pre-registered hypothesis and its outcome; the bf16
+    merge pitfall as its own box; k-cost curves; problem-clustered CIs; sensitivities split by type (power law vs
+    value-dependent) with transfer to held-out compositions and numerical regimes.
+- **R4-9. References to verify before citing (not verified tonight; none is cited yet):** Wang et al., Self-Consistency
+  (arXiv 2203.11171); Gao et al., PAL (arXiv 2211.10435); Chen et al., Program of Thoughts (arXiv 2211.12588); Kamath
+  et al., Selective Question Answering under Domain Shift (ACL 2020); JCGM 101:2008 (Monte Carlo propagation of
+  distributions); Wang and Stengel-Eskin (ICLR 2026) and Jang et al. (ICML 2026), both unverified.
+- **Deviation: two pre-registered 3-seed rules fired and are not run** (your decision, MORNING.md 2026-10-23 §6.2).
+  - **Stage C (D106's signal rule, on C6 +0.045):** the control is the merged SFT model with prompt v5, which answers
+    "± 0" on 79% of these problems, so most of C6 is RL removing "± 0", not learning to propagate.
+  - **Stage D (D109's seed rule, on D6 +0.001):** D-pos's sensitivities are memorized exponent templates (77% exact on
+    power-law terms, 5% on value-dependent ones; FINDINGS #29), and it never read per-given levels. More seeds of the
+    same data would replicate the template.
+  - **Instead:** R4-1's corrected data, with its own stop/go (R4-3).
+- **D111's [REVIEW] is resolved: the free-space guard stays fail-closed** (an unreadable volume is BLOCKED).
+- **Leftovers, done before any of the above was built (GPU, ~3 min):**
+  - **The D78 GPU check, re-run after the crash and e2fsck:** PASS in 37 s (`scripts/pinned_base_smoke.py`): the
+    pinned base loads 4-bit from its snapshot dir (196 bnb 4-bit linears), a fresh adapter names that dir, and the
+    reloaded adapter's provenance gives `base_identity sha256:9939448b3a0fbe45`. It first passed on 2026-10-19.
+  - **A trained adapter loads (`scripts/adapter_load_check.py`, new):** D-pos's adapter loads through the eval backend
+    on the pinned base, its hash equals the eval tape's (`c631c4e5c216ec54`), and its first eval batch (the 32 longest
+    prompts, regenerated as one batch) reproduces the logged greedy completions exactly, 32 of 32, each re-scoring to
+    the logged reward. 135 s.
+- **Host VRAM with nothing running in WSL:** 2,297 MiB at 17:05 IST, and 2,296 MiB later (higher than the 0.6 GiB of
+  earlier nights). Tonight's caps are set from a fresh reading at launch (D115).

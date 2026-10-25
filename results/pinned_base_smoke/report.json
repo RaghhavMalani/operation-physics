@@ -19,6 +19,6 @@
  "generation": "The sum of 1 and 1",
  "adapter_base_model_name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
  "base_identity": "sha256:9939448b3a0fbe45",
- "seconds": 14.196254014968872,
+ "seconds": 15.539017915725708,
  "status": "PASS"
 }
