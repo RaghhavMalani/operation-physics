@@ -10,3 +10,9 @@
 [18:55:50] start r4_eval_dpos2 (timeout 12000s): uv run python -m physcal.train.stage_r4 eval --arm dpos2
 [19:01:55] end r4_eval_dpos2: exit 1
 [19:01:55] BLOCKED? r4_eval_dpos2 exit 1 (see results/queue_r4/r4_eval_dpos2.log)
+[19:01:57] commit 'R4 dpos2 (D113): greedy eval on A6 / A6b / A6c, 4-bit pinned base, adapter unmerged (exit 1)': pushed
+[19:01:57] GPU at 68C, memory.used 1471 MiB
+[19:01:59] disk: 53 GiB free on MLStorage
+[19:01:59] start r4_train_b2 (timeout 10700s): uv run python -m physcal.train.stage_r4 train --arm b2 --stop-at 2026-10-26T07:35:00+05:30
+[20:22:07] end r4_train_b2: exit 0
+[20:22:07] arm b2: 750 steps of 750, 80 min
