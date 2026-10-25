@@ -6,3 +6,9 @@
 [18:07:40] guard(22585): stage continued (GPU at 54C)
 [18:55:45] end r4_train_dpos2: exit 0
 [18:55:45] arm dpos2: 750 steps of 750, 83 min
+[18:55:48] commit 'R4 dpos2 (D113): SFT on the R4-1 data, 750 steps (exit 0)': pushed
+[18:55:48] GPU at 66C, memory.used 1535 MiB
+[18:55:50] disk: 53 GiB free on MLStorage
+[18:55:50] start r4_eval_dpos2 (timeout 12000s): uv run python -m physcal.train.stage_r4 eval --arm dpos2
+[19:01:55] end r4_eval_dpos2: exit 1
+[19:01:55] BLOCKED? r4_eval_dpos2 exit 1 (see results/queue_r4/r4_eval_dpos2.log)
