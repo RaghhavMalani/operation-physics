@@ -3806,3 +3806,179 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     the logged reward. 135 s.
 - **Host VRAM with nothing running in WSL:** 2,297 MiB at 17:05 IST, and 2,296 MiB later (higher than the 0.6 GiB of
   earlier nights). Tonight's caps are set from a fresh reading at launch (D115).
+
+### D113. Pre-registration of R4-1 to R4-5: D-pos-v2 and B-v2 on mixed-level data, the three-σ grading, the stop/go, MC-A, the frozen confirmatory set (written before any of their data, model, completion or score exists)
+- **Status:** a one-seed pilot on the development sets (A6 / A6b / A6c; R4-5). Nothing here is a confirmatory claim.
+  Confirmation, if R4-3's go fires, is a 3-seed run evaluated on the frozen R4-5 set under its own entry.
+- **1. The data (R4-1): `physcal/train/sft_r4.py`, `configs/sft_r4.yaml`, `results/phase12_sft_data_r4/`.**
+  - **The problems:** D80's 3,000 training seeds (60,000,000 + i) with D80's cell per seed (the same round-robin), so
+    each problem keeps D80's chain, world, units and phrasing wherever the generator accepts the same attempt. Only
+    the noise changes.
+  - **Mixed per-given levels (the approved generator change; an option, not a new version):**
+    `generate_problem(..., mixed_levels=[0, 0.01, 0.02, 0.05])`.
+    - **The levels:** each chain given's level is drawn uniformly and independently from the list on the problem's
+      own `levels` stream (one draw per given per attempt). The main and noise streams are untouched.
+    - **The errors:** e_i = level_i · z_i, with the noise stream's existing z.
+    - **The display:** every given at the noise mode's 5 s.f.; "± p%" on the noisy ones; level-0 givens are exact
+      (the predictive keeps them fixed). Distractors draw their own levels from the same list.
+    - **σ\*:** the same Monte Carlo with the per-given levels.
+    - **The record:** `noise.level` = the largest level, `noise.mixed` = the list, per-given `rel` as A6c. Replay
+      passes the list back.
+    - **Unchanged:** the default (`mixed_levels=None`) leaves every existing problem byte-identical, and the generator
+      version string (2.0.0+bdbb2279) does not change. Tested on a sample of seeds per family and on the frozen sets'
+      regeneration. [REVIEW] An option, not a version bump: a bump would re-key every stream and lose the seed match
+      with D80.
+  - **Two arms, same problems, same `<confidence>` draw as D80:**
+    - **`explicit` (D-pos-v2):** D80's solution text, then the sensitivity derivations, then D80's line, then the
+      answer:
+      - **Before `<steps>`:** one line per noisy given, in problem order:
+        `S_x = <expression> = <the expression with the solution's 4-s.f. SI values substituted> = <value .3g>`.
+        - **The expression:** the given's total log-sensitivity d ln f / d ln x, by the chain rule over the steps.
+          Each step's local elasticity is the shorter of its implicit form (x·(−∂F/∂x)/(∂F/∂y)/y, with F = lhs − rhs)
+          and its explicit form; paths are summed, then `factor(cancel(·))`.
+        - **The symbols:** the givens, intermediates, target and constants, i.e. the values the solution already
+          wrote.
+        - **The value** is computed from the substituted, rounded numbers, so each line is self-consistent.
+        - **A power-law term** (a constant expression) is stated as its exponent: `S_m = 1`, `S_t1 = -2`,
+          `S_h = 0.5`.
+        - **Exact givens get no line;** a problem with no noisy given gets none.
+      - **Inside `<steps>`, last:** `sigma_rel = sqrt((S_1*s_1)^2 + ...) = X`.
+        - **The terms:** the S values copied as written (signed), and s_i each given's own stated level, in problem
+          order.
+        - **X:** computed from the shown terms, at `.2g`. `sigma_rel = 0` when every given is exact.
+      - **The answer:** σ = X·|μ| at `.2g` (D80's copy).
+      - **D-pos-v2's masks:** nothing in the σ channel is masked (S lines, line, σ and c are all trained), as D-pos.
+    - **`supervised` (B-v2):** D80's supervised arm on the new problems: no S lines and no line; σ\* (with the
+      per-given levels) written after "±" and trained.
+  - **The builder's checks (tests):**
+    - every S value matches `noise.log_sensitivities` (finite differences at the displayed values) within 1% or
+      0.005 absolute;
+    - the line parses with D-pos-v2's parser and is a valid `.2g` rounding of its own terms;
+    - σ is a valid copy;
+    - no row is dropped as too long (2,048 tokens).
+- **2. Training and eval: D-pos's recipe exactly, except the data** (`physcal/train/stage_r4.py`,
+  `configs/stage_r4.yaml`).
+  - **Training:** the pinned 4-bit base (D78); a fresh LoRA (r 16, α 16, the 7 modules); seed 0; 2 epochs (750
+    steps); `configs/sft.yaml`'s optimizer; D103's 7.1 GiB cap with the OOM check; the temperature guards; the R2-1
+    fingerprint.
+  - **Eval:** stage B's (`stage_b.eval_config`): greedy, prompt v5, A6 / A6b / A6c (3,060), the adapter unmerged,
+    batch 32.
+  - **Two exceptions, fixed now:**
+    - **The token budget:** if the longest D-pos-v2 training completion exceeds 480 tokens, both arms are evaluated at
+      768 new tokens instead of 512 (parity). Truncation is reported per arm either way.
+    - **The cap:** set at launch from tonight's host VRAM reading (D115). The 2026-10-25 afternoon readings were
+      2.3 GiB, against 0.6 on earlier nights.
+  - **Order:** D-pos-v2 (train, eval), then B-v2 (train, eval).
+  - **Labels:** A6c is in-distribution for both arms (both trained on mixed levels). Depth 5 is held out from
+    training (the eval split's held-out depth) and is reported separately as transfer.
+- **3. The three σ values (R4-2), per D-pos-v2 completion:**
+  - **(a):** the answer's stated σ_rel = σ / |μ|.
+  - **(b):** the line's stated X.
+  - **(c):** sqrt(Σ (a_i·s_i)²) of the line's own written terms, computed exactly by the verifier side (no
+    rounding).
+  - **Parsing:** a line that does not parse gives (b) = (c) = 0, i.e. the floor (D109's convention). A zero line gives
+    0.
+  - **Descriptive (c_S):** the model's S lines matched by name, combined with the problem's true stated levels
+    (sensitivities alone, level reading excluded). A missing S line counts 0.
+  - **Reading:**
+    - (c) propagates and (a) does not: the failure is the arithmetic or the copy, not propagation;
+    - (b) ≠ (c): arithmetic;
+    - (a) ≠ (b): the copy.
+- **4. R4-3's criteria and the stop/go, applied to (a), (b) and (c) separately.**
+  - **C1:** the A6c slope (D95: OLS of Δ ln σ on Δ ln σ\* within pairs; pairs bootstrap, B = 10,000, seed 0) has a
+    90% CI lower bound > 0.
+    - **(a)** on all answered pairs (D109's D2 set);
+    - **(b) and (c)** on all pairs (unparsed → the floor).
+  - **C2:** the A6c point estimate ≥ 0.5 (the practical threshold).
+  - **C3:** the A6b slope (on Δ ln truth) has a 90% CI inside (−0.3, +0.3) (D59's margin).
+    - **(a)** on computation-correct pairs (D104's convention);
+    - **(b) and (c)** on all pairs.
+  - **"Meets the propagation criterion" = C1 and C2 and C3.** [REVIEW] I read R4-3's practical threshold as part of
+    the criterion. Alternative: C1 and C3 only. Rejected because you declined 3 seeds for effects you judged too weak
+    (D112).
+  - **Go:** 3 seeds of both arms (D-pos-v2 and B-v2), evaluated on the frozen R4-5 set, if and only if D-pos-v2 meets
+    it on (a), (b) or (c). Which ones is recorded.
+  - **Otherwise:** no seeds. C1 and C3 without C2 is labelled "propagates below the practical threshold".
+  - **The go rule uses the unadjusted criteria, as you wrote them.**
+- **5. Tests for the record (one seed, so problem-level evidence only; Holm over R1–R8 at α = 0.05).**
+  - **R1 / R2 / R3:** D-pos-v2's A6c slope > 0 for (a) / (b) / (c) (C1's sets; one-sided bootstrap p).
+  - **R4:** B-v2's A6c slope > 0 (all answered pairs).
+  - **R5:** mean oracle-centred expected crps_log, D-pos-v2 − B-v2 > 0 (paired; cluster bootstrap over pairs, B =
+    10,000, seed 0, as D109's D6 / D7).
+  - **R6 / R7:** D-pos-v2 − RSS > 0, and D-pos-v2 − X1 > 0.
+  - **R8:** B-v2 − RSS > 0.
+  - **Also reported, untested:**
+    - each arm through stage B's analysis unchanged (`stage_b_analysis.analyze`: B1–B5, labels, D59's verdict, the
+      oracle-centred diagnostic);
+    - the data effect: D-pos-v2 − D-pos, and B-v2 − stage B's 3-seed mean (expected crps_log);
+    - D-pos-v2's line diagnostics, D109's set extended to the S lines: S present / parsed, exact against the
+      builder's line for the same problem (`.3g`), lenient within 10%, per term and per problem; levels right in order;
+      arithmetic; copy.
+- **6. Splits (R4-3, both reviewers):**
+  - **What:** every slope and score above, and the line diagnostics, by depth (1–5; depth 5 held out) and by
+    sensitivity type.
+  - **The type is the builder's own derivation:**
+    - **per term:** power law (constant S) or value-dependent;
+    - **per A6c pair:** "power-law chain" if every term of the chain is a power law, otherwise "value-dependent
+      chain".
+  - **By set:** A6 is value-dependent by construction (power-law chains never qualify, D50) and A6b is power-law
+    only (D59). So A6c is the set where the split is informative.
+- **7. MC-A (R4-4), inference only: `physcal/eval/mc_a.py`.**
+  - **The model:** B-v2 (seed 0), with stage B's eval settings (pinned base, adapter unmerged, prompt v5, greedy, the
+    same token budget, batch 32).
+    - **Why B-v2:** the matched implicit model, trained on mixed-level texts like the perturbed ones. Its completions
+      have no S lines, so they cost less GPU than D-pos-v2's.
+    - **If B-v2 has no adapter when MC-A starts:** stage B seed 0 instead, logged. [REVIEW]
+  - **The perturbations:** for run j = 1..8 and each noisy given i, z_ij ~ N(0, 1) from SHA-256 of
+    `mc-a|set|family|depth|seed|j`.
+    - **The draw:** x_ij = x_meas,i / (1 + s_i·z_ij), the generator's own predictive draw (so oracle MC-A targets
+      σ\*).
+    - **The display:** shown in the given's displayed unit at 5 s.f. Exact givens and distractors are unchanged.
+    - **The text:** the original, with each noisy given's number replaced ("± p%" stays). Each replaced string must
+      occur exactly once in the text; a problem where one does not is excluded and counted.
+  - **Run 0** is the unperturbed problem's completion from B-v2's own eval tape (same model, prompt and greedy
+    decoding).
+  - **Per run:**
+    - **μ_j:** the verifier's parse in SI (reason ok and μ > 0; anything else is invalid);
+    - **the step-name sequence:** the left-hand names of the lines before `<steps>` matching `^name = `, excluding
+      the `SI values:` / `Not needed:` / `In <unit>:` lines.
+  - **The σ (log space, used as σ_rel), from the k perturbed runs:**
+    - **raw:** the SD (ddof 1) of ln μ_j over the valid runs (≥ 2 needed);
+    - **robust:** 1.4826 × the MAD of ln μ_j over the valid runs whose step-name sequence equals run 0's (≥ 2 needed;
+      if run 0 is invalid, robust is undefined);
+    - **oracle:** the SD (ddof 1) of ln f(x_j) over the same k perturbations, the exact chain on the displayed,
+      rounded perturbed values.
+    - **Undefined → 0, i.e. the floor** (the comparators' convention).
+    - **Also reported:** the oracle's MAD × 1.4826 (estimator parity).
+  - **The stopping rule (R4-4), fixed now:** robust MC-A (k = 8) beats RSS on A6c if the mean oracle-centred
+    expected crps_log difference (robust − RSS) over A6c's 1,020 problems has a one-sided cluster-bootstrap p < 0.05
+    (pairs, B = 10,000, seed 0). If it does not, k is not increased in any later run.
+  - **Reported, descriptively:**
+    - **the drop rate** (perturbed runs that are invalid, and runs dropped by the step-name filter, separately);
+    - **the k = 2 / 4 / 8 curve** (the first k runs of the same logs);
+    - **for each variant, next to RSS, X1 and σ\*:** expected crps_log, median ln(σ / σ\*), 1σ / 2σ coverage, and
+      the A6c slope over all pairs with its 90% CI, split by depth and type (as §6);
+    - **R4-6's three estimands:**
+      - aleatoric: oracle-centred, on problems where run 0 is computation-correct (A1's τ);
+      - epistemic: AUROC of σ for run 0 not being computation-correct;
+      - end-to-end: the verifier's crps_log of run 0's μ with the MC-A σ, against the truth, every problem (unanswered:
+        the floor).
+  - **Afterwards, if time remains:** A6, then A6b, by the same procedure, descriptive only. The stopping rule is
+    A6c's.
+- **8. The frozen confirmatory set (R4-5):**
+  - **Construction:** `configs/pairs.yaml`'s three constructions unchanged, with fresh pair-seed offsets
+    2,100,000,000 (A6), 2,200,000,000 (A6b) and 2,300,000,000 (A6c). The same 15 cells × 34 pairs each (1,020
+    problems per set). One worker, nice 19.
+  - **Where:** `data/eval_sets/2.0.0+bdbb2279/confirmatory/`, with manifests (SHA-256) and `FROZEN.md`.
+  - **The guard:** `run_eval`'s frozen-split loader refuses any file under a `confirmatory/` directory unless
+    `PHYSCAL_CONFIRMATORY=1` is set (tested). No model is evaluated on it, and no statistic is computed from it,
+    until a 3-seed confirmatory run has its own entry.
+  - **From now on, A6 / A6b / A6c are development sets.**
+- **9. Budget and queue (`scripts/queue_r4.sh`; GPU_DEADLINE 09:00 IST):** D-pos-v2 train → eval → B-v2 train →
+  eval → MC-A A6c → MC-A A6 → MC-A A6b.
+  - **The gate:** each stage starts only if its estimate plus 15 min slack fits before the deadline.
+  - **The estimates:** D-pos's measured times scaled by the data's token ratio; MC-A from B-v2's measured eval
+    seconds per completion × 8.
+  - **Every stage:** the free-space guard, the in-stage temperature guard, a PID watcher, BLOCKED-and-continue
+    (a later stage that needs a missing output is skipped and logged), and a commit + push.
+  - **The analyses:** CPU, 1 thread, nice 19, after each arm's eval and after each MC-A set.
