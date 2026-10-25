@@ -108,6 +108,7 @@ def model_choice(cfg: dict | None = None) -> dict:
         ev = stage_b.eval_config(s)
         ev["generation"]["max_new_tokens"] = stage_r4.token_budget()["max_new_tokens"]
         ev["model"]["max_reserved_gib"] = stage_r4._config()["eval"]["max_reserved_gib"]
+        ev["generation"]["batch_size"] = stage_r4._config()["eval"]["batch_size"]  # D116
         label = f"stage B seed {s} (fallback: B-v2 has no adapter)"
     return {"eval": ev, "label": label, "tape_dir": str(Path(ev["output_dir"]).relative_to(REPO_ROOT))}
 

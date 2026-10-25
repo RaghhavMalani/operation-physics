@@ -1,0 +1,3 @@
+[17:43:46] MC-A chain start; GPU deadline 09:00 IST (916 min left); chain PID 31529
+[17:43:46] waiting for PID 22552 (the R4 chain) to reach its analysis or exit
+[19:06:39] stopped by hand (D116): replaced by scripts/queue_r4_tail.sh, which reruns D-pos-v2's eval first and then starts this chain

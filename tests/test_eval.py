@@ -283,3 +283,50 @@ def test_eval_report_includes_the_conditional_posthoc_baselines(tmp_path):
             assert e[f"this_model_{k}"]["n"] == m["splits"][name]["n"]
             assert f"sft_only_{k}" in e
     assert "Conditional post-hoc baselines (D49)" in (tmp_path / "summary.md").read_text()
+
+
+def test_oom_retry_runs_after_the_failed_attempt_is_released():
+    """D116: the backoff retries outside the `except` block, so a failed attempt's tensors (held by its traceback)
+    are freed before the smaller retry runs. Inside the except block they stayed alive at every level."""
+    import weakref
+
+    import torch
+
+    from physcal.eval.run_eval import HFBackend
+
+    class Enc(dict):
+        def to(self, _device):
+            return self
+
+    class Tok:
+        pad_token_id = 0
+
+        def __call__(self, prompts, return_tensors, padding):
+            return Enc(input_ids=torch.ones(len(prompts), 3, dtype=torch.long))
+
+        def decode(self, row, skip_special_tokens):
+            return f"len{len(row)}"
+
+    class Held:  # stands in for the KV cache of a failed generate call
+        pass
+
+    refs = []
+
+    class Model:
+        def generate(self, input_ids, num_return_sequences, **_):
+            n = input_ids.shape[0]
+            if n > 1:
+                held = Held()  # noqa: F841  (referenced by this frame, i.e. by the exception's traceback)
+                refs.append(weakref.ref(held))
+                raise torch.OutOfMemoryError("CUDA out of memory. Tried to allocate 1 GiB")
+            assert all(r() is None for r in refs), "a failed attempt is still alive during the retry"
+            return torch.cat([input_ids, torch.tensor([[5, 9]])], dim=1)
+
+    backend = object.__new__(HFBackend)
+    backend.torch, backend.tok, backend.model = torch, Tok(), Model()
+    backend.gen_cfg = {"num_samples": 1, "batch_size": 8, "max_new_tokens": 2, "repetition_penalty": 1.0,
+                       "do_sample": False, "temperature": None, "top_p": None, "top_k": None, "seed": 0}
+    backend.eos_ids, backend.pad_id, backend.oom_backoffs, backend.chat_template_kwargs = {9}, 0, 0, {}
+    backend.device = "cpu"
+    out = backend._generate(["a", "b", "c", "d"], 1)
+    assert len(out) == 4 and backend.oom_backoffs == 3 and len(refs) == 3

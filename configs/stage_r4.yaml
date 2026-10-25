@@ -39,7 +39,7 @@ eval:                                  # stage B's eval (stage_b.eval_config)
       file: data/eval_sets/2.0.0+bdbb2279/a6c_pairs.jsonl
       verify_regenerate: -1
   prompt: v5_two_channel
-  batch_size: 32
+  batch_size: 16                       # D116: 32 OOM'd under the 5.9 GiB cap with the 1,280-token budget
   max_reserved_gib: 5.9                # D115, as above
   max_new_tokens: 512                  # D113: the long budget for both arms if the longest D-pos-v2 completion exceeds
   long_completion_tokens: 480          # the limit below

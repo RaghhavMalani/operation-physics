@@ -4032,3 +4032,37 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
 - **MC-A (R4-4) is a second chain** (`scripts/queue_mc_a.sh`), built and tested while this one runs, started with
   `WAIT_PID=22552`. The order is your instruction: MC-A after B-v2's eval.
 - **Running alongside the GPU:** CPU work only, at 1 thread and nice 19 (D97).
+
+### D116. D-pos-v2's eval was BLOCKED by an OOM in the eval's own backoff; fixed, rerun after B-v2's eval (decided at 19:05 IST, before any R4 completion was scored)
+- **What happened:** D-pos-v2 trained normally (750 / 750 steps, loss 0.116, 83 min including one 10-min temperature
+  pause at 17:57, 88 °C). Its eval started at 18:55 and died at 19:01 with a CUDA OOM.
+  - **The first batch** (the 32 longest prompts) finished in 54 s.
+  - **The second batch** OOM'd, and the backoff then failed at every size, 32 → 16 → 8 → 4 → 2 → 1.
+  - **Nothing was scored:** no tape is written before generation ends. The R4 chain logged it BLOCKED and went on to
+    B-v2's training (19:02), as designed.
+- **The cause is a bug in `run_eval.HFBackend._generate`, not real memory pressure.**
+  - **The bug:** the retry recursion ran inside the `except` block. There, the failed `generate` call's frames (and
+    their tensors) stay referenced by the exception's traceback, so each smaller retry ran with every larger failed
+    attempt's memory still held. The log shows 3.95 GiB allocated and 1.95 GiB reserved at the single-prompt failure.
+  - **Why it never showed before:** earlier evals used 512 new tokens and a 7.1 GiB cap. Tonight's are 1,280 and 5.9
+    (D114, D115).
+- **The fix (tested):** the retry now runs after the `except` block. The failed attempt is released (gc, then
+  `empty_cache`) before the split.
+  - **New test:** `test_oom_retry_runs_after_the_failed_attempt_is_released`. It fails on the old code and passes on
+    the new.
+  - **Unchanged:** behaviour without an OOM, so every earlier eval is unaffected. The eval tests pass (29).
+- **Batch 16 instead of 32 for both R4 arms' evals and MC-A** (`configs/stage_r4.yaml`). This halves the KV cache of
+  1,280-token generations under the 5.9 GiB cap, so OOM-and-retry should become rare.
+  - **Parity:** B-v2's eval (not yet started) uses the same setting.
+  - **The cost:** greedy outputs can differ slightly with batch composition (padding). D-pos (v1) ran at 32.
+  - **Alternative:** keep 32 and rely on the fixed backoff. Rejected because each OOM wastes the generation up to the
+    failure point.
+- **The queue (the running chains cannot be edited):**
+  - **The MC-A chain is stopped.** PID 31529 was only waiting and had done no work.
+  - **Its replacement, `scripts/queue_r4_tail.sh`** (`WAIT_PID=22552`), started at 19:07. Once the R4 chain's GPU
+    stages are done (B-v2's train and eval), it runs D-pos-v2's eval. Then it starts the MC-A chain unchanged and runs
+    D113's analysis on the CPU beside it.
+  - **The order is therefore** D-pos-v2 train → B-v2 train → B-v2 eval → D-pos-v2 eval → MC-A, instead of your D-pos-v2
+    eval before B-v2's training. Nothing depends on the order: each eval uses only its own adapter.
+  - **The R4 chain's own analysis** (after B-v2's eval) runs without D-pos-v2. The tail chain's later analysis replaces
+    it.

@@ -85,3 +85,4 @@ results/mc_a/*/runs.jsonl
 results/queue_r4/*.pid
 results/queue_mc_a/*.pid
 results/confirmatory_build/pid
+results/queue_r4_tail/*.pid

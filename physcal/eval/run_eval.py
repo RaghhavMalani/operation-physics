@@ -12,6 +12,7 @@ file's manifest) and `verify_regenerate` (how many problems to regenerate and co
 from __future__ import annotations
 
 import argparse
+import gc
 import hashlib
 import json
 import os
@@ -342,7 +343,9 @@ class HFBackend:
 
     def _generate(self, prompts: list[str], k: int) -> list[list[Generation]]:
         """k completions per prompt. On CUDA OOM, split the prompts (then the samples) in half and retry.
-        A retried batch draws different random numbers, so sampled runs that back off are not bit-reproducible."""
+        A retried batch draws different random numbers, so sampled runs that back off are not bit-reproducible.
+        The retry runs after the `except` block (D116): inside it, the failed attempt's tensors stay referenced by the
+        traceback, so every smaller retry ran with the larger attempt's memory still held."""
         torch, g = self.torch, self.gen_cfg
         # Every decoding parameter is explicit: the model's generation_config.json would otherwise
         # silently add its own defaults (Qwen2.5 ships repetition_penalty=1.1).
@@ -363,6 +366,12 @@ class HFBackend:
         except Exception as exc:
             if not _is_oom(exc) or (len(prompts) == 1 and k == 1):
                 raise
+            oom = True
+        else:
+            oom = False
+        if oom:
+            enc = None  # the failed attempt's references are gone once the except block has exited
+            gc.collect()
             self.oom_backoffs += 1
             print(f"  CUDA OOM on {len(prompts)} prompt(s) x {k} sample(s); splitting and retrying "
                   f"(backoff #{self.oom_backoffs})", flush=True)

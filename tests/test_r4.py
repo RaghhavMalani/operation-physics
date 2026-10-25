@@ -124,9 +124,10 @@ def test_stage_r4_is_stage_d_except_data_and_budget():
     for k in ("pinned_base", "lora", "train", "guards", "seed"):
         assert r4[k] == d[k], k
     ev_r4, ev_d = dict(r4["eval"]), dict(d["eval"])
-    for k in ("max_new_tokens", "long_completion_tokens", "long_max_new_tokens", "max_reserved_gib"):  # D114 / D115
+    for k in ("max_new_tokens", "long_completion_tokens", "long_max_new_tokens", "max_reserved_gib", "batch_size"):  # D114-D116
         ev_r4.pop(k)
     ev_d.pop("max_reserved_gib")
+    ev_d.pop("batch_size")
     assert ev_r4 == ev_d
     a = stage_r4.arm_config("dpos2")
     assert a["arm"] == "explicit" and a["sft_phase12_config"] == "sft_r4"
