@@ -1,0 +1,7 @@
+[19:07:13] R4 tail chain start; GPU deadline 09:00 IST (832 min left); chain PID 44294
+[19:07:13] waiting for PID 22552 (the R4 chain) to reach its analysis or exit
+[21:27:14] R4 chain's GPU stages are done (692 min left)
+[21:27:14] GPU at 59C, memory.used 1496 MiB
+[21:27:15] disk: 53 GiB free on MLStorage
+[21:27:15] start r4_eval_dpos2 (timeout 18000s): uv run python -m physcal.train.stage_r4 eval --arm dpos2
+[23:18:33] end r4_eval_dpos2: exit 0
