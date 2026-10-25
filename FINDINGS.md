@@ -1508,3 +1508,109 @@ seed (B = 10,000); Holm over B1–B5. This is pooled problem-level evidence, not
     `seed0/` with the training summary and the eval's gzipped tape).
   - **Code:** `physcal/train/stage_d.py`, `physcal/eval/stage_d_analysis.py`, `configs/stage_d.yaml`.
   - **The queue:** `scripts/queue_stage_d.sh`, logs in `results/queue_stage_d/`.
+
+## #30. R4-1: with mixed-level training data and visible sensitivity derivations, explicit propagation works. D-pos-v2's stated σ propagates on all three graded σ values and passes R4-3's go rule; but gross misses on deep, value-dependent chains keep its expected score at the RSS heuristic, not above it. The implicit control B-v2 learns noise allocation only (D113; 2026-10-25 night)
+
+**Status:** pre-registered (D113); deviations D114 (eval budget 1,280 tokens; 6 rows dropped) and D116 (batch 16;
+D-pos-v2's eval rerun after the backoff bug). **One seed per arm, development sets** (A6 / A6b / A6c). A6c is
+in-distribution for both arms (mixed per-given levels in training); depth 5 is held out from training.
+
+- **The setup:** D-pos's recipe exactly (pinned 4-bit base, fresh LoRA, 750 steps, seed 0), on the R4-1 data. That
+  is D80's 3,000 seeds with each given's level drawn from 0 / 1 / 2 / 5%; 2,067 problems mix noisy levels.
+  - **D-pos-v2:** one `S_x = <d ln f / d ln x> = <numbers> = value` line per noisy given (power-law terms as
+    exponents), then D80's line with each given's own level, then σ = X·|μ|. Everything trained.
+  - **B-v2:** σ\* written and trained, no line.
+  - **Losses:** 0.116 (D-pos-v2) and 0.119 (B-v2). Eval: 3,060 / 3,060 each, no OOM after D116.
+
+**R4-3 (90% CIs, pairs bootstrap; C1: A6c lower bound > 0; C2: A6c slope ≥ 0.5; C3: A6b inside ±0.3):**
+
+| σ source | A6c slope [90% CI] | A6b slope [90% CI] | C1 / C2 / C3 | R4-3 | A6 slope [90% CI] |
+|---|---|---|---|---|---|
+| **D-pos-v2 (a), the answer's σ** | **+0.53 [+0.33, +0.71]** | −0.004 [−0.01, +0.00] | yes / yes / yes | **meets** | +0.88 [+0.53, +1.18] |
+| D-pos-v2 (b), the line's X | +0.60 [+0.41, +0.77] | +0.004 [−0.00, +0.01] | yes / yes / yes | meets | +0.80 [+0.43, +1.12] |
+| D-pos-v2 (c), exact from the line's terms | +0.67 [+0.51, +0.82] | +0.009 [−0.00, +0.02] | yes / yes / yes | meets | +0.82 [+0.45, +1.15] |
+| B-v2, the answer's σ | +0.47 [+0.33, +0.61] | −0.02 [−0.11, +0.09] | yes / **no** / yes | below the practical threshold | −0.29 [−0.84, +0.26] |
+| D-pos (v1, FINDINGS #29) | −0.03 | – | no | – | −0.18 |
+| RSS / X1 | 0.00 / −0.00 | 0.00 / −0.00 | no | – | 0.00 / +0.06 |
+
+- **R4-3's verdict: GO.** D-pos-v2 meets the propagation criterion on (a), (b) and (c). The pre-registered
+  consequence is 3 seeds of both arms, evaluated on the frozen R4-5 set, under a new pre-registered entry. That run is
+  not started tonight.
+- **Stage B's tests on D-pos-v2 (one seed, Holm over five):**
+  - **B1 supported** (A6, computation-correct pairs, +0.88), **B2 supported** (A6c +0.53), **B5 supported** (A6 −
+    X1's, +0.86).
+  - **The A6 label is "full propagation"**, A6b is equivalent to 0, and D59's verdict is "full propagation". This is
+    the first Phase 12 model that propagates on A6.
+  - **B3 / B4 are not supported:** it does not beat RSS or X1.
+
+**R1–R8 (Holm at 0.05; slopes with 90% CIs, score differences with 95% CIs):**
+
+| test | estimate | Holm |
+|---|---|---|
+| R1–R3: D-pos-v2 (a) / (b) / (c) A6c slope > 0 | +0.53 / +0.60 / +0.67 | supported (all three) |
+| R4: B-v2 A6c slope > 0 | +0.47 [+0.33, +0.61] | supported |
+| R5: expected crps_log, D-pos-v2 − B-v2 > 0 | +0.0015 [+0.0008, +0.0022] | supported |
+| R6: D-pos-v2 − RSS > 0 | −0.0001 [−0.0008, +0.0005] | not supported (a tie) |
+| R7: D-pos-v2 − X1 > 0 | −0.0008 [−0.0015, −0.0002] | not supported (below X1) |
+| R8: B-v2 − RSS > 0 | −0.0016 [−0.0020, −0.0013] | not supported |
+
+| σ source (oracle-centred, 3,060 problems) | expected crps_log | median abs ln(σ / σ\*) | vol beta | 1σ / 2σ coverage |
+|---|---|---|---|---|
+| σ̂ = σ\* (ideal) | −0.0365 | 0 | 1 | 68% / 95% |
+| X1 primary | **−0.0386** | 0.33 | 0.59 | 64% / 87% |
+| D-pos-v2 (b), the line's X | −0.0393 | 0.07 | 0.87 | 68% / 92% |
+| RSS heuristic | −0.0394 | 0.40 | 0.49 | 62% / 84% |
+| **D-pos-v2 (a), the answer's σ** | **−0.0395** | **0.07** | **0.85** | **67% / 91%** |
+| D-pos-v2 (c), exact from the terms | −0.0408 | 0.02 | 0.87 | 66% / 91% |
+| B-v2 | −0.0409 | 0.48 | 0.62 | 55% / 79% |
+| D-pos (v1) | −0.0405 | 0.11* | 0.63 | 54% / 78% |
+
+\* D-pos (v1)'s *signed* median from #29 (−0.11); its median absolute ratio is not in that entry.
+
+- **The data effects (descriptive):** D-pos-v2 − D-pos is +0.0010 [+0.0003, +0.0017]. B-v2 − stage B's 3-seed mean
+  is +0.0005 [−0.0002, +0.0016].
+- **D-pos-v2's own lines (against the builder's line for the same problem):**
+  - **Format:** the S lines are present for 99.5% of terms; the line parses on 99.9%.
+  - **Levels read right, in order: 99.5%** (A6c 99.1%; D-pos v1 1%). Per-given levels are no longer the failure.
+  - **Sensitivities, exact (within 10%):**
+    - **power-law terms:** 86% (87%);
+    - **value-dependent terms:** 14% (48%), falling with depth: 31% (71%) at depth 1, 11% (47%) at depth 4, and 4%
+      (22%) at the held-out depth 5.
+  - **The line's arithmetic** is a valid 2-s.f. rounding of its own terms on only 35% (70% at depth 1, 15% at depth
+    5). But (b) still propagates, so the errors are small.
+  - **The copy** (σ = X·|μ| at 2 s.f.) holds on 85%.
+- **The three-σ grading (R4-2):**
+  - **(c) ≥ (b) ≥ (a) on the A6c slope** (0.67 / 0.60 / 0.53): each step between the model's sensitivities and its
+    answer loses a little.
+  - **But all three propagate,** so no single step is "the failure". Most of what remains is in the sensitivities of
+    deep value-dependent chains.
+  - **(c_S)** (the model's S values by name with the true levels) equals (c) to two decimals: given its S values, the
+    line combines them as written.
+- **By depth (A6c slope, answer σ):** +1.00 (depth 1), +0.97, +0.76, +0.38 [−0.05, +0.85] (depth 4), and +0.06
+  [−0.36, +0.49] at the held-out depth 5.
+  - **By chain type:** power-law chains +0.98; value-dependent chains +0.49.
+  - **The explicit computation does not extrapolate** to the unseen depth. The value-dependent sensitivities are what
+    breaks.
+- **B-v2:** mixed-level data alone teaches the implicit model to read *where* the noise is.
+  - **The evidence:** A6c +0.47 [+0.33, +0.61], against stage B's +0.04, and about level with D-pos-v2 at every
+    depth.
+  - **But not how much the values amplify it:** A6 −0.29.
+  - **Its σ is a scaled surface reading:** median abs ln(σ / σ\*) 0.48, coverage 55%. It scores below RSS (R8).
+- **Exploratory (not pre-registered; CPU, after the analysis):** why a σ with median abs ln(σ / σ\*) 0.02–0.07 only
+  ties RSS (0.40).
+  - **The worst 5% of problems carry most of the regret** against σ\*: 80% for (a), 89% for (c), against 36% for RSS
+    and 38% for X1.
+  - **Gross misses:** 1.5% of (a)'s σ are off by more than 10× (RSS: none, because its σ is bounded by the stated
+    levels).
+  - **By depth:** (a)'s mean regret is 0.0007 / 0.0014 / 0.0024 / 0.0032 / 0.0071 at depths 1–5, while RSS's is flat
+    at ~0.003. So D-pos-v2 beats RSS at depths 1–2 and loses at 4–5.
+- **What it means:**
+  - **Act 3 was negative because the data never contained the behaviour.** With mixed levels and visible derivations
+    of value-dependent sensitivities, a 1.5B model with 750 SFT steps learns explicit first-order propagation: slopes
+    near 1 at depths 1–2, calibrated coverage, a vol beta of 0.85.
+  - **It is still a learned computation that degrades with chain depth** and fails to extrapolate to depth 5. The
+    gross errors at depth make its expected score no better than RSS.
+  - **This fits R4-8's framing.** Computing uncertainty explicitly works where the computation is right. Whether it
+    beats the heuristics hinges on the arithmetic of long symbolic derivatives, which MC-A (#31) and a later MC-B
+    would move off the model.
+  - **One seed, development sets.** The 3-seed confirmation on R4-5's frozen set is the pre-registered next step.
