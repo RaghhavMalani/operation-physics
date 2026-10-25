@@ -21,3 +21,7 @@
 [20:22:13] disk: 53 GiB free on MLStorage
 [20:22:13] start r4_eval_b2 (timeout 8400s): uv run python -m physcal.train.stage_r4 eval --arm b2
 [21:26:49] end r4_eval_b2: exit 0
+[21:26:53] commit 'R4 b2 (D113): greedy eval on A6 / A6b / A6c, 4-bit pinned base, adapter unmerged (exit 0)': pushed
+[21:26:56] disk: 53 GiB free on MLStorage
+[21:26:56] start r4_analysis (timeout 5400s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.r4_analysis analyze
+[21:27:44] end r4_analysis: exit 0

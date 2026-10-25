@@ -1,0 +1,2227 @@
+{
+ "decision": "D113 (R4-1 to R4-3, pre-registered; one seed, development sets)",
+ "note": "A6c is in-distribution for both arms (mixed per-given levels in training); depth 5 is held out from training",
+ "n_problems": 3060,
+ "bootstrap": 10000,
+ "sources_note": {
+  "x1": "used: D99's reproduction passed"
+ },
+ "arms": {
+  "dpos2": null,
+  "b2": {
+   "stage_b_analysis": {
+    "tests": {
+     "B1": {
+      "seeds": [
+       0
+      ],
+      "value": -0.2909891629068614,
+      "ci95": [
+       -0.9542153760244116,
+       0.38695980924743006
+      ],
+      "ci90": [
+       -0.8340954466419392,
+       0.27328683051384545
+      ],
+      "p_one_sided": 0.7999,
+      "per_seed": {
+       "0": {
+        "value": -0.2909891629068614,
+        "n_pairs": 57
+       }
+      },
+      "holm": {
+       "p": 0.7999,
+       "threshold": 0.0125,
+       "rejected": false
+      }
+     },
+     "B2": {
+      "seeds": [
+       0
+      ],
+      "value": 0.46795011522803265,
+      "ci95": [
+       0.297580320122396,
+       0.6359014417636265
+      ],
+      "ci90": [
+       0.3260446358815358,
+       0.6086943994553609
+      ],
+      "p_one_sided": 0.0,
+      "per_seed": {
+       "0": {
+        "value": 0.46795011522803265,
+        "n_pairs": 510
+       }
+      },
+      "holm": {
+       "p": 0.0,
+       "threshold": 0.01,
+       "rejected": true
+      }
+     },
+     "B3": {
+      "seeds": [
+       0
+      ],
+      "value": -0.0015809941395022072,
+      "ci95": [
+       -0.0019508142086188942,
+       -0.0012530721275720762
+      ],
+      "p_one_sided": 1.0,
+      "per_seed": {
+       "0": -0.0015809941395022067
+      },
+      "holm": {
+       "p": 1.0,
+       "threshold": 0.025,
+       "rejected": false
+      }
+     },
+     "B4": {
+      "seeds": [
+       0
+      ],
+      "value": -0.00231771779092494,
+      "ci95": [
+       -0.0026890077320087134,
+       -0.001985974716382538
+      ],
+      "p_one_sided": 1.0,
+      "per_seed": {
+       "0": -0.00231771779092494
+      },
+      "holm": {
+       "p": 1.0,
+       "threshold": 0.05,
+       "rejected": false
+      }
+     },
+     "B5": {
+      "seeds": [
+       0
+      ],
+      "value": -0.34610858293407526,
+      "ci95": [
+       -0.9851089612212749,
+       0.33758595846815925
+      ],
+      "ci90": [
+       -0.8823848114780277,
+       0.2297385338980901
+      ],
+      "p_one_sided": 0.8407,
+      "per_seed": {
+       "0": {
+        "value": -0.34610858293407526,
+        "n_pairs": 57
+       }
+      },
+      "holm": {
+       "p": 0.8407,
+       "threshold": 0.016666666666666666,
+       "rejected": false
+      }
+     }
+    },
+    "seed_mean": {
+     "a6_label": "no propagation",
+     "a6b_slope": {
+      "seeds": [
+       0
+      ],
+      "value": -0.019643669547059088,
+      "ci95": [
+       -0.1291475984087784,
+       0.13816456109197256
+      ],
+      "ci90": [
+       -0.10811470663222243,
+       0.09407040195645971
+      ],
+      "p_one_sided": 0.6597,
+      "per_seed": {
+       "0": {
+        "value": -0.019643669547059088,
+        "n_pairs": 13
+       }
+      }
+     },
+     "a6b_equivalent_to_zero": true,
+     "a6c_computation_correct": {
+      "seeds": [
+       0
+      ],
+      "value": 0.3263931647080625,
+      "ci95": [
+       -0.017733027397157933,
+       0.7250987671992195
+      ],
+      "ci90": [
+       0.03116705212840538,
+       0.6602046922269613
+      ],
+      "p_one_sided": 0.0331,
+      "per_seed": {
+       "0": {
+        "value": 0.3263931647080625,
+        "n_pairs": 87
+       }
+      }
+     },
+     "r36_a6": {
+      "seeds": [
+       0
+      ],
+      "value": 0.07802911021092193,
+      "ci95": [
+       -0.2612410113231648,
+       0.42703904427600425
+      ],
+      "ci90": [
+       -0.19927103084933864,
+       0.3666114871878485
+      ],
+      "p_one_sided": 0.3101,
+      "per_seed": {
+       "0": {
+        "value": 0.07802911021092193,
+        "n_pairs": 198
+       }
+      }
+     },
+     "r36_a6c": {
+      "seeds": [
+       0
+      ],
+      "value": 0.5929546720979759,
+      "ci95": [
+       0.343511863780125,
+       0.8460091900196169
+      ],
+      "ci90": [
+       0.3830330499493609,
+       0.8086280026040134
+      ],
+      "p_one_sided": 0.0,
+      "per_seed": {
+       "0": {
+        "value": 0.5929546720979759,
+        "n_pairs": 207
+       }
+      }
+     }
+    },
+    "seed0": {
+     "ran": true,
+     "a6": {
+      "kind": "sensitivity",
+      "n_pairs_total": 510,
+      "n_pairs_both_answered": 510,
+      "primary_computation_correct": {
+       "n_pairs": 57,
+       "regressor": "sigma_star",
+       "slope": -0.29098916290686283,
+       "ci95": [
+        -0.9640744487779971,
+        0.36844018876951656
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        -0.8408330788095895,
+        0.2576243348986029
+       ],
+       "p_one_sided": 0.8051,
+       "p_two_sided": 0.3898,
+       "mean_dx": 1.2162221623449962,
+       "mean_dy": 0.289464629749448,
+       "mean_abs_dy": 0.536188103874574,
+       "share_dy_positive": 0.7192982456140351
+      },
+      "label": "no propagation",
+      "supported": false,
+      "secondary_all_answered": {
+       "n_pairs": 510,
+       "regressor": "sigma_star",
+       "slope": 0.1382726458661818,
+       "ci95": [
+        -0.09528205289917806,
+        0.36779359676523565
+       ],
+       "ci_level": 0.95,
+       "ci": [
+        -0.09528205289917804,
+        0.36779359676523565
+       ],
+       "p_one_sided": 0.1162,
+       "p_two_sided": 0.2324,
+       "mean_dx": 1.0832283693764133,
+       "mean_dy": 0.09689074773996535,
+       "mean_abs_dy": 0.49456856001209243,
+       "share_dy_positive": 0.5568627450980392
+      },
+      "sensitivity_no_sigma_zero": {
+       "n_pairs": 57,
+       "regressor": "sigma_star",
+       "slope": -0.29098916290686283,
+       "ci95": [
+        -0.9640744487779971,
+        0.36844018876951656
+       ],
+       "ci_level": 0.95,
+       "ci": [
+        -0.9640744487779971,
+        0.36844018876951656
+       ],
+       "p_one_sided": 0.8051,
+       "p_two_sided": 0.3898,
+       "mean_dx": 1.2162221623449962,
+       "mean_dy": 0.289464629749448,
+       "mean_abs_dy": 0.536188103874574,
+       "share_dy_positive": 0.7192982456140351
+      }
+     },
+     "a6b": {
+      "kind": "invariance",
+      "n_pairs_total": 510,
+      "n_pairs_both_answered": 510,
+      "primary_computation_correct": {
+       "n_pairs": 13,
+       "regressor": "truth",
+       "slope": -0.019643669547059074,
+       "ci95": [
+        -0.12360660135263962,
+        0.11789232528016645
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        -0.10667665700796676,
+        0.08592993550609414
+       ],
+       "p_one_sided": 0.6598,
+       "p_two_sided": 0.6804,
+       "mean_dx": 4.75141276008208,
+       "mean_dy": 0.21883496636368,
+       "mean_abs_dy": 0.2739524297400121,
+       "share_dy_positive": 0.6153846153846154
+      },
+      "equivalence_margin": 0.3,
+      "equivalent_to_zero": true,
+      "secondary_all_answered": {
+       "n_pairs": 510,
+       "regressor": "truth",
+       "slope": 0.04449953801270426,
+       "ci95": [
+        0.002284290435280978,
+        0.08641663800631662
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        0.009542246143144199,
+        0.07992100045888714
+       ],
+       "p_one_sided": 0.0198,
+       "p_two_sided": 0.0396,
+       "mean_dx": 4.629244212465011,
+       "mean_dy": 0.2561250885612176,
+       "mean_abs_dy": 0.600692314620552,
+       "share_dy_positive": 0.5882352941176471
+      },
+      "sensitivity_no_sigma_zero": {
+       "n_pairs": 13,
+       "regressor": "truth",
+       "slope": -0.019643669547059074,
+       "ci95": [
+        -0.12360660135263962,
+        0.11789232528016645
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        -0.10667665700796676,
+        0.08592993550609414
+       ],
+       "p_one_sided": 0.6598,
+       "p_two_sided": 0.6804,
+       "mean_dx": 4.75141276008208,
+       "mean_dy": 0.21883496636368,
+       "mean_abs_dy": 0.2739524297400121,
+       "share_dy_positive": 0.6153846153846154
+      }
+     },
+     "a6c": {
+      "kind": "allocation",
+      "n_pairs_total": 510,
+      "n_pairs_both_answered": 510,
+      "primary_all_answered": {
+       "n_pairs": 510,
+       "regressor": "sigma_star",
+       "slope": 0.4679501152280325,
+       "ci95": [
+        0.3018104720216338,
+        0.640126354013383
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        0.3282019274533973,
+        0.6124720778197057
+       ],
+       "p_one_sided": 0.0,
+       "p_two_sided": 0.0,
+       "mean_dx": 0.6906452894681829,
+       "mean_dy": 0.27609653474903734,
+       "mean_abs_dy": 0.3645500402328353,
+       "share_dy_positive": 0.5568627450980392
+      },
+      "label": "partial propagation",
+      "supported": true,
+      "secondary_computation_correct": {
+       "n_pairs": 87,
+       "regressor": "sigma_star",
+       "slope": 0.32639316470806273,
+       "ci95": [
+        -0.03009884659990143,
+        0.7198609193682072
+       ],
+       "ci_level": 0.95,
+       "ci": [
+        -0.030098846599901228,
+        0.7198609193682072
+       ],
+       "p_one_sided": 0.0363,
+       "p_two_sided": 0.0726,
+       "mean_dx": 0.7233644813670348,
+       "mean_dy": 0.3708050259702426,
+       "mean_abs_dy": 0.42501853994931776,
+       "share_dy_positive": 0.5632183908045977
+      },
+      "secondary_mean": {
+       "n_pairs": 510,
+       "mean_dy": 0.27609653474903734,
+       "mean_dy_ci95": [
+        0.22985837376714308,
+        0.32381603412349896
+       ],
+       "p_mean_dy_gt_0": 0.0,
+       "through_origin_slope": 0.4100094265063735,
+       "through_origin_ci95": [
+        0.34732042597464485,
+        0.4750817498635456
+       ],
+       "mean_dx": 0.6906452894681829
+      },
+      "sensitivity_no_sigma_zero": {
+       "n_pairs": 510,
+       "regressor": "sigma_star",
+       "slope": 0.4679501152280325,
+       "ci95": [
+        0.3018104720216338,
+        0.640126354013383
+       ],
+       "ci_level": 0.95,
+       "ci": [
+        0.3018104720216338,
+        0.640126354013383
+       ],
+       "p_one_sided": 0.0,
+       "p_two_sided": 0.0,
+       "mean_dx": 0.6906452894681829,
+       "mean_dy": 0.27609653474903734,
+       "mean_abs_dy": 0.3645500402328353,
+       "share_dy_positive": 0.5568627450980392
+      }
+     },
+     "joint": {
+      "verdict": "no propagation (lookup-like)",
+      "labelled_verdict": "no propagation",
+      "A6_label": "no propagation",
+      "A6_supported": false,
+      "A6b_equivalent_to_zero": true,
+      "table": [
+       {
+        "set": "A6 (sensitivity)",
+        "ideal_slope": 1.0,
+        "slope": -0.29098916290686283,
+        "ci95": [
+         -0.9640744487779971,
+         0.36844018876951656
+        ],
+        "label_ci": [
+         -0.8408330788095895,
+         0.2576243348986029
+        ],
+        "label_ci_level": 0.9,
+        "label": "no propagation",
+        "n_pairs": 57,
+        "test": "slope > 0 (one-sided)",
+        "p": 0.8051
+       },
+       {
+        "set": "A6b (invariance)",
+        "ideal_slope": 0.0,
+        "slope": -0.019643669547059074,
+        "ci": [
+         -0.10667665700796676,
+         0.08592993550609414
+        ],
+        "n_pairs": 13,
+        "test": "TOST |slope| < 0.3",
+        "p_two_sided_vs_0": 0.6804
+       }
+      ]
+     },
+     "r36_secondary": {
+      "a6": {
+       "n_pairs": 198,
+       "regressor": "sigma_star",
+       "slope": 0.07802911021092104,
+       "ci95": [
+        -0.26279662373211865,
+        0.42082279619178886
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        -0.2063211640117984,
+        0.36577992494105543
+       ],
+       "p_one_sided": 0.3176,
+       "p_two_sided": 0.6352,
+       "mean_dx": 1.1064694818696132,
+       "mean_dy": 0.11153628061422075,
+       "mean_abs_dy": 0.5076490033493443,
+       "share_dy_positive": 0.5656565656565656
+      },
+      "a6c": {
+       "n_pairs": 207,
+       "regressor": "sigma_star",
+       "slope": 0.5929546720979785,
+       "ci95": [
+        0.34110653813557557,
+        0.8479393025372972
+       ],
+       "ci_level": 0.95,
+       "ci": [
+        0.34110653813557557,
+        0.8479393025372972
+       ],
+       "p_one_sided": 0.0,
+       "p_two_sided": 0.0,
+       "mean_dx": 0.6985361993376658,
+       "mean_dy": 0.305160037194861,
+       "mean_abs_dy": 0.4085845575166459,
+       "share_dy_positive": 0.5362318840579711
+      }
+     },
+     "oracle_centred": {
+      "n": 3060,
+      "n_with_draws": 3036,
+      "realized": [
+       -0.043045449774841725,
+       [
+        -0.04565569785022363,
+        -0.04053021237377443
+       ]
+      ],
+      "expected": [
+       -0.04094667789660375,
+       [
+        -0.042414575967149266,
+        -0.03949618994594692
+       ]
+      ],
+      "median_log_ratio": -0.27514424272188515,
+      "median_abs_log_ratio": 0.4800979179421432,
+      "vol_beta": [
+       0.6161562332839797,
+       [
+        0.5834370401887823,
+        0.6480841096545935
+       ]
+      ],
+      "share_sigma_zero": 0.0,
+      "share_at_clip": 0.0,
+      "share_floor_binds": 0.0,
+      "coverage_1": [
+       0.5470588235294118,
+       [
+        0.5271160130718955,
+        0.5673202614379085
+       ]
+      ],
+      "nominal_1": 0.6827,
+      "coverage_2": [
+       0.788562091503268,
+       [
+        0.7725490196078432,
+        0.8045751633986928
+       ]
+      ],
+      "nominal_2": 0.9545
+     },
+     "tape": {
+      "n_records": 3060,
+      "n_problems": 3060,
+      "missing": 0,
+      "parse_fail_rate": 0.0,
+      "unit_mismatch_rate": 0.0,
+      "answered_rate": 1.0,
+      "a1_computation_correct_rate": 0.15130718954248365,
+      "sigma_zero_share_answered": 0.0,
+      "confidence_parse_rate": 1.0,
+      "mean_verifier_reward": -0.13829857521232294
+     },
+     "training": {
+      "steps": 750,
+      "steps_planned": 750,
+      "epochs_completed": 2.0,
+      "train_loss": 0.11889613477389017,
+      "seconds": 4696.068466663361,
+      "oom_check": {
+       "batch": 2,
+       "tokens": 1634,
+       "loss": 0.6665056347846985,
+       "seconds": 3.3816874027252197,
+       "max_reserved_gib": 1.9921875
+      },
+      "peak_vram": {
+       "torch_max_allocated_gib": 1.821263313293457,
+       "torch_max_reserved_gib": 4.169921875,
+       "nvidia_smi_peak_used_gib_device_wide": 5.849609375
+      },
+      "fingerprint": {
+       "status": "recorded",
+       "file": "/home/flash2404/operation-physics/results/stage_r4/b2/seed0/final_adapter/physcal_fingerprint.json",
+       "adapter_effect": {
+        "mean_abs_dlogp": 0.5948304683303247,
+        "mean_sigma_tv": 0.10007462869876244
+       },
+       "seconds": 74.34306645393372
+      },
+      "data": {
+       "n_rows": 3000,
+       "dropped_too_long": 0,
+       "max_len": 2048,
+       "sequence_tokens_max": 1634,
+       "sequence_tokens_mean": 1393.416,
+       "target_tokens_mean": 217.06333333333333,
+       "n_masked_mean": 0.0,
+       "prompt": "v5_two_channel"
+      }
+     }
+    }
+   },
+   "sources": {
+    "a": {
+     "source": "a",
+     "criteria": {
+      "a6c": {
+       "n_pairs": 510,
+       "regressor": "sigma_star",
+       "slope": 0.4679501152280325,
+       "ci95": [
+        0.3018104720216338,
+        0.640126354013383
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        0.3282019274533973,
+        0.6124720778197057
+       ],
+       "p_one_sided": 0.0,
+       "p_two_sided": 0.0,
+       "mean_dx": 0.6906452894681829,
+       "mean_dy": 0.27609653474903734,
+       "mean_abs_dy": 0.3645500402328353,
+       "share_dy_positive": 0.5568627450980392
+      },
+      "a6b": {
+       "n_pairs": 13,
+       "regressor": "truth",
+       "slope": -0.019643669547059074,
+       "ci95": [
+        -0.12360660135263962,
+        0.11789232528016645
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        -0.10667665700796676,
+        0.08592993550609414
+       ],
+       "p_one_sided": 0.6598,
+       "p_two_sided": 0.6804,
+       "mean_dx": 4.75141276008208,
+       "mean_dy": 0.21883496636368,
+       "mean_abs_dy": 0.2739524297400121,
+       "share_dy_positive": 0.6153846153846154
+      },
+      "C1": true,
+      "C2": false,
+      "C3": true,
+      "meets": false,
+      "label": "propagates below the practical threshold"
+     },
+     "a6": {
+      "n_pairs": 57,
+      "regressor": "sigma_star",
+      "slope": -0.29098916290686283,
+      "ci95": [
+       -0.9640744487779971,
+       0.36844018876951656
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.8408330788095895,
+       0.2576243348986029
+      ],
+      "p_one_sided": 0.8051,
+      "p_two_sided": 0.3898,
+      "mean_dx": 1.2162221623449962,
+      "mean_dy": 0.289464629749448,
+      "mean_abs_dy": 0.536188103874574,
+      "share_dy_positive": 0.7192982456140351
+     },
+     "a6c_splits": {
+      "by_depth": {
+       "1": {
+        "n_pairs": 102,
+        "regressor": "sigma_star",
+        "slope": 0.5354897911041946,
+        "ci95": [
+         0.10539127002316558,
+         0.999990110760081
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.17064179925606782,
+         0.9201135717139091
+        ],
+        "p_one_sided": 0.008,
+        "p_two_sided": 0.016,
+        "mean_dx": 0.6904137307610324,
+        "mean_dy": 0.32338311046241747,
+        "mean_abs_dy": 0.3764311052019941,
+        "share_dy_positive": 0.5588235294117647
+       },
+       "2": {
+        "n_pairs": 102,
+        "regressor": "sigma_star",
+        "slope": 0.40927546059757675,
+        "ci95": [
+         0.040262572151470125,
+         0.796725485794684
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.09691467292615687,
+         0.7309974754622885
+        ],
+        "p_one_sided": 0.0147,
+        "p_two_sided": 0.0294,
+        "mean_dx": 0.6662613495210343,
+        "mean_dy": 0.3044914619749893,
+        "mean_abs_dy": 0.3947102523697369,
+        "share_dy_positive": 0.5196078431372549
+       },
+       "3": {
+        "n_pairs": 102,
+        "regressor": "sigma_star",
+        "slope": 0.7232840299869291,
+        "ci95": [
+         0.2682345018764605,
+         1.1353582028001232
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.3476589219366917,
+         1.0636326162516863
+        ],
+        "p_one_sided": 0.0011,
+        "p_two_sided": 0.0022,
+        "mean_dx": 0.6629892065309503,
+        "mean_dy": 0.24109524312925953,
+        "mean_abs_dy": 0.36444356780311904,
+        "share_dy_positive": 0.6372549019607843
+       },
+       "4": {
+        "n_pairs": 102,
+        "regressor": "sigma_star",
+        "slope": 0.40008576876761015,
+        "ci95": [
+         0.02875918937571621,
+         0.7691685627922672
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.09013910580225815,
+         0.7074527641420157
+        ],
+        "p_one_sided": 0.0176,
+        "p_two_sided": 0.0352,
+        "mean_dx": 0.693540154508465,
+        "mean_dy": 0.2797311684880702,
+        "mean_abs_dy": 0.37627383787988167,
+        "share_dy_positive": 0.5686274509803921
+       },
+       "5": {
+        "n_pairs": 102,
+        "regressor": "sigma_star",
+        "slope": 0.4214861510542613,
+        "ci95": [
+         0.1202208637192476,
+         0.7407196295751217
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.1644501909098854,
+         0.6890103903586113
+        ],
+        "p_one_sided": 0.0032,
+        "p_two_sided": 0.0064,
+        "mean_dx": 0.740022006019432,
+        "mean_dy": 0.23178168969045035,
+        "mean_abs_dy": 0.31089143790944485,
+        "share_dy_positive": 0.5
+       }
+      },
+      "by_type": {
+       "power_law": {
+        "n_pairs": 86,
+        "regressor": "sigma_star",
+        "slope": -0.03899893914974379,
+        "ci95": [
+         -0.7140160991760465,
+         1.0240940352715253
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         -0.6090381732892328,
+         0.8264653032207007
+        ],
+        "p_one_sided": 0.5351,
+        "p_two_sided": 0.9298,
+        "mean_dx": 0.5329626060444363,
+        "mean_dy": 0.18893766828712671,
+        "mean_abs_dy": 0.2674360416476414,
+        "share_dy_positive": 0.4883720930232558
+       },
+       "value_dependent": {
+        "n_pairs": 424,
+        "regressor": "sigma_star",
+        "slope": 0.4743207730153672,
+        "ci95": [
+         0.29863906557490394,
+         0.6515152219494491
+        ],
+        "ci_level": 0.9,
+        "ci": [
+         0.32572746230682337,
+         0.6229932374875141
+        ],
+        "p_one_sided": 0.0,
+        "p_two_sided": 0.0,
+        "mean_dx": 0.7226280978984709,
+        "mean_dy": 0.29377498407857583,
+        "mean_abs_dy": 0.3842476908892661,
+        "share_dy_positive": 0.5707547169811321
+       }
+      }
+     },
+     "a6_by_depth": {
+      "1": {
+       "n_pairs": 51,
+       "regressor": "sigma_star",
+       "slope": -0.5235904576325461,
+       "ci95": [
+        -1.310547751941786,
+        0.24495534259733992
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        -1.1623301046883836,
+        0.12203496778405432
+       ],
+       "p_one_sided": 0.9108,
+       "p_two_sided": 0.1784,
+       "mean_dx": 1.2458276613184927,
+       "mean_dy": 0.3191067520450908,
+       "mean_abs_dy": 0.5742249887063483,
+       "share_dy_positive": 0.7058823529411765
+      },
+      "2": {
+       "n_pairs": 4,
+       "regressor": "sigma_star",
+       "slope": 0.25021646911897816,
+       "ci95": [
+        -0.6208280481295527,
+        0.6849737213377273
+       ],
+       "ci_level": 0.9,
+       "ci": [
+        -0.6208280481295526,
+        0.6849737213377272
+       ],
+       "p_one_sided": 0.05590567188452938,
+       "p_two_sided": 0.11181134376905875,
+       "mean_dx": 1.0267003364686746,
+       "mean_dy": 0.08793287068195965,
+       "mean_abs_dy": 0.08793287068195965,
+       "share_dy_positive": 1.0
+      },
+      "4": {
+       "n_pairs": 1,
+       "slope": null,
+       "p_one_sided": null,
+       "ci": null
+      },
+      "5": {
+       "n_pairs": 1,
+       "slope": null,
+       "p_one_sided": null,
+       "ci": null
+      }
+     },
+     "oracle_centred": {
+      "n": 3060,
+      "n_with_draws": 3036,
+      "realized": [
+       -0.043045449774841725,
+       [
+        -0.04565569785022363,
+        -0.04053021237377443
+       ]
+      ],
+      "expected": [
+       -0.04094667789660375,
+       [
+        -0.042414575967149266,
+        -0.03949618994594692
+       ]
+      ],
+      "median_log_ratio": -0.27514424272188515,
+      "median_abs_log_ratio": 0.4800979179421432,
+      "vol_beta": [
+       0.6161562332839797,
+       [
+        0.5834370401887823,
+        0.6480841096545935
+       ]
+      ],
+      "share_sigma_zero": 0.0,
+      "share_at_clip": 0.0,
+      "share_floor_binds": 0.0,
+      "coverage_1": [
+       0.5470588235294118,
+       [
+        0.5271160130718955,
+        0.5673202614379085
+       ]
+      ],
+      "nominal_1": 0.6827,
+      "coverage_2": [
+       0.788562091503268,
+       [
+        0.7725490196078432,
+        0.8045751633986928
+       ]
+      ],
+      "nominal_2": 0.9545
+     },
+     "expected_by_set_depth": {
+      "a6_pairs": {
+       "1": -0.05195153252399181,
+       "2": -0.05286829368403713,
+       "3": -0.047928410190556436,
+       "4": -0.054095512318087104,
+       "5": -0.04893247722746299
+      },
+      "a6b_pairs": {
+       "1": -0.026799927746295325,
+       "2": -0.030472138123426598,
+       "3": -0.036572572451025534,
+       "4": -0.03931554408257059,
+       "5": -0.034075838488441944
+      },
+      "a6c_pairs": {
+       "1": -0.03773995591381637,
+       "2": -0.03202067973199737,
+       "3": -0.03801821542295283,
+       "4": -0.03698669429422441,
+       "5": -0.047584090067181194
+      }
+     }
+    }
+   }
+  }
+ },
+ "comparators": {
+  "sigma_star": {
+   "source": "sigma_star",
+   "criteria": {
+    "a6c": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.6906452894681829,
+     "mean_abs_dy": 0.6906452894681829,
+     "share_dy_positive": 1.0
+    },
+    "a6b": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 2.242339027571924e-10,
+     "ci95": [
+      -1.274354613203345e-11,
+      4.8477191493734e-10
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      2.2208627311505225e-11,
+      4.418592165782957e-10
+     ],
+     "p_one_sided": 0.0317,
+     "p_two_sided": 0.0634,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 1.571146454767479e-10,
+     "mean_abs_dy": 8.810817173893531e-10,
+     "share_dy_positive": 0.48627450980392156
+    },
+    "C1": true,
+    "C2": true,
+    "C3": true,
+    "meets": true,
+    "label": "meets the propagation criterion"
+   },
+   "a6": {
+    "n_pairs": 510,
+    "regressor": "sigma_star",
+    "slope": 1.0,
+    "ci95": [
+     1.0,
+     1.0
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     1.0,
+     1.0
+    ],
+    "p_one_sided": 0.0,
+    "p_two_sided": 0.0,
+    "mean_dx": 1.0832283693764133,
+    "mean_dy": 1.0832283693764133,
+    "mean_abs_dy": 1.0832283693764133,
+    "share_dy_positive": 1.0
+   },
+   "a6c_splits": {
+    "by_depth": {
+     "1": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 1.0,
+      "ci95": [
+       1.0,
+       1.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       1.0,
+       1.0
+      ],
+      "p_one_sided": 0.0,
+      "p_two_sided": 0.0,
+      "mean_dx": 0.6904137307610324,
+      "mean_dy": 0.6904137307610324,
+      "mean_abs_dy": 0.6904137307610324,
+      "share_dy_positive": 1.0
+     },
+     "2": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 1.0,
+      "ci95": [
+       1.0,
+       1.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       1.0,
+       1.0
+      ],
+      "p_one_sided": 0.0,
+      "p_two_sided": 0.0,
+      "mean_dx": 0.6662613495210343,
+      "mean_dy": 0.6662613495210343,
+      "mean_abs_dy": 0.6662613495210343,
+      "share_dy_positive": 1.0
+     },
+     "3": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 1.0,
+      "ci95": [
+       1.0,
+       1.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       1.0,
+       1.0
+      ],
+      "p_one_sided": 0.0,
+      "p_two_sided": 0.0,
+      "mean_dx": 0.6629892065309503,
+      "mean_dy": 0.6629892065309503,
+      "mean_abs_dy": 0.6629892065309503,
+      "share_dy_positive": 1.0
+     },
+     "4": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 1.0,
+      "ci95": [
+       1.0,
+       1.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       1.0,
+       1.0
+      ],
+      "p_one_sided": 0.0,
+      "p_two_sided": 0.0,
+      "mean_dx": 0.693540154508465,
+      "mean_dy": 0.693540154508465,
+      "mean_abs_dy": 0.693540154508465,
+      "share_dy_positive": 1.0
+     },
+     "5": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 1.0,
+      "ci95": [
+       1.0,
+       1.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       1.0,
+       1.0
+      ],
+      "p_one_sided": 0.0,
+      "p_two_sided": 0.0,
+      "mean_dx": 0.740022006019432,
+      "mean_dy": 0.740022006019432,
+      "mean_abs_dy": 0.740022006019432,
+      "share_dy_positive": 1.0
+     }
+    },
+    "by_type": {
+     "power_law": {
+      "n_pairs": 86,
+      "regressor": "sigma_star",
+      "slope": 1.0,
+      "ci95": [
+       1.0,
+       1.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       1.0,
+       1.0
+      ],
+      "p_one_sided": 0.0,
+      "p_two_sided": 0.0,
+      "mean_dx": 0.5329626060444363,
+      "mean_dy": 0.5329626060444363,
+      "mean_abs_dy": 0.5329626060444363,
+      "share_dy_positive": 1.0
+     },
+     "value_dependent": {
+      "n_pairs": 424,
+      "regressor": "sigma_star",
+      "slope": 1.0,
+      "ci95": [
+       1.0,
+       1.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       1.0,
+       1.0
+      ],
+      "p_one_sided": 0.0,
+      "p_two_sided": 0.0,
+      "mean_dx": 0.7226280978984709,
+      "mean_dy": 0.7226280978984709,
+      "mean_abs_dy": 0.7226280978984709,
+      "share_dy_positive": 1.0
+     }
+    }
+   },
+   "a6_by_depth": {
+    "1": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 1.2136363994456314,
+     "mean_dy": 1.2136363994456314,
+     "mean_abs_dy": 1.2136363994456314,
+     "share_dy_positive": 1.0
+    },
+    "2": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 1.1096084434760378,
+     "mean_dy": 1.1096084434760378,
+     "mean_abs_dy": 1.1096084434760378,
+     "share_dy_positive": 1.0
+    },
+    "3": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 1.022718156775796,
+     "mean_dy": 1.022718156775796,
+     "mean_abs_dy": 1.022718156775796,
+     "share_dy_positive": 1.0
+    },
+    "4": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 1.0334963011582408,
+     "mean_dy": 1.0334963011582408,
+     "mean_abs_dy": 1.0334963011582408,
+     "share_dy_positive": 1.0
+    },
+    "5": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      1.0,
+      1.0
+     ],
+     "p_one_sided": 0.0,
+     "p_two_sided": 0.0,
+     "mean_dx": 1.0366825460263625,
+     "mean_dy": 1.0366825460263625,
+     "mean_abs_dy": 1.0366825460263625,
+     "share_dy_positive": 1.0
+    }
+   },
+   "oracle_centred": {
+    "n": 3060,
+    "n_with_draws": 3036,
+    "realized": [
+     -0.03835089965658014,
+     [
+      -0.040596412583344406,
+      -0.036202012397865725
+     ]
+    ],
+    "expected": [
+     -0.03650466031373156,
+     [
+      -0.037805529447631867,
+      -0.03521099010514388
+     ]
+    ],
+    "median_log_ratio": 0.0,
+    "median_abs_log_ratio": 0.0,
+    "vol_beta": [
+     1.0,
+     [
+      1.0,
+      1.0
+     ]
+    ],
+    "share_sigma_zero": 0.0,
+    "share_at_clip": 0.0,
+    "share_floor_binds": 0.0,
+    "coverage_1": [
+     0.6781045751633987,
+     [
+      0.6568627450980392,
+      0.699673202614379
+     ]
+    ],
+    "nominal_1": 0.6827,
+    "coverage_2": [
+     0.9490196078431372,
+     [
+      0.9388888888888889,
+      0.9588235294117647
+     ]
+    ],
+    "nominal_2": 0.9545
+   },
+   "expected_by_set_depth": {
+    "a6_pairs": {
+     "1": -0.0456790543798168,
+     "2": -0.047163693021309655,
+     "3": -0.043141226354698234,
+     "4": -0.04734855637150116,
+     "5": -0.04359677090766104
+    },
+    "a6b_pairs": {
+     "1": -0.02364404120294936,
+     "2": -0.026510948209513524,
+     "3": -0.031003394887026445,
+     "4": -0.03380493168294165,
+     "5": -0.031270084997425715
+    },
+    "a6c_pairs": {
+     "1": -0.03475730317923483,
+     "2": -0.02964403861544611,
+     "3": -0.03442260028238033,
+     "4": -0.03384872841229724,
+     "5": -0.042746322504327756
+    }
+   }
+  },
+  "rss": {
+   "source": "rss",
+   "criteria": {
+    "a6c": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "a6b": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "C1": false,
+    "C2": false,
+    "C3": true,
+    "meets": false,
+    "label": "C1 fails: no propagation shown on A6c"
+   },
+   "a6": {
+    "n_pairs": 510,
+    "regressor": "sigma_star",
+    "slope": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     0.0,
+     0.0
+    ],
+    "p_one_sided": 1.0,
+    "p_two_sided": 1.0,
+    "mean_dx": 1.0832283693764133,
+    "mean_dy": 0.0,
+    "mean_abs_dy": 0.0,
+    "share_dy_positive": 0.0
+   },
+   "a6c_splits": {
+    "by_depth": {
+     "1": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 0.6904137307610324,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "2": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 0.6662613495210343,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "3": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 0.6629892065309503,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "4": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 0.693540154508465,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "5": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 0.740022006019432,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     }
+    },
+    "by_type": {
+     "power_law": {
+      "n_pairs": 86,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 0.5329626060444363,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     },
+     "value_dependent": {
+      "n_pairs": 424,
+      "regressor": "sigma_star",
+      "slope": 0.0,
+      "ci95": [
+       0.0,
+       0.0
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       0.0,
+       0.0
+      ],
+      "p_one_sided": 1.0,
+      "p_two_sided": 1.0,
+      "mean_dx": 0.7226280978984709,
+      "mean_dy": 0.0,
+      "mean_abs_dy": 0.0,
+      "share_dy_positive": 0.0
+     }
+    }
+   },
+   "a6_by_depth": {
+    "1": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 1.2136363994456314,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "2": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 1.1096084434760378,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "3": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 1.022718156775796,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "4": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 1.0334963011582408,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    },
+    "5": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "p_one_sided": 1.0,
+     "p_two_sided": 1.0,
+     "mean_dx": 1.0366825460263625,
+     "mean_dy": 0.0,
+     "mean_abs_dy": 0.0,
+     "share_dy_positive": 0.0
+    }
+   },
+   "oracle_centred": {
+    "n": 3060,
+    "n_with_draws": 3036,
+    "realized": [
+     -0.041160274239787534,
+     [
+      -0.04370893492057507,
+      -0.03870578328995296
+     ]
+    ],
+    "expected": [
+     -0.03936568375710154,
+     [
+      -0.040794811047923846,
+      -0.037952453623562435
+     ]
+    ],
+    "median_log_ratio": -0.08124686159715945,
+    "median_abs_log_ratio": 0.3983562863252802,
+    "vol_beta": [
+     0.4894386304937601,
+     [
+      0.46942819866212737,
+      0.5090093589974796
+     ]
+    ],
+    "share_sigma_zero": 0.0,
+    "share_at_clip": 0.0,
+    "share_floor_binds": 0.0,
+    "coverage_1": [
+     0.6160130718954249,
+     [
+      0.5954248366013072,
+      0.6359477124183006
+     ]
+    ],
+    "nominal_1": 0.6827,
+    "coverage_2": [
+     0.8375816993464053,
+     [
+      0.8225490196078431,
+      0.8519607843137255
+     ]
+    ],
+    "nominal_2": 0.9545
+   },
+   "expected_by_set_depth": {
+    "a6_pairs": {
+     "1": -0.05136766597604124,
+     "2": -0.052100264022936285,
+     "3": -0.04699161956392419,
+     "4": -0.051980359004630085,
+     "5": -0.047537831880253616
+    },
+    "a6b_pairs": {
+     "1": -0.024128547147671667,
+     "2": -0.027346823656111085,
+     "3": -0.03180679437064284,
+     "4": -0.03468236528608468,
+     "5": -0.0321498445428921
+    },
+    "a6c_pairs": {
+     "1": -0.03797840890736772,
+     "2": -0.03237924928758592,
+     "3": -0.03746747918227903,
+     "4": -0.036651000950537985,
+     "5": -0.047135154637412205
+    }
+   }
+  },
+  "x1": {
+   "source": "x1",
+   "criteria": {
+    "a6c": {
+     "n_pairs": 510,
+     "regressor": "sigma_star",
+     "slope": -0.001557514809046048,
+     "ci95": [
+      -0.003251655179893844,
+      6.445700014773043e-05
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.0029640365925629217,
+      -0.00019083662955258804
+     ],
+     "p_one_sided": 0.9692,
+     "p_two_sided": 0.0616,
+     "mean_dx": 0.6906452894681829,
+     "mean_dy": 0.00017155364713290446,
+     "mean_abs_dy": 0.0032895613552096073,
+     "share_dy_positive": 0.22156862745098038
+    },
+    "a6b": {
+     "n_pairs": 510,
+     "regressor": "truth",
+     "slope": -0.00041296101834935263,
+     "ci95": [
+      -0.002731491700814138,
+      0.0017208053359784438
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.002371168442226444,
+      0.0013892539107489145
+     ],
+     "p_one_sided": 0.6466,
+     "p_two_sided": 0.7068,
+     "mean_dx": 4.629244212465011,
+     "mean_dy": 0.0048326082110978705,
+     "mean_abs_dy": 0.02679730970965944,
+     "share_dy_positive": 0.45294117647058824
+    },
+    "C1": false,
+    "C2": false,
+    "C3": true,
+    "meets": false,
+    "label": "C1 fails: no propagation shown on A6c"
+   },
+   "a6": {
+    "n_pairs": 510,
+    "regressor": "sigma_star",
+    "slope": 0.06345098136887775,
+    "ci95": [
+     0.025473728175195283,
+     0.1035126938041103
+    ],
+    "ci_level": 0.9,
+    "ci": [
+     0.0311097649734361,
+     0.09723545394743963
+    ],
+    "p_one_sided": 0.0008,
+    "p_two_sided": 0.0016,
+    "mean_dx": 1.0832283693764133,
+    "mean_dy": 0.022844313539097647,
+    "mean_abs_dy": 0.06010179270638158,
+    "share_dy_positive": 0.48627450980392156
+   },
+   "a6c_splits": {
+    "by_depth": {
+     "1": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": -0.0029423702215883958,
+      "ci95": [
+       -0.007830036091534922,
+       0.0016769036466637486
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.007019126630403095,
+       0.000912964719006921
+      ],
+      "p_one_sided": 0.8944,
+      "p_two_sided": 0.2112,
+      "mean_dx": 0.6904137307610324,
+      "mean_dy": 0.001376182818086983,
+      "mean_abs_dy": 0.004180489336999586,
+      "share_dy_positive": 0.3137254901960784
+     },
+     "2": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": -0.0007445925796437763,
+      "ci95": [
+       -0.004325480886195141,
+       0.002739572478578303
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.0036803391599296376,
+       0.0021754113075940235
+      ],
+      "p_one_sided": 0.6654,
+      "p_two_sided": 0.6692,
+      "mean_dx": 0.6662613495210343,
+      "mean_dy": -0.0005280273168581492,
+      "mean_abs_dy": 0.0033719670377314387,
+      "share_dy_positive": 0.20588235294117646
+     },
+     "3": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": -0.0024791150696674086,
+      "ci95": [
+       -0.007282299571440475,
+       0.0015857374979525141
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.006316082171196108,
+       0.00092090163691533
+      ],
+      "p_one_sided": 0.883,
+      "p_two_sided": 0.234,
+      "mean_dx": 0.6629892065309503,
+      "mean_dy": 0.0011391515864275727,
+      "mean_abs_dy": 0.002781395239244484,
+      "share_dy_positive": 0.24509803921568626
+     },
+     "4": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": -0.004670791852919793,
+      "ci95": [
+       -0.00836859431308094,
+       -0.0013068586950819529
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.0077313362261222365,
+       -0.0018321582267915777
+      ],
+      "p_one_sided": 0.9968,
+      "p_two_sided": 0.0064,
+      "mean_dx": 0.693540154508465,
+      "mean_dy": -0.001100325409676737,
+      "mean_abs_dy": 0.003050925930002235,
+      "share_dy_positive": 0.12745098039215685
+     },
+     "5": {
+      "n_pairs": 102,
+      "regressor": "sigma_star",
+      "slope": 0.0014021482901072078,
+      "ci95": [
+       -0.0014348153254974203,
+       0.004367987958063396
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.0009844808512312325,
+       0.003853313424033588
+      ],
+      "p_one_sided": 0.1702,
+      "p_two_sided": 0.3404,
+      "mean_dx": 0.740022006019432,
+      "mean_dy": -2.9213442315147084e-05,
+      "mean_abs_dy": 0.0030630292320702923,
+      "share_dy_positive": 0.21568627450980393
+     }
+    },
+    "by_type": {
+     "power_law": {
+      "n_pairs": 86,
+      "regressor": "sigma_star",
+      "slope": -0.0022952673196579756,
+      "ci95": [
+       -0.013024472483587627,
+       0.016395046174281308
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.011245956263646018,
+       0.012960001006960719
+      ],
+      "p_one_sided": 0.6305,
+      "p_two_sided": 0.739,
+      "mean_dx": 0.5329626060444363,
+      "mean_dy": -0.0005435724585533941,
+      "mean_abs_dy": 0.004068983780820065,
+      "share_dy_positive": 0.22093023255813954
+     },
+     "value_dependent": {
+      "n_pairs": 424,
+      "regressor": "sigma_star",
+      "slope": -0.0019368477766710714,
+      "ci95": [
+       -0.003713884771726671,
+       -0.0002762239937283866
+      ],
+      "ci_level": 0.9,
+      "ci": [
+       -0.0033908119269336926,
+       -0.0005405792976280095
+      ],
+      "p_one_sided": 0.9887,
+      "p_two_sided": 0.0226,
+      "mean_dx": 0.7226280978984709,
+      "mean_dy": 0.0003166028100787103,
+      "mean_abs_dy": 0.003131470957562203,
+      "share_dy_positive": 0.22169811320754718
+     }
+    }
+   },
+   "a6_by_depth": {
+    "1": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.06294120139899398,
+     "ci95": [
+      -0.040736805852152974,
+      0.16651980315321574
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.022799174671978895,
+      0.14946093410649425
+     ],
+     "p_one_sided": 0.1195,
+     "p_two_sided": 0.239,
+     "mean_dx": 1.2136363994456314,
+     "mean_dy": 0.03051652856987024,
+     "mean_abs_dy": 0.06578558214852008,
+     "share_dy_positive": 0.5882352941176471
+    },
+    "2": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.10963374401726034,
+     "ci95": [
+      0.03163257647451843,
+      0.19357082153481042
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      0.04417691599567832,
+      0.17982759339293208
+     ],
+     "p_one_sided": 0.0034,
+     "p_two_sided": 0.0068,
+     "mean_dx": 1.1096084434760378,
+     "mean_dy": 0.03422239026189738,
+     "mean_abs_dy": 0.06099054099777248,
+     "share_dy_positive": 0.49019607843137253
+    },
+    "3": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.07432321930306843,
+     "ci95": [
+      -0.014313368198061503,
+      0.19320763903199922
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.003664108232545223,
+      0.17036362803726812
+     ],
+     "p_one_sided": 0.0621,
+     "p_two_sided": 0.1242,
+     "mean_dx": 1.022718156775796,
+     "mean_dy": -0.0019090010594983273,
+     "mean_abs_dy": 0.050905527850293224,
+     "share_dy_positive": 0.3627450980392157
+    },
+    "4": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": 0.05056798191132443,
+     "ci95": [
+      -0.04065772990434729,
+      0.15809118365309408
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.025590206297077953,
+      0.13843577011393635
+     ],
+     "p_one_sided": 0.1389,
+     "p_two_sided": 0.2778,
+     "mean_dx": 1.0334963011582408,
+     "mean_dy": 0.04417257895738609,
+     "mean_abs_dy": 0.07939915656970406,
+     "share_dy_positive": 0.5098039215686274
+    },
+    "5": {
+     "n_pairs": 102,
+     "regressor": "sigma_star",
+     "slope": -0.011094221123598267,
+     "ci95": [
+      -0.05334344951778533,
+      0.033138119203117475
+     ],
+     "ci_level": 0.9,
+     "ci": [
+      -0.04644140935914498,
+      0.025639667615114558
+     ],
+     "p_one_sided": 0.6899,
+     "p_two_sided": 0.6202,
+     "mean_dx": 1.0366825460263625,
+     "mean_dy": 0.0072190709658328436,
+     "mean_abs_dy": 0.04342815596561804,
+     "share_dy_positive": 0.4803921568627451
+    }
+   },
+   "oracle_centred": {
+    "n": 3060,
+    "n_with_draws": 3036,
+    "realized": [
+     -0.04049073310824162,
+     [
+      -0.0429450361133195,
+      -0.038113114826462915
+     ]
+    ],
+    "expected": [
+     -0.0386289601056788,
+     [
+      -0.040021025014498564,
+      -0.03724223605572124
+     ]
+    ],
+    "median_log_ratio": -0.026337730127759,
+    "median_abs_log_ratio": 0.3292271495211514,
+    "vol_beta": [
+     0.5887035319055068,
+     [
+      0.5704861522685026,
+      0.6065630531553439
+     ]
+    ],
+    "share_sigma_zero": 0.0,
+    "share_at_clip": 0.0,
+    "share_floor_binds": 0.0,
+    "coverage_1": [
+     0.6401960784313725,
+     [
+      0.6202614379084967,
+      0.6598039215686274
+     ]
+    ],
+    "nominal_1": 0.6827,
+    "coverage_2": [
+     0.873202614379085,
+     [
+      0.8601307189542484,
+      0.8862745098039215
+     ]
+    ],
+    "nominal_2": 0.9545
+   },
+   "expected_by_set_depth": {
+    "a6_pairs": {
+     "1": -0.05022704207077492,
+     "2": -0.05100814923124061,
+     "3": -0.04619763666679429,
+     "4": -0.050943368323836995,
+     "5": -0.04727635680046247
+    },
+    "a6b_pairs": {
+     "1": -0.02392009561892304,
+     "2": -0.02698267382749537,
+     "3": -0.03137414643852663,
+     "4": -0.0342810289752716,
+     "5": -0.03185375007193553
+    },
+    "a6c_pairs": {
+     "1": -0.03697630635122611,
+     "2": -0.03158645638163506,
+     "3": -0.03644759235428076,
+     "4": -0.03565097947167493,
+     "5": -0.04591889231510004
+    }
+   }
+  }
+ },
+ "tests": {
+  "R1": {
+   "missing": true,
+   "holm": {
+    "p": 1.0,
+    "threshold": 0.0071428571428571435,
+    "rejected": false
+   }
+  },
+  "R2": {
+   "missing": true,
+   "holm": {
+    "p": 1.0,
+    "threshold": 0.008333333333333333,
+    "rejected": false
+   }
+  },
+  "R3": {
+   "missing": true,
+   "holm": {
+    "p": 1.0,
+    "threshold": 0.01,
+    "rejected": false
+   }
+  },
+  "R4": {
+   "value": 0.4679501152280325,
+   "ci90": [
+    0.3282019274533973,
+    0.6124720778197057
+   ],
+   "ci95": [
+    0.3018104720216338,
+    0.640126354013383
+   ],
+   "p_one_sided": 0.0,
+   "n_pairs": 510,
+   "holm": {
+    "p": 0.0,
+    "threshold": 0.00625,
+    "rejected": true
+   }
+  },
+  "R5": {
+   "missing": true,
+   "holm": {
+    "p": 1.0,
+    "threshold": 0.0125,
+    "rejected": false
+   }
+  },
+  "R6": {
+   "missing": true,
+   "holm": {
+    "p": 1.0,
+    "threshold": 0.016666666666666666,
+    "rejected": false
+   }
+  },
+  "R7": {
+   "missing": true,
+   "holm": {
+    "p": 1.0,
+    "threshold": 0.025,
+    "rejected": false
+   }
+  },
+  "R8": {
+   "value": -0.0015809941395022072,
+   "ci95": [
+    -0.0019508142086188942,
+    -0.0012530721275720762
+   ],
+   "p_one_sided": 1.0,
+   "n_problems": 3036,
+   "holm": {
+    "p": 1.0,
+    "threshold": 0.05,
+    "rejected": false
+   }
+  }
+ },
+ "go": {
+  "three_seeds": false,
+  "met_on": [],
+  "rule": "3 seeds of D-pos-v2 and B-v2 iff D-pos-v2 meets C1-C3 on (a), (b) or (c) (D113)"
+ },
+ "data_effect": {
+  "dpos2_minus_dpos": {
+   "missing": true
+  },
+  "b2_minus_stage_b_mean": {
+   "value": 0.000517430720598232,
+   "ci95": [
+    -0.00019695228658699965,
+    0.0016024743892605851
+   ],
+   "p_one_sided": 0.1224,
+   "n_problems": 3036
+  }
+ },
+ "reading": [
+  "B-v2: propagates below the practical threshold",
+  "no go (R4-3): D-pos-v2 meets the propagation criterion on none of (a), (b), (c)"
+ ]
+}
