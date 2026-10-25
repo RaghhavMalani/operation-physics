@@ -1563,9 +1563,7 @@ in-distribution for both arms (mixed per-given levels in training); depth 5 is h
 | **D-pos-v2 (a), the answer's σ** | **−0.0395** | **0.07** | **0.85** | **67% / 91%** |
 | D-pos-v2 (c), exact from the terms | −0.0408 | 0.02 | 0.87 | 66% / 91% |
 | B-v2 | −0.0409 | 0.48 | 0.62 | 55% / 79% |
-| D-pos (v1) | −0.0405 | 0.11* | 0.63 | 54% / 78% |
-
-\* D-pos (v1)'s *signed* median from #29 (−0.11); its median absolute ratio is not in that entry.
+| D-pos (v1) | −0.0405 | 0.31 | 0.63 | 54% / 78% |
 
 - **The data effects (descriptive):** D-pos-v2 − D-pos is +0.0010 [+0.0003, +0.0017]. B-v2 − stage B's 3-seed mean
   is +0.0005 [−0.0002, +0.0016].
