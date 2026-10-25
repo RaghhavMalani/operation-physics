@@ -1,0 +1,48 @@
+# R4-1 (DECISIONS.md D112; pre-registered in D113): D-pos-v2 and its matched implicit control B-v2, 1 seed each.
+# Both SFT a fresh LoRA on the pinned 4-bit base with the R4-1 data (configs/sft_r4.yaml: D80's seeds with mixed
+# per-given levels), then are evaluated greedily on the frozen A6 / A6b / A6c sets. D-pos's settings
+# (configs/stage_d.yaml = configs/stage_b.yaml) everywhere except the data.
+sft_phase12_config: sft_r4             # the data's config (prompt v5_two_channel, the data dir and its manifest)
+arms:
+  dpos2:                               # D-pos-v2: the S lines, the line and sigma trained
+    data_arm: explicit
+  b2:                                  # B-v2: sigma* written and trained, no line (stage B's arm)
+    data_arm: supervised
+order: [dpos2, b2]                     # the queue's order (your instruction)
+seed: 0
+pinned_base: base_4bit                 # D78
+lora:                                  # stage B's / D-pos's
+  r: 16
+  alpha: 16
+  dropout: 0.0
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+train:                                 # stage B's / D-pos's: configs/sft.yaml's optimizer, 2 epochs
+  epochs: 2
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4
+  lr_scheduler_type: constant_with_warmup
+  warmup_steps: 10
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optim: adamw_8bit
+  logging_steps: 10
+guards:
+  max_gpu_temp_c: 87
+  pause_seconds: 600
+  check_every_steps: 10
+max_reserved_gib: 5.9                  # D115: total 8.0 GiB - steady host use 1.62 GiB (2026-10-25) - 0.5 (D103 was 7.1)
+eval:                                  # stage B's eval (stage_b.eval_config)
+  frozen_sets_config: eval_frozen_sets
+  extra_splits:
+    a6c_pairs:
+      file: data/eval_sets/2.0.0+bdbb2279/a6c_pairs.jsonl
+      verify_regenerate: -1
+  prompt: v5_two_channel
+  batch_size: 32
+  max_reserved_gib: 5.9                # D115, as above
+  max_new_tokens: 512                  # D113: the long budget for both arms if the longest D-pos-v2 completion exceeds
+  long_completion_tokens: 480          # the limit below
+  long_max_new_tokens: 1280            # D114 (deviation from D113's 768): the longest D-pos-v2 training completion is
+                                       # 855 tokens, the builder's longest on the eval sets 1,165 (A6c, depth 5)
+output_dir: results/stage_r4           # dpos2/seed0/, b2/seed0/ (training + eval), results.json, summary.md

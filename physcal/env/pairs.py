@@ -15,6 +15,7 @@ carries the high noise level h (every other given has l): member lo puts h where
 it moves σ* most (delta method, ≥ `min_ratio`). The visible percentages are the same multiset; σ* differs.
 
     nice uv run python -m physcal.env.pairs export [a6|a6b|a6c]  # data/eval_sets/<version>/a6{,b,c}_pairs.jsonl
+    nice uv run python -m physcal.env.pairs export a6 --confirmatory  # R4-5 (D113): .../confirmatory/, fresh seeds
 
 Pair members get problem seed 2·pair_seed + member_index (0 = lo, 1 = hi); `noise.pair` stores the pair seed, the
 member and the construction config, so `generator.regenerate` replays them exactly.
@@ -345,10 +346,15 @@ def _families(which: str, depth: int, pcfg: dict, env: dict) -> list[str]:
     return [f for f in fams if power_law_chains(f, depth, pcfg[SETS[which][0]], env["generator"])]
 
 
-def export(which: str = "a6") -> dict:
+def export(which: str = "a6", confirmatory: bool = False) -> dict:
+    """The frozen pair set; `confirmatory` (R4-5, D113): the same construction and cells with the configured fresh
+    seed offset and worker count, written to the version's `confirmatory/` directory."""
     pcfg = load_config("pairs")
     con_key, ex_key, name = SETS[which]
     ex, env = pcfg[ex_key], load_config(pcfg["env_config"])
+    if confirmatory:
+        cc = pcfg["confirmatory"]
+        ex = {**ex, "seed_offset": cc["seed_offsets"][which], "n_jobs": cc["n_jobs"]}
     cells = [(d, lv) for d in ex["depths"] for lv in ex["levels"]]
     fams = {d: _families(which, d, pcfg, env) for d in ex["depths"]}
     jobs = [(c, i, fams[d][i % len(fams[d])], d, lv, ex["seed_offset"] + c * ex["cell_seed_stride"] + i, which)
@@ -380,12 +386,18 @@ def export(which: str = "a6") -> dict:
                                                       delta_ratio_min=float(np.min(dr)) if dr else None)
     version = generator_version(env)
     out = REPO_ROOT / "data" / "eval_sets" / version
+    if confirmatory:
+        out = out / pcfg["confirmatory"]["subdir"]
+        if (out / f"{name}.jsonl").exists():
+            raise FileExistsError(f"{out / name}.jsonl exists: the confirmatory set is frozen (D113)")
     out.mkdir(parents=True, exist_ok=True)
     blob = "".join(json.dumps(p, sort_keys=True) + "\n" for pair in pairs for p in pair)
     (out / f"{name}.jsonl").write_text(blob)
     manifest = {"generator_version": version, "pair_version": pair_version(pcfg[con_key]),  # A6c: + levels per cell
                 "construction": pcfg[con_key], "export": ex, "n_pairs": len(pairs), "n_problems": 2 * len(pairs),
                 "sha256": hashlib.sha256(blob.encode()).hexdigest(), "cells": report}
+    if confirmatory:
+        manifest["frozen"] = "R4-5 (D113): untouched until a 3-seed confirmatory run with its own entry"
     (out / f"{name}_manifest.json").write_text(json.dumps(manifest, indent=2))
     return manifest
 
@@ -393,8 +405,9 @@ def export(which: str = "a6") -> dict:
 if __name__ == "__main__":
     import sys
 
-    if not sys.argv[1:] or sys.argv[1] != "export" or (sys.argv[2:] and sys.argv[2] not in SETS):
-        raise SystemExit("usage: python -m physcal.env.pairs export [a6|a6b]")
+    args = [a for a in sys.argv[1:] if a != "--confirmatory"]
+    if not args or args[0] != "export" or (args[1:] and args[1] not in SETS):
+        raise SystemExit("usage: python -m physcal.env.pairs export [a6|a6b|a6c] [--confirmatory]")
     from physcal.env import pairs as _pairs  # through the package, so worker processes import the same module
 
-    print(json.dumps(_pairs.export(sys.argv[2] if sys.argv[2:] else "a6"), indent=2))
+    print(json.dumps(_pairs.export(args[1] if args[1:] else "a6", "--confirmatory" in sys.argv), indent=2))

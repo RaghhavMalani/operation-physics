@@ -1,0 +1,103 @@
+{
+ "decision": "D113 (R4-1: the D-pos-v2 / B-v2 data, pre-registered)",
+ "config": {
+  "seeds_from": "sft_phase12",
+  "mixed_levels": [
+   0.0,
+   0.01,
+   0.02,
+   0.05
+  ],
+  "env_config": "env_v2",
+  "prompt": "v5_two_channel",
+  "mu_sig_figs": 4,
+  "sigma_format": ".2g",
+  "sensitivity_format": ".3g",
+  "sensitivity_check": {
+   "rel_tol": 0.01,
+   "abs_tol": 0.005
+  },
+  "confidence": {
+   "bins": [
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90,
+    95,
+    99
+   ],
+   "draw": "uniform",
+   "train": true
+  },
+  "arms": {
+   "explicit": {
+    "explicit_line": true,
+    "train_sigma": true,
+    "train_line_numbers": true
+   },
+   "supervised": {
+    "explicit_line": false,
+    "train_sigma": true
+   }
+  },
+  "output_dir": "results/phase12_sft_data_r4"
+ },
+ "generator_version": "2.0.0+bdbb2279",
+ "n_examples": 3000,
+ "seeds": [
+  60000000,
+  60002999
+ ],
+ "cells": {
+  "dynamics/1": 252,
+  "dynamics/2": 252,
+  "dynamics/3": 248,
+  "dynamics/4": 248,
+  "energy/1": 248,
+  "energy/2": 248,
+  "energy/3": 248,
+  "energy/4": 248,
+  "kinematics/1": 252,
+  "kinematics/2": 252,
+  "kinematics/3": 252,
+  "kinematics/4": 252
+ },
+ "given_levels": {
+  "0": 2638,
+  "0.01": 2628,
+  "0.02": 2555,
+  "0.05": 2611
+ },
+ "problems_all_exact": 78,
+ "problems_mixing_noisy_levels": 2067,
+ "sensitivity_terms": 7794,
+ "power_law_terms": 3707,
+ "explicit_x_vs_sigma_star_median_abs_log": 0.01137195819337834,
+ "confidence_counts": {
+  "10": 277,
+  "20": 277,
+  "30": 262,
+  "40": 274,
+  "50": 295,
+  "60": 272,
+  "70": 258,
+  "80": 271,
+  "90": 274,
+  "95": 271,
+  "99": 269
+ },
+ "sha256": {
+  "problems.jsonl": "b5e847cd71f55b33954e3a9b16c84644e6e5ba2ddf8acd9d30d1af7546d5c77f",
+  "explicit.jsonl": "ecc0fcdcc533e2b87a56a3da525313af6e56750577eae68d2929ec346812cec5",
+  "supervised.jsonl": "7b8be2de90567de788119aa79b0ed4d4cda65c2b43b404bcd9689c327b3ae6c7"
+ },
+ "masked_spans_per_example": {
+  "explicit": 0.0,
+  "supervised": 0.0
+ }
+}

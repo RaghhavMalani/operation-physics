@@ -3982,3 +3982,39 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   - **Every stage:** the free-space guard, the in-stage temperature guard, a PID watcher, BLOCKED-and-continue
     (a later stage that needs a missing output is skipped and logged), and a commit + push.
   - **The analyses:** CPU, 1 thread, nice 19, after each arm's eval and after each MC-A set.
+
+### D114. R4 build: what was built, and two deviations from D113 found while building (before any R4 model, completion or score exists)
+- **Built (CPU, 1 thread, nice 19), as D113 specifies:**
+  - **The generator's mixed option** (`generate_problem(..., mixed_levels=...)`, `noise_record(levels=...)`,
+    `regenerate`). The default path is unchanged: the generator, noise and frozen-set tests pass (75), D80's first 48
+    problems regenerate byte-identically, and the frozen A6 / A6b / A6c sets still regenerate.
+  - **The R4-1 data** (`physcal/train/sft_r4.py`, `configs/sft_r4.yaml`; `results/phase12_sft_data_r4/`; SHA-256s
+    in its manifest):
+    - **The givens' levels:** 2,638 at 0, 2,628 at 1%, 2,555 at 2%, 2,611 at 5%.
+    - **The problems:** 2,067 of 3,000 mix two or more noisy levels; 78 have every given exact.
+    - **Every problem keeps D80's cell;** > 90% keep D80's chain (tested).
+    - **Sensitivity terms:** 7,794, of which 3,707 are power-law.
+    - **The line's X:** median |ln(X / σ\*)| 0.011 on the noisy problems.
+    - **Example lines:** `S_t1 = -t1/t2 = -11.34/24.51 = -0.463`, `S_v1 = -2`.
+  - **Stage R4** (`physcal/train/stage_r4.py`, `configs/stage_r4.yaml`): D-pos's procedure; the config is tested
+    equal to stage D's except the data, the budget and the cap.
+  - **The confirmatory set** (R4-5; `data/eval_sets/2.0.0+bdbb2279/confirmatory/`, `FROZEN.md`):
+    - built in ~2 min; 510 pairs per set, all 15 cells full;
+    - SHA-256 `e803a567…` (A6), `a4f6d81f…` (A6b), `95ba4280…` (A6c);
+    - `run_eval` refuses the directory without `PHYSCAL_CONFIRMATORY=1` (tested).
+  - **Tests:** `tests/test_r4.py`, 9.
+- **Deviation 1: the eval token budget is 1,280 for both arms, not 768.**
+  - **D113's rule fired:** the longest D-pos-v2 training completion is 855 tokens, above 480. 9.3% exceed 512 and
+    0.7% exceed 768.
+  - **Its fallback, 768, is too small:** the builder's own completion for the eval problems reaches 1,165 tokens (A6c,
+    depth 5). 768 would truncate 32 A6c and 20 A6 reference completions; 1,024 would still truncate 12.
+  - **So 1,280 for both arms** (B-v2's longest training completion is 391, so the budget only matters for its runaway
+    generations).
+  - **Why the lines are long:** deep kinematics chains, whose total sensitivities in the problem's symbols run to
+    100–170 characters, e.g. `a1*t1*(2*s1 - t1*u)/(2*t_tot*u*(a1*t1 + u))`.
+  - **Alternative: shorten the format** (e.g. local chain-rule factors). Rejected: it would change the pre-registered
+    data after seeing only its lengths.
+- **Deviation 2: 6 of D-pos-v2's 3,000 rows exceed 2,048 tokens and are dropped** by stage B's tokenization, which
+  drops and counts as it always has (B-v2 drops none). D113 had listed "no row dropped" among the builder's checks.
+  - **Alternative:** raise the pinned base's `max_seq_length`. Rejected: that setting is shared by every Phase 12 load.
+  - **The cost:** the 6 are among the longest depth-4 rows (0.2%).

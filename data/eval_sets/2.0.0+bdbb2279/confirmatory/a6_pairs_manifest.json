@@ -1,0 +1,220 @@
+{
+  "generator_version": "2.0.0+bdbb2279",
+  "pair_version": "1.0.0+815075c6",
+  "construction": {
+    "version": "1.0.0",
+    "candidate_worlds": 24,
+    "min_ratio": 2.0,
+    "max_chains": 20
+  },
+  "export": {
+    "families": [
+      "kinematics",
+      "dynamics",
+      "energy"
+    ],
+    "depths": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "levels": [
+      0.01,
+      0.02,
+      0.05
+    ],
+    "pairs_per_cell": 34,
+    "max_seeds_per_cell": 136,
+    "seed_offset": 2100000000,
+    "cell_seed_stride": 100000,
+    "n_jobs": 1
+  },
+  "n_pairs": 510,
+  "n_problems": 1020,
+  "sha256": "e803a5676c66fc048b4de05502f52d54abd33a5ebc8e87cde88b5ea4e1a85d5e",
+  "cells": {
+    "d1/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 42,
+      "seeds_without_pair": 8,
+      "families": {
+        "kinematics": 14,
+        "dynamics": 8,
+        "energy": 12
+      },
+      "mc_ratio_median": 4.004787019254856,
+      "mc_ratio_min": 2.0462453489577497
+    },
+    "d1/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 37,
+      "seeds_without_pair": 3,
+      "families": {
+        "kinematics": 13,
+        "dynamics": 10,
+        "energy": 11
+      },
+      "mc_ratio_median": 3.8250435409427412,
+      "mc_ratio_min": 2.099644571175626
+    },
+    "d1/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 49,
+      "seeds_without_pair": 15,
+      "families": {
+        "kinematics": 17,
+        "dynamics": 6,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.9852948523842615,
+      "mc_ratio_min": 1.6452368724304856
+    },
+    "d2/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 37,
+      "seeds_without_pair": 3,
+      "families": {
+        "kinematics": 13,
+        "dynamics": 9,
+        "energy": 12
+      },
+      "mc_ratio_median": 3.1826901291257395,
+      "mc_ratio_min": 1.9709351143647607
+    },
+    "d2/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 35,
+      "seeds_without_pair": 1,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 3.040600824884193,
+      "mc_ratio_min": 2.049616181125114
+    },
+    "d2/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 40,
+      "seeds_without_pair": 6,
+      "families": {
+        "kinematics": 14,
+        "dynamics": 9,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.6586484724740367,
+      "mc_ratio_min": 1.6584887978471687
+    },
+    "d3/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 3.2598926160454065,
+      "mc_ratio_min": 1.9910423612270982
+    },
+    "d3/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 35,
+      "seeds_without_pair": 1,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 3.1432465014160065,
+      "mc_ratio_min": 1.6773708835943564
+    },
+    "d3/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 36,
+      "seeds_without_pair": 2,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 10,
+        "energy": 12
+      },
+      "mc_ratio_median": 2.6905997709864913,
+      "mc_ratio_min": 2.01953993051387
+    },
+    "d4/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.9660277903867414,
+      "mc_ratio_min": 2.074390082475852
+    },
+    "d4/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 3.146046005379125,
+      "mc_ratio_min": 1.8666853985676268
+    },
+    "d4/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 36,
+      "seeds_without_pair": 2,
+      "families": {
+        "kinematics": 11,
+        "dynamics": 12,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.466597002418946,
+      "mc_ratio_min": 1.5579733599424843
+    },
+    "d5/s0.01": {
+      "pairs": 34,
+      "seeds_tried": 35,
+      "seeds_without_pair": 1,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 12,
+        "energy": 10
+      },
+      "mc_ratio_median": 3.030574318641495,
+      "mc_ratio_min": 2.0856054477976884
+    },
+    "d5/s0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 3.0722485478827446,
+      "mc_ratio_min": 1.9704617519877727
+    },
+    "d5/s0.05": {
+      "pairs": 34,
+      "seeds_tried": 39,
+      "seeds_without_pair": 5,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 12,
+        "energy": 10
+      },
+      "mc_ratio_median": 2.30288278365662,
+      "mc_ratio_min": 1.6337861428155975
+    }
+  },
+  "frozen": "R4-5 (D113): untouched until a 3-seed confirmatory run with its own entry"
+}

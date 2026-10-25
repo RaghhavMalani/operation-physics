@@ -72,11 +72,19 @@ def build_split(index: int, split_cfg: dict, eval_cfg: dict, env_cfg: dict, limi
     return [generate_problem(*cells[i % len(cells)], base + i, split=gen_split, cfg=env_cfg) for i in range(n)]
 
 
+CONFIRMATORY_DIR = "confirmatory"  # R4-5 (D113): eval sets frozen until a confirmatory run
+CONFIRMATORY_ENV = "PHYSCAL_CONFIRMATORY"
+
+
 def load_frozen_split(split_cfg: dict, env_cfg: dict, limit: int | None = None) -> list[Problem]:
     """Problems from a frozen JSONL file (one problem dict per line, in order). Pair sets keep lo/hi adjacent, so use
     an even `limit` to keep pairs whole. Raises on a generator-version mismatch, a wrong checksum, or a problem that
-    no longer regenerates identically."""
+    no longer regenerates identically. A file under a `confirmatory/` directory (R4-5, D113: frozen until a 3-seed
+    confirmatory run) is refused unless PHYSCAL_CONFIRMATORY=1 is set."""
     path = REPO_ROOT / split_cfg["file"]
+    if CONFIRMATORY_DIR in path.parts and os.environ.get(CONFIRMATORY_ENV) != "1":
+        raise PermissionError(f"{path}: the confirmatory set is frozen (D113); set {CONFIRMATORY_ENV}=1 only for "
+                              "the pre-registered confirmatory run")
     blob = path.read_text()
     expected = split_cfg.get("sha256")
     manifest = path.with_name(path.stem + "_manifest.json")

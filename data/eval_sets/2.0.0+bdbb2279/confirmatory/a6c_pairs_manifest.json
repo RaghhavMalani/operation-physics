@@ -1,0 +1,260 @@
+{
+  "generator_version": "2.0.0+bdbb2279",
+  "pair_version": "1.0.0+c40522c3",
+  "construction": {
+    "version": "1.0.0",
+    "kind": "allocation",
+    "candidate_worlds": 24,
+    "min_ratio": 1.5,
+    "max_chains": 20
+  },
+  "export": {
+    "families": [
+      "kinematics",
+      "dynamics",
+      "energy"
+    ],
+    "depths": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "levels": [
+      [
+        0.01,
+        0.05
+      ],
+      [
+        0.02,
+        0.05
+      ],
+      [
+        0.01,
+        0.02
+      ]
+    ],
+    "pairs_per_cell": 34,
+    "max_seeds_per_cell": 136,
+    "seed_offset": 2300000000,
+    "cell_seed_stride": 100000,
+    "n_jobs": 1
+  },
+  "n_pairs": 510,
+  "n_problems": 1020,
+  "sha256": "95ba42801c89b11c21a22e90de7371490dd8913ffccb5b8b3eb9514056b21d67",
+  "cells": {
+    "d1/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.904316184868387,
+      "mc_ratio_min": 1.7090075542676983,
+      "delta_ratio_median": 1.8662150523220553,
+      "delta_ratio_min": 1.5634156540865956
+    },
+    "d1/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.8067861013924325,
+      "mc_ratio_min": 1.5637687141349352,
+      "delta_ratio_median": 1.8003798772740938,
+      "delta_ratio_min": 1.5926661185603568
+    },
+    "d1/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 39,
+      "seeds_without_pair": 5,
+      "families": {
+        "kinematics": 13,
+        "dynamics": 8,
+        "energy": 13
+      },
+      "mc_ratio_median": 1.7190872351547868,
+      "mc_ratio_min": 1.5249172813687406,
+      "delta_ratio_median": 1.72456945530633,
+      "delta_ratio_min": 1.5190862675981436
+    },
+    "d2/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.3510598251718506,
+      "mc_ratio_min": 1.7844297345783324,
+      "delta_ratio_median": 2.326188691296104,
+      "delta_ratio_min": 1.683995179062149
+    },
+    "d2/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.758863925439862,
+      "mc_ratio_min": 1.4632626139640343,
+      "delta_ratio_median": 1.7878363905307482,
+      "delta_ratio_min": 1.5093045242832508
+    },
+    "d2/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 36,
+      "seeds_without_pair": 2,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 10,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.6823746346965818,
+      "mc_ratio_min": 1.495993219700793,
+      "delta_ratio_median": 1.6882301787405631,
+      "delta_ratio_min": 1.5024037970994257
+    },
+    "d3/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.723557733852327,
+      "mc_ratio_min": 1.6892867040499708,
+      "delta_ratio_median": 2.7817166832584603,
+      "delta_ratio_min": 1.7163758173630381
+    },
+    "d3/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.7735083609839994,
+      "mc_ratio_min": 1.4663177887657897,
+      "delta_ratio_median": 1.7647638266135184,
+      "delta_ratio_min": 1.5118578919264363
+    },
+    "d3/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 36,
+      "seeds_without_pair": 2,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 10,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.6783547860134966,
+      "mc_ratio_min": 1.488715077554084,
+      "delta_ratio_median": 1.6572693160053822,
+      "delta_ratio_min": 1.5028727069830325
+    },
+    "d4/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.641590180293939,
+      "mc_ratio_min": 1.451589518580762,
+      "delta_ratio_median": 2.619067727550811,
+      "delta_ratio_min": 1.5163506242265365
+    },
+    "d4/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.8140497953048762,
+      "mc_ratio_min": 1.4679140416340453,
+      "delta_ratio_median": 1.800329818492199,
+      "delta_ratio_min": 1.5118578921165517
+    },
+    "d4/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 35,
+      "seeds_without_pair": 1,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.6508507222860973,
+      "mc_ratio_min": 1.504072353703576,
+      "delta_ratio_median": 1.640940391887489,
+      "delta_ratio_min": 1.5075670716265945
+    },
+    "d5/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 3.497363454873266,
+      "mc_ratio_min": 1.75831402205591,
+      "delta_ratio_median": 3.446381162325267,
+      "delta_ratio_min": 1.7823549349947116
+    },
+    "d5/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.8426461103029723,
+      "mc_ratio_min": 1.5229219112036334,
+      "delta_ratio_median": 1.841026974641668,
+      "delta_ratio_min": 1.5118578921563735
+    },
+    "d5/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.5969883487032401,
+      "mc_ratio_min": 1.5121028023302558,
+      "delta_ratio_median": 1.5929141705629568,
+      "delta_ratio_min": 1.5073159881776699
+    }
+  },
+  "frozen": "R4-5 (D113): untouched until a 3-seed confirmatory run with its own entry"
+}

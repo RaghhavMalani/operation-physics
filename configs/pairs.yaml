@@ -69,3 +69,11 @@ noise_heuristics:
   generator_version: 2.0.0+bdbb2279
   sets: [a6_pairs, a6b_pairs, a6c_pairs]
   output_dir: results/noise_heuristics
+
+# R4-5 (D113): the frozen confirmatory set. The three constructions and cells above, fresh pair-seed offsets, written to
+# data/eval_sets/<version>/confirmatory/. Untouched until a 3-seed confirmatory run (run_eval refuses the directory
+# unless PHYSCAL_CONFIRMATORY=1).
+confirmatory:
+  subdir: confirmatory
+  seed_offsets: {a6: 2100000000, a6b: 2200000000, a6c: 2300000000}   # disjoint from 1.8e9 / 1.9e9 / 2.0e9 (+1.5e6 each)
+  n_jobs: 1                         # built while the GPU queue runs (heat, D97)

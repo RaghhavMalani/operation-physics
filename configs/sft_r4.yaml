@@ -1,0 +1,31 @@
+# R4-1 (DECISIONS.md D112, pre-registered in D113): the D-pos-v2 / B-v2 SFT data. D80's 3,000 training seeds and cells
+# (configs/sft_phase12.yaml), with mixed per-given noise levels (generator 2.0.0's mixed option, D113). Two arms on the
+# same problems and the same confidence draw:
+#   explicit (D-pos-v2): one sensitivity line per noisy given before <steps>, `S_x = <d ln f / d ln x> = <numbers> =
+#     value` (a power-law term is its exponent), then D80's line `sigma_rel = sqrt((S*s)^2 + ...) = X` with each
+#     given's own level, and sigma = X * |mu| in the answer;
+#   supervised (B-v2): D80's supervised arm (sigma* written and trained, no line).
+# Masks are per arm, as sft_phase12 (`masked_spans`); nothing in the sigma channel is masked in either arm.
+seeds_from: sft_phase12            # D80's seed offset, number of problems and cell per seed (its round-robin)
+mixed_levels: [0.0, 0.01, 0.02, 0.05]   # per given, uniform and independent (R4-1); 0 = exact
+env_config: env_v2
+prompt: v5_two_channel
+mu_sig_figs: 4                     # as D80
+sigma_format: ".2g"                # sigma in the answer, the line's X (as D80)
+sensitivity_format: ".3g"          # each S value, copied as written into the line's terms
+sensitivity_check:                 # the builder's test: S vs noise.log_sensitivities at the displayed values
+  rel_tol: 0.01
+  abs_tol: 0.005
+confidence:                        # D80's
+  bins: [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99]
+  draw: uniform
+  train: true
+arms:
+  explicit:                        # D-pos-v2: the S lines, the line and sigma all trained (D-pos's masks)
+    explicit_line: true
+    train_sigma: true
+    train_line_numbers: true
+  supervised:                      # B-v2: sigma* written and trained (stage B's arm)
+    explicit_line: false
+    train_sigma: true
+output_dir: results/phase12_sft_data_r4

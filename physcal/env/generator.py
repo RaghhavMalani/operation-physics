@@ -102,24 +102,33 @@ def check_split(family: str, depth: int, split: str, cfg: dict) -> None:
 
 
 def generate_problem(family: str, depth: int, seed: int, split: str = "train", cfg: dict | None = None,
-                     noise: float = 0.0) -> Problem:
+                     noise: float = 0.0, mixed_levels: list[float] | None = None) -> Problem:
     """`noise` is the relative standard deviation of every given's measurement error (generator 2.0.0's noise
     mode; one of `generator.noise.levels`). Noise 0 behaves exactly as before: exact givens at `display.sig_figs`
-    and truth from the displayed values (D4)."""
+    and truth from the displayed values (D4).
+
+    `mixed_levels` (R4-1, D113; with noise 0): each given's level is drawn uniformly and independently from this
+    list on the problem's own "levels" stream, e_i = level_i·z_i with the noise stream's z, and every given is shown
+    at the noise mode's significant figures ("± p%" only on noisy ones; level 0 is exact). Distractors draw their own
+    levels. None leaves every problem exactly as before."""
     cfg = cfg or env_config()
     check_split(family, depth, split, cfg)
     gen = cfg["generator"]
     noise_cfg = gen.get("noise")
-    if noise_cfg is None and noise != 0.0:
+    if noise_cfg is None and (noise != 0.0 or mixed_levels is not None):
         raise ValueError(f"generator {gen['version']} has no noise mode")
     if noise_cfg is not None and noise not in noise_cfg["levels"]:
         raise ValueError(f"noise level {noise} not in {noise_cfg['levels']}")
-    noisy = noise != 0.0
+    if mixed_levels is not None and (noise != 0.0 or not set(mixed_levels) <= set(noise_cfg["levels"])):
+        raise ValueError(f"mixed levels {mixed_levels} need noise 0 and levels from {noise_cfg['levels']}")
+    mixed = mixed_levels is not None
+    noisy = noise != 0.0 or mixed
     version = generator_version(cfg)
     no_steps_text = render.no_steps_template(gen["version"])
     fam = get_family(family)
     rng = problem_rng(version, family, depth, seed)
     noise_rng = problem_rng(version, family, depth, seed, "noise") if noise_cfg is not None else None
+    levels_rng = problem_rng(version, family, depth, seed, "levels") if mixed else None
 
     for attempt in range(gen["max_attempts"]):
         if attempt % gen["worlds_per_chain"] == 0:
@@ -127,9 +136,11 @@ def generate_problem(family: str, depth: int, seed: int, split: str = "train", c
         world = fam.sample_world(rng, gen["max_world_tries"])
         if noise_rng is not None:
             # drawn every attempt at every level (also 0), so the streams stay aligned across noise levels
-            e = noise * noise_rng.standard_normal(len(chain.givens))
+            lv = (np.array([float(x) for x in levels_rng.choice(mixed_levels, size=len(chain.givens))]) if mixed
+                  else np.full(len(chain.givens), noise))
+            e = lv * noise_rng.standard_normal(len(chain.givens))
         if noisy:
-            shown = [render.show_measured(fam.quantities[g], world[g], float(e[i]), noise, rng, gen["display"],
+            shown = [render.show_measured(fam.quantities[g], world[g], float(e[i]), float(lv[i]), rng, gen["display"],
                                           noise_cfg["sig_figs"]) for i, g in enumerate(chain.givens)]
             truth_givens = {g: world[g] for g in chain.givens}
         else:
@@ -149,19 +160,20 @@ def generate_problem(family: str, depth: int, seed: int, split: str = "train", c
             continue
         z = problem_rng(version, family, depth, seed, f"mc|{attempt}").standard_normal(
             (len(chain.givens), noise_cfg["n_mc"]))
-        log_draws = noise_mode.predictive(fam, chain, measured, {g: noise for g in chain.givens}, z)
+        log_draws = noise_mode.predictive(fam, chain, measured, {g: float(lv[i]) for i, g in enumerate(chain.givens)}, z)
         if log_draws is not None:
             break
     else:
         raise RuntimeError(f"no acceptable {family} depth-{depth} problem for seed {seed} (noise {noise})")
 
-    distractors = _sample_distractors(fam, rng, gen, noise, noise_rng)
+    distractors = _sample_distractors(fam, rng, gen, noise, noise_rng, levels_rng, mixed_levels)
     target_q = fam.quantities[chain.target]
     target_si = outputs[chain.target]
     target_unit = render.choose_unit(target_q, target_si, rng, tuple(gen["display"]["magnitude_range"]))
     text = render.render_text(
         fam, target_q, target_unit, shown + distractors, chain.intermediates, rng, gen["display"], no_steps_text,
-        render.noise_note(gen["version"]) if noisy else None,
+        render.noise_note(gen["version"]) if (any(v.noise_rel for v in shown + distractors) if mixed else noisy)
+        else None,
     )
     # Step credit uses what a correct solver computes from the displayed values (D51): for noisy problems the
     # intermediates come from the measured givens; the clean ones are kept in `noise`.
@@ -169,7 +181,9 @@ def generate_problem(family: str, depth: int, seed: int, split: str = "train", c
     noise_info = None
     if noise_cfg is not None:
         noise_info = noise_record(fam, chain, gen, noise, world if noisy else None, e if noisy else None,
-                                  measured if noisy else None, outputs, step_values, log_draws if noisy else None)
+                                  measured if noisy else None, outputs, step_values, log_draws if noisy else None,
+                                  {g: float(lv[i]) for i, g in enumerate(chain.givens)} if mixed else None,
+                                  mixed_levels)
     return Problem(
         text=text,
         target_symbol=chain.target,
@@ -194,19 +208,23 @@ def generate_problem(family: str, depth: int, seed: int, split: str = "train", c
 
 
 def noise_record(fam, chain: Chain, gen: dict, noise: float, world: dict | None, e, measured: dict | None,
-                 outputs: dict, step_values: dict, log_draws) -> dict[str, Any]:
-    """The `noise` field of a generator >= 2.0.0 problem (shared by generate_problem and the A6 pairs)."""
-    noisy = noise != 0.0
-    info: dict[str, Any] = {"level": noise,
+                 outputs: dict, step_values: dict, log_draws, levels: dict | None = None,
+                 mixed_levels: list[float] | None = None) -> dict[str, Any]:
+    """The `noise` field of a generator >= 2.0.0 problem (shared by generate_problem and the A6 pairs). `levels`
+    (mixed mode, D113): per-given levels; `level` is then the largest and `mixed` the list they were drawn from."""
+    noisy = noise != 0.0 or levels is not None
+    lv = levels if levels is not None else {g: noise for g in chain.givens}
+    info: dict[str, Any] = {"level": max(lv.values()) if levels is not None else noise,
                             "sig_figs": gen["noise"]["sig_figs"] if noisy else gen["display"]["sig_figs"],
                             "point_estimate_si": step_values[chain.target]}
+    if levels is not None:
+        info["mixed"] = [float(x) for x in mixed_levels]
     if noisy:
         info.update(
-            givens={g: {"rel": noise, "true_si": world[g], "e": float(e[i])} for i, g in enumerate(chain.givens)},
+            givens={g: {"rel": lv[g], "true_si": world[g], "e": float(e[i])} for i, g in enumerate(chain.givens)},
             intermediates_true_si={x: outputs[x] for x in chain.intermediates},
             sigma_star_log_delta=noise_mode.delta_sigma_log(
-                noise_mode.log_sensitivities(fam, chain, measured, gen["condition_rel_step"]),
-                {g: noise for g in chain.givens}),
+                noise_mode.log_sensitivities(fam, chain, measured, gen["condition_rel_step"]), lv),
             **noise_mode.summarize(log_draws, step_values[chain.target], outputs[chain.target]))
     else:
         info.update(sigma_star_log=0.0, sigma_star_log_sd=0.0, sigma_star_log_delta=0.0,
@@ -226,14 +244,18 @@ def regenerate(problem: dict, cfg: dict, split: str = "eval") -> Problem:
         if pair is None:
             raise RuntimeError(f"pair {pr['pair_seed']} no longer generates")
         return pair[pr["member_index"]]
+    if noise.get("mixed") is not None:  # D113's mixed per-given levels
+        return generate_problem(problem["family"], problem["depth"], problem["seed"], split=split, cfg=cfg,
+                                mixed_levels=noise["mixed"])
     level = noise.get("level", 0.0)
     return generate_problem(problem["family"], problem["depth"], problem["seed"], split=split, cfg=cfg, noise=level)
 
 
 def _sample_distractors(fam, rng: np.random.Generator, gen: dict, noise: float = 0.0,
-                        noise_rng: np.random.Generator | None = None) -> list[render.ShownValue]:
+                        noise_rng: np.random.Generator | None = None, levels_rng: np.random.Generator | None = None,
+                        mixed_levels: list[float] | None = None) -> list[render.ShownValue]:
     """Irrelevant quantities; in noise mode they are shown as measurements too (same level), so the "± p%"
-    annotation does not tell relevant from irrelevant values."""
+    annotation does not tell relevant from irrelevant values. Mixed mode (D113): each draws its own level."""
     lo, hi = gen["distractors"]
     pool = sorted(fam.distractors)
     n = min(int(rng.integers(lo, hi + 1)), len(pool))
@@ -241,7 +263,12 @@ def _sample_distractors(fam, rng: np.random.Generator, gen: dict, noise: float =
     out = []
     for p in picked:
         value = log_uniform(rng, *fam.distractors[p].range_si)
-        if noise:
+        if mixed_levels is not None:
+            lvl = float(levels_rng.choice(mixed_levels))
+            e = lvl * float(noise_rng.standard_normal())
+            out.append(render.show_measured(fam.distractors[p], value, e, lvl, rng, gen["display"],
+                                            gen["noise"]["sig_figs"]))
+        elif noise:
             e = noise * float(noise_rng.standard_normal())
             out.append(render.show_measured(fam.distractors[p], value, e, noise, rng, gen["display"],
                                             gen["noise"]["sig_figs"]))
