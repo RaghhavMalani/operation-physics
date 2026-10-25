@@ -4018,3 +4018,17 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
   drops and counts as it always has (B-v2 drops none). D113 had listed "no row dropped" among the builder's checks.
   - **Alternative:** raise the pinned base's `max_seq_length`. Rejected: that setting is shared by every Phase 12 load.
   - **The cost:** the 6 are among the longest depth-4 rows (0.2%).
+
+### D115. Tonight's launch, 2026-10-25 (17:32 IST; GPU deadline 09:00 IST on 2026-10-26)
+- **Host VRAM with nothing running in WSL:** steady at 1,617–1,625 MiB over 12 s (17:30 IST). That is higher than the
+  0.6 GiB of earlier nights; the afternoon's first readings were 2,297 MiB.
+- **The cap is 5.9 GiB for training and eval** (`configs/stage_r4.yaml`): 8.0 GiB total − 1.6 host − 0.5, the
+  memory note's rule.
+  - **Alternative:** keep D103's 7.1 GiB, which would spill silently into shared memory with this host use.
+  - **The cost:** stage D's SFT peaked at 4.2 GiB device-wide, so training fits. The eval's OOM backoff halves the
+    batch if 1,280-token generations need it.
+- **The queue:** `GPU_DEADLINE=09:00 setsid nohup bash scripts/queue_r4.sh`, chain PID 22552, started 17:32 IST.
+  - **D-pos-v2's training:** 2,994 rows, 750 steps at ~5.8 s / step, so ~73 min.
+- **MC-A (R4-4) is a second chain** (`scripts/queue_mc_a.sh`), built and tested while this one runs, started with
+  `WAIT_PID=22552`. The order is your instruction: MC-A after B-v2's eval.
+- **Running alongside the GPU:** CPU work only, at 1 thread and nice 19 (D97).
