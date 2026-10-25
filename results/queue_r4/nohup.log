@@ -1,0 +1,6 @@
+[17:32:07] R4 chain start; GPU deadline 09:00 IST (927 min left); chain PID 22552
+[17:32:07] GPU at 56C, memory.used 1617 MiB
+[17:32:08] disk: 53 GiB free on MLStorage
+[17:32:08] start r4_train_dpos2 (timeout 10500s): uv run python -m physcal.train.stage_r4 train --arm dpos2 --stop-at 2026-10-26T07:05:00+05:30
+[18:55:45] end r4_train_dpos2: exit 0
+[18:55:45] arm dpos2: 750 steps of 750, 83 min
