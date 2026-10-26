@@ -822,3 +822,35 @@ Progress:
   (0.745).
 - [x] **GPU done at 05:54 IST**, with three 10-min temperature pauses. D117; MORNING.md.
 - [ ] **Next:** your call on the 3-seed confirmatory run (R4-3 go; its own pre-registration), then MC-B (R4-7).
+
+## 2026-10-26: decisions on the Round-4 report (your instructions at ~07:20 IST; queue armed for 23:00 IST, GPU deadline 09:00 IST on 2026-10-27)
+
+- [x] **D118 pre-registers the confirmatory run** (D-pos-v2 and B-v2, seeds 0–2, frozen R4-5 set), before anything was
+  built or run.
+  - **The primary:** P = K1 (A6c seed-mean slope > 0, Holm) ∧ C2 (≥ 0.5), on the answer's σ.
+  - **Secondary, prominent:** K6 (beats RSS) and K7 (beats X1).
+  - **The pre-specified split:** depths 1–4 vs 5.
+- [x] **D119 pre-registers MC-B (R4-7)** before any MC-B code existed.
+- [x] **D120 (your §6.5):** the mixed-level flag is in every record and tape, and replay uses it, so there is no version
+  bump. A new end-to-end tape test covers it.
+- [x] **D121, the build for D118:** stage R4 takes `--seed`, `--confirmatory` and a launch cap; plus
+  `scripts/queue_r4_seeds.sh` and `scripts/run_at.sh`.
+  - **GPU smoke tests:** a 2-step training of seed 9 (deleted afterwards), and a 4-problem dev eval with seed 0. Both
+    passed.
+  - **The confirmatory set was not touched.**
+- [x] **The waiter is armed: PID 109020, launching `queue_r4_seeds.sh` at 23:00 IST** (`kill 109020` cancels it).
+- [x] **D122, MC-B built (CPU only):**
+  - the reference programs reproduce MC-A's oracle on all 3,060 problems (max |Δσ| 3e-16);
+  - the sandbox (AST check + rlimits);
+  - 23 tests with a fake model.
+  - **Two deviations:** a 736-token budget with depth-1 examples, and two readings of the static check.
+- [x] **D123:**
+  - **X1's confirmatory predictions:** the refit is exact, and the dev predictions come out identical.
+  - **D118's analysis (`physcal/eval/r4_confirm.py`):** it reproduces R1–R8 exactly on dev data with three identical
+    seeds.
+- [x] **Full test suite (CPU, 1 thread, GPU idle):** 641 passed, 0 failed, 0 skipped.
+- [x] **D124:** the queue's second-night stages (`MC_B=1`: MC-B generation, then execution and analysis), and D118's
+  analysis once all six evals exist. Tonight's stages are unchanged.
+- [ ] **Tonight (23:00–09:00 IST):** SFT D-pos-v2 s1, s2 and B-v2 s1, s2; then the confirmatory evals, D-pos-v2 s0 and
+  B-v2 s0 (B-v2 s1 if it fits).
+- [ ] **The following night:** the remaining evals and MC-B (`MC_B=1`), then D118's analysis.

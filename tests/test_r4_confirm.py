@@ -77,23 +77,37 @@ def test_launch_cap_keeps_parity_and_is_only_lowered(tmp_path):
     assert "re-reading" in log and "host VRAM readings (MiB): 2300" in log
 
 
-def test_dry_run_order_and_commands(tmp_path):
+def _dry(tmp_path, **env):
     d = _fake_smi(tmp_path, 1500)
     e = {**os.environ, "PATH": f"{d}:{os.environ['PATH']}", "DRY_RUN": "1", "QUEUE_LOG": str(tmp_path / "q"),
-         "DISK_GUARD": "off", "GPU_DEADLINE": "09:00"}
+         "DISK_GUARD": "off", "GPU_DEADLINE": "09:00", **env}
     r = subprocess.run(["bash", str(SCRIPTS / "queue_r4_seeds.sh")], capture_output=True, text=True, env=e, timeout=600)
     assert r.returncode == 0, r.stderr
-    dry = [ln.split("DRY ", 1)[1] for ln in (tmp_path / "q" / "chain.log").read_text().splitlines()
-           if "] DRY " in ln and "commit" not in ln and "disk" not in ln]
+    return [ln.split("DRY ", 1)[1] for ln in (tmp_path / "q" / "chain.log").read_text().splitlines()
+            if "] DRY " in ln and "commit" not in ln and "disk" not in ln]
+
+
+def test_dry_run_order_and_commands(tmp_path):
+    dry = _dry(tmp_path)
     names = [ln.split(" ", 1)[0] for ln in dry]
     assert names == ["train_dpos2_s1", "train_dpos2_s2", "train_b2_s1", "train_b2_s2", "eval_dpos2_s0", "eval_b2_s0",
-                     "eval_dpos2_s1", "eval_b2_s1", "eval_dpos2_s2", "eval_b2_s2"]
+                     "eval_dpos2_s1", "eval_b2_s1", "eval_dpos2_s2", "eval_b2_s2", "r4_confirm"]
+    assert "nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.r4_confirm analyze" in dry[-1]
+    dry = dry[:-1]
     for ln in dry[:4]:
         assert "physcal.train.stage_r4 train" in ln and "--max-reserved-gib 5.9" in ln and "--stop-at" in ln
     for ln in dry[4:]:
         assert ln.split(": ", 1)[1].startswith("env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval")
         assert "--confirmatory" in ln and "--max-reserved-gib 5.9" in ln
     assert "launch cap 5.9 GiB" in (tmp_path / "q" / "chain.log").read_text()
+
+
+def test_dry_run_with_mc_b_adds_its_stages_after_the_evals(tmp_path):
+    names = [ln.split(" ", 1)[0] for ln in _dry(tmp_path, MC_B="1")]
+    assert names[10:] == ["mc_b_gen_a6c_pairs", "mc_b_gen_a6_pairs", "mc_b_gen_a6b_pairs", "r4_confirm"]
+    log = (tmp_path / "q" / "chain.log").read_text()
+    assert log.count("BLOCKED mc_b analysis") == 3  # a dry run generates nothing, so execution is skipped and logged
+    assert "physcal.eval.mc_b generate --set a6c_pairs --max-reserved-gib 5.9" in log
 
 
 # ------------------------------------------------------------------------------------------- the waiter

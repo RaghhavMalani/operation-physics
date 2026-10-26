@@ -3,8 +3,11 @@
 #   1-4. SFT D-pos-v2 seeds 1, 2, then B-v2 seeds 1, 2 (stage R4's recipe and data; only the seed changes).
 #   5-10. Confirmatory evals on the frozen R4-5 set (PHYSCAL_CONFIRMATORY=1): dpos2 s0, b2 s0, dpos2 s1, b2 s1,
 #      dpos2 s2, b2 s2. An eval needs its seed's complete adapter (750 / 750 steps); otherwise BLOCKED and the next.
+#   11. MC_B=1 only (the following night, D119): MC-B generation on A6c, A6, A6b (GPU), then its execution and
+#      analysis (CPU, 1 thread, nice 19, after the GPU stages).
+#   12. CPU: D118's analysis (physcal.eval.r4_confirm), only once all six confirmatory evals exist (D118 §10).
 # Each stage starts only if its estimate (seed 0's measured wall time) + SLACK fits before GPU_DEADLINE; otherwise SKIP
-# and the next stage is tried. No analysis tonight: D118 §10 runs it once, after all six evals exist.
+# and the next stage is tried. Trained seeds and finished evals are skipped, so the same script runs the second night.
 # The launch cap (D118 §1): host VRAM is read with nothing running in WSL (median of 8 readings, re-read while the
 # cap it gives is below parity), cap = min(5.9, total - host - 0.5) GiB, never raised; every stage gets it.
 # Every stage is a child whose PID goes to $LOG/<stage>.pid and is waited on with `wait` (never pgrep -f); every GPU
@@ -29,6 +32,9 @@ HOST_TRIES=${HOST_TRIES:-5}
 HOST_READ_S=${HOST_READ_S:-2}             # seconds between the 8 readings
 HOST_RETRY_S=${HOST_RETRY_S:-60}
 DRY_RUN=${DRY_RUN:-0}
+MC_B=${MC_B:-0}                           # 1: the MC-B stages (D119; the following night)
+MCB_EST=${MCB_EST:-2400}                  # per set: 1,020 short programs, ~1,300-token prompts (estimate, unmeasured)
+MCB_SETS=${MCB_SETS:-"a6c_pairs a6_pairs a6b_pairs"}
 SFT_ORDER=${SFT_ORDER:-"dpos2:1 dpos2:2 b2:1 b2:2"}
 EVAL_ORDER=${EVAL_ORDER:-"dpos2:0 b2:0 dpos2:1 b2:1 dpos2:2 b2:2"}
 CO_AUTHOR="Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -162,4 +168,39 @@ for item in $EVAL_ORDER; do
     "$dir/confirmatory/rollouts.jsonl.gz" "$dir/confirmatory/rollouts.meta.json" "$dir/confirmatory/metrics.json" \
     "$dir/confirmatory/summary.md"
 done
-log "R4 seeds chain done (D118 §10: the analysis waits for all six confirmatory evals)"
+# ---- 11. MC-B (D119): GPU generation per set, then CPU execution + analysis --------------------------------------------
+CPU_ENV="env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19"
+if [ "$MC_B" = 1 ]; then
+  for set in $MCB_SETS; do
+    if [ "$(left)" -lt $((MCB_EST + SLACK_S)) ] && [ "$DRY_RUN" != 1 ]; then
+      log "SKIP mc_b generate $set: $(( $(left) / 60 )) min left, needs $(( (MCB_EST + SLACK_S) / 60 )) min"; continue
+    fi
+    cool
+    lim=$((2 * MCB_EST)); [ "$(left)" -lt "$lim" ] && lim=$(left)
+    GUARD=1 run_stage "mc_b_gen_$set" "$lim" $PY -m physcal.eval.mc_b generate --set "$set" --max-reserved-gib "$CAP"; rc=$?
+    [ "$rc" != 0 ] && log "BLOCKED? mc_b_gen_$set exit $rc (see $LOG/mc_b_gen_$set.log)"
+    commit_stage "MC-B (D119): $set, one greedy program per problem (exit $rc)" \
+      "results/mc_b/$set/generations.jsonl" "results/mc_b/$set/meta.json"
+  done
+  for set in $MCB_SETS; do
+    [ -f "results/mc_b/$set/generations.jsonl" ] || { log "BLOCKED mc_b analysis $set: no generations"; continue; }
+    run_stage "mc_b_exec_$set" 3600 $CPU_ENV $PY -m physcal.eval.mc_b execute --set "$set" \
+      && run_stage "mc_b_analyze_$set" 3600 $CPU_ENV $PY -m physcal.eval.mc_b analyze --set "$set" \
+      || log "BLOCKED mc_b execute/analyze $set (see $LOG/mc_b_exec_$set.log, $LOG/mc_b_analyze_$set.log)"
+    commit_stage "MC-B (D119): $set executed in the sandbox and analyzed" "results/mc_b/$set/executions.jsonl" \
+      "results/mc_b/$set/results.json" "results/mc_b/$set/summary.md"
+  done
+fi
+
+# ---- 12. CPU: D118's analysis, once all six confirmatory evals exist ----------------------------------------------------
+n_done=0
+for item in $EVAL_ORDER; do [ -f "$OUT/${item%%:*}/seed${item##*:}/confirmatory/rollouts.jsonl" ] && n_done=$((n_done + 1)); done
+if [ "$n_done" = 6 ] || [ "$DRY_RUN" = 1 ]; then
+  run_stage r4_confirm 5400 $CPU_ENV env PHYSCAL_CONFIRMATORY=1 $PY -m physcal.eval.r4_confirm analyze \
+    || log "BLOCKED r4_confirm (see $LOG/r4_confirm.log)"
+  commit_stage "R4-3 confirmatory analysis (D118): K1-K8, P, the depth split, 3 seeds on the frozen R4-5 set" \
+    "$OUT/confirmatory"
+else
+  log "D118 §10: $n_done of 6 confirmatory evals exist; the analysis waits"
+fi
+log "R4 seeds chain done"

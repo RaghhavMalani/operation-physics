@@ -74,15 +74,17 @@ results/queue_stage_d/*.pid
 # R4 (D113): the regenerable SFT data (manifest + samples committed), stage R4's adapters / checkpoints / raw tapes,
 # MC-A's raw completions (gzipped copies committed), queue PID files
 results/phase12_sft_data_r4/*.jsonl
-results/stage_r4/*/seed0/final_adapter/adapter_model.safetensors
-results/stage_r4/*/seed0/final_adapter/tokenizer.json
-results/stage_r4/*/seed0/final_adapter/README.md
-results/stage_r4/*/seed0/final_adapter/chat_template.jinja
-results/stage_r4/*/seed0/final_adapter/tokenizer_config.json
-results/stage_r4/*/seed0/checkpoints/
-results/stage_r4/*/seed0/eval/rollouts.jsonl
+results/stage_r4/*/seed*/final_adapter/adapter_model.safetensors
+results/stage_r4/*/seed*/final_adapter/tokenizer.json
+results/stage_r4/*/seed*/final_adapter/README.md
+results/stage_r4/*/seed*/final_adapter/chat_template.jinja
+results/stage_r4/*/seed*/final_adapter/tokenizer_config.json
+results/stage_r4/*/seed*/checkpoints/
+results/stage_r4/*/seed*/eval/rollouts.jsonl
+results/stage_r4/*/seed*/confirmatory/rollouts.jsonl
 results/mc_a/*/runs.jsonl
 results/queue_r4/*.pid
 results/queue_mc_a/*.pid
 results/confirmatory_build/pid
 results/queue_r4_tail/*.pid
+results/queue_r4_seeds/*.pid

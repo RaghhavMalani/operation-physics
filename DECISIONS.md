@@ -4438,3 +4438,19 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     concentration (80% in the worst 5%).
   - **The confirmatory files were not read** for this: the development-set run used the development files and the
     development X1 predictions.
+
+### D124. The queue's second-night stages, added behind flags; tonight's stages unchanged (2026-10-26, ~08:00 IST)
+- **What changed in `scripts/queue_r4_seeds.sh`:** the armed waiter (PID 109020) execs it at 23:00, so this edit
+  applies tonight. Tonight's GPU stages are unchanged; the dry-run test checks the stage list exactly.
+  - **Step 11, MC-B (D119), only with `MC_B=1`** (the following night). Tonight's waiter does not set it.
+    - **On the GPU:** generation on A6c, A6, A6b. Each set is gated on an unmeasured estimate of 40 min, plus the slack.
+    - **Then on the CPU:** sandbox execution and D119's analysis per set (1 thread, nice 19).
+  - **Step 12, D118's analysis (CPU),** only when all six confirmatory evals exist. Tonight it only logs how many exist.
+- **Skips:** trained seeds and finished evals are already skipped. So the second night is the same script with
+  `MC_B=1`: D-pos-v2 s1 / s2 and B-v2 s2 evals (whichever remain), then MC-B, then the analysis.
+- **Alternative:** a separate script for the second night. Rejected: the shared stages would be duplicated, and a
+  dry-run test covers both modes.
+- **Housekeeping:** `.gitignore` now covers seeds 1 and 2 as well as seed 0. Ignored: the adapter weights, the
+  checkpoints, the raw development and confirmatory rollouts, and the new queue's PID files. Everything the queue
+  commits stays tracked (checked with `git check-ignore`).
+- **The full test suite (08:03–08:13 IST, CPU, 1 thread, GPU idle): 641 passed, 0 failed, 0 skipped.**
