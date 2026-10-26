@@ -4406,3 +4406,35 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **`print` is a sink** in the child, so a program that prints still returns its value.
   - **No GPU was used for MC-B,** and the prompt has never produced a model output. The first generation is the
     pre-registered run, the following night.
+
+### D123. D118's analysis is built and checked before any confirmatory completion exists; X1's confirmatory predictions are computed (D118 §3)
+- **X1 on the confirmatory set** (`x1_a6c confirmatory`; CPU, 1 thread, nice 19, 2 min, 10:53–10:55 IST):
+  - **The refit:** D99's refit reproduces D73's published numbers exactly (max abs difference 0.0 on all three feature
+    sets).
+  - **A check added before the frozen files are read:** the refit's σ̂ on the development sets equals the committed
+    `results/x1_text_sigma/a6c/predictions.jsonl` exactly. It passed.
+  - **The output:** 3,060 predictions (`results/x1_text_sigma/confirmatory/`). These are X1's σ̂ from problem texts
+    only, and nothing was scored.
+- **The analysis: `physcal/eval/r4_confirm.py`** (D118 §5–§10).
+  - **What it computes:**
+    - the seed-mean slopes and expected-score differences with stage B's joint bootstrap;
+    - K1–K8 with Holm;
+    - P = K1 ∧ C2;
+    - C1–C3 per source;
+    - the depth 1–4 / 5 split;
+    - by depth and by chain type;
+    - regret concentration;
+    - each arm through stage B's analysis.
+  - **Its two guards:** it refuses without `PHYSCAL_CONFIRMATORY=1`, and before all six evals exist
+    (`--allow-incomplete` only if one is BLOCKED for good, D118 §10).
+  - **Stage B's analysis takes three optional arguments** (another stage-A config, each seed's eval subdirectory, the
+    output dir). The defaults are unchanged; stage B's, stage D's, R4's and MC-A's tests pass (33).
+- **The check (`tests/test_r4_confirm.py`, 3 more tests):**
+  - **The setup:** the analysis pointed at the development sets, with seed 0's development tapes copied into three
+    "seeds".
+  - **The result:** every K point estimate equals D113's R1–R8 (`results/stage_r4/results.json`) to 1e-12, and the seed
+    SD is 0.
+  - **Also reproduced:** FINDINGS #30's depth curve for (a) (1.00 / 0.97 / 0.76 / 0.38 / 0.06) and its regret
+    concentration (80% in the worst 5%).
+  - **The confirmatory files were not read** for this: the development-set run used the development files and the
+    development X1 predictions.

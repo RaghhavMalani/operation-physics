@@ -1,6 +1,7 @@
 """X1 on A6c (DECISIONS.md D99): D73's shallow text model of σ*, refit exactly, applied to the noise-allocation pairs.
 
     OMP_NUM_THREADS=1 nice -n 19 uv run python -m physcal.eval.x1_a6c run [--n-jobs 1]
+    PHYSCAL_CONFIRMATORY=1 OMP_NUM_THREADS=1 nice -n 19 uv run python -m physcal.eval.x1_a6c confirmatory   # D118 §3
 
 X1's fitted models were not saved, so they are refit: the same fit set (regenerated from D73's seeds), the same
 features and the hyperparameters D73's grouped CV selected (results/x1_text_sigma/selection.json); no new selection.
@@ -157,6 +158,40 @@ def run(n_jobs: int = 1) -> dict:
     return res
 
 
+CONF_OUT = "confirmatory"  # results/x1_text_sigma/confirmatory (D118 §3)
+
+
+def run_confirmatory(n_jobs: int = 1) -> dict:
+    """D118 §3: the same exact refit, D99's reproduction gate, then two checks before the frozen R4-5 files are read:
+    the refit's σ̂ on the development sets equals the committed predictions.jsonl exactly. Writes σ̂ for every member
+    of the confirmatory A6 / A6b / A6c (needs PHYSCAL_CONFIRMATORY=1)."""
+    import os
+
+    from physcal.eval.run_eval import CONFIRMATORY_ENV
+
+    if os.environ.get(CONFIRMATORY_ENV) != "1":
+        raise PermissionError(f"the confirmatory set is frozen (D113); set {CONFIRMATORY_ENV}=1 (D118 §3)")
+    cfg = x1._config()
+    out = REPO_ROOT / cfg["output_dir"] / CONF_OUT
+    out.mkdir(parents=True, exist_ok=True)
+    published = json.loads((REPO_ROOT / cfg["output_dir"] / "results.json").read_text())
+    a6, a6b = x1.load_pairs(cfg["pairs"]["a6"]), x1.load_pairs(cfg["pairs"]["a6b"])
+    models, test_set = refit(n_jobs)
+    rep = reproduction(models, test_set, a6, a6b, published)
+    a6c = x1.load_pairs(cfg["pairs"]["a6"].replace("a6_pairs", "a6c_pairs"))
+    dev = predictions(models, {"a6": a6, "a6b": a6b, "a6c": a6c})
+    committed = [json.loads(line) for line in (REPO_ROOT / cfg["output_dir"] / OUT / "predictions.jsonl").open()]
+    rep["development_predictions_identical"] = dev == committed
+    rep["ok"] = rep["ok"] and rep["development_predictions_identical"]
+    (out / "reproduction.json").write_text(json.dumps(rep, indent=1, default=str))
+    if not rep["ok"]:
+        return {"decision": "D118 §3", "refused": "the refit does not reproduce D73 / D99", "reproduction": rep}
+    conf = {s: x1.load_pairs(cfg["pairs"]["a6"].replace("a6_pairs", f"{CONF_OUT}/{s}_pairs")) for s in ("a6", "a6b", "a6c")}
+    rows = predictions(models, conf)
+    (out / "predictions.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    return {"decision": "D118 §3 (X1 on the confirmatory set)", "reproduction": rep, "n_predictions": len(rows)}
+
+
 def _slope(t: dict) -> str:
     if t.get("slope") is None:
         return "–"
@@ -211,9 +246,12 @@ def render(res: dict) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("action", choices=["run"])
+    ap.add_argument("action", choices=["run", "confirmatory"])
     ap.add_argument("--n-jobs", type=int, default=1, help="problem generation workers (D97: 1 while the GPU is busy)")
     args = ap.parse_args()
+    if args.action == "confirmatory":
+        print(json.dumps(run_confirmatory(args.n_jobs), indent=1, default=str))
+        return
     res = run(args.n_jobs)
     print(json.dumps(res["reproduction"], indent=1) if "refused" in res else render(res))
 

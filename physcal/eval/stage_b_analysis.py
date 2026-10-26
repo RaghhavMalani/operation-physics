@@ -174,10 +174,13 @@ def describe_tape(problems: list[dict], recs: list[dict], bds: list[dict], tau: 
 
 
 # ------------------------------------------------------------------------------------------- the analysis
-def analyze(cfg: dict | None = None, seeds_root: Path | None = None) -> dict:
+def analyze(cfg: dict | None = None, seeds_root: Path | None = None, sa: dict | None = None, eval_subdir: str = "eval",
+            out_dir: Path | None = None) -> dict:
+    """`sa` / `eval_subdir` / `out_dir` (D118): another stage-A config (the confirmatory files and their X1), each
+    seed's eval directory name, and where results.json / summary.md go. The defaults are stage B's."""
     cfg = cfg or _config()
     ac = cfg["analysis"]
-    pc, sa = load_config(ac["pairs_config"]), load_config(ac["stage_a_config"])
+    pc, sa = load_config(ac["pairs_config"]), sa or load_config(ac["stage_a_config"])
     sc = reward_config()["scoring"]
     floor = pc["analysis"]["sigma_floor_rel"]
     root = seeds_root or REPO_ROOT / cfg["output_dir"]
@@ -197,7 +200,7 @@ def analyze(cfg: dict | None = None, seeds_root: Path | None = None) -> dict:
 
     seeds, sig, bds = [], {}, {}
     for s in cfg["seeds"]:
-        recs = read_records(root / f"seed{s}" / "eval")
+        recs = read_records(root / f"seed{s}" / eval_subdir)
         if recs is None:
             res["seeds"][s] = {"ran": False}
             continue
@@ -263,7 +266,7 @@ def analyze(cfg: dict | None = None, seeds_root: Path | None = None) -> dict:
     res["reading"] = reading(t, res["seed_mean"])
     for s in seeds:
         res["seeds"][s].pop("_scores")
-    out = REPO_ROOT / cfg["output_dir"] if seeds_root is None else seeds_root
+    out = out_dir or (REPO_ROOT / cfg["output_dir"] if seeds_root is None else seeds_root)
     out.mkdir(parents=True, exist_ok=True)
     (out / "results.json").write_text(json.dumps(res, indent=1, default=_json_default))
     (out / "summary.md").write_text(render(res))

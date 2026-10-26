@@ -59,6 +59,10 @@ analysis:                              # D113 (physcal.eval.r4_analysis)
 confirmatory:                          # D118: the 3-seed confirmatory run on the frozen R4-5 set (R4-3's go)
   seeds: [0, 1, 2]                     # seed 0 = the existing adapters; 1 and 2 trained with this recipe
   output_subdir: confirmatory          # <arm>/seed<s>/confirmatory/ (rollouts, metrics)
+  set_subdir: confirmatory             # data/eval_sets/<generator_version>/confirmatory/ (the analysis's stage-A files)
+  x1_predictions: results/x1_text_sigma/confirmatory/predictions.jsonl   # D118 §3: D99's refit (x1_a6c confirmatory)
+  x1_reproduction: results/x1_text_sigma/confirmatory/reproduction.json
+  analysis_output: results/stage_r4/confirmatory   # results.json, summary.md, stage_b_<arm>/ (D118 §9)
   splits:                              # replace the development sets; run_eval needs PHYSCAL_CONFIRMATORY=1
     a6_pairs:
       file: data/eval_sets/2.0.0+bdbb2279/confirmatory/a6_pairs.jsonl

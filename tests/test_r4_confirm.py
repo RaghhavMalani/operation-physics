@@ -1,6 +1,7 @@
 """D118 (the R4-3 confirmatory run): stage R4's seed and confirmatory options, tonight's queue (dry run, the launch
 cap with a fake nvidia-smi) and the 23:00 waiter (scripts/run_at.sh). CPU only."""
 
+import copy
 import json
 import os
 import subprocess
@@ -132,3 +133,66 @@ def test_queue_logs_are_ignored_by_nothing_and_the_scripts_are_executable():
         assert os.access(SCRIPTS / name, os.X_OK)
     r = subprocess.run(["git", "check-ignore", "-q", "results/queue_r4_seeds/chain.log"], cwd=REPO_ROOT)
     assert r.returncode == 1  # the chain log is committed after every stage
+
+
+# ------------------------------------------------------------------------------------------- the analysis (D118)
+DEV_EVAL = {arm: REPO_ROOT / "results" / "stage_r4" / arm / "seed0" / "eval" for arm in ("dpos2", "b2")}
+
+
+def test_the_analysis_refuses_without_the_guard_and_before_all_six_evals(monkeypatch, tmp_path):
+    from physcal.eval import r4_confirm
+    from physcal.eval.run_eval import CONFIRMATORY_ENV
+
+    monkeypatch.delenv(CONFIRMATORY_ENV, raising=False)
+    with pytest.raises(PermissionError):
+        r4_confirm.analyze(root=tmp_path)
+    monkeypatch.setenv(CONFIRMATORY_ENV, "1")
+    with pytest.raises(RuntimeError, match="all six evals"):
+        r4_confirm.analyze(root=tmp_path)
+
+
+def test_confirmatory_stage_a_config_points_at_the_frozen_files():
+    from physcal.eval import r4_confirm
+
+    sa = r4_confirm.stage_a_config()
+    assert sa["generator_version"] == "2.0.0+bdbb2279/confirmatory"
+    assert sa["alternatives"]["x1_predictions"] == "results/x1_text_sigma/confirmatory/predictions.jsonl"
+    assert load_config("stage_a")["generator_version"] == "2.0.0+bdbb2279"  # the development config is untouched
+
+
+@pytest.mark.skipif(not all((d / "rollouts.jsonl").exists() or (d / "rollouts.jsonl.gz").exists()
+                            for d in DEV_EVAL.values()), reason="seed 0's development evals not on disk")
+def test_three_identical_seeds_reproduce_the_one_seed_development_analysis(monkeypatch, tmp_path):
+    """The pipeline on the development sets with seed 0's tapes copied into three seeds: every seed-mean point
+    estimate equals D113's one-seed value (R1-R8, results/stage_r4/results.json), and the seed SD is 0."""
+    import shutil
+
+    from physcal.eval import r4_confirm
+    from physcal.eval.run_eval import CONFIRMATORY_ENV
+
+    monkeypatch.setenv(CONFIRMATORY_ENV, "1")
+    cfg = copy.deepcopy(load_config("stage_r4"))
+    cc = cfg["confirmatory"]
+    cc.update(set_subdir=".", x1_predictions="results/x1_text_sigma/a6c/predictions.jsonl",
+              x1_reproduction="results/x1_text_sigma/a6c/reproduction.json",
+              analysis_output=str(tmp_path / "out"))
+    cfg["analysis"]["bootstrap"] = 200
+    for arm, d in DEV_EVAL.items():
+        for s in cc["seeds"]:
+            dst = tmp_path / "root" / arm / f"seed{s}" / cc["output_subdir"]
+            dst.mkdir(parents=True)
+            src = d / "rollouts.jsonl"
+            shutil.copy(src if src.exists() else d / "rollouts.jsonl.gz", dst)
+    res = r4_confirm.analyze(cfg, root=tmp_path / "root")
+    dev = json.loads((REPO_ROOT / "results" / "stage_r4" / "results.json").read_text())["tests"]
+    for k, r in zip(r4_confirm.TESTS, [f"R{i}" for i in range(1, 9)]):
+        assert res["main"]["tests"][k]["value"] == pytest.approx(dev[r]["value"], abs=1e-12), k
+    for k in ("K1", "K2", "K3", "K4"):
+        assert res["main"]["tests"][k]["seed_sd"] == pytest.approx(0.0, abs=1e-12)
+    assert res["complete"] and res["seeds"] == {"dpos2": [0, 1, 2], "b2": [0, 1, 2]}
+    assert res["primary"]["confirmed"] == (res["main"]["tests"]["K1"]["holm"]["rejected"] and dev["R1"]["value"] >= 0.5)
+    n = {name: s["n_problems"] for name, s in res["subsets"].items()}
+    assert n["depths_1_4"] + n["depth_5"] == res["n_problems"] == 3060
+    assert set(res["by_depth"]) == {"1", "2", "3", "4", "5"}
+    assert "error" not in res["stage_b_analysis"]["dpos2"]
+    assert (tmp_path / "out" / "summary.md").read_text().startswith("# R4-3 confirmatory run")
