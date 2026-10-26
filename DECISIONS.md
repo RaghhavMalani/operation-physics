@@ -4066,3 +4066,23 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
     eval before B-v2's training. Nothing depends on the order: each eval uses only its own adapter.
   - **The R4 chain's own analysis** (after B-v2's eval) runs without D-pos-v2. The tail chain's later analysis replaces
     it.
+
+### D117. Tonight's run, 2026-10-25/26: what happened after D116 (overnight rules: decision, alternatives, why)
+1. **Your 21:45 message** ("continue exactly as queued … don't start anything that isn't pre-registered") was
+   followed. Nothing new was started on the GPU after it.
+2. **The R4-3 go fired** (FINDINGS #30: D-pos-v2 meets C1–C3 on (a), (b) and (c)). The pre-registered consequence is
+   3 seeds of both arms on the frozen R4-5 set. **It is not started tonight**, because it needs its own entry (D113 §4).
+   That entry is the next step, for your approval.
+3. **MC-A's stopping rule fired** (FINDINGS #31): robust MC-A does not beat RSS on A6c, so k is not increased in any
+   later run.
+4. **The gates' MC-A estimate was too high.** It used B-v2's eval rate (1.24 s per completion; 172 min per set), while
+   MC-A ran at 0.86–1.06 s (117–144 min). So A6 and A6b both ran, and the GPU finished at 05:54, 3 h before the
+   deadline. Alternative: a lower default. Rejected tonight: a pessimistic gate only skips; it never risks the
+   deadline.
+5. **Three 10-min temperature pauses (88 °C):**
+   - **17:57** during D-pos-v2's training, while the full test suite ran on one CPU thread. That is the memory note's
+     pattern; one thread was enough to tip it.
+   - **19:24** during B-v2's training, GPU load alone.
+   - **02:19** during MC-A on A6, GPU load alone.
+6. **One exploratory check, after the pre-registered analysis** (FINDINGS #30): the regret of D-pos-v2's σ against
+   σ\*, by depth and by tail share. It used the eval tapes only (CPU), no model.

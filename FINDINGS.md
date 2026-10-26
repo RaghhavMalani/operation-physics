@@ -1612,3 +1612,69 @@ in-distribution for both arms (mixed per-given levels in training); depth 5 is h
     beats the heuristics hinges on the arithmetic of long symbolic derivatives, which MC-A (#31) and a later MC-B
     would move off the model.
   - **One seed, development sets.** The 3-seed confirmation on R4-5's frozen set is the pre-registered next step.
+
+## #31. R4-4 MC-A: perturbing the inputs and re-asking the model does not beat the RSS heuristic. The model's own arithmetic errors swamp the input noise; the stopping rule fires (k is not increased). The exact solver on the same perturbations reaches σ\*'s level, and the raw spread is the best end-to-end σ and correctness signal (D113 §7; 2026-10-26 night)
+
+**Status:** pre-registered diagnostic (D113 §7). The stopping rule is A6c's; A6 and A6b are descriptive.
+- **The setup:** B-v2 (stage R4 `b2`, seed 0; prompt v5, greedy, 1,280 tokens, batch 16), k = 8 perturbations per
+  problem, 8,160 runs per set.
+  - **The perturbation:** each noisy given is drawn as x_meas / (1 + s·z), shown at 5 s.f., in the problem text.
+  - **Run 0:** B-v2's own eval completion.
+  - **Coverage:** no problem excluded; all runs present.
+  - **Run times:** 117 / 144 / 132 min (A6c / A6 / A6b).
+- **The comparison:** the oracle-centred expected crps_log, the same as #27–#30; cluster bootstrap over pairs,
+  B = 10,000.
+
+**A6c (1,020 problems), k = 8:**
+
+| σ source | expected crps_log | median ln(σ / σ\*) | 1σ / 2σ coverage | A6c slope [90% CI] | aleatoric (run 0 correct) | epistemic AUROC | end-to-end |
+|---|---|---|---|---|---|---|---|
+| σ̂ = σ\* (ideal) | −0.0351 | 0 | 70% / 96% | +1.00 | −0.0246 | 0.665 | −0.145 |
+| **oracle (exact chain, SD)** | **−0.0358** | −0.04 | 68% / 91% | +1.01 [+0.89, +1.12] | −0.0250 | 0.656 | −0.146 |
+| X1 primary | −0.0373 | +0.02 | 70% / 91% | −0.00 | −0.0262 | 0.666 | −0.146 |
+| RSS heuristic | −0.0383 | −0.10 | 67% / 87% | 0.00 | −0.0271 | 0.654 | −0.149 |
+| **robust (filtered, MAD × 1.4826)** | **−0.0446** | −0.12 | 61% / 82% | +0.48 [+0.04, +0.90] | −0.0262 | 0.656 | −0.140 |
+| raw (SD of ln μ) | −0.0580 | +0.16 | 77% / 93% | +0.53 [+0.25, +0.79] | −0.0280 | **0.745** | **−0.136** |
+
+- **The stopping rule (R4-4): robust − RSS = −0.0062 [−0.0088, −0.0039], one-sided p = 1. Robust MC-A does not beat
+  RSS, so k is not increased.**
+  - **Robust − X1:** −0.0072 [−0.0099, −0.0049].
+  - **Oracle − RSS:** +0.0026 [+0.0023, +0.0028]. The bound is attainable with k = 8 when the computation is exact.
+- **The k curve (A6c, expected crps_log for k = 2 / 4 / 8):**
+  - oracle −0.0392 / −0.0366 / −0.0358;
+  - robust −0.0566 / −0.0464 / −0.0446;
+  - **raw −0.0556 / −0.0566 / −0.0580: it gets worse with k,** since each extra run is another chance of an
+    arithmetic outlier.
+- **The drop rate is nearly nil:** 0.02% invalid, and 0.1% removed by the step-name filter.
+  - **What this means:** B-v2's errors are numeric (the same steps with wrong numbers), not structural. R4-4's filter
+    removes almost none of them.
+  - **So the robust variant's gain over raw** comes from the MAD, not the filter.
+- **A6 and A6b (descriptive), robust / raw / oracle / RSS / X1:**
+  - **A6:** expected −0.0597 / −0.0738 / −0.0464 / −0.0500 / −0.0491 (σ\* −0.0454).
+    - A6 slopes +1.12 [+0.52, +1.70] (robust), +1.38 (raw) and +0.99 (oracle).
+    - **MC-A recovers the value-dependent sensitivity** that B-v2's stated σ lacks (−0.29, #30), but noisily.
+  - **A6b:** expected −0.0512 / −0.0892 / −0.0298 / −0.0300 / −0.0297.
+    - Raw's slope on Δ ln truth is +0.14 [+0.08, +0.20]. That is inside D59's ±0.3 margin but positive: the model's
+      errors grow with magnitude.
+- **R4-6's three estimands, kept apart:**
+  - **Aleatoric** (oracle-centred, run 0 computation-correct, 18% of A6c): robust −0.0262 equals X1 (−0.0262) and is
+    above RSS (−0.0271). On valid computations MC-A is as good as the best surface reader, not better.
+  - **Epistemic:** raw's spread is the best correctness signal of any σ source. Its AUROC for run 0 being wrong is
+    0.745 on A6c (σ\* 0.665, X1 0.666), 0.670 on A6 and 0.696 on A6b. The same arithmetic instability that ruins it
+    as an aleatoric σ flags wrong answers.
+  - **End-to-end** (the verifier's crps_log of run 0's μ with the source's σ, against the truth): raw is best on all
+    three sets:
+    - A6c −0.136 vs RSS −0.149 and σ\* −0.145;
+    - A6 −0.218 vs −0.246;
+    - A6b −0.310 vs −0.341.
+    - **Why:** run 0's μ is computation-correct (within 0.1%) on only 8–20%. A σ that also covers the model's own
+      error is the better delivered answer.
+- **What it means:**
+  - **MC-A as specified is a baseline, not a contribution** (ChatGPT's reading). With this model the input-noise
+    signal is buried under computational noise, which also grows with the answer's magnitude.
+  - **The oracle row shows the design is sound:** an exact executor on the same 8 perturbations comes within 0.0007
+    of σ\*. That is the case for MC-B (an executable program; R4-7, its own pre-registration).
+  - **One positive side-result** fits R4-8's framing: input-perturbation disagreement is a strong correctness signal
+    (AUROC 0.75), comparable in kind to self-consistency's cross-sample agreement.
+  - **Not tested here:** whether it beats self-consistency at equal sampling cost. That needs X2's k-cost curve on these
+    sets, and belongs in R4-7.
