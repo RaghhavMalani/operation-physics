@@ -4086,3 +4086,111 @@ A1–A8 win; CLAUDE.md is to be updated with the write-up framing.
    - **02:19** during MC-A on A6, GPU load alone.
 6. **One exploratory check, after the pre-registered analysis** (FINDINGS #30): the regret of D-pos-v2's σ against
    σ\*, by depth and by tail share. It used the eval tapes only (CPU), no model.
+
+## 2026-10-26: decisions on the Round-4 morning report (your instructions at ~07:20 IST; queue auto-starts 23:00 IST, GPU deadline 09:00 IST on 2026-10-27)
+
+Your decisions on MORNING.md (2026-10-26) §6, as written:
+- **§6.1:** pre-register the 3-seed confirmatory run (D118, below).
+- **§6.2:** C2 is part of R4-3's criterion (D113 [REVIEW]): confirmed.
+- **§6.3 / §6.4:** D114's and D116's deviations are accepted.
+- **§6.5:** the mixed-level option is not a version bump, provided every problem record and tape stores the flag and replay
+  uses it; otherwise the generator's minor version is bumped (D120).
+- **MC-B (R4-7):** pre-registered separately (D119) and built CPU-only, with no training.
+
+### D118. Pre-registration of the R4-3 confirmatory run: D-pos-v2 and B-v2, 3 seeds each, on the frozen R4-5 set (your §6.1 decision; written before any seed-1 or seed-2 model, any completion on the confirmatory set, or any statistic computed from it exists)
+- **Status: confirmatory.** FINDINGS #30 (one seed, development sets) motivates this run. Nothing below was chosen from the
+  confirmatory set, which no model or statistic has touched yet (D113 §8's guard).
+- **1. Arms and seeds.**
+  - **The arms:** D-pos-v2 (stage R4 `dpos2`) and B-v2 (`b2`), seeds 0, 1 and 2.
+  - **Seed 0:** the existing adapters (`results/stage_r4/<arm>/seed0/final_adapter`, trained 2026-10-25 under D113 /
+    D115). They are not retrained.
+  - **Seeds 1 and 2:** stage R4's recipe exactly (`configs/stage_r4.yaml`, D113 §2), with only the seed changed.
+    - **What the seed sets:** the LoRA init, the data shuffle and the trainer's seed (stage B's convention, D104).
+    - **The data:** the same R4-1 files for every seed (manifest SHA-256s checked at load). Seeds vary training, not the
+      data. Alternative: redraw the mixed levels per seed. Rejected: stage B's 3 seeds also shared one dataset, and the
+      question is the recipe's seed variance.
+  - **The cap:** 5.9 GiB (D115) for parity with seed 0. If the launch reading of host VRAM is above 1.6 GiB, the cap is
+    lowered to 8.0 − host − 0.5 GiB and logged. It is never raised. The cap changes numerics only if an OOM backoff
+    fires, and every backoff is logged.
+- **2. The confirmatory eval: the seed-0 development eval's settings exactly, on the frozen R4-5 files.**
+  - **The files:** `data/eval_sets/2.0.0+bdbb2279/confirmatory/{a6,a6b,a6c}_pairs.jsonl`, 1,020 problems each,
+    checksums from their manifests, every problem regenerated and compared before generation.
+  - **The settings:** stage B's eval config (`stage_b.eval_config`), greedy, prompt v5, the pinned 4-bit base, the
+    adapter unmerged, 1,280 new tokens (D114), batch 16 (D116).
+  - **The guard:** `PHYSCAL_CONFIRMATORY=1` is set only by these six evals and by the analysis.
+  - **The output:** `results/stage_r4/<arm>/seed<s>/confirmatory/`, with the split names `a6_pairs` / `a6b_pairs` /
+    `a6c_pairs`.
+- **3. Comparators on the confirmatory set (CPU, no model):**
+  - **σ\***, and **RSS** (D95's heuristic, givens scope);
+  - **X1:** D99's exact refit of D73's model, applied to the confirmatory pairs. It is used only if the refit reproduces
+    D73's published results (D99's rule, tolerance 1e-9). Otherwise every X1 test is "missing" and enters Holm with
+    p = 1.
+  - **The oracle-centred terms:** as stage A (4,000 predictive draws per problem, seed tag `stage_a`).
+- **4. The σ values:**
+  - **D-pos-v2:** D113 §3's three, unchanged: (a) the answer's σ_rel, (b) the line's X, (c) the exact combination of
+    the line's own terms. Plus (c_S), descriptive.
+  - **B-v2:** (a) only.
+- **5. The seed-mean statistics: stage B's joint bootstrap (D104), unchanged.**
+  - **The bootstrap:** over pairs, B = 10,000, seed 0. Each resample draws the pairs once, and every seed's statistic
+    is recomputed on that resample (`stage_b_analysis.seed_mean_slope` / `expected_diff`).
+  - **The estimate:** the mean over the 3 seeds of the per-seed statistic.
+  - **The slope:** D95's OLS of Δ ln σ on Δ ln σ\* within pairs, with an intercept.
+  - **The pair sets, as D113 §4, per seed:**
+    - **A6c (a):** pairs where both members are answered.
+    - **A6c (b) and (c):** all pairs (unparsed → the floor).
+    - **A6b (a):** computation-correct pairs. **A6b (b) and (c):** all pairs.
+- **6. The primary hypothesis P (your wording): D-pos-v2's answer σ (a) propagates on A6c at the 3-seed mean.**
+  - **P is confirmed iff both hold:**
+    - **K1:** the seed-mean A6c slope is > 0 (one-sided bootstrap p, Holm-adjusted below, < 0.05);
+    - **C2:** the seed-mean point estimate is ≥ 0.5.
+  - **Reported with it:**
+    - the seed-mean 90% CI (C1's form);
+    - C3, the A6b seed-mean slope's 90% CI inside (−0.3, +0.3), D59's margin;
+    - the label "meets D113's full criterion" iff C1, C2 and C3 all hold.
+  - **[REVIEW]** C3 is reported but is not part of P, because your wording names only the slope and C2. Alternative: P =
+    C1 ∧ C2 ∧ C3, D113's full criterion.
+- **7. The tests: Holm over K1–K8 at α = 0.05, as D113's R1–R8, at the 3-seed mean.**
+  - **K1 / K2 / K3:** D-pos-v2's A6c seed-mean slope > 0 for (a) / (b) / (c). **K1 is the primary.**
+  - **K4:** B-v2's A6c seed-mean slope > 0.
+  - **K5:** the seed-mean oracle-centred expected crps_log, D-pos-v2 (a) − B-v2 > 0.
+  - **K6, secondary, reported prominently:** D-pos-v2 (a) − RSS > 0 ("beats RSS", R6).
+  - **K7, secondary, reported prominently:** D-pos-v2 (a) − X1 > 0 ("beats X1", R7).
+  - **K8:** B-v2 − RSS > 0.
+  - **K5–K8:** per problem, the mean over seeds of the expected-score difference, pooled over the three sets (problems
+    with predictive draws). The bootstrap is clustered over pairs (B = 10,000, seed 0), as D113's R5–R8.
+- **8. The pre-specified split: training depths 1–4 vs the held-out depth 5.**
+  - **On each subset:** K1–K4's seed-mean slopes and K5–K8's differences, each with its 90% / 95% CI and one-sided p.
+  - **The 3-seed bootstrap** is the same as above, restricted to the subset's pairs.
+  - **These are subgroup estimates, not in the Holm family.** No confirmatory claim is made from a subgroup.
+  - **[REVIEW]** Alternative: put the 16 subgroup tests into the Holm family. Rejected: they would dilute the primary
+    for estimates whose job is to show where the effect lives (FINDINGS #30: the development set's A6c slope fell from
+    1.00 at depth 1 to 0.06 at depth 5).
+- **9. Also reported, untested:**
+  - per-seed values and the seed SD;
+  - each arm through stage B's analysis at the 3-seed mean (B1–B5, D59's labels);
+  - D-pos-v2's line diagnostics per seed (D113 §5);
+  - the A6c slope by depth 1–5 and by chain type (D113 §6);
+  - **pre-specified here, after FINDINGS #30's exploratory look:** regret concentration. That is the share of (a)'s
+    expected-score regret against σ\* that sits in its worst 5% of problems, and the mean regret by depth.
+- **10. When the analysis runs: once, after all six confirmatory evals exist.**
+  - **Interim reports** (MORNING.md before then) give only operational counts per eval: completions, truncation and
+    parse-fail rates, OOM backoffs.
+  - **What they never give:** slopes, scores or coverage.
+  - **If an eval is BLOCKED and cannot be rerun:** the analysis runs on the seeds that exist and is labelled
+    "incomplete (n seeds)". It still counts as the confirmatory analysis; it is not rerun when the missing seed appears.
+- **11. Order and budget (`scripts/queue_r4_seeds.sh`):**
+  - **The order:** SFT of D-pos-v2 seeds 1 and 2, then B-v2 seeds 1 and 2. Then the confirmatory evals: D-pos-v2 s0,
+    B-v2 s0, D-pos-v2 s1, B-v2 s1, D-pos-v2 s2, B-v2 s2.
+  - **The gate:** each stage starts only if its measured estimate plus 15 min fits before 09:00 IST. A stage that does
+    not fit is skipped, and the next one is tried.
+  - **The estimates (seed 0's wall times):**
+    - SFT: D-pos-v2 83 min, B-v2 80 min, each including one 10-min pause;
+    - eval: D-pos-v2 111 min, B-v2 65 min.
+  - **Tonight:** the four SFTs, then the evals in order as long as they fit (seed 0 of both arms expected).
+  - **The following night:** the remaining evals, then this analysis (CPU).
+- **12. The reading, fixed now:**
+  - **P confirmed:** "D-pos-v2's explicit sensitivity computation propagates measurement noise on fresh problems,
+    across 3 seeds".
+  - **K6 / K7:** say whether that also buys a better expected score than RSS / X1.
+  - **P not confirmed:** reported as a failed confirmation, with the same prominence as a success. FINDINGS #30's
+    one-seed result then stands as development-set evidence only.
