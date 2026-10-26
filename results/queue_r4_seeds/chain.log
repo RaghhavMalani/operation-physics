@@ -14,3 +14,11 @@
 [01:55:54] guard(10400): stage continued (GPU at 55C)
 [02:29:56] end train_dpos2_s2: exit 0
 [02:29:56] train dpos2 seed 2: 750 steps of 750, 91 min
+[02:29:59] commit 'R4 confirmatory (D118): SFT dpos2 seed 2 on the R4-1 data, 750 steps (exit 0)': pushed
+[02:29:59] GPU at 66C, memory.used 710 MiB
+[02:30:01] disk: 53 GiB free on MLStorage
+[02:30:01] start train_b2_s1 (timeout 26701s): uv run python -m physcal.train.stage_r4 train --arm b2 --seed 1 --stop-at 2026-10-27T09:45:00+05:30 --max-reserved-gib 5.9
+[03:12:35] guard(19129): GPU at 88C > 87C: stage stopped for 600s
+[03:22:35] guard(19129): stage continued (GPU at 55C)
+[03:54:26] end train_b2_s1: exit 0
+[03:54:26] train b2 seed 1: 750 steps of 750, 84 min
