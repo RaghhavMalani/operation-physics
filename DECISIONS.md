@@ -4194,3 +4194,116 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **K6 / K7:** say whether that also buys a better expected score than RSS / X1.
   - **P not confirmed:** reported as a failed confirmation, with the same prominence as a success. FINDINGS #30's
     one-seed result then stands as development-set evidence only.
+
+### D119. Pre-registration of MC-B (R4-7): the model writes the problem's program, a sandboxed interpreter runs it on MC-A's perturbations (your decision; written before any MC-B code, prompt output or score exists). Build and CPU tests now, with no training; the GPU run comes the following night
+- **Status: a prototype, inference only.** It runs on the development sets A6c / A6 / A6b, so nothing here is
+  confirmatory. PAL and Program-of-Thoughts (R4-9, unverified) limit its novelty.
+  - **Its role:** the "executable computation" arm of R4-8's comparison, next to MC-A's oracle (an exact executor) and
+    D-pos-v2 (a learned explicit computation).
+- **1. The model: the pinned 4-bit base (Qwen2.5-Math-1.5B-Instruct, D78), no adapter.**
+  - **The settings:** the unsloth 4-bit loader, as every Phase 12 eval; greedy; one completion per problem.
+  - **Why no adapter:**
+    - the SFT arms were trained on the `<steps>` / `<answer>` format without code;
+    - the instruct model was trained on tool-integrated reasoning in Python, so few-shot program writing is in its
+      distribution;
+    - and no training is allowed here.
+  - **Alternative 1: Qwen2.5-Math's own TIR format** (code with the values hard-coded, the interpreter's output fed
+    back, a boxed answer). Rejected as the primary format, because its programs hard-code the givens. Re-running them
+    on perturbed inputs would mean rewriting numeric literals in model-written code, which is ambiguous when a value
+    appears twice or is converted before use. A function whose parameters are the givens' own symbols makes the
+    substitution exact.
+  - **Alternative 2: B-v2 with a program instruction.** Rejected, because it was trained away from code.
+- **2. The prompt (fixed in `configs/mc_b.yaml` and `physcal/eval/mc_b.py` at build, before any MC-B generation).**
+  - **No tuning:** the prompt is never adjusted on any model output. The only GPU run is the pre-registered one.
+  - **The structure:** a system message, two worked examples (user: a problem text; assistant: its program), then the
+    problem.
+  - **The examples:**
+    - **Their source:** training-split generator-2.0.0 problems with mixed levels, from a seed range of their own
+      (81,000,000 + i). They are not from any eval or development set.
+    - **The selection, fixed now:** the first seed per cell, for cells (kinematics, 2) and (dynamics, 2), whose problem
+      has at least one distractor, a given in a non-SI unit, and at least one noisy given.
+    - **The assistant turns:** the builder's own reference program for each example (item 3).
+  - **The format the system message asks for:**
+    - one ```python block defining `solve(...)`;
+    - its parameters are the symbols of the givens it uses, named exactly as in the problem, each in the unit the
+      problem shows;
+    - units are converted inside the function, with the `math` module only;
+    - it returns the requested quantity as a float in the unit the problem asks for.
+  - **The token budget:** the longest prompt on the three sets, plus 768 new tokens, must fit the pinned base's
+    `max_seq_length` (2,048). This is tested. If it does not fit, the examples are switched to depth 1 before any
+    generation, and the switch is logged.
+- **3. The reference program (the builder's; CPU).**
+  - **What it does:**
+    - converts each given used from its displayed unit to SI by a pint factor;
+    - assigns the family's constants (`g = 9.81`);
+    - writes each chain step as `out = <the solved expression>` (sympy's `pycode`, math module);
+    - divides the target by the requested unit's SI factor.
+  - **What the reference programs are for:**
+    - the few-shot examples;
+    - a test that the harness reproduces MC-A's oracle exactly when the program is right: for every problem of the
+      three sets, the reference program's σ equals MC-A's oracle σ within 1e-9.
+- **4. Execution.**
+  - **The extraction:** the first fenced ```python block that defines `solve`. If there is none, the program fails with
+    `no_program`.
+  - **A static AST check:**
+    - imports only `math`;
+    - no name or attribute that starts with `_`;
+    - no `eval` / `exec` / `open` / `compile` / `getattr` / `setattr` / `delattr` / `globals` / `locals` / `vars` /
+      `input` / `breakpoint` / `exit` / `quit`;
+    - no `class`, `global`, `nonlocal`, `with`, `async` or `lambda` at module level;
+    - otherwise the program fails with `rejected`.
+  - **The signature:**
+    - positional-or-keyword parameters only;
+    - each one must be a displayed given's symbol (chain given or distractor); otherwise `signature`;
+    - the harness calls `solve(**{p: displayed value as a float})`.
+  - **The sandbox:**
+    - one separate `python -I` process per problem, with all k + 1 calls in it;
+    - restricted builtins with `math` injected;
+    - limits RLIMIT_CPU 2 s, RLIMIT_AS 1 GiB, RLIMIT_FSIZE 0, and a 10 s wall timeout;
+    - a failure gives `exception` or `timeout`.
+  - **The output:** it must be a finite real > 0. It is converted to SI by the problem's target-unit factor. Anything
+    else is `bad_output`.
+  - **A program fails if any of its k + 1 calls fails.** The failure rate is reported unconditionally: every problem
+    enters the denominator, by failure type, set and depth.
+- **5. The runs and the σ.**
+  - **The runs:**
+    - **run 0:** the displayed values;
+    - **runs 1–8:** MC-A's perturbations exactly (`mc_a.perturb`, tag `mc-a`, the same z, the perturbed values as
+      displayed at 5 s.f.).
+  - **Exclusions:** the problems MC-A excluded are excluded identically and counted.
+  - **The σ (log space, used as σ_rel), from the first k perturbed runs:**
+    - **`mc_b`:** the SD (ddof 1) of ln y_j;
+    - **`mc_b_mad`:** 1.4826 × the MAD, for parity with MC-A's robust variant.
+  - **μ:** y_0.
+  - **A failed program:** σ = 0 (the floor) and μ unanswered.
+  - **No step filter:** every run executes the same program, so MC-A's step-name filter has nothing to drop.
+  - **The k curve:** k = 2 / 4 / 8, from the first k runs.
+- **6. Metrics (R4-6's three estimands, MC-A's analysis).**
+  - **The problems:** the problems MC-A used, so the comparison with MC-A is paired.
+  - **Aleatoric:**
+    - the oracle-centred expected crps_log; the median ln(σ / σ\*); 1σ / 2σ coverage;
+    - the slope with its 90% CI (A6c / A6 on Δ ln σ\*, A6b on Δ ln truth), split by depth and chain type;
+    - the same on run-0-computation-correct problems.
+  - **Epistemic:** the AUROC of σ for run 0 not computation-correct (|ln y_0 − ln f(x_meas)| > τ = 1e-3).
+  - **End-to-end:** the verifier's crps_log of y_0 with MC-B's σ against the truth (unanswered → the clip).
+  - **The program's own quality:**
+    - the share of problems with run 0 computation-correct;
+    - the share whose 9 outputs all match the exact chain within τ ("exact program").
+- **7. Comparators on the same problems:** σ\*, RSS, X1, MC-A's oracle / robust / raw (k = 8, from its run logs), and
+  D-pos-v2 (a), seed 0 (its development eval).
+- **8. Tests on A6c (the primary set; the cluster bootstrap over pairs, B = 10,000, seed 0; one-sided; Holm over M1–M5
+  at α = 0.05):**
+  - **M1:** MC-B − RSS > 0 (mean oracle-centred expected crps_log);
+  - **M2:** MC-B − X1 > 0;
+  - **M3:** MC-B − D-pos-v2 (a) > 0;
+  - **M4:** MC-B − MC-A robust > 0;
+  - **M5:** MC-B's A6c slope > 0.
+  - **Reported, untested:** MC-B − MC-A oracle (the attainable bound), and everything on A6 / A6b.
+- **9. The reading, fixed now:**
+  - **If M1 holds:** "an executed model-written program propagates measurement noise better than the heuristic", with
+    the failure rate always beside it.
+  - **If M1 fails:** the failure rate and the share of wrong programs (by depth) say where the program arm loses.
+  - **No k increase and no prompt change follow from this run** without a new entry.
+- **10. Budget:** 3,060 generations (one per problem). The estimate is ≤ 75 min, from B-v2's eval rate with shorter
+  completions but longer prompts. It runs the following night, after the remaining confirmatory evals. Execution and
+  analysis are CPU work at 1 thread, nice 19, after the generation ends.
