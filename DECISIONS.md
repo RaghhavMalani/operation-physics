@@ -4140,6 +4140,8 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     - **A6c (b) and (c):** all pairs (unparsed → the floor).
     - **A6b (a):** computation-correct pairs. **A6b (b) and (c):** all pairs.
 - **6. The primary hypothesis P (your wording): D-pos-v2's answer σ (a) propagates on A6c at the 3-seed mean.**
+  - **Amended by D125 (2026-10-26, 08:35 IST, before any confirmatory result): P also requires C3. That makes it
+    D113's full R4-3 criterion.** The text below is the original.
   - **P is confirmed iff both hold:**
     - **K1:** the seed-mean A6c slope is > 0 (one-sided bootstrap p, Holm-adjusted below, < 0.05);
     - **C2:** the seed-mean point estimate is ≥ 0.5.
@@ -4406,6 +4408,17 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **`print` is a sink** in the child, so a program that prints still returns its value.
   - **No GPU was used for MC-B,** and the prompt has never produced a model output. The first generation is the
     pre-registered run, the following night.
+- **Amendment (your decision, 2026-10-26, ~08:35 IST, before any MC-B generation or result): depth-2 examples with
+  640 new tokens.**
+  - **Your condition:** the longest reference program on all 3,060 problems fits within ~600 tokens.
+  - **Measured** with the pinned base's tokenizer, counting the fenced block plus EOS:
+    - longest 266 tokens (A6c, depth 5, seed 4,002,800,065); p99 219; median 125;
+    - by depth, the longest is 136 / 178 / 209 / 234 / 266.
+  - **So the examples are back to D119 §2's cells** (kinematics 2 and dynamics 2; seeds 81,000,001 / 81,000,001), with
+    `max_new_tokens` 640.
+  - **The budget check:** the longest depth-2 prompt is 1,402 tokens, and 1,402 + 640 = 2,042 ≤ 2,048 (the test
+    passes).
+  - **This supersedes Deviation 1's 736 / depth-1 choice.**
 
 ### D123. D118's analysis is built and checked before any confirmatory completion exists; X1's confirmatory predictions are computed (D118 §3)
 - **X1 on the confirmatory set** (`x1_a6c confirmatory`; CPU, 1 thread, nice 19, 2 min, 07:53–07:55 IST):
@@ -4454,3 +4467,22 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   checkpoints, the raw development and confirmatory rollouts, and the new queue's PID files. Everything the queue
   commits stays tracked (checked with `git check-ignore`).
 - **The full test suite (08:03–08:13 IST, CPU, 1 thread, GPU idle): 641 passed, 0 failed, 0 skipped.**
+
+### D125. Amendment of D118 §6: the primary P is D113's full R4-3 criterion (your decision, 2026-10-26, ~08:35 IST; recorded before any confirmatory result exists)
+- **Your decision:** "use D113's full R4-3 criterion, i.e. K1 (A6c slope > 0, Holm) AND C2 (3-seed mean ≥ 0.5) AND
+  A6b equivalent to 0 (D59 margin) … my earlier wording omitted invariance by mistake."
+- **P (D-pos-v2's answer σ, (a)) is confirmed iff all three hold:**
+  - **K1:** the A6c seed-mean slope > 0, with its Holm-adjusted one-sided p < 0.05 (Holm over K1–K8, as before);
+  - **C2:** the A6c seed-mean point estimate ≥ 0.5;
+  - **C3:** the A6b seed-mean slope's 90% CI inside (−0.3, +0.3), D59's margin. It is computed on computation-correct
+    pairs (D113 §4), with stage B's joint bootstrap over the 3 seeds.
+- **Unchanged:** K1–K8 and their Holm family, the secondaries K6 / K7, the depth split, and everything else in D118.
+  The [REVIEW] in D118 §6 is resolved by this entry.
+- **The state when amended (08:31 IST):** no confirmatory eval, completion or statistic exists. The waiter (PID 109020)
+  is still sleeping until 23:00, and `results/stage_r4/*/seed*/confirmatory/` does not exist.
+- **The code:**
+  - `configs/stage_r4.yaml` has `confirmatory.primary_criteria: [K1, C2, C3]`;
+  - `r4_confirm` computes P from that list and reports each flag;
+  - the 3-identical-seeds test checks the new rule, and that P fails without C3.
+  - **Only the analysis is touched.** Tonight's stages read only the eval keys of this config (`seeds`, `splits`,
+    `output_subdir`), and the queue script and waiter are untouched.

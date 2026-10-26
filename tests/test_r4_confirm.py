@@ -204,7 +204,12 @@ def test_three_identical_seeds_reproduce_the_one_seed_development_analysis(monke
     for k in ("K1", "K2", "K3", "K4"):
         assert res["main"]["tests"][k]["seed_sd"] == pytest.approx(0.0, abs=1e-12)
     assert res["complete"] and res["seeds"] == {"dpos2": [0, 1, 2], "b2": [0, 1, 2]}
-    assert res["primary"]["confirmed"] == (res["main"]["tests"]["K1"]["holm"]["rejected"] and dev["R1"]["value"] >= 0.5)
+    c3 = res["main"]["criteria"]["dpos2_a"]["C3"]
+    assert res["primary"]["criteria"] == ["K1", "C2", "C3"]  # D125
+    assert res["primary"]["confirmed"] == (res["main"]["tests"]["K1"]["holm"]["rejected"] and dev["R1"]["value"] >= 0.5
+                                           and c3)
+    res_no_c3 = {**res["primary"], "C3": False}
+    assert not all(res_no_c3[c] for c in res["primary"]["criteria"])  # invariance is required
     n = {name: s["n_problems"] for name, s in res["subsets"].items()}
     assert n["depths_1_4"] + n["depth_5"] == res["n_problems"] == 3060
     assert set(res["by_depth"]) == {"1", "2", "3", "4", "5"}

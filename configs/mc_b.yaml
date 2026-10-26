@@ -6,7 +6,8 @@ model:                                 # the pinned 4-bit base (D78), no adapter
   pinned_base: base_4bit
   max_reserved_gib: 5.9                # D115's cap (the queue may pass a lower launch cap)
 generation:
-  max_new_tokens: 736                  # D122: 2,048 - the longest prompt (1,301 with depth-1 examples), rounded down to 16 (D119 had 768)
+  max_new_tokens: 640                  # D122 (your amendment): depth-2 prompts (longest 1,402) + 640 = 2,042 <= 2,048; the
+                                       # longest reference program is 266 tokens (D119 had 768)
   batch_size: 16
   do_sample: false
   repetition_penalty: 1.0
@@ -28,7 +29,7 @@ prompt:
   examples:                            # D119 §2: the first seed per cell from the offset meeting the selection
     env_config: env_v2
     seed_offset: 81000000              # a training-split range no other set uses
-    cells: [[kinematics, 1], [dynamics, 1]]  # D119 §2's fallback: depth 2 did not fit (1,402 + 768 > 2,048; D122)
+    cells: [[kinematics, 2], [dynamics, 2]]  # D119 §2; kept at depth 2 with the 640-token budget (D122's amendment)
     mixed_levels: [0.0, 0.01, 0.02, 0.05]
     max_tries: 500
   strip_steps_sentences: true          # the eval texts' "<steps>" instructions belong to the answer format, not to code

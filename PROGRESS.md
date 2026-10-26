@@ -854,3 +854,9 @@ Progress:
 - [ ] **Tonight (23:00–09:00 IST):** SFT D-pos-v2 s1, s2 and B-v2 s1, s2; then the confirmatory evals, D-pos-v2 s0 and
   B-v2 s0 (B-v2 s1 if it fits).
 - [ ] **The following night:** the remaining evals and MC-B (`MC_B=1`), then D118's analysis.
+- [x] **Your 08:30 decisions:**
+  - **D125:** the primary is D113's full criterion (K1 ∧ C2 ∧ C3), recorded before any confirmatory result.
+  - **D122's amendment:** MC-B uses depth-2 examples and 640 tokens. The longest reference program is 266 tokens, and
+    the prompt + budget is 2,042 ≤ 2,048.
+  - **D124 approved.** Tests: 46 passed.
+- [ ] **Tomorrow, after the morning report:** arm a second 23:00 IST waiter the same way, with `MC_B=1`.

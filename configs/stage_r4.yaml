@@ -63,6 +63,7 @@ confirmatory:                          # D118: the 3-seed confirmatory run on th
   x1_predictions: results/x1_text_sigma/confirmatory/predictions.jsonl   # D118 §3: D99's refit (x1_a6c confirmatory)
   x1_reproduction: results/x1_text_sigma/confirmatory/reproduction.json
   analysis_output: results/stage_r4/confirmatory   # results.json, summary.md, stage_b_<arm>/ (D118 §9)
+  primary_criteria: [K1, C2, C3]       # D125 (your amendment of D118 §6): D113's full R4-3 criterion on (a)
   splits:                              # replace the development sets; run_eval needs PHYSCAL_CONFIRMATORY=1
     a6_pairs:
       file: data/eval_sets/2.0.0+bdbb2279/confirmatory/a6_pairs.jsonl

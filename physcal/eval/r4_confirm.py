@@ -5,8 +5,9 @@ CPU only; run once, after all six confirmatory evals exist (D118 §10).
 
 The σ values are D113 §3's: (a) the answer's σ_rel for both arms; (b) the line's X, (c) the exact combination of the
 line's own terms and (c_S) for D-pos-v2. Seed-mean statistics use stage B's joint bootstrap over pairs (D104: every
-seed's statistic recomputed on the same resampled pairs; B = 10,000, seed 0). P (primary): K1 (D-pos-v2 (a)'s A6c
-seed-mean slope > 0, Holm-adjusted p < 0.05) and C2 (its point estimate ≥ 0.5). K1-K8 are D113's R1-R8 at the
+seed's statistic recomputed on the same resampled pairs; B = 10,000, seed 0). P (primary; D118 §6 as amended by
+D125): K1 (D-pos-v2 (a)'s A6c seed-mean slope > 0, Holm-adjusted p < 0.05), C2 (its point estimate ≥ 0.5) and C3
+(its A6b seed-mean slope's 90% CI inside D59's margin), i.e. D113's full R4-3 criterion. K1-K8 are D113's R1-R8 at the
 3-seed mean, Holm over all eight. The pre-specified split (training depths 1-4 vs the held-out depth 5) repeats every
 K statistic on each subset, outside the Holm family. Comparators (σ*, RSS, X1) come from the confirmatory files; X1
 from D99's refit (`x1_a6c confirmatory`), used only if its reproduction passed.
@@ -220,10 +221,14 @@ def analyze(cfg: dict | None = None, root=None, allow_incomplete: bool = False) 
         main["tests"][k]["holm"] = h[k]
     res["main"] = main
     k1 = main["tests"]["K1"]
-    c2 = bool(not k1.get("missing") and k1["value"] >= ac["practical_slope"])
-    res["primary"] = {"K1_holm_rejected": bool(h["K1"]["rejected"]), "C2": c2,
-                      "confirmed": bool(h["K1"]["rejected"] and c2),
-                      "rule": "P confirmed iff K1 (Holm) and C2 (seed-mean A6c slope of (a) >= 0.5) (D118 §6)",
+    flags = {"K1": bool(h["K1"]["rejected"]),
+             "C2": bool(not k1.get("missing") and k1["value"] >= ac["practical_slope"]),
+             "C3": bool(main["criteria"].get("dpos2_a", {}).get("C3", False))}
+    res["primary"] = {**flags, "K1_holm_rejected": flags["K1"], "criteria": list(cc["primary_criteria"]),
+                      "confirmed": all(flags[c] for c in cc["primary_criteria"]),
+                      "rule": "P confirmed iff " + " and ".join(cc["primary_criteria"]) + " (D118 §6 as amended by "
+                              "D125: K1 Holm-rejected, C2 seed-mean A6c slope of (a) >= 0.5, C3 its A6b seed-mean 90% "
+                              "CI inside D59's margin)",
                       "meets_full_d113_criterion": main["criteria"].get("dpos2_a", {}).get("meets_full_d113_criterion")}
     depth = np.array([p["depth"] for p in problems])
     res["subsets"] = {name: k_statistics(all_idx[np.isin(depth, ds)], data, ac, pc, floor, margin)
@@ -270,8 +275,9 @@ def render(res: dict) -> str:
          f"{res['n_problems']}. Bootstrap: stage B's joint pairs bootstrap, B = {res['bootstrap']}. Comparators: "
          f"{res['sources_note']}.", "",
          f"**Primary hypothesis P (D-pos-v2's answer σ propagates on A6c at the 3-seed mean): "
-         f"{'CONFIRMED' if pr['confirmed'] else 'NOT CONFIRMED'}** (K1 Holm-rejected: {pr['K1_holm_rejected']}; "
-         f"C2, seed-mean slope ≥ 0.5: {pr['C2']}). D113's full criterion (C1–C3): {pr['meets_full_d113_criterion']}.", "",
+         f"{'CONFIRMED' if pr['confirmed'] else 'NOT CONFIRMED'}** (D125: K1 Holm-rejected: {pr['K1']}; C2, "
+         f"seed-mean A6c slope ≥ 0.5: {pr['C2']}; C3, A6b seed-mean 90% CI inside ±0.3: {pr['C3']}). "
+         f"D113's full criterion with C1's unadjusted 90% bound: {pr['meets_full_d113_criterion']}.", "",
          "| test | seed-mean value [90% CI] | 95% CI | p (one-sided) | Holm | per seed |", "|---|---|---|---|---|---|"]
     for k in TESTS:
         t = m["tests"][k]
