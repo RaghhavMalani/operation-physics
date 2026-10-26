@@ -4408,7 +4408,7 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     pre-registered run, the following night.
 
 ### D123. D118's analysis is built and checked before any confirmatory completion exists; X1's confirmatory predictions are computed (D118 §3)
-- **X1 on the confirmatory set** (`x1_a6c confirmatory`; CPU, 1 thread, nice 19, 2 min, 10:53–10:55 IST):
+- **X1 on the confirmatory set** (`x1_a6c confirmatory`; CPU, 1 thread, nice 19, 2 min, 07:53–07:55 IST):
   - **The refit:** D99's refit reproduces D73's published numbers exactly (max abs difference 0.0 on all three feature
     sets).
   - **A check added before the frozen files are read:** the refit's σ̂ on the development sets equals the committed
