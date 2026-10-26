@@ -4486,3 +4486,27 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - the 3-identical-seeds test checks the new rule, and that P fails without C3.
   - **Only the analysis is touched.** Tonight's stages read only the eval keys of this config (`seeds`, `splits`,
     `output_subdir`), and the queue script and waiter are untouched.
+
+### D126. The 23:00 waiter died with a WSL restart; the queue was launched by hand at 23:36 IST with the 10:00 IST deadline (your instruction at 23:35 IST)
+- **What happened:** at 23:36 IST the waiter (PID 109020) was gone. `results/queue_r4_seeds/` had no `chain.log`, and
+  `nohup.log` held only the 07:42 "armed" line. So the queue never started.
+  - **The cause:** the WSL VM had restarted (`uptime -s`: 2026-10-26 18:06 UTC = 23:36 IST), which killed every WSL
+    process, including the waiter and this session's watcher.
+  - **The waiter was not at fault:** its test and the dry runs were fine. A process inside WSL cannot outlive a VM
+    shutdown.
+- **Checked before launching:** no `queue_r4_seeds.sh`, `run_at.sh` or `physcal` process was running; the GPU showed no
+  compute process (1,212 MiB host use); and no stage output existed (`results/stage_r4/*/seed1`, `seed2` and every
+  `confirmatory/` were absent).
+- **Your case 2: launched now.** `GPU_DEADLINE=10:00 setsid nohup bash scripts/queue_r4_seeds.sh` (no waiter). **Chain
+  PID 632**, started 23:36:44 IST, 623 min to the deadline.
+  - **The launch cap:** 5.9 GiB (host readings 1,157–1,175 MiB).
+  - **Free space:** 53 GiB on MLStorage.
+  - **The first stage:** `train_dpos2_s1`, PID 1244, started 23:37:03.
+- **The new deadline (10:00) is the queue's own `GPU_DEADLINE`.** Every gate and training `--stop-at` uses it, so
+  09:45 is the latest stop.
+- **The expected night (seed 0's wall times):**
+  - the four SFTs end ~05:10;
+  - D-pos-v2 s0's eval ~07:05, then B-v2 s0's ~08:10;
+  - then B-v2 s1's eval (~09:20) fits. D-pos-v2 s1's (126 min with slack) does not.
+- **The risk this exposed:** any WSL restart kills the queue. Nothing inside WSL can guard against that, so MORNING.md
+  will report it if it happens again.

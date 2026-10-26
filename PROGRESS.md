@@ -860,3 +860,5 @@ Progress:
     the prompt + budget is 2,042 ≤ 2,048.
   - **D124 approved.** Tests: 46 passed.
 - [ ] **Tomorrow, after the morning report:** arm a second 23:00 IST waiter the same way, with `MC_B=1`.
+- [x] **23:36 IST: the 23:00 waiter had died with a WSL restart, so the queue was launched by hand** (`GPU_DEADLINE=10:00`,
+  chain PID 632; D126).
