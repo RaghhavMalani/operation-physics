@@ -1,0 +1,52 @@
+# MC-B (R4-7; pre-registered in DECISIONS.md D119): the model writes the problem's program, a sandboxed interpreter
+# runs it on MC-A's perturbations (same z, same displayed values), and the spread of the executed outputs is the sigma.
+# Inference only, development sets. physcal/eval/mc_b.py (prompt, generation, execution, analysis),
+# physcal/eval/sandbox.py (+ sandbox_child.py).
+model:                                 # the pinned 4-bit base (D78), no adapter, the unsloth 4-bit loader
+  pinned_base: base_4bit
+  max_reserved_gib: 5.9                # D115's cap (the queue may pass a lower launch cap)
+generation:
+  max_new_tokens: 736                  # D122: 2,048 - the longest prompt (1,301 with depth-1 examples), rounded down to 16 (D119 had 768)
+  batch_size: 16
+  do_sample: false
+  repetition_penalty: 1.0
+  temperature: 1.0
+  top_p: 1.0
+  top_k: 0
+  num_samples: 1
+  seed: 0
+prompt:
+  system: |-
+    You are an expert physicist who writes Python. For each problem, write one Python function named solve that computes the requested quantity.
+    Rules:
+    - The parameters of solve are the symbols of the given values that the computation needs, named exactly as in the problem.
+    - Each parameter receives the number shown in the problem, in the unit shown there (for example 0.26465 for "s1 = 0.26465 km"). Convert units inside the function.
+    - Ignore the stated uncertainties (± p%): use the shown values.
+    - Use only the math module. Do not print anything.
+    - Return the requested quantity as a float, in the unit the problem asks for.
+    Reply with the code only, in one ```python block.
+  examples:                            # D119 §2: the first seed per cell from the offset meeting the selection
+    env_config: env_v2
+    seed_offset: 81000000              # a training-split range no other set uses
+    cells: [[kinematics, 1], [dynamics, 1]]  # D119 §2's fallback: depth 2 did not fit (1,402 + 768 > 2,048; D122)
+    mixed_levels: [0.0, 0.01, 0.02, 0.05]
+    max_tries: 500
+  strip_steps_sentences: true          # the eval texts' "<steps>" instructions belong to the answer format, not to code
+mc_a_config: mc_a                      # the perturbations (k, seed tag) and MC-A's runs / run-0 tape for comparison
+k_curve: [2, 4, 8]
+min_runs: 2                            # (every run must succeed anyway: a program fails if any of its k + 1 calls fails)
+mad_scale: 1.4826
+sandbox:
+  cpu_seconds: 2                       # RLIMIT_CPU of the child
+  memory_bytes: 1073741824             # RLIMIT_AS, 1 GiB
+  wall_seconds: 10
+sets: [a6c_pairs, a6_pairs, a6b_pairs] # A6c first (the tests' set)
+chunk_problems: 64                     # problems per generation call; appended, so a stopped run resumes
+comparators:
+  dpos2_eval: results/stage_r4/dpos2/seed0/eval   # D-pos-v2 (a), seed 0, its development eval
+analysis:
+  bootstrap: 10000
+  seed: 0
+  alpha: 0.05                          # Holm over M1-M5 (A6c)
+  criterion_ci_level: 0.90
+output_dir: results/mc_b               # <set>/generations.jsonl, executions.jsonl, meta.json, results.json, summary.md

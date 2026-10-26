@@ -4360,3 +4360,49 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - D-pos-v2 s0's eval → ~06:20, then B-v2 s0's → ~07:25;
   - B-v2 s1's eval also fits (~08:30). D-pos-v2 s1's (111 min) does not, so the gate skips it, and the next night runs
     it with s2's two evals and MC-B.
+
+### D122. MC-B's build (D119; CPU only, no GPU, no model output), and two deviations found while building
+- **Built:**
+  - **`physcal/eval/mc_b.py`:**
+    - the reference program;
+    - the examples and the prompt;
+    - generation (GPU, resumable, chunked);
+    - execution (CPU, resumable);
+    - the estimators;
+    - D119 §6–§8's analysis and the summary.
+  - **The sandbox:** `physcal/eval/sandbox.py` (extraction, the static check, the signature, the parent with its wall
+    timeout) and `sandbox_child.py` (limits set before the program is read, restricted builtins, `import math` the only
+    import that resolves).
+  - **The config:** `configs/mc_b.yaml`.
+  - **Tests:** `tests/test_mc_b.py`, 23.
+- **The reference check (D119 §3): the builder's program, run through the same harness on MC-A's inputs, reproduces
+  MC-A's oracle on every problem of the three development sets.**
+  - **The numbers:** 3,060 of 3,060, no failure and no exclusion. Max |σ_ref − σ_oracle| 3.2e-16; max |ln y − ln f|
+    1.8e-15 over all 9 runs. About 20 s per set.
+  - **So a model program that computes the right function gets exactly MC-A's oracle σ.**
+- **The examples (D119 §2's selection):**
+  - kinematics depth 1, seed 81,000,000 (`t2 = s2 / v`, km → m, cm/s → m/s, target in h);
+  - dynamics depth 1, seed 81,000,002 (`f_k = F − F_net`, kN → N).
+  - Both have a distractor, a non-SI unit and noisy givens.
+- **Deviation 1: the token budget.** D119 §2's check failed for the depth-2 examples (the longest prompt is 1,402 tokens;
+  + 768 = 2,170 > 2,048). Its pre-registered fallback, depth-1 examples, still failed by 21 tokens (1,301 + 768 =
+  2,069).
+  - **So the new-token budget is 736:** 2,048 − 1,301, rounded down to a multiple of 16. Truncation is reported.
+  - **Why it is enough:** the reference programs are a few lines (the longest, depth 5, is ~20 lines).
+  - **[REVIEW]** Alternative: depth-2 examples (they show chaining, which deep problems need) with 640 tokens (1,402
+    + 640 = 2,042). I kept D119's fallback order and changed only the budget.
+- **Deviation 2: two readings of D119 §4, fixed before any model output exists.**
+  - **The forbidden constructs:** class, global, nonlocal, with and async are rejected anywhere in the program; lambda
+    only at module level. D119's sentence put "at module level" at its end.
+    - **Why:** "anywhere" is stricter for the constructs a computation never needs.
+    - **What stays allowed:** a lambda inside `solve`.
+  - **Defaulted parameters:** a parameter that is not a displayed symbol is allowed if it has a default, and is then not
+    passed (e.g. `g=9.81`). Without a default it fails as `signature`.
+    - **Why:** the problem text says "Use g = 9.81 m/s^2", and a program that makes g a defaulted parameter computes
+      exactly what one with `g = 9.81` in its body does.
+- **Also fixed by construction:**
+  - **The problem text the model sees** has the answer format's `<steps>` sentence removed (e.g. "Show your calculation
+    first; …"). Nothing else changes (tested on a sample of every set).
+  - **`print` is a sink** in the child, so a program that prints still returns its value.
+  - **No GPU was used for MC-B,** and the prompt has never produced a model output. The first generation is the
+    pre-registered run, the following night.
