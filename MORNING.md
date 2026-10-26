@@ -1,36 +1,33 @@
-# Report: 2026-10-22/23 night: the stage C pilot, Phase 12 stage D, and this morning's disk-full recovery
+# Report: 2026-10-25/26 night: Round 4 (R4-1 to R4-5), D-pos-v2 / B-v2 and MC-A
 
-The previous report (2026-10-21/22 night) is in git history: `git show 54644f2:MORNING.md`.
+The previous report (2026-10-22/23 night and the disk-full morning) is in git history: `git show 34678b5:MORNING.md`.
 
 **Short version.**
-1. **The GPU ran from 23:28 to 07:12 IST** (deadline 09:00). Every stage exited 0 and nothing is BLOCKED. There was
-   one 10-min temperature pause (00:05, 88 °C, GPU load alone).
-2. **Stage C pilot (FINDINGS #28):**
-   - **Tests:** C6 is supported (+0.045 over its SFT control); C1–C5 are not.
-   - **What RL learned:** to state the smallest given percentage (1, 2 or 5%), σ ≈ 0.44·σ\*, which scores below RSS
-     and X1.
-   - **The policy turned deterministic per problem by step ~40** (98–100% zero-variance groups); steps 51–300
-     changed nothing.
-3. **Stage D (FINDINGS #29):**
-   - **D-pos, the line's numbers trained:** it does not propagate (D1 / D2 not supported) and is below RSS and X1
-     (D3 / D4 not supported).
-   - **Two tests pass, both weakly:** D6, +0.001 over stage B; D7, +0.155 over D-fmt.
-   - **The line locates the failure:**
-     - the copy and the arithmetic are roughly right;
-     - the sensitivities are exponent templates (77% exact on power-law terms, 5% on value-dependent ones);
-     - it never reads per-given levels.
-   - **D-fmt, numbers masked:** degenerate lines; "± 0" on 69% of answers.
-4. **Across stages B, C and D, no trained σ beats X1 or the RSS heuristic** on the oracle-centred expected score
-   (§4).
-5. **A design limit found tonight:** none of the 2,250 noisy Phase 12 SFT problems mixes noise levels. So A6c (B2 /
-   C2 / D2 / F2) tests transfer to an unseen level mix.
-6. **This morning: the MLStorage volume had filled.**
-   - **Integrity:** all 167 files from last night pass every check; nothing is damaged.
-   - **Added:** a free-space guard in all 14 queue scripts (BLOCKED below 15 GiB), and stage D's ignore patterns.
-   - **Space:** about 6.5 GB can be reclaimed safely, and up to ~16.4 GB more on your call (§5). Nothing was
-     deleted.
-7. **Please resend steps 3–6 of this morning's prompt.** That prompt is in no transcript on disk (§6.1).
-8. **Decisions:** D108–D111. **Tests:** 584 passed, 0 failed, 0 skipped (GPU visible).
+1. **R4-3's verdict is GO.** D-pos-v2 meets the propagation criterion on all three graded σ values, (a), (b) and (c)
+   (FINDINGS #30).
+   - **The numbers:** an A6c slope of +0.53 [90% CI +0.33, +0.71] for the answer's σ; A6b equivalent to 0; an A6
+     slope of +0.88.
+   - **A first for Phase 12:** it is the first model labelled "full propagation" (D59's verdict).
+   - **The pre-registered next step:** 3 seeds of both arms on the frozen R4-5 set. It needs its own entry, so it was
+     not started (§6.1).
+2. **But it only ties RSS on the expected score** (R6: −0.0001 [−0.0008, +0.0005]) and stays below X1 (R7).
+   - **Why:** its σ is nearly calibrated in the median (median abs ln(σ / σ\*) 0.07; 1σ coverage 67%). But 80% of its
+     regret sits in its worst 5% of problems: gross misses on deep, value-dependent chains.
+   - **By depth:** it beats RSS at depths 1–2 and loses at 4–5. At the held-out depth 5 the A6c slope falls to +0.06.
+3. **B-v2 (implicit, σ\* supervised on the same mixed-level data) learns where the noise is, not how the values
+   amplify it.** A6c +0.47 (stage B: +0.04), A6 −0.29. It scores below RSS.
+4. **MC-A does not beat RSS on A6c: the stopping rule fires, so k is not increased** (FINDINGS #31).
+   - **The scores:** robust −0.0446 vs RSS −0.0383. The exact solver on the same 8 perturbations reaches −0.0358
+     (σ\* −0.0351).
+   - **Why:** the model's arithmetic errors swamp the input noise. The step-name filter removes 0.1% of runs.
+   - **Side result:** the raw spread is the best correctness signal (AUROC 0.745) and the best end-to-end σ.
+5. **One bug found and fixed (D116).** D-pos-v2's first eval OOM'd because `run_eval`'s backoff retried inside its
+   `except` block, keeping every failed attempt's memory alive. It is fixed and tested, and the eval was rerun after
+   B-v2's (with batch 16).
+6. **The GPU ran 17:32–05:54 IST** (deadline 09:00), with three 10-min temperature pauses. Every planned stage ran.
+   **Tests: 602 passed, 0 failed, 1 skipped** (GPU hidden), plus 1 new eval test after D116.
+7. **Decisions:** D112–D117. The frozen confirmatory set (R4-5) is built and guarded. A6 / A6b / A6c are now
+   development sets.
 
 ---
 
@@ -38,185 +35,141 @@ The previous report (2026-10-21/22 night) is in git history: `git show 54644f2:M
 
 | time | step | result | commit |
 |---|---|---|---|
-| 23:28 | stage C pilot launched (`queue_stage_c_pilot.sh`, PID 6944) | OOM check 2 × 1,644 tokens, 2.0 GiB | – |
-| 23:30–23:43 | CPU: D108 (your decisions); D109 (stage D) pre-registered; stage D built, 10 CPU tests | – | `ff59b4a` |
-| 23:44 | stage D chain launched (`queue_stage_d.sh`, PID 18157), waiting on stage C's PID | – | – |
-| 23:28–02:12 | GPU: stage C training, 300 / 300 steps (32 s / step; paused 10 min at 00:05, 88 °C) | 7.04 GiB peak, no OOM | (queue) |
-| 02:12–02:51 | GPU: stage C σ suffixes on 3,060 prefixes: final (14 min), SFT control (12), step 150 (13) | 3,060 / 3,060 each | (queue) |
-| 02:51 | CPU: stage C analysis | FINDINGS #28 | `e31997d`, `a9f145d` |
-| 02:52–03:59 | GPU: D-pos SFT, 750 / 750 steps (67 min) | loss 0.125 | `06f710f` |
-| 03:59–04:54 | GPU: D-pos eval (55 min) | 3,060 / 3,060 | `8203747` |
-| 04:54–06:04 | GPU: D-fmt SFT, 750 / 750 steps (69 min) | loss 0.097 | `3320d85` |
-| 06:04–07:11 | GPU: D-fmt eval (67 min) | 3,060 / 3,060 | `32b2eef` |
-| 07:12 | CPU: stage D analysis | FINDINGS #29 | `f7caa40` |
-| ~07:14 | FINDINGS #29, D110, PROGRESS written (not yet committed); the full test suite started; then the session ended (disk full) | – | – |
-| 10:37 | your message: integrity checks, ignore patterns, free-space guard, space list (D111) | nothing damaged | (this commit) |
+| 17:05–17:10 | D78 GPU check rerun; trained-adapter load check | PASS; 32 / 32 exact | `87a5933` |
+| 17:10–17:20 | D112 (R4-1 to R4-9 recorded), D113 (R4-1 to R4-5 pre-registered) | before anything was built | `87a5933`, `e504498` |
+| 17:20–17:31 | build (D114): mixed-level generator option, R4-1 data, stage R4, confirmatory set, tests | 2 deviations | `a4b0a2a` |
+| 17:32 | R4 chain launched (`queue_r4.sh`, PID 22552); cap 5.9 GiB (D115) | – | `6283c8a` |
+| 17:32–18:55 | GPU: D-pos-v2 SFT, 750 / 750 (pause 17:57) | loss 0.116 | (queue) |
+| 17:35–18:00 | CPU: D113's analysis and MC-A built and smoke-tested; full test suite | 602 passed | `435081a`, `f1fd50b` |
+| 18:55–19:01 | GPU: D-pos-v2 eval: **BLOCKED** (OOM in the backoff) | fixed (D116) | `d1bbe33`, `dc54969` |
+| 19:02–20:22 | GPU: B-v2 SFT, 750 / 750 (pause 19:24) | loss 0.119 | `5efa8a8` |
+| 20:22–21:27 | GPU: B-v2 eval, 3,060 / 3,060, batch 16, no OOM | – | `5483e37` |
+| 21:27–23:18 | GPU: D-pos-v2 eval (rerun), 3,060 / 3,060, no OOM | – | `f151c66` |
+| 23:19 | CPU: D113's analysis | GO | `5d2e465` |
+| 23:18–01:16 | GPU: MC-A A6c, 8,160 runs | stopping rule fires | `a2a71b3` |
+| 01:16–03:41 | GPU: MC-A A6, 8,160 runs (pause 02:19) | – | `481a0f9` |
+| 03:41–05:54 | GPU: MC-A A6b, 8,160 runs | – | `9ad4956` |
+| ~05:55 | FINDINGS #30 / #31, D117, this report | – | `f48cb1b` + this commit |
 
-## 2. Stage C pilot (D106; FINDINGS #28)
+## 2. D-pos-v2 and B-v2 (D113; FINDINGS #30)
 
-| test | estimate [95% CI] | Holm |
-|---|---|---|
-| C1: A6 slope > 0 | −0.000 [−0.000, +0.000] | not supported |
-| C2: A6c slope > 0 | +0.086 [−0.158, +0.324] | not supported |
-| C3 / C4: expected crps_log − RSS / − X1 > 0 | −0.003 / −0.004 | not supported |
-| C5: A6 slope − X1's > 0 | −0.063 [−0.103, −0.025] | not supported |
-| **C6: RL − SFT-only control > 0** | **+0.045 [+0.029, +0.062]** | **supported** |
+- **The data (R4-1):**
+  - **The problems:** D80's 3,000 seeds, each given's level drawn independently from 0 / 1 / 2 / 5%. 2,067
+    problems mix noisy levels.
+  - **D-pos-v2's added lines:** a derivation per noisy given, e.g. `S_t1 = -t1/t2 = -11.34/24.51 = -0.463`, with
+    power-law terms as exponents (`S_v1 = -2`).
+  - **Then** the line with each given's own level, and σ = X·|μ|.
 
-- **D106's signal rule fires on C6** ("3 seeds warranted"). But the control is the merged SFT model with prompt v5,
-  which says "± 0" on 79% of these noisy problems. Most of C6 is RL removing that.
-- **What the policy does (exploratory):** σ takes three values (1 / 2 / 5%). It equals the smallest stated level on
-  93% of problems. On A6 / A6b, where every given shares one level, that makes the slope exactly 0. Coverage is
-  36% / 59%.
-- **Dynamics:**
-  - **Steps 1–50:** reward −0.149 → −0.045, and σ = 0 went from 24% to 0%.
-  - **From step ~40:** 98–100% of groups had zero reward variance, so TRL logged loss 0 and grad-norm 0 on most steps.
-    E1d, with the realized-score reward, never went above 17%.
-  - **[hypothesis]** score_sigma is nearly noise-free, so per-group std normalization turns tiny consistent
-    differences into ±1 advantages and the policy sharpens fast.
-- **D107.6 did nothing:** this TRL has no `max_prompt_length` (logged as a dropped key), so no prompt was cut either
-  way.
+| σ source (oracle-centred, 3,060) | A6c slope [90% CI] | A6b | A6 slope | expected crps_log | median abs ln(σ/σ\*) | 1σ cov. |
+|---|---|---|---|---|---|---|
+| σ\* (ideal) | +1.00 | 0 | +1.00 | −0.0365 | 0 | 68% |
+| X1 | −0.00 | −0.00 | +0.06 | **−0.0386** | 0.33 | 64% |
+| D-pos-v2 (b), the line's X | +0.60 [+0.41, +0.77] | +0.00 | +0.80 | −0.0393 | 0.07 | 68% |
+| RSS | 0 | 0 | 0 | −0.0394 | 0.40 | 62% |
+| **D-pos-v2 (a), the answer's σ** | **+0.53 [+0.33, +0.71]** | −0.00 | **+0.88** | **−0.0395** | **0.07** | **67%** |
+| D-pos-v2 (c), exact from its terms | +0.67 [+0.51, +0.82] | +0.01 | +0.82 | −0.0408 | 0.02 | 66% |
+| B-v2 | +0.47 [+0.33, +0.61] | −0.02 | −0.29 | −0.0409 | 0.48 | 55% |
+| D-pos (v1, #29) | −0.03 | – | −0.18 | −0.0405 | 0.31 | 54% |
 
-## 3. Stage D (D109; FINDINGS #29)
+- **R1–R8 (Holm):**
+  - **Supported:** R1–R3 (D-pos-v2's A6c slope > 0 on (a), (b), (c)), R4 (B-v2's > 0), and R5 (D-pos-v2 − B-v2:
+    +0.0015 [+0.0008, +0.0022]).
+  - **Not supported:** R6 (− RSS: −0.0001), R7 (− X1: −0.0008) and R8 (B-v2 − RSS: −0.0016).
+- **The line:**
+  - **Levels read right:** 99.5% (D-pos v1: 1% on A6c).
+  - **Sensitivities exact (within 10%):** power-law terms 86% (87%); value-dependent terms 14% (48%), falling from
+    31% at depth 1 to 4% at the held-out depth 5.
+  - **The copy:** 85%.
+- **The A6c slope by depth (answer's σ):** 1.00 / 0.97 / 0.76 / 0.38 / 0.06. The explicit computation does not
+  extrapolate to the unseen depth.
+- **Exploratory (not pre-registered):**
+  - **Concentration:** 80% of (a)'s regret is in its worst 5% of problems; 1.5% of its σ are off by more than 10×.
+  - **By depth:** its mean regret is 0.0007 / 0.0014 / 0.0024 / 0.0032 / 0.0071 at depths 1–5, against RSS's flat
+    ~0.003.
+- **The data effect (descriptive):** D-pos-v2 − D-pos +0.0010 [+0.0003, +0.0017]; B-v2 − stage B +0.0005 (CI spans 0).
 
-| test | D-pos [95% CI] | Holm | D-fmt [95% CI] | Holm |
+## 3. MC-A (D113 §7; FINDINGS #31)
+
+- **Setup:** B-v2, k = 8 perturbations per problem, greedy decoding. Each noisy given is drawn as
+  x_meas / (1 + s·z).
+
+| A6c, k = 8 | expected crps_log | slope [90% CI] | epistemic AUROC | end-to-end |
 |---|---|---|---|---|
-| 1: A6 slope > 0 | −0.18 [−1.13, +0.39] (50 pairs) | no | +2.04 [−2.05, +7.98] (55 pairs) | no |
-| 2: A6c slope > 0 | −0.03 [−0.30, +0.23] | no | −0.26 [−1.77, +1.26] | no |
-| 3: − RSS > 0 | −0.001 | no | −0.156 | no |
-| 4: − X1 > 0 | −0.002 | no | −0.157 | no |
-| 5: A6 slope − X1's | −0.30 | no | +1.89 | no |
-| 6: − stage B > 0 | **+0.001 [+0.000, +0.002]** | **yes** | −0.154 | no |
-| D7: D-pos − D-fmt > 0 | **+0.155 [+0.124, +0.186]** | **yes** | – | – |
+| oracle (exact chain) | **−0.0358** | +1.01 | 0.656 | −0.146 |
+| X1 / RSS | −0.0373 / −0.0383 | 0 / 0 | 0.666 / 0.654 | −0.146 / −0.149 |
+| robust (filter + MAD) | −0.0446 | +0.48 [+0.04, +0.90] | 0.656 | −0.140 |
+| raw (SD) | −0.0580 | +0.53 | **0.745** | **−0.136** |
 
-| the line (vs the builder's own line for the same problem) | D-pos | D-fmt |
-|---|---|---|
-| present / parsed | 100% / 99.9% | 100% / 7.1% |
-| levels right, in order | 67% (A6 / A6b 100%, A6c 1%) | 0% |
-| every sensitivity exact (per term: power-law 77%, value-dependent 5%) | 31% | 6% |
-| copy: σ = X·\|μ\| at 2 s.f. (within 6%) | 82% (97%) | 80% of 212 |
+- **The stopping rule (R4-4):** robust − RSS is −0.0062 [−0.0088, −0.0039]. **Robust MC-A does not beat RSS; k is not
+  increased.**
+- **The k curve:**
+  - robust and oracle improve from k = 2 to 8;
+  - **raw gets worse** (−0.0556 → −0.0580), since each extra run is another chance of an arithmetic outlier.
+- **On A6 (descriptive):** MC-A recovers the value-dependent sensitivity B-v2's stated σ lacks (robust slope +1.12),
+  but it still scores below RSS.
+- **Raw is the best end-to-end σ on all three sets.** Run 0's μ is within 0.1% of f(x_meas) on only 8–20%, so a σ
+  that also covers the model's own error is the better delivered answer.
 
-- **What D-pos learned:**
-  - **The format, the copy step (R3-9) and approximate arithmetic:** yes.
-  - **Value-dependent sensitivities** (e.g. u / v in a sum): no.
-  - **Per-given levels:** no. It repeats one level on every term.
-- **The consequence:** σ under-propagates with depth (median ln(σ / σ\*) −0.02 at depth 1 to −0.29 at depth 5).
-  Stage B's error was a constant scale.
-- **D-fmt:** masked numbers get no training signal. The model writes e.g.
-  `sqrt((0*sqrt(1))**2 + (1*sqrt(1))**2) = 1` and answers "± 0". D84's format-only arm is a poor starting point for
-  explicit-arm RL.
-- **D109's seed rule fires on D6** (+0.001, ~20% of stage B's gap to σ\*). See §6.
+## 4. Built tonight (all tested)
 
-## 4. Every Phase 12 σ source so far (oracle-centred, the same 3,060 problems)
+- **The generator:** `mixed_levels`, an option of `generate_problem`. The default is unchanged: D80's problems and
+  the frozen sets regenerate byte-identically.
+- **The data:** `physcal/train/sft_r4.py` builds the R4-1 data. Every S value is checked against finite-difference
+  sensitivities.
+- **The arms and their analysis:**
+  - `physcal/train/stage_r4.py` and `physcal/eval/r4_analysis.py`: the three σ values, the criteria, R1–R8, and the
+    depth / type splits;
+  - `physcal/eval/mc_a.py`: resumable chunks; the raw, robust and oracle variants; the k curve; R4-6's estimands.
+- **The confirmatory set (R4-5):** `data/eval_sets/2.0.0+bdbb2279/confirmatory/` (510 pairs per set, checksums,
+  `FROZEN.md`). `run_eval` refuses it without `PHYSCAL_CONFIRMATORY=1`.
+- **The fix:** `run_eval`'s OOM backoff (D116), with a regression test that fails on the old code.
+- **Checks:** `scripts/adapter_load_check.py`.
+- **The queues:** `queue_r4.sh`, `queue_r4_tail.sh` and `queue_mc_a.sh`, each with the free-space guard.
 
-| source | expected crps_log | median ln(σ / σ\*) | 1σ coverage | A6c slope |
-|---|---|---|---|---|
-| σ̂ = σ\* (ideal) | −0.0365 | 0 | 68% | +1.00 |
-| **X1 primary (text model)** | **−0.0386** | −0.03 | 64% | −0.00 |
-| **RSS of the stated levels** | **−0.0394** | −0.08 | 62% | 0 |
-| D-pos (stage D, explicit, numbers trained) | −0.0405 | −0.11 | 54% | −0.03 |
-| stage B (supervised σ\*, 3-seed mean) | −0.0415 | −0.31 to −0.45 | ~50% | +0.04 |
-| stage C (σ-only RL, predictive reward) | −0.0427 | −0.81 | 36% | +0.09 |
-| stage C's SFT-only control | −0.0874 | −10.5 (σ = 0 on 79%) | 9% | −1.03 |
-| D-fmt (stage D, format only) | −0.1951 | −10.2 (σ = 0 on 69%) | 18% | −0.26 |
+## 5. BLOCKED / problems
 
-## 5. This morning: the disk-full crash (D111)
-
-- **Cause (your account):** the MLStorage volume (`D:\MLStorage`) filled (STATUS_DISK_FULL). It holds the Ubuntu
-  disk image `wsl_ubuntu\ext4.vhdx` (53.6 GB; 51.1 GB used inside). It has been extended (now 53 GiB free of
-  104 GiB) and e2fsck re-run.
-- **Integrity checks** (`scripts/integrity_check.py`, read-only) on the 167 files written since 23:20 IST last
-  night, plus the memory notes. **Nothing is damaged:**
-  - **`git fsck --full --strict`:** exit 0. The one dangling commit is a 2026-10-19 stash.
-  - **Text / logs:** no NUL bytes, no truncated last line.
-  - **JSONL:** 34,683 lines in 14 files, all parse.
-  - **gzip (6):** CRCs pass, byte-identical to their uncompressed copies.
-  - **safetensors (6 adapters and checkpoints):** header and offsets consistent; no all-zero tensor, NaN / Inf or
-    all-zero 4 KiB block.
-  - **Torch archives (9):** zip CRCs pass. **PNGs (8):** every chunk CRC matches.
-  - **Tracked files:** the 77 that git calls unchanged hash to their HEAD blobs.
-  - **Not checked:** `/lost+found` (needs root): `sudo ls -la /lost+found`.
-- **`.gitignore`:** stage D now matches stage B. The large adapter files, `checkpoints/`, the uncompressed tapes and
-  PID files are ignored. Configs, fingerprints, `.gz` tapes, summaries and plots are committed.
-- **The free-space guard** (`scripts/disk_guard.sh`, sourced by all 14 `scripts/queue_*.sh`):
-  - **The rule:** before every stage, it reads MLStorage's free space via `powershell.exe` (~1 s). Below 15 GiB it
-    logs `BLOCKED <stage>: N GiB free on MLStorage < 15 GiB; queue stopped`; the queue exits 75 without touching
-    running children.
-  - **[REVIEW] it fails closed:** an unreadable volume (3 tries) is also BLOCKED.
-  - **Overrides:** `DRY_RUN=1` only logs the reading; `DISK_GUARD=off` bypasses it (logged).
-  - **Tests:** 20, including the real stage D queue stopping before its first stage when 1 GiB is reported.
-- **What can be deleted** (nothing was deleted; sizes are of untracked files only, committed files stay; rows do not
-  overlap):
-
-| # | what | size | why it is safe | what you would lose |
-|---|---|---|---|---|
-| 1 | trainer `checkpoints/` (resume state) in 20 finished runs: `results/train/*`, `results/sft/qwen2.5-math-1.5b-instruct`, `results/stage_c/run` | 3.96 GB | final adapters and `permanent_checkpoints/` stay; no config or code reads these | resuming or extending those runs from their last save |
-| 2 | 7 smoke runs: `resume-smoke-A/B`, `smoke-split-credit`, `smoke-overnight2-mb2`, `sft-continue-smoke`, `phase4-smoke-qwen3.5-2b`, `results/pinned_base_smoke` | 1.53 GB | finished machinery checks; their 44 committed files stay | nothing a rerun of the smoke test would not recreate |
-| 3 | `results/discarded/` (the 2026-10-16 crashed split-credit seed 1) | 0.39 GB | discarded by name | – |
-| 4 | 21 uncompressed `rollouts.jsonl` whose committed `.gz` is byte-identical (stage B / C / D evals, stage C, E1a–E1d, overnight2, split-credit training tapes, `e1d_x2`) | 0.66 GB | `gunzip -k` restores them exactly | `e1d_x2_analysis`, `posthoc_cond`, `e1.py`'s `read_meta` and tape replay read the uncompressed file: gunzip first |
-| 5 | `unsloth_compiled_cache/`, `.hypothesis/`, `.pytest_cache/` | < 3 MB | regenerated | – |
-| | **safe subtotal** | **≈ 6.5 GB** | | |
-| 6 | Qwen3.5-2B: its HF cache (4.57 GB) + `results/sft/qwen3.5-2b` and the phase-4 run (4.08 GB) | 8.65 GB | re-downloadable; not used since Phase 4 | it is still named in `grpo_phase4` / `model_probe` / `sft` configs and one test |
-| 7 | `results/x2/random_init_model` | 3.10 GB | seeded (seed 0), regenerable | X2's and X4's random-init controls load it; regeneration may not be bit-identical |
-| 8 | `results/x2/hidden` (cached hidden states) | 1.09 GB | GPU re-extraction | X2 probe refits until re-extracted |
-| 9 | `results/probe_sft` (probe caches) | 0.43 GB | GPU re-extraction | Phase 9.5 probe refits |
-| 10 | `Qwen/Qwen2.5-1.5B-Instruct` HF cache | 3.10 GB | re-downloadable | CLAUDE.md's named model, in 8 configs |
-
-  - **Not worth it:** `.cache/uv` looks like 6.7 GB, but only 0.05 GB of it is not hard-linked into `.venv`.
-  - **Keep:**
-    - the merged SFT model (3.1 GB: stage C's, E1d's, X2 / X4's base);
-    - the pinned 4-bit base (1.15 GB);
-    - the Qwen2.5-Math base (3.1 GB, for merges);
-    - every final adapter and permanent checkpoint, `data/` and `.git`.
-  - **Deleting inside WSL does not give the space back to MLStorage.** The freed blocks are reused, so the image stops
-    growing, but `ext4.vhdx` does not shrink. To shrink it:
-    - **Compact:** `wsl --shutdown`, then in an admin PowerShell
-      `Optimize-VHD -Path D:\MLStorage\wsl_ubuntu\ext4.vhdx -Mode Full` (or diskpart `compact vdisk`).
-    - **Or make it sparse:** `wsl --manage Ubuntu --set-sparse true`.
+- **D-pos-v2's first eval (18:55–19:01): BLOCKED by a CUDA OOM** that the backoff could not recover from, even at 1
+  prompt.
+  - **The cause:** the retry recursion ran inside the `except` block, so every failed attempt's tensors stayed alive.
+  - **Fixed (D116)** and rerun at 21:27, with no OOM.
+  - **Two consequences:**
+    - the order became B-v2 eval, then D-pos-v2 eval;
+    - both R4 evals and MC-A use batch 16 (D-pos v1 used 32).
+- **Temperature:** three 10-min pauses at 88 °C (17:57, 19:24, 02:19). The first came while the test suite ran on one
+  CPU thread.
+- **Host VRAM was 1.6 GiB tonight** (0.6 on earlier nights), so the cap was 5.9 GiB, not 7.1 (D115).
+- **No spill, no disk problem:** 53.9 GiB free on MLStorage.
 
 ## 6. Decisions to review
 
-1. **Steps 3–6 of this morning's prompt.**
-   - **Where they are not:** this session's transcript has no entries between 07:14 and 10:37 IST, and no other
-     local transcript contains a morning prompt. It was probably never written because the disk was full.
-   - **So far:** only the steps in your 10:37 message were done. Please resend 3–6.
-   - **Still open from your D108 approvals, if they were among them:** the 1.3.0 dispatch edit in `reward.reward` /
-     `tape.replay`, approved for today.
-2. **Two pre-registered 3-seed rules fire on effects I read as too weak.**
-   - **Stage C (C6):** against a control that says "± 0".
-   - **Stage D (D6):** +0.001, still below RSS.
-   - **My recommendation:** no 3-seed replications of either configuration as they are. Each failure has a specific
-     cause that more seeds would not change.
-3. **Mixed-level SFT data** (a generator change: mixed per-given levels are representable but never generated).
-   Without it, A6c cannot separate "no propagation" from "never saw a level mix".
-4. **D109 [REVIEW] items:**
-   - stage B's base and budget for stage D;
-   - two Holm families;
-   - the 10% lenient sensitivity match;
-   - my reading of R3-4 D's seed rule.
-5. **D111 [REVIEW]:** the free-space guard fails closed.
-6. **D110.6:** stage C's 300 steps were kept after the policy froze at step ~40 (~2.2 GPU-h with no learning). The
-   alternative was a mid-run protocol change.
+1. **The R4-3 go: a 3-seed confirmatory run of D-pos-v2 and B-v2 on the frozen R4-5 set.** It needs its own
+   pre-registration; nothing has been run.
+   - **Budget:** 6 × (~80 min SFT + ~110 min eval). Two nights, or one night if the evals keep batch 16 and the
+     3-seed SFTs run first.
+   - **Also to fix in that entry:** whether "propagates" there needs C2 (≥ 0.5) at the 3-seed mean, and whether R6
+     (beats RSS) becomes primary. Tonight it ties.
+2. **D113's [REVIEW] reading of R4-3:** C2 is part of the criterion. It did not matter tonight, since (a), (b) and (c)
+   all exceed 0.5.
+3. **D114's deviations:** the 1,280-token eval budget (the S lines make completions long), and 6 training rows
+   dropped as too long.
+4. **D116:** batch 16 for the R4 evals and MC-A, and the changed order.
+5. **The mixed-level option is not a version bump** (D113 [REVIEW]), so the generator version string is unchanged.
+6. **MC-A's model is B-v2** (D113 [REVIEW]). Its arithmetic is what limits MC-A, so another implicit model would
+   likely do the same.
 
-## 7. BLOCKED / problems / tests
+## 7. Recommendation
 
-- **Nothing is BLOCKED.** One temperature pause (stage C, 00:05). No OOM, no spill; stage C peaked at 7.04 GiB
-  reserved, stage D at 4.2 GiB device-wide.
-- **The disk-full crash** happened after the GPU queue ended (07:12). No GPU stage was affected.
-  - **The only work interrupted:** last night's uncommitted write-up, which is intact, and the full test run.
-- **Tests:** 584 passed, 0 failed, 0 skipped (GPU visible, 10:44 IST): the full suite (583) plus the integrity
-  checker's test, run on its own. 21 are new today: 20 for the guard, 1 for the checker.
-
-## 8. Recommendation
-
-- **Phase 12's σ line has now failed three ways on this base,** each now with a specific cause:
-  - supervised imitation (B): a constant-scale surface reader;
-  - σ-only RL (C): copies the smallest percentage, then stops exploring;
-  - an explicit trained line (D): exponent templates, no per-given levels.
-- **Before any more GPU nights, one change per arm, each with its own entry:**
-  1. **Mixed-level SFT data** (generator change, your approval). It fixes A6c's distribution shift for every arm.
-  2. **For explicit propagation, a chain-rule scratchpad:** each sensitivity computed from the solution's own
-     intermediate values, with symbol names (D80's open [REVIEW]). D-pos shows the copy works and the derivatives
-     don't.
-  3. **For σ-RL, one exploration change** (a KL term, or batch-level reward scaling) against stage C's
-     deterministic collapse.
-- **Today (CPU), once you confirm steps 3–6:** the 1.3.0 dispatch edit, and the space clean-up you choose from §5.
+- **The pre-registered next step is the 3-seed confirmation on R4-5's frozen set** (D-pos-v2 and B-v2). D-pos-v2's
+  propagation is large (slopes of 0.5–0.9 against ~0 for every earlier arm) and is unlikely to vanish with seeds.
+- **The open question is the score, not the propagation.** D-pos-v2 is calibrated in the median but ties RSS because
+  of gross errors in long symbolic derivatives at depth ≥ 4.
+  - **The R4-8 "computing vs predicting" story now has both halves in one night:**
+    - an explicit learned computation propagates, and fails where its arithmetic fails;
+    - an exact executor (MC-A's oracle) reaches σ\*.
+  - **That points to MC-B (R4-7: the model writes the program, an interpreter runs it)** as the cleanest next arm,
+    under its own pre-registration.
+- **Write-up items from tonight:**
+  - the depth curve (training depths vs the held-out depth 5);
+  - the regret-concentration analysis (it explains why calibration and score diverge);
+  - MC-A's epistemic AUROC next to self-consistency's, at matched k. That needs X2's k-cost curve (R4-7's
+    cross-family item).

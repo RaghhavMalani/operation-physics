@@ -10,3 +10,5 @@
 [23:18:40] disk: 53 GiB free on MLStorage
 [23:18:40] start r4_analysis (timeout 5400s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.r4_analysis analyze
 [23:19:52] end r4_analysis: exit 0
+[23:19:54] commit 'R4-1 / R4-2 / R4-3 (D113): D-pos-v2 and B-v2, the three sigmas, the stop/go, R1-R8': pushed
+[23:19:54] R4 tail chain done

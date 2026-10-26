@@ -811,3 +811,14 @@ Progress:
   stages.
 - [x] **Full test suite (CPU, 1 thread, GPU hidden, during D-pos-v2's training):** 602 passed, 0 failed, 1 skipped
   (`test_split_credit`: unsloth needs a GPU to import).
+- [x] **D-pos-v2 trained** (750 / 750, loss 0.116). **Its first eval was BLOCKED** (OOM in `run_eval`'s backoff,
+  which retried inside its `except` block); fixed (D116) and rerun after B-v2's eval: 3,060 / 3,060.
+- [x] **B-v2 trained** (750 / 750, loss 0.119) and evaluated (3,060 / 3,060).
+- [x] **D113's analysis (FINDINGS #30):** R4-3 **GO**, met on (a), (b) and (c). D-pos-v2's A6c slope is +0.53 and its
+  A6 label "full propagation", but it ties RSS on the expected score (R6) and is below X1 (R7). B-v2 learns allocation
+  only (A6c +0.47, A6 −0.29).
+- [x] **MC-A on A6c, A6 and A6b** (8,160 runs each; FINDINGS #31): robust does not beat RSS on A6c, so the stopping
+  rule fires and k is not increased. The oracle reaches σ\*'s level; the raw spread has the best correctness AUROC
+  (0.745).
+- [x] **GPU done at 05:54 IST**, with three 10-min temperature pauses. D117; MORNING.md.
+- [ ] **Next:** your call on the 3-seed confirmatory run (R4-3 go; its own pre-registration), then MC-B (R4-7).

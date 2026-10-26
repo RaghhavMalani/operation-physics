@@ -32,3 +32,5 @@
 [05:53:34] disk: 53 GiB free on MLStorage
 [05:53:34] start mc_a_analyze_a6b_pairs (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.mc_a analyze --set a6b_pairs
 [05:54:13] end mc_a_analyze_a6b_pairs: exit 0
+[05:54:15] commit 'MC-A on a6b_pairs (R4-4, D113 §7): k = 8 perturbed greedy runs, raw / robust / oracle (run exit 0)': pushed
+[05:54:15] MC-A chain done
