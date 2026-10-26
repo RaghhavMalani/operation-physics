@@ -1,0 +1,134 @@
+"""D118 (the R4-3 confirmatory run): stage R4's seed and confirmatory options, tonight's queue (dry run, the launch
+cap with a fake nvidia-smi) and the 23:00 waiter (scripts/run_at.sh). CPU only."""
+
+import json
+import os
+import subprocess
+import time
+from pathlib import Path
+
+import pytest
+
+from physcal.config import REPO_ROOT, load_config
+
+SCRIPTS = REPO_ROOT / "scripts"
+
+
+# ------------------------------------------------------------------------------------------- stage R4 options
+def test_seed_and_confirmatory_eval_configs():
+    from physcal.train import stage_r4
+
+    cfg = load_config("stage_r4")
+    assert cfg["confirmatory"]["seeds"] == [0, 1, 2]
+    assert stage_r4.arm_dir("dpos2", seed=1) == REPO_ROOT / "results/stage_r4/dpos2/seed1"
+    assert stage_r4.arm_dir("b2") == REPO_ROOT / "results/stage_r4/b2/seed0"  # the default is unchanged
+    assert stage_r4.arm_config("b2", seed=2)["seeds"] == [2]
+    dev = stage_r4.eval_config("b2", seed=2)
+    conf = stage_r4.eval_config("b2", seed=2, confirmatory=True)
+    assert conf["run_id"] == "stage-r4-b2-seed2-confirmatory"
+    assert conf["output_dir"].endswith("results/stage_r4/b2/seed2/confirmatory")
+    assert conf["model"]["lora"].endswith("results/stage_r4/b2/seed2/final_adapter")
+    assert sorted(conf["splits"]) == ["a6_pairs", "a6b_pairs", "a6c_pairs"]
+    for name, sp in conf["splits"].items():
+        assert sp["file"] == f"data/eval_sets/2.0.0+bdbb2279/confirmatory/{name}.jsonl" and sp["verify_regenerate"] == -1
+    for k in ("run_id", "output_dir", "splits"):  # everything else is the development eval's (D118 §2)
+        dev.pop(k), conf.pop(k)
+    assert conf == dev
+    assert dev["generation"]["max_new_tokens"] == 1280 and dev["generation"]["batch_size"] == 16
+    with pytest.raises(ValueError):
+        stage_r4.eval_config("dpos2", seed=3, confirmatory=True)
+    assert stage_r4.eval_config("dpos2", seed=1, cap_gib=5.2)["model"]["max_reserved_gib"] == 5.2
+
+
+def test_the_cap_is_never_raised():
+    r = subprocess.run(["uv", "run", "python", "-m", "physcal.train.stage_r4", "eval", "--arm", "b2", "--seed", "1",
+                        "--max-reserved-gib", "7.1"], cwd=REPO_ROOT, capture_output=True, text=True, timeout=120)
+    assert r.returncode != 0 and "never raised" in r.stderr
+
+
+# ------------------------------------------------------------------------------------------- the queue
+def _fake_smi(tmp_path: Path, used: int, total: int = 8188, temp: int = 60) -> Path:
+    d = tmp_path / "bin"
+    d.mkdir(exist_ok=True)
+    p = d / "nvidia-smi"
+    p.write_text("#!/usr/bin/env bash\ncase \"$*\" in\n"
+                 f"  *memory.used*) echo {used};;\n  *memory.total*) echo {total};;\n  *temperature*) echo {temp};;\nesac\n")
+    p.chmod(0o755)
+    return d
+
+
+def _cap(tmp_path, used, **env):
+    d = _fake_smi(tmp_path, used)
+    e = {**os.environ, "PATH": f"{d}:{os.environ['PATH']}", "QUEUE_LIB_ONLY": "1", "QUEUE_LOG": str(tmp_path / "log"),
+         "HOST_READ_S": "0", "HOST_RETRY_S": "0", "HOST_TRIES": "2", **env}
+    r = subprocess.run(["bash", "-c", '. ./queue_r4_seeds.sh && launch_cap'], cwd=SCRIPTS, capture_output=True,
+                       text=True, env=e, timeout=60)  # cwd: the script's `cd "$(dirname "$0")/.."` with $0 = bash
+    assert r.returncode == 0, r.stderr
+    return r.stdout.strip()
+
+
+def test_launch_cap_keeps_parity_and_is_only_lowered(tmp_path):
+    assert _cap(tmp_path, 1500) == "5.9"  # (8188 - 1500) / 1024 - 0.5 = 6.03 -> the parity cap
+    assert _cap(tmp_path, 1625) == "5.9"  # seed 0's launch reading (D115)
+    assert _cap(tmp_path, 1640) == "5.8"
+    assert _cap(tmp_path, 2300) == "5.2"  # 5.25, floored
+    log = (tmp_path / "log" / "chain.log").read_text()
+    assert "re-reading" in log and "host VRAM readings (MiB): 2300" in log
+
+
+def test_dry_run_order_and_commands(tmp_path):
+    d = _fake_smi(tmp_path, 1500)
+    e = {**os.environ, "PATH": f"{d}:{os.environ['PATH']}", "DRY_RUN": "1", "QUEUE_LOG": str(tmp_path / "q"),
+         "DISK_GUARD": "off", "GPU_DEADLINE": "09:00"}
+    r = subprocess.run(["bash", str(SCRIPTS / "queue_r4_seeds.sh")], capture_output=True, text=True, env=e, timeout=600)
+    assert r.returncode == 0, r.stderr
+    dry = [ln.split("DRY ", 1)[1] for ln in (tmp_path / "q" / "chain.log").read_text().splitlines()
+           if "] DRY " in ln and "commit" not in ln and "disk" not in ln]
+    names = [ln.split(" ", 1)[0] for ln in dry]
+    assert names == ["train_dpos2_s1", "train_dpos2_s2", "train_b2_s1", "train_b2_s2", "eval_dpos2_s0", "eval_b2_s0",
+                     "eval_dpos2_s1", "eval_b2_s1", "eval_dpos2_s2", "eval_b2_s2"]
+    for ln in dry[:4]:
+        assert "physcal.train.stage_r4 train" in ln and "--max-reserved-gib 5.9" in ln and "--stop-at" in ln
+    for ln in dry[4:]:
+        assert ln.split(": ", 1)[1].startswith("env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval")
+        assert "--confirmatory" in ln and "--max-reserved-gib 5.9" in ln
+    assert "launch cap 5.9 GiB" in (tmp_path / "q" / "chain.log").read_text()
+
+
+# ------------------------------------------------------------------------------------------- the waiter
+def test_run_at_past_start_execs_at_once_under_its_own_pid(tmp_path):
+    pid_file, out = tmp_path / "w.pid", tmp_path / "out"
+    past = time.strftime("%H:%M", time.gmtime(time.time() + 5.5 * 3600 - 120))  # two minutes ago, IST
+    e = {**os.environ, "START": past, "PID_FILE": str(pid_file), "POLL_S": "1"}
+    r = subprocess.run(["bash", str(SCRIPTS / "run_at.sh"), "bash", "-c", f'echo $$ > "{out}"'], env=e,
+                       capture_output=True, text=True, timeout=30)
+    if time.strftime("%H:%M", time.gmtime(time.time() + 5.5 * 3600)) < past:  # the test straddled IST midnight
+        pytest.skip("IST midnight")
+    assert r.returncode == 0 and "starting" in r.stdout
+    assert pid_file.read_text().strip() == out.read_text().strip()  # exec: the waiter's PID is the command's
+
+
+def test_run_at_future_start_waits_and_can_be_cancelled(tmp_path):
+    pid_file, out = tmp_path / "w.pid", tmp_path / "ran"
+    later = time.strftime("%H:%M", time.gmtime(time.time() + 5.5 * 3600 + 3600))  # an hour from now, IST
+    if later < time.strftime("%H:%M", time.gmtime(time.time() + 5.5 * 3600)):
+        pytest.skip("IST midnight")
+    e = {**os.environ, "START": later, "PID_FILE": str(pid_file), "POLL_S": "1"}
+    p = subprocess.Popen(["bash", str(SCRIPTS / "run_at.sh"), "touch", str(out)], env=e, stdout=subprocess.PIPE, text=True)
+    for _ in range(50):
+        if pid_file.exists() and pid_file.read_text().strip():
+            break
+        time.sleep(0.1)
+    assert int(pid_file.read_text()) == p.pid
+    time.sleep(1.5)
+    assert p.poll() is None  # still waiting
+    os.kill(p.pid, 15)
+    p.wait(timeout=10)
+    assert not out.exists() and "armed for" in p.stdout.read()
+
+
+def test_queue_logs_are_ignored_by_nothing_and_the_scripts_are_executable():
+    for name in ("queue_r4_seeds.sh", "run_at.sh"):
+        assert os.access(SCRIPTS / name, os.X_OK)
+    r = subprocess.run(["git", "check-ignore", "-q", "results/queue_r4_seeds/chain.log"], cwd=REPO_ROOT)
+    assert r.returncode == 1  # the chain log is committed after every stage

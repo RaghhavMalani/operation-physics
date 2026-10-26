@@ -3,6 +3,7 @@ guards every stage launcher; a real queue stops cleanly (BLOCKED, exit 75) befor
 
 import re
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -72,7 +73,8 @@ def test_a_real_queue_stops_before_its_first_stage(tmp_path):
     ps = _fake_ps(tmp_path, str(GIB))  # 1 GiB free
     log = tmp_path / "log"
     env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path), "PS_EXE": str(ps), "QUEUE_LOG": str(log),
-           "GIT_LOCK": str(tmp_path / "lock"), "GPU_DEADLINE": "09:00"}
+           "GIT_LOCK": str(tmp_path / "lock"),  # six hours ahead (IST), so the arm's time gate never skips it first
+           "GPU_DEADLINE": time.strftime("%H:%M", time.gmtime(time.time() + 5.5 * 3600 + 6 * 3600))}
     r = subprocess.run(["bash", str(SCRIPTS / "queue_stage_d.sh")], capture_output=True, text=True, env=env, timeout=120)
     chain = (log / "chain.log").read_text()
     assert r.returncode == 75, r.stdout + r.stderr

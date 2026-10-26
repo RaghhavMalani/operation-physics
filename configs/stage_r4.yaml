@@ -56,3 +56,16 @@ analysis:                              # D113 (physcal.eval.r4_analysis)
   alpha: 0.05                          # Holm over R1-R8
   criterion_ci_level: 0.90             # R4-3: C1's lower bound and C3's TOST interval
   practical_slope: 0.5                 # R4-3: C2
+confirmatory:                          # D118: the 3-seed confirmatory run on the frozen R4-5 set (R4-3's go)
+  seeds: [0, 1, 2]                     # seed 0 = the existing adapters; 1 and 2 trained with this recipe
+  output_subdir: confirmatory          # <arm>/seed<s>/confirmatory/ (rollouts, metrics)
+  splits:                              # replace the development sets; run_eval needs PHYSCAL_CONFIRMATORY=1
+    a6_pairs:
+      file: data/eval_sets/2.0.0+bdbb2279/confirmatory/a6_pairs.jsonl
+      verify_regenerate: -1
+    a6b_pairs:
+      file: data/eval_sets/2.0.0+bdbb2279/confirmatory/a6b_pairs.jsonl
+      verify_regenerate: -1
+    a6c_pairs:
+      file: data/eval_sets/2.0.0+bdbb2279/confirmatory/a6c_pairs.jsonl
+      verify_regenerate: -1

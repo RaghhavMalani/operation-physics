@@ -4307,3 +4307,56 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
 - **10. Budget:** 3,060 generations (one per problem). The estimate is ≤ 75 min, from B-v2's eval rate with shorter
   completions but longer prompts. It runs the following night, after the remaining confirmatory evals. Execution and
   analysis are CPU work at 1 thread, nice 19, after the generation ends.
+
+### D120. Your §6.5 check: the mixed-level flag is stored in every problem record and tape, and replay uses it. No version bump
+- **The record:** every mixed-level problem's dict has `noise.mixed` (the list drawn from; `noise.level` is the
+  largest). This holds for `results/phase12_sft_data_r4/problems.jsonl` too, which carries `[0, 0.01, 0.02, 0.05]` on
+  every row.
+- **The tape:** `TapeWriter.log` writes the full problem dict, so the flag is on every tape line.
+- **Replay:** `tape.replay` calls `generator.regenerate`, which passes `noise.mixed` back as `mixed_levels`.
+- **The new end-to-end test** (`tests/test_tape.py::test_mixed_level_tapes_store_the_flag_and_replay_exactly`):
+  - a tape of 12 mixed-level problems replays exactly;
+  - with the flag dropped, or with a different list, the problem no longer regenerates, and replay reports it.
+- **Result:** the generator's version string stays 2.0.0+bdbb2279, as D113 [REVIEW] proposed and you accepted. No tape
+  or eval set changes.
+- **Where the flag occurs so far:** only the R4-1 training data. No eval tape or MC-A run has a mixed-level problem (A6c
+  varies levels through its pair construction, which `regenerate` already handles).
+
+### D121. D118's build and tonight's armed queue (2026-10-26, 07:30–07:45 IST)
+- **Built:**
+  - **stage R4** takes `--seed`, `--confirmatory` (the frozen R4-5 files, `<arm>/seed<s>/confirmatory/`, run_id
+    `stage-r4-<arm>-seed<s>-confirmatory`) and `--max-reserved-gib` (refused if above the config's 5.9: never raised);
+  - **`configs/stage_r4.yaml`** has a `confirmatory` block (seeds [0, 1, 2], the three frozen files with full
+    regeneration checks);
+  - **the queue:** `scripts/queue_r4_seeds.sh`;
+  - **the waiter:** `scripts/run_at.sh`.
+- **Tests (`tests/test_r4_confirm.py`, 7):**
+  - the confirmatory eval config equals the development one except splits, output dir and run_id;
+  - the cap is refused above 5.9;
+  - the launch cap with a fake `nvidia-smi`;
+  - the dry run's stage order and commands;
+  - the waiter execs under its own PID, and can be cancelled before its start time.
+- **A fix to an existing test:** `test_disk_guard.py::test_a_real_queue_stops_before_its_first_stage` failed whenever it
+  ran less than ~2.75 h before 09:00 IST. Stage D's time gate then skipped the arm before the guard was reached. Its
+  deadline is now six hours ahead of the clock. No code change.
+- **The launch cap rule:** host VRAM is the median of 8 readings, 2 s apart, re-read up to 5 times while it gives a cap
+  below 5.9. The cap is min(5.9, total − host − 0.5) GiB, floored to 0.1. With the D115 reading (1,625 MiB) it gives
+  5.9; at 07:30 today the host used 1,034 MiB.
+- **GPU smoke tests (07:35–07:41 IST; nothing kept):**
+  - **training:** `stage_r4 train --arm b2 --seed 9 --max-steps 2 --max-reserved-gib 5.9` passed (184 s). The summary
+    records seed 9 and the cap. The directory was deleted afterwards.
+  - **eval:** seed 9's 2-step adapter was refused by the R2-1 reload check (ratio 0.94 > 0.25). That is expected for an
+    adapter whose effect on the logits is ~0.01; trained adapters pass it. So the eval path was smoked instead with
+    seed 0's trained adapter, on 4 development A6c problems, into the scratchpad: exit 0, 4 / 4 parsed, the adapter
+    hash as logged (`24148d53…`).
+  - **The confirmatory set was not touched.**
+- **The waiter:** `START=23:00 PID_FILE=results/queue_r4_seeds/waiter.pid GPU_DEADLINE=09:00 setsid nohup bash
+  scripts/run_at.sh bash scripts/queue_r4_seeds.sh`. **PID 109020**, armed at 07:42 IST.
+  - **At 23:00 IST** it execs the queue under the same PID.
+  - **To cancel:** `kill 109020`. Before 23:00 nothing has started. After 23:00 the kill stops the chain from starting
+    further stages, but does not touch a running stage.
+- **The expected night (seed 0's wall times, the gate's 15-min slack):**
+  - the four SFTs, 23:00 → ~04:30;
+  - D-pos-v2 s0's eval → ~06:20, then B-v2 s0's → ~07:25;
+  - B-v2 s1's eval also fits (~08:30). D-pos-v2 s1's (111 min) does not, so the gate skips it, and the next night runs
+    it with s2's two evals and MC-B.

@@ -84,3 +84,30 @@ def test_verifier_1_0_0_tapes_still_replay_with_their_logged_floor():
         assert verifier_version(read_meta(path)["reward_config"]) == "1.0.0"
         report = replay(path)
         assert report.ok and report.n == 400, (part, report)
+
+
+def test_mixed_level_tapes_store_the_flag_and_replay_exactly(tmp_path):
+    """D113's mixed per-given levels (your §6.5 check, D120): the logged problem carries `noise.mixed`, replay passes
+    it back (no version bump needed), and a tape whose flag is dropped or changed no longer replays."""
+    from physcal.config import load_config
+
+    env_cfg, rw_cfg = load_config("env_v2"), reward_config()
+    levels = [0.0, 0.01, 0.02, 0.05]
+    path = tmp_path / "mixed.jsonl"
+    with TapeWriter(path, "mixed-run", {"env_config": env_cfg, "reward_config": rw_cfg}) as tape:
+        for i in range(12):
+            fam = ("kinematics", "dynamics", "energy")[i % 3]
+            p = generate_problem(fam, i % 4 + 1, 81_500_000 + i, split="train", cfg=env_cfg, mixed_levels=levels)
+            text = _completion(p, i % 4)
+            r, bd = reward(p, text, rw_cfg)
+            tape.log(step=0, problem=p, completion=text, reward_value=r, breakdown=bd, model_id="fake")
+    recs = list(read_tape(path))
+    assert all(r["problem"]["noise"]["mixed"] == levels for r in recs)
+    assert {r["problem"]["generator_version"] for r in recs} == {env_cfg["generator"]["version"] + "+" +
+                                                                  recs[0]["generator_version"].split("+")[1]}
+    report = replay(path)
+    assert report.ok and report.n == 12
+    del recs[2]["problem"]["noise"]["mixed"]          # without the flag the problem regenerates as noise 0.05
+    recs[5]["problem"]["noise"]["mixed"] = [0.0, 0.05]  # a different list draws different levels
+    path.write_text("".join(json.dumps(r) + "\n" for r in recs))
+    assert replay(path).problem_mismatches == [2, 5]
