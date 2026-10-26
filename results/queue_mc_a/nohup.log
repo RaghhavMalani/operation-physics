@@ -20,3 +20,12 @@
 [03:40:46] disk: 53 GiB free on MLStorage
 [03:40:46] start mc_a_analyze_a6_pairs (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.mc_a analyze --set a6_pairs
 [03:41:21] end mc_a_analyze_a6_pairs: exit 0
+[03:41:27] commit 'MC-A on a6_pairs (R4-4, D113 §7): k = 8 perturbed greedy runs, raw / robust / oracle (run exit 0)': pushed
+[03:41:27] GPU at 60C, memory.used 1048 MiB
+[03:41:27] MC-A a6b_pairs: estimate 172 min (1.244s per completion)
+[03:41:28] disk: 53 GiB free on MLStorage
+[03:41:28] start mc_a_run_a6b_pairs (timeout 18213s): uv run python -m physcal.eval.mc_a run --set a6b_pairs
+[05:53:29] end mc_a_run_a6b_pairs: exit 0
+[05:53:34] disk: 53 GiB free on MLStorage
+[05:53:34] start mc_a_analyze_a6b_pairs (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.mc_a analyze --set a6b_pairs
+[05:54:13] end mc_a_analyze_a6b_pairs: exit 0
