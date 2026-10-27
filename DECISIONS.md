@@ -4589,3 +4589,32 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **The waiter (PID 67051, 23:00) is the backup:** if the task's chain holds the lock, it logs "already running" and
     exits 0.
   - **The foreground version (no `&`) is approved.**
+
+### D129. The GPU temperature is read as a decimal number (2026-10-27, 23:00 IST, before night 2's first stage)
+- **The bug:** the driver after tonight's WSL restart (nvidia-smi 620.67.01) reports `temperature.gpu` as `55.70`, not
+  `55`. `queue_r4_seeds.sh`'s `cool()` and `scripts/gpu_temp_guard.sh` kept only the digits (`tr -dc '0-9'`), so 55.70 C
+  read as 5570 C. The relaunched chain (PID 1762) logged "GPU at 5570C > 87C: pausing 600s" at 22:59:18. It would have
+  paused before every stage all night, and the in-stage guard would have stopped each stage about 95% of the time.
+  Night 1's readings were whole numbers, so this never showed.
+- **Stopped before any stage started** (23:00:05, during the 600 s pause), so nothing was interrupted.
+- **The fix:** both scripts read the temperature with its decimals and compare it as a number with `awk`, so the rule
+  stays "pause above 87 C" (87.5 pauses; 87.00 does not). `smi()` keeps the integer part, for the memory readings.
+  `disk_guard.sh` reads bytes from PowerShell (an integer) and is unchanged.
+- **Tests:** `test_decimal_temperatures_are_compared_as_numbers` (hot() on 55.70, 87, 87.00, 87.5, 88, empty; `cool()`
+  with a fake 55.70 reading) and `test_temp_guard_pauses_only_above_87_c_with_decimal_readings` (the guard on a real
+  process group: 55.70 leaves it alone, 88.10 stops it). `tests/test_r4_confirm.py`: 14 passed, 1 skipped (IST midnight).
+  On the real GPU: `gpu_c` = 53.80, not hot.
+- **Not changed:** any module or config a stage imports. No stage had started.
+
+### D130. Scheduled starts are retired; the queue is launched by hand from a Claude Code session (your decision, 2026-10-27, ~22:55 IST)
+- **The Windows task `physcal-night-queue` is deleted** (`schtasks.exe /delete /tn physcal-night-queue /f` at 22:56:41,
+  before its 22:59 trigger; `/query` then: not found). It existed and was Ready.
+- **The waiter (PID 67051) was already dead:** the WSL VM had restarted at 22:51 IST, so nothing was killed.
+- **From now on:** no Windows tasks and no waiters. A Claude Code session launches the chain and watches it. The
+  session's server process also keeps the WSL VM up, which addresses D128's idle-shutdown risk.
+- **Tonight's launch:** `GPU_DEADLINE=10:00 MC_B=1 setsid nohup scripts/queue_r4_seeds.sh >> …/nohup.log 2>&1 &`.
+  - **The deadline is 10:00 IST,** your update at ~22:58, applied to every deadline gate. The first chain (PID 1046,
+    09:00) was stopped during its host-VRAM re-read, before any stage, and relaunched with 10:00.
+  - **`setsid` was added** so the chain is in its own session and survives the tool shell that started it.
+- **The launch cap:** the first read gave 2,302 MiB of host VRAM (5.2 GiB cap). By the relaunch at 22:59 it read a
+  steady 765 MiB, so the cap is 5.9 GiB, at parity with seed 0 (D118 §1).

@@ -47,8 +47,10 @@ ist() { TZ=Asia/Kolkata date -d "@$1" +%H:%M; }
 iso() { TZ=Asia/Kolkata date -d "@$1" --iso-8601=seconds; }
 log() { echo "[$(TZ=Asia/Kolkata date +%H:%M:%S)] $*" | tee -a "$LOG/chain.log"; }
 left() { echo $((DEADLINE - $(date +%s))); }
-smi() { nvidia-smi --query-gpu="$1" --format=csv,noheader,nounits | head -1 | tr -dc '0-9'; }
-cool() { [ "$DRY_RUN" = 1 ] && return; while t=$(smi temperature.gpu); [ "${t:-0}" -gt 87 ]; do
+smi() { nvidia-smi --query-gpu="$1" --format=csv,noheader,nounits | head -1 | cut -d. -f1 | tr -dc '0-9'; }  # integer part
+gpu_c() { nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits | head -1 | tr -dc '0-9.'; }
+hot() { awk -v t="$1" 'BEGIN {exit !(t + 0 > 87)}'; }  # the driver reports 55.70, not 55 (D129): compare as a number
+cool() { [ "$DRY_RUN" = 1 ] && return; while t=$(gpu_c); hot "$t"; do
            log "GPU at ${t}C > 87C: pausing 600s"; sleep 600; done; log "GPU at ${t}C, memory.used $(smi memory.used) MiB"; }
 
 host_mib() {  # the steady host use with nothing running in WSL: the median of 8 readings, 2 s apart

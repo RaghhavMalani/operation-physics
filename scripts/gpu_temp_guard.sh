@@ -11,12 +11,13 @@ PAUSE_S=${PAUSE_S:-600}
 POLL_S=${POLL_S:-30}
 TEMP_CMD=${TEMP_CMD:-nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits}
 glog() { echo "[$(TZ=Asia/Kolkata date +%H:%M:%S)] guard($pg): $*" >> "$log"; }
-temp() { t=$($TEMP_CMD 2>/dev/null | head -1 | tr -dc '0-9'); echo "${t:-0}"; }
+temp() { t=$($TEMP_CMD 2>/dev/null | head -1 | tr -dc '0-9.'); echo "${t:-0}"; }
+hot() { awk -v t="$1" -v m="$MAX_C" 'BEGIN {exit !(t + 0 > m + 0)}'; }  # the driver reports 55.70, not 55 (D129)
 
 sleep "$POLL_S"  # the stage's timeout makes its process group first
 while kill -0 "$pg" 2>/dev/null; do
   t=$(temp)
-  if [ "$t" -gt "$MAX_C" ]; then
+  if hot "$t"; then
     if kill -STOP -- "-$pg" 2>/dev/null; then
       glog "GPU at ${t}C > ${MAX_C}C: stage stopped for ${PAUSE_S}s"
       sleep "$PAUSE_S"

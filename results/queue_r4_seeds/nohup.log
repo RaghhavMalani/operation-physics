@@ -47,3 +47,18 @@
 [09:18:22] D118 §10: 3 of 6 confirmatory evals exist; the analysis waits
 [09:18:22] R4 seeds chain done
 [09:34:16] run_at(67051): armed for 2026-10-27 23:00 IST: bash scripts/queue_r4_seeds.sh
+=== manual launch 2026-10-27 22:57:29 IST from Claude Code session (D128 retired scheduled starts) ===
+[22:57:29] R4 seeds chain start (D118); GPU deadline 09:00 IST (602 min left); chain PID 1046
+[22:57:46] host VRAM readings (MiB): 2304 2304 2303 2301 2301 2315 2300 2300
+[22:57:46] host use 2302 MiB gives 5.2 GiB < 5.9: re-reading in 60 s
+=== relaunch 2026-10-27 22:59:01 IST with GPU_DEADLINE=10:00 (user update) ===
+[22:59:01] R4 seeds chain start (D118); GPU deadline 10:00 IST (660 min left); chain PID 1762
+[22:59:17] host VRAM readings (MiB): 906 786 766 766 765 765 765 765
+[22:59:17] launch cap 5.9 GiB (max 5.9; D118 §1)
+[22:59:17] SKIP train dpos2 seed 1: results/stage_r4/dpos2/seed1/final_adapter exists
+[22:59:17] SKIP train dpos2 seed 2: results/stage_r4/dpos2/seed2/final_adapter exists
+[22:59:17] SKIP train b2 seed 1: results/stage_r4/b2/seed1/final_adapter exists
+[22:59:17] SKIP train b2 seed 2: results/stage_r4/b2/seed2/final_adapter exists
+[22:59:17] SKIP eval dpos2 seed 0: already evaluated
+[22:59:17] SKIP eval b2 seed 0: already evaluated
+[22:59:18] GPU at 5570C > 87C: pausing 600s

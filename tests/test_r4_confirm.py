@@ -77,6 +77,36 @@ def test_launch_cap_keeps_parity_and_is_only_lowered(tmp_path):
     assert "re-reading" in log and "host VRAM readings (MiB): 2300" in log
 
 
+def test_decimal_temperatures_are_compared_as_numbers(tmp_path):
+    """D129: the driver reports temperature.gpu as 55.70; keeping only its digits read 5570 C and paused forever."""
+    e = {**os.environ, "QUEUE_LIB_ONLY": "1", "QUEUE_LOG": str(tmp_path / "log")}
+
+    def hot(t: str) -> bool:
+        return subprocess.run(["bash", "-c", f'. ./queue_r4_seeds.sh && hot "{t}"'], cwd=SCRIPTS, env=e,
+                              timeout=60).returncode == 0
+
+    assert [hot(t) for t in ("55.70", "87", "87.00", "87.5", "88", "")] == [False, False, False, True, True, False]
+    d = _fake_smi(tmp_path, 1500, temp="55.70")
+    r = subprocess.run(["bash", "-c", ". ./queue_r4_seeds.sh && cool"], cwd=SCRIPTS, capture_output=True, text=True,
+                       env={**e, "PATH": f"{d}:{os.environ['PATH']}"}, timeout=60)
+    assert r.returncode == 0 and "GPU at 55.70C, memory.used 1500 MiB" in r.stdout
+
+
+def test_temp_guard_pauses_only_above_87_c_with_decimal_readings(tmp_path):
+    """D129: the in-stage guard (scripts/gpu_temp_guard.sh) on the driver's decimal readings."""
+    def guard_log(reading: str) -> str:
+        log = tmp_path / f"guard_{reading}.log"
+        stage = subprocess.Popen(["sleep", "3"], start_new_session=True)  # leads its own process group, like timeout
+        guard = subprocess.Popen([str(SCRIPTS / "gpu_temp_guard.sh"), str(stage.pid), str(log)],
+                                 env={**os.environ, "TEMP_CMD": f"echo {reading}", "POLL_S": "0.5", "PAUSE_S": "1"})
+        stage.wait(timeout=60)
+        guard.wait(timeout=60)
+        return log.read_text() if log.exists() else ""
+
+    assert guard_log("55.70") == ""
+    assert "GPU at 88.10C > 87C: stage stopped" in guard_log("88.10")
+
+
 def _dry(tmp_path, **env):
     d = _fake_smi(tmp_path, 1500)
     e = {**os.environ, "PATH": f"{d}:{os.environ['PATH']}", "DRY_RUN": "1", "QUEUE_LOG": str(tmp_path / "q"),
