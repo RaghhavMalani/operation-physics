@@ -4582,3 +4582,10 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     on something keeping WSL alive (this session, as last night).
   - **If the VM is down, the waiter is dead** and the task's copy runs, attached.
   - **Making the task the primary:** register it at 22:59 instead (`-At 22:59`). Not done: you specified 23:00.
+- **Amended (your decision, 2026-10-27, ~11:10 IST):** the task is re-registered at **22:59 IST**
+  (`Unregister-ScheduledTask`, then `schedule_night_queue.ps1 -At 22:59`). `schtasks /query`: next run 10/27/2026
+  10:59:00 PM, one time only, Interactive only.
+  - **The task is now the primary start:** its `wsl.exe` stays attached for the whole chain.
+  - **The waiter (PID 67051, 23:00) is the backup:** if the task's chain holds the lock, it logs "already running" and
+    exits 0.
+  - **The foreground version (no `&`) is approved.**
