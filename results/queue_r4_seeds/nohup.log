@@ -62,3 +62,18 @@
 [22:59:17] SKIP eval dpos2 seed 0: already evaluated
 [22:59:17] SKIP eval b2 seed 0: already evaluated
 [22:59:18] GPU at 5570C > 87C: pausing 600s
+=== relaunch 2026-10-27 23:04:21 IST after D129 (temperature parser), GPU_DEADLINE=10:00 ===
+[23:04:21] R4 seeds chain start (D118); GPU deadline 10:00 IST (655 min left); chain PID 8120
+[23:04:38] host VRAM readings (MiB): 610 582 583 582 581 581 581 581
+[23:04:38] launch cap 5.9 GiB (max 5.9; D118 §1)
+[23:04:38] SKIP train dpos2 seed 1: results/stage_r4/dpos2/seed1/final_adapter exists
+[23:04:38] SKIP train dpos2 seed 2: results/stage_r4/dpos2/seed2/final_adapter exists
+[23:04:38] SKIP train b2 seed 1: results/stage_r4/b2/seed1/final_adapter exists
+[23:04:38] SKIP train b2 seed 2: results/stage_r4/b2/seed2/final_adapter exists
+[23:04:38] SKIP eval dpos2 seed 0: already evaluated
+[23:04:38] SKIP eval b2 seed 0: already evaluated
+[23:04:38] GPU at 55.10C, memory.used 581 MiB
+[23:04:41] disk: 53 GiB free on MLStorage
+[23:04:41] start eval_dpos2_s1 (timeout 13400s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2 --seed 1 --confirmatory --max-reserved-gib 5.9
+[02:48:01] end eval_dpos2_s1: exit 124
+[02:48:01] BLOCKED? eval_dpos2_s1 exit 124 (see results/queue_r4_seeds/eval_dpos2_s1.log)
