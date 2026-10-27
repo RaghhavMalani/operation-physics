@@ -39,7 +39,7 @@ SFT_ORDER=${SFT_ORDER:-"dpos2:1 dpos2:2 b2:1 b2:2"}
 EVAL_ORDER=${EVAL_ORDER:-"dpos2:0 b2:0 dpos2:1 b2:1 dpos2:2 b2:2"}
 CO_AUTHOR="Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 PY="uv run python"
-OUT=results/stage_r4
+OUT=${QUEUE_OUT:-results/stage_r4}       # tests: an empty dir, so the dry run does not see real adapters/evals
 mkdir -p "$LOG"
 
 ist() { TZ=Asia/Kolkata date -d "@$1" +%H:%M; }
@@ -113,6 +113,11 @@ complete_adapter() {  # complete_adapter DIR: the adapter exists and its trainin
     "$1/summary.json" 2>/dev/null
 }
 
+mcb_generated() {  # mcb_generated DIR: every problem of the set has a program (the last generation run finished; D127)
+  $PY -c "import json,sys; m=json.load(open(sys.argv[1] + '/meta.json')); n=sum(1 for _ in open(sys.argv[1] + '/generations.jsonl'))
+sys.exit(0 if 'finished' in m and n >= m['n_problems'] else 1)" "$1" 2>/dev/null
+}
+
 [ "${QUEUE_LIB_ONLY:-0}" = 1 ] && return 0   # tests source the functions above without running the chain
 
 echo $$ > "$LOG/queue.pid"
@@ -184,6 +189,8 @@ if [ "$MC_B" = 1 ]; then
   done
   for set in $MCB_SETS; do
     [ -f "results/mc_b/$set/generations.jsonl" ] || { log "BLOCKED mc_b analysis $set: no generations"; continue; }
+    mcb_generated "results/mc_b/$set" || {
+      log "BLOCKED mc_b analysis $set: generation incomplete (it resumes on the next run; D127)"; continue; }
     run_stage "mc_b_exec_$set" 3600 $CPU_ENV $PY -m physcal.eval.mc_b execute --set "$set" \
       && run_stage "mc_b_analyze_$set" 3600 $CPU_ENV $PY -m physcal.eval.mc_b analyze --set "$set" \
       || log "BLOCKED mc_b execute/analyze $set (see $LOG/mc_b_exec_$set.log, $LOG/mc_b_analyze_$set.log)"

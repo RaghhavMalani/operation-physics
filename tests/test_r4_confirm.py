@@ -80,7 +80,7 @@ def test_launch_cap_keeps_parity_and_is_only_lowered(tmp_path):
 def _dry(tmp_path, **env):
     d = _fake_smi(tmp_path, 1500)
     e = {**os.environ, "PATH": f"{d}:{os.environ['PATH']}", "DRY_RUN": "1", "QUEUE_LOG": str(tmp_path / "q"),
-         "DISK_GUARD": "off", "GPU_DEADLINE": "09:00", **env}
+         "DISK_GUARD": "off", "GPU_DEADLINE": "09:00", "QUEUE_OUT": str(tmp_path / "out"), **env}
     r = subprocess.run(["bash", str(SCRIPTS / "queue_r4_seeds.sh")], capture_output=True, text=True, env=e, timeout=600)
     assert r.returncode == 0, r.stderr
     return [ln.split("DRY ", 1)[1] for ln in (tmp_path / "q" / "chain.log").read_text().splitlines()
@@ -100,6 +100,23 @@ def test_dry_run_order_and_commands(tmp_path):
         assert ln.split(": ", 1)[1].startswith("env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval")
         assert "--confirmatory" in ln and "--max-reserved-gib 5.9" in ln
     assert "launch cap 5.9 GiB" in (tmp_path / "q" / "chain.log").read_text()
+
+
+def test_mc_b_analysis_waits_for_a_finished_generation(tmp_path):
+    """D127: a generation stage stopped by its timeout leaves a partial generations.jsonl; it is not analyzed."""
+    d = tmp_path / "a6c_pairs"
+    d.mkdir()
+
+    def generated(n_lines: int, finished: bool) -> int:
+        (d / "generations.jsonl").write_text("{}\n" * n_lines)
+        (d / "meta.json").write_text(json.dumps({"n_problems": 3, **({"finished": "x"} if finished else {})}))
+        e = {**os.environ, "QUEUE_LIB_ONLY": "1", "QUEUE_LOG": str(tmp_path / "log")}
+        return subprocess.run(["bash", "-c", f'. ./queue_r4_seeds.sh && mcb_generated "{d}"'], cwd=SCRIPTS,
+                              capture_output=True, text=True, env=e, timeout=120).returncode
+
+    assert generated(3, True) == 0
+    assert generated(2, False) != 0  # stopped mid-set: meta.json was written at the start, without "finished"
+    assert generated(2, True) != 0
 
 
 def test_dry_run_with_mc_b_adds_its_stages_after_the_evals(tmp_path):

@@ -4510,3 +4510,34 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - then B-v2 s1's eval (~09:20) fits. D-pos-v2 s1's (126 min with slack) does not.
 - **The risk this exposed:** any WSL restart kills the queue. Nothing inside WSL can guard against that, so MORNING.md
   will report it if it happens again.
+
+### D127. Night 1 of D118 is done (3 of 6 evals); two queue fixes before night 2: MC-B's analysis waits for a finished generation, and the dry-run tests stop reading the real results (2026-10-27, ~09:30 IST)
+- **Night 1:** chain PID 632 ran 23:36–09:18 IST. Every stage it started exited 0.
+  - **Finished:** the four SFTs (750 / 750 steps each) and three confirmatory evals (D-pos-v2 s0, B-v2 s0, B-v2 s1).
+  - **Skipped by the deadline gate:** the D-pos-v2 s1 and s2 evals and the B-v2 s2 eval.
+  - **The analysis waits** (D118 §10: 3 of 6 evals exist).
+- **Fix 1, MC-B completeness (`mcb_generated` in `scripts/queue_r4_seeds.sh`):**
+  - **The problem:** a generation stage stopped by its timeout (2 × MCB_EST = 80 min, and MCB_EST is unmeasured)
+    leaves a partial `generations.jsonl`. The queue then executed and analyzed whatever existed. `results.json` would
+    have covered a subset (the first problems in set order) without saying so.
+  - **Now:** execution and analysis run only if every problem has a program and `meta.json` has `finished`.
+    `finished` is written at the end of a generation run; each run rewrites `meta.json` without it at its start.
+    Otherwise the queue logs BLOCKED, and the next run resumes the generation (it appends).
+  - **Test:** `test_mc_b_analysis_waits_for_a_finished_generation`.
+  - **Unchanged:** MC-B's code, prompt, sandbox and analysis (D119, D122).
+- **Fix 2, test isolation:**
+  - **The problem:** `test_dry_run_order_and_commands` and `test_dry_run_with_mc_b_adds_its_stages_after_the_evals`
+    failed after night 1. The dry run read `results/stage_r4`, where the adapters and three evals now exist, so it
+    skipped them.
+  - **Now:** `OUT` is `${QUEUE_OUT:-results/stage_r4}`, and the tests pass an empty temp dir. Real runs are unchanged.
+- **The confirmatory plots:** the queue commits each eval's rollouts, meta, metrics and summary, but not its PNGs
+  (calibration per set, reliability). They are committed with this entry, unopened, as the development evals' were.
+- **D126's reading, corrected:** `uptime -s` (23:36 IST) is the VM's boot time. So the VM was down before 23:36, and
+  the waiter died whenever it stopped (some time between 07:42 and 23:36).
+  - **The trigger is unknown:** the app closing, sleep, or Windows stopping the VM.
+  - **The conclusion stands:** a waiter inside WSL does not survive a VM stop.
+- **Night 2's dry run** (the real state, `MC_B=1`):
+  - **Skipped:** the four SFTs and the three existing evals.
+  - **Run:** the D-pos-v2 s1 and s2 evals and the B-v2 s2 eval; MC-B generation on A6c, A6 and A6b; MC-B execution and
+    analysis on CPU; then `r4_confirm`.
+- **Full suite after the fixes:** 641 passed, 0 failed, 1 skipped (the GPU test, with the GPU hidden).
