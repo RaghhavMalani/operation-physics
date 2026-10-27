@@ -46,3 +46,4 @@
 [09:18:22] SKIP eval b2 seed 2: 41 min left, needs 80 min
 [09:18:22] D118 §10: 3 of 6 confirmatory evals exist; the analysis waits
 [09:18:22] R4 seeds chain done
+[09:34:16] run_at(67051): armed for 2026-10-27 23:00 IST: bash scripts/queue_r4_seeds.sh

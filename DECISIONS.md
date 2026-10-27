@@ -4541,3 +4541,6 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **Run:** the D-pos-v2 s1 and s2 evals and the B-v2 s2 eval; MC-B generation on A6c, A6 and A6b; MC-B execution and
     analysis on CPU; then `r4_confirm`.
 - **Full suite after the fixes:** 641 passed, 0 failed, 1 skipped (the GPU test, with the GPU hidden).
+- **Night 2 armed (your item 3, 2026-10-26):** after this morning's report, at 09:34 IST, the same way as D121.
+  `START=23:00 PID_FILE=results/queue_r4_seeds/waiter.pid GPU_DEADLINE=09:00 MC_B=1 setsid nohup bash scripts/run_at.sh
+  bash scripts/queue_r4_seeds.sh`. **Waiter PID 67051**; the chain will keep that PID.
