@@ -4618,3 +4618,35 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **`setsid` was added** so the chain is in its own session and survives the tool shell that started it.
 - **The launch cap:** the first read gave 2,302 MiB of host VRAM (5.2 GiB cap). By the relaunch at 22:59 it read a
   steady 765 MiB, so the cap is 5.9 GiB, at parity with seed 0 (D118 §1).
+
+### D131. Night 2: D-pos-v2 seed 1's eval hung after a GPU driver reset; it is retried tonight, after seed 2 and before MC-B (2026-10-28, 02:50 IST)
+- **What happened:** `eval_dpos2_s1` (started 23:04:41) generated steadily at about 35 s per batch of 16 until
+  448 / 3,060 (its last log line, 23:33:16). At **23:33:31 Windows logged nvlddmkm event 153, "Error occurred on GPUID:
+  100"**: a GPU timeout and driver reset (TDR). It is the only nvlddmkm event in the last 10 days.
+  - **The CUDA process in WSL never recovered:** no output for 3 h 15 min. The stage's timeout (13,400 s) ended it at
+    02:48:01 (exit 124). The chain logged BLOCKED, committed the logs (7bf215f, pushed) and started `eval_dpos2_s2`.
+  - **Nothing was written** to `results/stage_r4/dpos2/seed1/confirmatory/` (empty), so no partial set exists.
+  - **The cause is unknown.** The guard had paused the stage at 23:12:11 (88.00 C) and resumed it at 23:22:11 (52 C);
+    the reset came 11 min later. The PC never sleeps; the display turns off after 15 min idle (AC), which may be near
+    23:33. Night 1 ran the same evals with you asleep and had no reset. Treated as a transient driver event.
+  - **My miss:** the watcher only woke on chain.log events, so the stall went unseen for 3 h. It now also wakes when a
+    GPU stage's log has been silent for 15 min while the guard is not pausing it.
+- **Decision: retry it tonight, as fix attempt 1 of 3** (D118 §10 assumes a BLOCKED eval is rerun when it can be). No
+  code change: the cause is outside the code. Alternatives:
+  - **Retry after MC-B,** i.e. let the chain run unchanged and relaunch it afterwards. Rejected: with MC-B's 3 sets
+    (estimate 40 min each, unmeasured) the retry would not fit before 10:00, and D118's analysis would wait another
+    night. Your order puts the evals before MC-B.
+  - **Edit the running script** to add a retry. Rejected: bash reads a running script by offset, and the rule is not to
+    edit what a running stage depends on.
+- **How:** the chain cannot retry s1 itself (its eval loop has passed it). So I stop it at the boundary after seed 2's
+  eval, without interrupting any stage.
+  - **The git lock:** since 02:51 I hold the chain's git-commit lock (`.git/queue-commit.lock`, `flock … sleep 10800`).
+    When seed 2's eval ends, the chain logs its exit code, writes the gzip, then waits on that lock in `commit_stage`
+    (up to 600 s).
+  - **Then I stop the chain** (no stage running), make the identical `commit_stage` call (the script's own function,
+    sourced with `QUEUE_LIB_ONLY=1`), and relaunch with `GPU_DEADLINE=10:00 MC_B=1`.
+  - **The relaunched chain** skips the five finished evals and runs D-pos-v2 s1 (the retry), then B-v2 s2, then MC-B
+    while the deadline gates allow it, then r4_confirm only if all six evals exist.
+  - **The order change** (s1 after s2) does not affect a greedy eval.
+- **Expected cost:** probably MC-B's third set (A6b) does not fit before 10:00. It resumes on the next run (D127). A
+  skipped set is not a partial set.
