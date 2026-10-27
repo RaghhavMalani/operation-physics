@@ -25,3 +25,8 @@
 [03:54:32] start train_b2_s2 (timeout 21631s): uv run python -m physcal.train.stage_r4 train --arm b2 --seed 2 --stop-at 2026-10-27T09:45:00+05:30 --max-reserved-gib 5.9
 [05:18:53] end train_b2_s2: exit 0
 [05:18:53] train b2 seed 2: 750 steps of 750, 84 min
+[05:18:56] commit 'R4 confirmatory (D118): SFT b2 seed 2 on the R4-1 data, 750 steps (exit 0)': pushed
+[05:18:56] GPU at 65C, memory.used 710 MiB
+[05:18:58] disk: 53 GiB free on MLStorage
+[05:18:58] start eval_dpos2_s0 (timeout 13400s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2 --seed 0 --confirmatory --max-reserved-gib 5.9
+[07:14:40] end eval_dpos2_s0: exit 0

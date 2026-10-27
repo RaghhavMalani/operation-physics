@@ -1,0 +1,349 @@
+{
+  "env_config": {
+    "generator": {
+      "condition_rel_step": 1e-06,
+      "display": {
+        "fixed_exponent_range": [
+          -2,
+          4
+        ],
+        "magnitude_range": [
+          0.01,
+          10000.0
+        ],
+        "sig_figs": 3
+      },
+      "distractors": [
+        0,
+        2
+      ],
+      "max_attempts": 200,
+      "max_condition_number": 5.0,
+      "max_world_tries": 100,
+      "noise": {
+        "levels": [
+          0.0,
+          0.01,
+          0.02,
+          0.05,
+          0.1
+        ],
+        "n_mc": 4000,
+        "sig_figs": 5
+      },
+      "version": "2.0.0",
+      "worlds_per_chain": 10
+    },
+    "splits": {
+      "depths": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "eval_seed_offset": 1000000000,
+      "heldout_depths": [
+        5
+      ],
+      "heldout_families": [
+        "optics"
+      ]
+    }
+  },
+  "eval_config": {
+    "calibration": {
+      "accuracy_tolerances": [
+        0.01,
+        0.02,
+        0.05,
+        0.1
+      ],
+      "computation_correct_tau": 0.001,
+      "pit_bins": 10,
+      "reliability_levels": [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        0.95,
+        0.99
+      ]
+    },
+    "env_config": "env_v2",
+    "generation": {
+      "batch_size": 16,
+      "do_sample": false,
+      "max_new_tokens": 1280,
+      "num_samples": 1,
+      "repetition_penalty": 1.0,
+      "seed": 0,
+      "temperature": 1.0,
+      "top_k": 0,
+      "top_p": 1.0
+    },
+    "memory_poll_seconds": 2.0,
+    "model": {
+      "chat_template_kwargs": {},
+      "device": "cuda",
+      "dtype": "bfloat16",
+      "fallback_id": null,
+      "id": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+      "loader": "unsloth_4bit",
+      "lora": "/home/flash2404/operation-physics/results/stage_r4/dpos2/seed0/final_adapter",
+      "max_reserved_gib": 5.9,
+      "max_seq_length": 2048,
+      "model_class": "causal_lm",
+      "pinned_base": "base_4bit",
+      "revision": null,
+      "text_only": false
+    },
+    "output_dir": "/home/flash2404/operation-physics/results/stage_r4/dpos2/seed0/confirmatory",
+    "prompt": "v5_two_channel",
+    "run_id": "stage-r4-dpos2-seed0-confirmatory",
+    "seed_block": 1000000,
+    "splits": {
+      "a6_pairs": {
+        "file": "data/eval_sets/2.0.0+bdbb2279/confirmatory/a6_pairs.jsonl",
+        "verify_regenerate": -1
+      },
+      "a6b_pairs": {
+        "file": "data/eval_sets/2.0.0+bdbb2279/confirmatory/a6b_pairs.jsonl",
+        "verify_regenerate": -1
+      },
+      "a6c_pairs": {
+        "file": "data/eval_sets/2.0.0+bdbb2279/confirmatory/a6c_pairs.jsonl",
+        "verify_regenerate": -1
+      }
+    }
+  },
+  "generation": {
+    "batch_size": 16,
+    "do_sample": false,
+    "max_new_tokens": 1280,
+    "num_samples": 1,
+    "repetition_penalty": 1.0,
+    "seed": 0,
+    "temperature": 1.0,
+    "top_k": 0,
+    "top_p": 1.0
+  },
+  "generator_version": "2.0.0+bdbb2279",
+  "git_commit": "a3b04837aa077c6161ad130e5b4bdb53cc328e04",
+  "loader_check": {
+    "adapter_base": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+    "adapter_max_abs_logit_delta": 4.107421875,
+    "bnb_4bit_linear_modules": 196,
+    "fingerprint": {
+      "below_floor_rule": null,
+      "criteria": {
+        "logprob": {
+          "adapter_effect": 0.6328912600361464,
+          "decisive": true,
+          "max_ratio": 0.25,
+          "mean_abs_dlogp": 0.0026770782171636628,
+          "pass": true,
+          "ratio": 0.004229918133188893
+        },
+        "provenance": {
+          "mismatches": {},
+          "must_match": [
+            "base_identity",
+            "quantization_config",
+            "compute_dtype",
+            "bitsandbytes"
+          ],
+          "other_differences": [],
+          "pass": true
+        },
+        "sigma_samples": {
+          "abs_dlog_median": 0.0,
+          "evaluable": true,
+          "max_abs_dlog_median": 0.693,
+          "median_ln_sigma_reloaded": -13.815510557964274,
+          "median_ln_sigma_training": -13.815510557964274,
+          "n_parsed_reloaded": 64,
+          "n_parsed_training": 64,
+          "pass": true,
+          "share_identical_texts": 1.0
+        },
+        "sigma_token": {
+          "adapter_effect": 0.118020125258966,
+          "decisive": true,
+          "max_ratio": 0.25,
+          "mean_tv": 0.009479849602750338,
+          "pass": true,
+          "ratio": 0.08032400899379788
+        }
+      },
+      "fingerprint": "/home/flash2404/operation-physics/results/stage_r4/dpos2/seed0/final_adapter/physcal_fingerprint.json",
+      "provenance": {
+        "adapter": {
+          "base_model_name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+          "dir": "/home/flash2404/operation-physics/results/stage_r4/dpos2/seed0/final_adapter",
+          "file": "59f8879455300f60",
+          "lora_alpha": 16,
+          "r": 16,
+          "target_modules": [
+            "down_proj",
+            "gate_proj",
+            "k_proj",
+            "o_proj",
+            "q_proj",
+            "up_proj",
+            "v_proj"
+          ],
+          "tensors": "355c88995c647ba7"
+        },
+        "adapter_merged": false,
+        "base": {
+          "commit": "e24e9530845f4e3a6648343796883cb509935039",
+          "content_sha256": "9939448b3a0fbe45",
+          "model_id": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+          "name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039"
+        },
+        "base_identity": "sha256:9939448b3a0fbe45",
+        "bitsandbytes": "0.50.2",
+        "compute_dtype": {
+          "bnb_4bit_compute_dtype": "torch.bfloat16",
+          "model_dtype": "torch.bfloat16"
+        },
+        "loader": "unsloth_4bit",
+        "pinned_base": {
+          "adapter": null,
+          "content_sha256": "9939448b3a0fbe45",
+          "dir": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+          "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+          "revision": "e24e9530845f4e3a6648343796883cb509935039"
+        },
+        "quantization_config": {
+          "bnb_4bit_compute_dtype": "torch.bfloat16",
+          "bnb_4bit_quant_type": "nf4",
+          "bnb_4bit_use_double_quant": true,
+          "llm_int8_enable_fp32_cpu_offload": false,
+          "llm_int8_has_fp16_weight": false,
+          "llm_int8_skip_modules": null,
+          "llm_int8_threshold": 6.0,
+          "load_in_4bit": true,
+          "load_in_8bit": false,
+          "quant_method": "bitsandbytes"
+        },
+        "versions": {
+          "accelerate": "1.15.0",
+          "bitsandbytes": "0.50.2",
+          "peft": "0.21.2",
+          "torch": "2.14.1",
+          "transformers": "5.17.0",
+          "trl": "1.13.0",
+          "unsloth": "2026.10.3",
+          "unsloth_zoo": "2026.10.3"
+        }
+      },
+      "status": "pass"
+    },
+    "loader": "unsloth_4bit",
+    "tokenizer_matches": {
+      "backend": false,
+      "chat_template": true,
+      "eos_token_id": true,
+      "vocab": true
+    }
+  },
+  "model_id": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+  "model_revision": "e24e9530845f4e3a6648343796883cb509935039",
+  "oom_error": null,
+  "oom_fallback": false,
+  "prompt_id": "v5_two_channel",
+  "provenance": {
+    "adapter": {
+      "base_model_name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+      "dir": "/home/flash2404/operation-physics/results/stage_r4/dpos2/seed0/final_adapter",
+      "file": "59f8879455300f60",
+      "lora_alpha": 16,
+      "r": 16,
+      "target_modules": [
+        "down_proj",
+        "gate_proj",
+        "k_proj",
+        "o_proj",
+        "q_proj",
+        "up_proj",
+        "v_proj"
+      ],
+      "tensors": "355c88995c647ba7"
+    },
+    "adapter_merged": false,
+    "base": {
+      "commit": "e24e9530845f4e3a6648343796883cb509935039",
+      "content_sha256": "9939448b3a0fbe45",
+      "model_id": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+      "name_or_path": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039"
+    },
+    "base_identity": "sha256:9939448b3a0fbe45",
+    "bitsandbytes": "0.50.2",
+    "compute_dtype": {
+      "bnb_4bit_compute_dtype": "torch.bfloat16",
+      "model_dtype": "torch.bfloat16"
+    },
+    "loader": "unsloth_4bit",
+    "pinned_base": {
+      "adapter": null,
+      "content_sha256": "9939448b3a0fbe45",
+      "dir": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+      "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+      "revision": "e24e9530845f4e3a6648343796883cb509935039"
+    },
+    "quantization_config": {
+      "bnb_4bit_compute_dtype": "torch.bfloat16",
+      "bnb_4bit_quant_type": "nf4",
+      "bnb_4bit_use_double_quant": true,
+      "llm_int8_enable_fp32_cpu_offload": false,
+      "llm_int8_has_fp16_weight": false,
+      "llm_int8_skip_modules": null,
+      "llm_int8_threshold": 6.0,
+      "load_in_4bit": true,
+      "load_in_8bit": false,
+      "quant_method": "bitsandbytes"
+    },
+    "versions": {
+      "accelerate": "1.15.0",
+      "bitsandbytes": "0.50.2",
+      "peft": "0.21.2",
+      "torch": "2.14.1",
+      "transformers": "5.17.0",
+      "trl": "1.13.0",
+      "unsloth": "2026.10.3",
+      "unsloth_zoo": "2026.10.3"
+    }
+  },
+  "reward_config": {
+    "checks": {
+      "copy_tolerance": 0.001
+    },
+    "scoring": {
+      "abs_rel_error_clip": 5.0,
+      "binary_tolerance": 0.01,
+      "crps_clip": 5.0,
+      "crps_log_sigma_floor": 1e-06,
+      "log_score_clip": 10.0,
+      "rule": "crps_log",
+      "sigma_floor": 0.001
+    },
+    "steps": {
+      "empty_score": 0.0,
+      "tolerance": 0.02
+    },
+    "version": "1.1.0",
+    "weights": {
+      "final": 1.0,
+      "steps": 0.2
+    }
+  },
+  "run_id": "stage-r4-dpos2-seed0-confirmatory",
+  "system_prompt": "You are a careful physics problem solver.\n\nSolve the problem. You may think step by step first. Then finish with exactly this format:\n\n<steps>\nsymbol = value unit\n</steps>\n<answer>value \u00b1 uncertainty unit</answer>\n<confidence>c%</confidence>\n\nRules:\n- In <steps>, write one line per intermediate quantity the problem asks you to report, using the problem's symbol names, each with a number and a unit.\n- In <answer>, give the final value in the unit the problem asks for, then \u00b1 and the one-standard-deviation uncertainty of that value caused by the measurement uncertainties of the given values, in the same unit. Values marked \u00b1 p% are measurements with that relative standard uncertainty; values without \u00b1 are exact. If every value you use is exact, the uncertainty is 0.\n- In <confidence>, give c, the probability that your calculation is correct for the values as stated, as one of 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%, 95%, 99%.\n- Numbers may use scientific notation such as 1.23e-4.\n- Write exactly one <answer> block, then exactly one <confidence> block, and nothing after it.\n\nExample problem:\nA crate of mass m rests on a level floor, and the coefficient of kinetic friction between the crate and the floor is mu. Starting from rest, the crate is pulled by a constant horizontal force F for a time t1. While it slides, the floor exerts a normal force N and a kinetic friction force f_k on it; the net horizontal force on the crate is F_net and its acceleration is a1. When the pull stops, the crate has speed v and momentum p, and it has moved a distance s1. Afterwards it slides freely, slowing down under friction alone with a deceleration of magnitude a2, and stops after a further time t2 and distance s2.\n\nKnown values:\n- len_rope = 7110 mm (the length of the rope used to pull the crate).\n- The mass of the crate, m, equals 2190 g.\n- P_air = 102 kPa (the air pressure in the room).\n- F_net = 5370 mN (the net horizontal force on the crate during the pull).\n- The speed of the crate when the pull stops is v = 42.8 km/h.\n- Use g = 9.81 m/s^2.\n\nDetermine s1, the distance the crate moves during the pull. Express the result in km. Report these intermediate quantities in <steps>: a1.\n\nExample solution:\nConvert the needed values to SI: F_net = 5370 mN = 5.37 N, m = 2190 g = 2.19 kg, v = 42.8 km/h = 42.8 / 3.6 m/s = 11.889 m/s. The rope length and the air pressure are not needed.\nNewton's second law: a1 = F_net / m = 5.37 / 2.19 = 2.452 m/s^2.\nThe crate starts from rest with constant acceleration, so v^2 = 2 a1 s1 and s1 = v^2 / (2 a1) = 11.889^2 / (2 * 2.452) = 141.35 / 4.904 = 28.82 m.\nIn the requested unit: s1 = 28.82 m = 0.02882 km.\n<steps>\na1 = 2.452 m/s^2\n</steps>\n<answer>0.02882 \u00b1 0 km</answer>\n<confidence>c%</confidence>"
+}
