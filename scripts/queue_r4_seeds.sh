@@ -17,6 +17,7 @@
 # usage:  START=23:00 PID_FILE=results/queue_r4_seeds/waiter.pid GPU_DEADLINE=09:00 \
 #           setsid nohup bash scripts/run_at.sh bash scripts/queue_r4_seeds.sh > results/queue_r4_seeds/nohup.log 2>&1 &
 #         DRY_RUN=1 QUEUE_LOG=<scratch dir> bash scripts/queue_r4_seeds.sh
+# A second copy started while one runs logs "already running" and exits 0 (flock on $LOG/queue.lock; D128).
 set -u
 cd "$(dirname "$0")/.."
 . scripts/disk_guard.sh   # the free-space guard (D111): disk_guard before every stage
@@ -120,6 +121,13 @@ sys.exit(0 if 'finished' in m and n >= m['n_problems'] else 1)" "$1" 2>/dev/null
 
 [ "${QUEUE_LIB_ONLY:-0}" = 1 ] && return 0   # tests source the functions above without running the chain
 
+# One chain at a time (D128): the 23:00 waiter and the Windows scheduled task may both start it; the second exits 0.
+# fd 8 (fd 9 is commit_stage's git lock). The stages inherit it, so the lock is held until the chain and every stage
+# it started have ended: a new chain cannot start while an orphaned stage still holds the GPU.
+exec 8>>"$LOG/queue.lock"
+if ! flock -n 8; then
+  log "already running: another queue_r4_seeds.sh holds $LOG/queue.lock; this copy (PID $$) exits 0"; exit 0
+fi
 echo $$ > "$LOG/queue.pid"
 DEADLINE=$(TZ=Asia/Kolkata date -d "${GPU_DEADLINE:-09:00}" +%s); [ "$DEADLINE" -lt "$(date +%s)" ] && DEADLINE=$((DEADLINE + 86400))
 log "R4 seeds chain start (D118); GPU deadline $(ist "$DEADLINE") IST ($(( $(left) / 60 )) min left); chain PID $$"

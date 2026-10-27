@@ -88,3 +88,4 @@ results/queue_mc_a/*.pid
 results/confirmatory_build/pid
 results/queue_r4_tail/*.pid
 results/queue_r4_seeds/*.pid
+results/queue_r4_seeds/queue.lock

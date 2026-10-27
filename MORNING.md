@@ -94,6 +94,9 @@ The data (R4-1), config and step count are those of seed 0; only the seed change
 - **The waiter: PID 67051**, armed 09:34 IST for 23:00 IST, with `GPU_DEADLINE=09:00 MC_B=1`. It execs
   `queue_r4_seeds.sh` under the same PID, so the chain's PID will also be 67051.
   - **To cancel:** `kill 67051` (or `kill $(cat results/queue_r4_seeds/waiter.pid)`).
+- **Added at ~11:00 (D128, your §6.3 decision):** the Windows task `physcal-night-queue` also starts the queue at
+  23:00, and a flock in the queue makes the second start log "already running" and exit 0. The waiter stays as the
+  backup. To delete the task: `schtasks.exe /delete /tn physcal-night-queue /f`.
 - **The expected night, from 23:00:**
   - eval D-pos-v2 seed 1 to ~00:56, seed 2 to ~02:52, then B-v2 seed 2 to ~03:56;
   - MC-B generation on A6c, A6 and A6b, ~40 min each (estimated, not measured), to ~06:00;

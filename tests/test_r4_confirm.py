@@ -102,6 +102,27 @@ def test_dry_run_order_and_commands(tmp_path):
     assert "launch cap 5.9 GiB" in (tmp_path / "q" / "chain.log").read_text()
 
 
+def test_second_copy_exits_0_while_the_lock_is_held(tmp_path):
+    """D128: the waiter and the Windows scheduled task may both start the queue; only one chain runs."""
+    import fcntl
+
+    log = tmp_path / "q"
+    log.mkdir()
+    with open(log / "queue.lock", "a") as fh:
+        fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)  # flock(2), as util-linux flock: a running chain
+        d = _fake_smi(tmp_path, 1500)
+        e = {**os.environ, "PATH": f"{d}:{os.environ['PATH']}", "DRY_RUN": "1", "QUEUE_LOG": str(log),
+             "DISK_GUARD": "off", "QUEUE_OUT": str(tmp_path / "out")}
+        r = subprocess.run(["bash", str(SCRIPTS / "queue_r4_seeds.sh")], capture_output=True, text=True, env=e,
+                           timeout=600)
+        assert r.returncode == 0, r.stderr
+        chain = (log / "chain.log").read_text()
+        assert "already running" in chain and "chain start" not in chain
+        assert not (log / "queue.pid").exists()
+    lines = _dry(tmp_path)  # the lock released: the same log dir runs the chain
+    assert lines[0].split(" ", 1)[0] == "train_dpos2_s1"
+
+
 def test_mc_b_analysis_waits_for_a_finished_generation(tmp_path):
     """D127: a generation stage stopped by its timeout leaves a partial generations.jsonl; it is not analyzed."""
     d = tmp_path / "a6c_pairs"

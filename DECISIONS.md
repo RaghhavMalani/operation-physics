@@ -4544,3 +4544,41 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
 - **Night 2 armed (your item 3, 2026-10-26):** after this morning's report, at 09:34 IST, the same way as D121.
   `START=23:00 PID_FILE=results/queue_r4_seeds/waiter.pid GPU_DEADLINE=09:00 MC_B=1 setsid nohup bash scripts/run_at.sh
   bash scripts/queue_r4_seeds.sh`. **Waiter PID 67051**; the chain will keep that PID.
+
+### D128. A single-instance lock on the queue, and a Windows scheduled task as tonight's second start (your decisions on MORNING.md §6, 2026-10-27, ~10:45 IST)
+- **§6.1 and §6.2 approved:** D127's MC-B guard, and its correction of D126.
+- **The lock:** `scripts/queue_r4_seeds.sh` takes `flock -n` on `results/queue_r4_seeds/queue.lock` (fd 8; commit_stage's
+  git lock is fd 9), before it writes `queue.pid` or logs "chain start".
+  - **A second copy** logs "already running: another queue_r4_seeds.sh holds …; this copy (PID n) exits 0" and exits 0.
+  - **The stages inherit the fd**, so the lock is held until the chain and every stage it started have ended. A new
+    chain cannot start while an orphaned stage still holds the GPU.
+  - **Test:** `test_second_copy_exits_0_while_the_lock_is_held` (a held lock gives exit 0, "already running", no
+    `queue.pid`; once released, the same log dir runs the chain). The queue tests pass: 37.
+  - **Gitignored:** `results/queue_r4_seeds/queue.lock`.
+- **The Windows task `physcal-night-queue`,** registered from WSL by `scripts/schedule_night_queue.ps1` (committed, so
+  the exact command is in the repo):
+  - **Runs:** `wsl.exe -d Ubuntu -e bash -lc "cd ~/operation-physics && GPU_DEADLINE=09:00 MC_B=1 nohup
+    scripts/queue_r4_seeds.sh >> results/queue_r4_seeds/nohup.log 2>&1"`.
+  - **Trigger:** once, 2026-10-27 23:00 IST. "Run only when user is logged on" (Interactive), as user Raghh.
+  - **Settings:** the Windows default "do not start on batteries" is kept. "Stop if going on batteries" is off, so a
+    power blip does not kill the night's `wsl.exe`. Time limit 16 h.
+  - **Delete:** `schtasks.exe /delete /tn physcal-night-queue /f`, or in PowerShell `Unregister-ScheduledTask
+    -TaskName physcal-night-queue -Confirm:$false`.
+- **One deviation from your command: no trailing `&`.**
+  - **Why:** with `nohup … &`, `wsl.exe` exits at once and the instance has no client left. WSL may then stop it when
+    idle, killing the queue. That is the likely way yesterday's waiter died (D127: the VM was down before 23:36).
+    Community reports describe the same for current WSL2 (`instanceIdleTimeout` / `vmIdleTimeout`; `systemd=false`
+    here).
+  - **So:** `wsl.exe` runs the queue in the foreground and stays attached all night. The task shows "Running", and a
+    console window stays open until the chain ends. `nohup` is kept, so closing that window does not SIGHUP the chain.
+  - **When the lock is held,** the task's copy exits 0 at once.
+- **Tested end-to-end through Task Scheduler** with a throwaway task (`physcal-night-queue-test`, deleted after):
+  - **The time trigger fired at 10:57:00.** The full dry chain ran via Windows → `wsl.exe` → `bash -lc`, with result 0.
+  - **The same task, started while a held lock existed,** logged "already running" and exited 0 (result 0).
+  - **The login shell has the same environment as the session:** uv, nvidia-smi, flock and git, and push auth works.
+- **The waiter (PID 67051) is kept as the backup.** At 23:00 it execs the current script, lock included.
+  - **The race at 23:00:** the waiter wakes at 23:00:00 inside the VM, while the task first has to start `wsl.exe`. So
+    if the VM is up, the waiter's copy probably takes the lock, the task's copy exits 0, and the chain again depends
+    on something keeping WSL alive (this session, as last night).
+  - **If the VM is down, the waiter is dead** and the task's copy runs, attached.
+  - **Making the task the primary:** register it at 22:59 instead (`-At 22:59`). Not done: you specified 23:00.
