@@ -1,0 +1,11 @@
+  mc-b execute a6c_pairs: 200/1020 (2s)
+  mc-b execute a6c_pairs: 400/1020 (3s)
+  mc-b execute a6c_pairs: 600/1020 (4s)
+  mc-b execute a6c_pairs: 800/1020 (5s)
+  mc-b execute a6c_pairs: 1000/1020 (7s)
+{
+ "set": "a6c_pairs",
+ "n_executed": 1020,
+ "n_excluded": 0,
+ "seconds": 6.646261215209961
+}

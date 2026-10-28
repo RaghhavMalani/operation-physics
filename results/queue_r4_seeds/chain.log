@@ -130,3 +130,11 @@
 [08:56:08] disk: 53 GiB free on MLStorage
 [08:56:08] start mc_b_gen_a6_pairs (timeout 3834s): uv run python -m physcal.eval.mc_b generate --set a6_pairs --max-reserved-gib 5.9
 [09:27:25] end mc_b_gen_a6_pairs: exit 0
+[09:27:27] commit 'MC-B (D119): a6_pairs, one greedy program per problem (exit 0)': pushed
+[09:27:27] SKIP mc_b generate a6b_pairs: 32 min left, needs 55 min
+[09:27:29] disk: 53 GiB free on MLStorage
+[09:27:29] start mc_b_exec_a6c_pairs (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.mc_b execute --set a6c_pairs
+[09:27:38] end mc_b_exec_a6c_pairs: exit 0
+[09:27:39] disk: 53 GiB free on MLStorage
+[09:27:39] start mc_b_analyze_a6c_pairs (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.mc_b analyze --set a6c_pairs
+[09:28:12] end mc_b_analyze_a6c_pairs: exit 0
