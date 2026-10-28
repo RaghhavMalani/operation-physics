@@ -392,9 +392,10 @@ def check_adapter(model, tok, model_id: str, lora_dir: str | Path, chat_kwargs: 
 
 
 def record_after_training(model, tok, model_id: str, final_dir: str | Path, chat_kwargs: dict | None,
-                          context: dict, events: Path | None = None, prepare=None) -> dict:
+                          context: dict, events: Path | None = None, prepare=None, cfg: dict | None = None) -> dict:
     """The trainers' hook, called after the final adapter is saved (D72). `prepare` puts the model in the eval
-    loader's mode (Unsloth: FastLanguageModel.for_inference). Never fails the run: an error is logged and returned."""
+    loader's mode (Unsloth: FastLanguageModel.for_inference). Never fails the run: an error is logged and returned.
+    `cfg` (D137): another fingerprint config (stored in the fingerprint, so the check reuses it); default this file's."""
     import time
     import traceback
 
@@ -402,7 +403,7 @@ def record_after_training(model, tok, model_id: str, final_dir: str | Path, chat
     try:
         if prepare is not None:
             prepare(model)
-        fp = record(model, tok, model_id, final_dir, [final_dir], chat_kwargs, context)
+        fp = record(model, tok, model_id, final_dir, [final_dir], chat_kwargs, context, cfg)
         res = {"status": "recorded", "file": str(Path(final_dir) / _config()["file_name"]),
                "adapter_effect": fp["adapter_effect"], "seconds": time.time() - t0}
     except Exception as exc:  # noqa: BLE001 (the adapter is already saved; the check is reported, never fatal)

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import gc
 import json
 import os
 from pathlib import Path
@@ -80,7 +81,7 @@ def train(arm: str, deadline: float | None = None, max_steps: int | None = None,
     from unsloth import FastLanguageModel
 
     from physcal.base import assert_loaded_base, base_config, resolve_model
-    from physcal.eval.fingerprint import record_after_training
+    from physcal.eval.fingerprint import _config as fp_config, record_after_training
     from physcal.eval.run_eval import GpuMemoryPoller
 
     cfg = _config()
@@ -117,10 +118,14 @@ def train(arm: str, deadline: float | None = None, max_steps: int | None = None,
                    peak_vram={"torch_max_allocated_gib": torch.cuda.max_memory_allocated() / 1024**3,
                               "torch_max_reserved_gib": torch.cuda.max_memory_reserved() / 1024**3,
                               "nvidia_smi_peak_used_gib_device_wide": poller.peak_mib / 1024})
+    gc.collect()  # D137: the trainer's memory, before R2-1's sampling (it OOM'd after training at batch 16)
+    torch.cuda.empty_cache()
+    fpc = copy.deepcopy(fp_config())
+    fpc["sampling"]["batch_size"] = m.get("fingerprint_batch_size", fpc["sampling"]["batch_size"])
     summary["fingerprint"] = {k: v for k, v in record_after_training(
         model, tok, model_name, out / "final_adapter", m.get("chat_template_kwargs") or {},
         {"run_id": f"stage-xm-{arm}-seed{seed}", "step": summary["steps"]}, out / "events.jsonl",
-        prepare=FastLanguageModel.for_inference).items() if k != "traceback"}
+        prepare=FastLanguageModel.for_inference, cfg=fpc).items() if k != "traceback"}
     (out / "summary.json").write_text(json.dumps(summary, indent=1, default=str))
     return summary
 

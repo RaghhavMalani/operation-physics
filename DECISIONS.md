@@ -4987,3 +4987,26 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     - 60 SFT steps of D-pos-v2 into a scratch directory;
     - an eval of 10 problems per set through the same path, including the reload check.
     - The smoke adapter is never evaluated on the frozen set, and is deleted.
+
+### D138. Before the pilot's launch: R2-1's fingerprint for the Llama base records at sampling batch 4; the smoke run passed; the queue's estimates (2026-10-28, ~18:50 IST; no pilot output exists)
+- **What the first smoke found:** 60 D-pos-v2 SFT steps on development data, in a scratch directory.
+  - **Training ran cleanly:** 9.4 s / step, 4.2 GiB peak, no row dropped.
+  - **R2-1's fingerprint recording ran out of memory after training.** The sampling batch of 16 (4 prompts × 4
+    samples, up to 512 tokens) was too much for the 3B model with the trainer's memory still held, so the eval's
+    reload check would have found `no_fingerprint` and only warned.
+- **The fix,** with no change for Qwen:
+  - **Freeing memory:** `stage_xm.train` releases the trainer's memory (`gc.collect`, `empty_cache`) before recording.
+  - **A smaller batch:** it records with the base config's `fingerprint_batch_size: 4`.
+    - `fingerprint.record_after_training` takes an optional config (default unchanged).
+    - The fingerprint stores its config, and the check already measures with the stored one. So recording and
+      checking use the same batch.
+  - **Qwen:** keeps `configs/fingerprint.yaml`'s 16, and its existing fingerprints are untouched (tested).
+- **The second smoke** (same 60 steps):
+  - **The fingerprint recorded** (adapter effect 0.75 nats / token; 345 s).
+  - **The smoke eval's reload check passed:** logprob and σ-token ratios 0.0.
+  - **The eval:** 20 / 20 development problems in 52 s at batch 6, no OOM.
+  - **The smoke adapters were deleted.** They were never evaluated on the frozen set.
+- **The queue's estimates** (`scripts/queue_xm.sh`; gates and timeouts only, not the analysis):
+  - **SFT:** 8,400 s each, which includes ~6 min of fingerprint recording.
+  - **Evals:** 9,000 s (D-pos-v2) and 7,000 s (B-v2), each including ~6 min of reload check; timeouts are 2× the
+    estimates.

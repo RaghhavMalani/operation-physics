@@ -121,3 +121,17 @@ def test_the_xm_queue_skips_what_is_done(tmp_path):
 
 def test_the_xm_queue_is_executable():
     assert os.access(SCRIPTS / "queue_xm.sh", os.X_OK)
+
+
+def test_the_llama_fingerprint_records_with_its_own_sampling_batch():
+    """D138: R2-1's sampling at batch 16 OOM'd after training on Llama; the base config sets a smaller batch, the
+    trainer passes it to record_after_training, and the fingerprint stores its config so the check reuses it."""
+    import inspect
+
+    from physcal.eval import fingerprint
+
+    assert "cfg" in inspect.signature(fingerprint.record_after_training).parameters
+    assert load_config("base_llama32_3b_4bit")["model"]["fingerprint_batch_size"] == 4
+    assert "fingerprint_batch_size" not in load_config("base_4bit")["model"]  # Qwen keeps configs/fingerprint.yaml's
+    src = inspect.getsource(fingerprint.check_adapter)
+    assert 'cfg=fp["config"]' in src  # the check measures with the stored config

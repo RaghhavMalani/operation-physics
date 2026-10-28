@@ -17,9 +17,9 @@ export QUEUE_LOG=${QUEUE_LOG:-results/queue_xm}
 QUEUE_LIB_ONLY=1 . scripts/queue_r4_seeds.sh   # LOG, log, run_stage, commit_stage, cool, launch_cap, mcb_generated, ...
 XM_OUT=${XM_OUT:-results/stage_xm}             # configs/stage_xm.yaml output_dir; tests: an empty dir
 XM_ARMS=${XM_ARMS:-"dpos2 b2"}                 # D137's order
-XM_TRAIN_EST=${XM_TRAIN_EST:-8400}             # 750 steps x 10.2 s (D136) + one 10-min temperature pause
-XM_EVAL_EST_dpos2=${XM_EVAL_EST_dpos2:-8000}   # 2,040 problems (D137's batch-fit and smoke timing)
-XM_EVAL_EST_b2=${XM_EVAL_EST_b2:-6000}         # B-v2's completions are shorter
+XM_TRAIN_EST=${XM_TRAIN_EST:-8400}             # 750 steps x 9.4-10.2 s (D136, the D137 smoke) + one 10-min pause
+XM_EVAL_EST_dpos2=${XM_EVAL_EST_dpos2:-9000}   # 2,040 problems at batch 6 (the smoke: 2.65 s per problem at ~150 tokens; trained ~2.5x longer)
+XM_EVAL_EST_b2=${XM_EVAL_EST_b2:-7000}         # B-v2's completions are shorter (Qwen: 241 vs 386 tokens)
 XM_MCB_SETS=${XM_MCB_SETS:-a6b_pairs}          # D132: A6c and A6 are done
 CPU_ENV="env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19"
 

@@ -13,3 +13,6 @@ model:
   end_of_turn: "<|eot_id|>"                            # SFT labels end with it (sft_phase12.tokenize's default is Qwen's)
   prompt_add_special_tokens: false                     # the template already writes <|begin_of_text|>; the tokenizer
                                                        # would add a second one to every eval prompt
+  fingerprint_batch_size: 4                            # R2-1's sampling batch for this base (configs/fingerprint.yaml's
+                                                       # 16 OOMs after training; the fingerprint stores it, so the
+                                                       # reload check uses the same; D137)
