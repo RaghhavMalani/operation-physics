@@ -1678,3 +1678,182 @@ in-distribution for both arms (mixed per-given levels in training); depth 5 is h
     (AUROC 0.75), comparable in kind to self-consistency's cross-sample agreement.
   - **Not tested here:** whether it beats self-consistency at equal sampling cost. That needs X2's k-cost curve on these
     sets, and belongs in R4-7.
+
+## #32. R4-3 confirmatory (3 seeds per arm, frozen R4-5 set): P is confirmed, D-pos-v2's stated σ propagates measurement noise on fresh problems (A6c slope +0.82). But its expected score does not beat RSS (K6) and sits below X1 (K7, estimate negative), and at the held-out depth 5 it loses to both although it propagates there (D118 / D125; 2026-10-27/28)
+
+**Status:** confirmatory (D118, primary amended by D125 before any result). The analysis (`physcal.eval.r4_confirm`)
+ran once, 2026-10-28 09:29–09:31 IST, on all six evals: complete, not rerun. Commit `d8bc805`; source
+`results/stage_r4/confirmatory/{summary.md,results.json}` and `stage_b_{dpos2,b2}/`.
+- **The setup:**
+  - D-pos-v2 and B-v2, seeds 0 / 1 / 2. Seeds 1 and 2 were trained on the R4-1 data with only the seed changed, at
+    750 / 750 steps; losses agree within 0.0005.
+  - **The eval:** the frozen R4-5 set (1,020 problems each of A6c / A6 / A6b = 3,060; 1,530 pairs) with seed 0's
+    development-eval settings (greedy, prompt v5, 1,280 tokens, batch 16).
+  - **The statistics:** stage B's joint bootstrap over pairs, B = 10,000, with seed-mean statistics. X1 is used, since
+    D99's reproduction passed.
+  - **"p < 0.0001":** no bootstrap resample at or below 0.
+- **The evals ran cleanly:**
+  - 3,060 / 3,060 completions in each of the six; 2 truncated of 18,360; parse-fail ≤ 0.20%; no OOM backoff; every
+    reload check passed.
+  - **One eval hung:** D-pos-v2 seed 1's first attempt hung after a Windows GPU driver reset and wrote nothing. It was
+    rerun (D131) on identical code.
+
+**Confirmed: the primary P (D125: K1 ∧ C2 ∧ C3), D-pos-v2's answer σ (a):**
+
+| criterion | rule | seed mean [90% CI] | per seed (0 / 1 / 2) | holds |
+|---|---|---|---|---|
+| K1 | A6c slope > 0, Holm-adjusted one-sided p < 0.05 | **+0.816 [+0.708, +0.923]**, p < 0.0001 | +0.778 / +0.770 / +0.900 | **yes** |
+| C2 | A6c point estimate ≥ 0.5 | +0.816 | – | **yes** |
+| C3 | A6b slope's 90% CI inside (−0.3, +0.3) (computation-correct pairs) | +0.036 [−0.057, +0.212] | – | **yes** |
+
+- **All three σ values propagate, with D113's full criterion on each:**
+  - **(b), the line's X:** +0.884 [+0.745, +1.041];
+  - **(c), exact from the line's terms:** +0.843 [+0.713, +0.987];
+  - **(c_S):** +0.804.
+  - **A6, computation-correct pairs:** (a) +1.195 [+0.992, +1.417], "full propagation" (stage B's B1).
+- **The confirmatory slope (+0.82) is above #30's one-seed development estimate** (+0.53 [+0.33, +0.71]).
+- **The σ is close to σ\*:**
+  - **Median abs ln(σ/σ\*):** 0.08–0.10 per seed (RSS 0.40, X1 0.33).
+  - **Vol beta:** 0.85–0.89 (RSS 0.48, X1 0.58).
+  - **Coverage:** 1σ 63–70% and 2σ 87–91% (σ\* 71% / 94%).
+- **D118 §12's fixed reading:** "D-pos-v2's explicit sensitivity computation propagates measurement noise on fresh
+  problems, across 3 seeds."
+
+**Not confirmed: the score secondaries (equal prominence, D118 §12). It does not buy a better expected score:**
+
+| test | seed mean [90% CI] | p (one-sided) | Holm | per seed (0 / 1 / 2) |
+|---|---|---|---|---|
+| **K6: D-pos-v2 (a) − RSS > 0, "beats RSS"** | **+0.0002 [−0.0002, +0.0006]** | 0.20 | **not rejected** | −0.0005 / +0.0010 / +0.0001 |
+| **K7: D-pos-v2 (a) − X1 > 0, "beats X1"** | **−0.0005 [−0.0009, −0.0001]** | 0.99 | **not rejected** | −0.0012 / +0.0003 / −0.0007 |
+| K8: B-v2 − RSS > 0 | −0.0011 [−0.0013, −0.0009] | 1 | not rejected | −0.0016 / −0.0009 / −0.0007 |
+
+- **K6: a tie with RSS.** The sign changes across seeds.
+- **K7: the estimate is below zero, with a CI that excludes zero** (95% [−0.0010, −0.0001]). Read it as "X1 scores
+  better", but descriptively only: K7 tests the other direction.
+  - **This repeats #30's development result:** R7 −0.0008 [−0.0015, −0.0002].
+- **The expected crps_log (oracle-centred, 3,060 problems):**
+  - D-pos-v2 (a): −0.0404 / −0.0389 / −0.0399 by seed;
+  - RSS −0.0399, X1 −0.0392, σ\* −0.0370;
+  - B-v2: −0.0416 / −0.0408 / −0.0406.
+- **The rest of the family holds:**
+  - **K1–K5 are Holm-rejected:** K2 +0.884, K3 +0.843, K4 (B-v2's A6c slope) +0.416 [+0.315, +0.517], and K5
+    (D-pos-v2 − B-v2) +0.0013 [+0.0008, +0.0017].
+  - **B-v2 misses C2** (+0.42 < 0.5) and scores below RSS (K8). Mixed-level data alone teaches it where the noise is,
+    not how much.
+
+**The pre-specified depth split (outside Holm; subgroup estimates, no confirmatory claim):**
+
+| | depths 1–4 (trained) | depth 5 (held out) |
+|---|---|---|
+| K1, (a)'s A6c slope | +0.855 [+0.734, +0.966] | **+0.820 [+0.569, +1.054]** |
+| K6, D-pos-v2 (a) − RSS | +0.0007 [+0.0003, +0.0011] | **−0.0018 [−0.0029, −0.0008]** |
+| K7, D-pos-v2 (a) − X1 | −0.0001 [−0.0005, +0.0003] | **−0.0022 [−0.0033, −0.0012]** |
+| K5, D-pos-v2 − B-v2 | +0.0016 [+0.0011, +0.0020] | +0.0001 [−0.0011, +0.0012] |
+
+- **Depth 5 propagates but loses on score.**
+  - **The slope:** (a) holds at +0.82 at the held-out depth.
+  - **The score:** there it is below both RSS and X1, with CIs below zero.
+  - **At depths 1–4** it is ahead of RSS and level with X1. The pooled K6 / K7 fail on the deep chains.
+- **The regret is concentrated (D118 §9):** the worst 5% of problems hold 83% / 69% / 76% of (a)'s expected-score
+  regret against σ\*. In every seed the mean regret is highest at depth 5 (0.0063 / 0.0033 / 0.0050, against
+  0.0013–0.0021 at depth 1).
+  - **Not measured here:** the share of gross misses (#30: σ off by more than 10× on 1.5% of the development set).
+- **#30's depth-5 claim is not reproduced.**
+  - **The numbers:**
+    - **#30's development curve for (a):** 1.00 / 0.97 / 0.76 / 0.38 / 0.06 at depths 1–5.
+    - **The confirmatory seed mean:** 1.01 / 0.84 / 0.99 / 0.62 / 0.82.
+  - **It is the problem set, not the seed:** seed 0 is #30's adapter, and on the frozen set its depth-5 slope is +0.80
+    (102 pairs).
+  - **Single-depth cells are noisy:** about 100 pairs each, with a seed SD up to 0.28 (depth 4).
+  - **What it changes:** #30's "the explicit computation does not extrapolate to the unseen depth" holds for the score,
+    not for the slope.
+
+**What it means:**
+- **The propagation result is solid.** Visible sensitivity derivations trained on mixed-level data yield a stated σ
+  that tracks σ\* problem by problem. It holds on fresh problems, in every seed, for all three graded σ values, with
+  slopes near 1 and coverage near nominal.
+- **The decision-relevant result is negative.** On expected score the learned σ ties the RSS heuristic and trails X1.
+  A few gross misses, concentrated in deep (and held-out) chains, cost what the close fit to σ\* gains elsewhere.
+- **Both halves stand together:** "propagates" does not imply "is a better forecast than a surface heuristic". The
+  remaining gap lives in the tail of deep, value-dependent chains (#30's line diagnostics), which an exact executor
+  would remove (#31's oracle; MC-B, #33, did not get there).
+
+## #33. R4-7 MC-B: the base model writing the problem's program fails. 85–91% of programs fail (mostly at the signature), about 0.5% compute the chain, and MC-B loses to RSS, X1, D-pos-v2 and MC-A robust on every pre-registered test (D119 / D122; 2026-10-28)
+
+**Status:** pre-registered (D119; deviations fixed before any output in D122).
+- **The tests:** M1–M5 on A6c, Holm at α = 0.05. A6 is descriptive.
+- **The sets:** development (MC-A's problems, so the comparison with MC-A is paired). A6b's generation did not fit
+  the night (D127); it runs in the next queue (D132) and is descriptive only.
+- **Sources:** `results/mc_b/{a6c,a6}_pairs/{summary.md,results.json,executions.jsonl}`. Commits `1daf260`, `81e2c18`,
+  `c823c35`, `4791795`.
+- **The setup:**
+  - **The model:** the pinned 4-bit base (Qwen2.5-Math-1.5B-Instruct, no adapter), shown two worked examples. It
+    writes one greedy `solve(...)` program per problem (640 new tokens, batch 16; 31 min per set).
+  - **The sandbox** runs the program on run 0 and MC-A's k = 8 perturbations: a `python -I` process per problem,
+    restricted builtins, math only, CPU / memory / wall limits.
+  - **Any failed call fails the program:** σ = 0 (the floor), μ unanswered. Every problem stays in the denominator.
+- **Coverage:** 1,020 / 1,020 programs per set, none excluded by MC-A. 11.2% hit the 640-token limit.
+
+**The tests (A6c, k = 8; mean oracle-centred expected crps_log; cluster bootstrap over pairs, B = 10,000): none is
+rejected. M1–M4 are below zero with CIs that exclude zero; M5's CI spans zero:**
+
+| test | value [95% CI] | p (one-sided) | Holm |
+|---|---|---|---|
+| **M1: MC-B − RSS > 0** | **−0.0099 [−0.0105, −0.0093]** | 1 | not rejected |
+| M2: MC-B − X1 > 0 | −0.0109 [−0.0116, −0.0102] | 1 | not rejected |
+| M3: MC-B − D-pos-v2 (a) > 0 | −0.0110 [−0.0119, −0.0102] | 1 | not rejected |
+| M4: MC-B − MC-A robust > 0 | −0.0037 [−0.0060, −0.0011] | 0.996 | not rejected |
+| M5: MC-B's A6c slope > 0 | −0.444 [−1.135, +0.151] | 0.92 | not rejected |
+
+- **The attainable bound, untested:** MC-B − MC-A oracle = −0.0125 [−0.0133, −0.0117].
+- **A6 (descriptive):**
+  - **The differences:** the same signs (M1 −0.0126, M3 −0.0139, M4 −0.0029 [−0.0065, +0.0011]).
+  - **The slope:** +0.23 [−0.58, +1.02].
+
+| σ source (A6c) | expected crps_log | median ln(σ/σ\*) | 1σ / 2σ coverage | slope [90% CI] |
+|---|---|---|---|---|
+| σ\* | −0.0351 | 0 | 70% / 96% | +1.00 |
+| MC-A oracle (#31) | −0.0358 | −0.04 | 68% / 91% | +1.01 [+0.89, +1.12] |
+| D-pos-v2 (a), seed 0 dev | −0.0372 | +0.01 | 69% / 92% | +0.55 [+0.36, +0.74] |
+| X1 | −0.0373 | +0.02 | 70% / 91% | −0.00 |
+| RSS | −0.0383 | −0.10 | 67% / 87% | 0.00 |
+| MC-A robust (#31) | −0.0446 | −0.12 | 61% / 82% | +0.48 [+0.04, +0.90] |
+| **MC-B, k = 8** | **−0.0482** | **−10.66** | **8% / 12%** | **−0.44 [−1.01, +0.06]** |
+
+- **The k curve is flat** (−0.0486 / −0.0483 / −0.0482 for k = 2 / 4 / 8). Most σ sit at the floor whatever k is.
+- **The epistemic AUROC is inverted** (0.03). A failed program gives both the floor σ and an unanswered or wrong
+  run 0, so σ is lowest exactly where run 0 is wrong.
+
+**Where it loses (D119 §9's reading for a failed M1): at writing the program, before any propagation.**
+
+| set | failure rate | no_program | rejected | signature | exception | bad_output | ran on all 9 inputs | run-0 computation-correct | exact program |
+|---|---|---|---|---|---|---|---|---|---|
+| A6c | **84.8%** | 15.1% | 0.7% | **63.9%** | 3.9% | 1.2% | 15.2% | 0.5% | 0.5% |
+| A6 | **91.0%** | 15.5% | 0.4% | **67.6%** | 4.1% | 3.3% | 9.0% | 0.3% | 0.3% |
+
+- **The signature (two-thirds of problems).**
+  - **The rule:** a parameter of `solve` that is not a displayed given's symbol, without a default, fails (D119 §4,
+    D122 deviation 2).
+  - **The commonest offenders (A6c / A6):** g (152 / 154), m (96 / 97), h (85 / 62), k (71 / 66) and t1 (63 / 77).
+    The model names its own variables (or makes g a required argument) instead of using the problem's symbols.
+  - **Distractors:** 4.5% of A6c programs take one as a parameter.
+- **No program (15%):** no extractable `solve`. Example: the first A6c generation is a top-level script with
+  hard-coded givens and an imitated "```output" block, the base model's tool-use style.
+- **Programs that run are almost never right.**
+  - **On A6c:** 15.2% run cleanly on all 9 inputs, but only 0.5% of problems (about 1 in 30 of those programs)
+    compute the chain.
+  - **On A6:** 0.3%.
+  - **By depth (A6c):**
+    - **Computation-correct:** 1.5% at depth 1, 0% from depth 3.
+    - **Failure rate:** 83 / 75 / 85 / 91 / 90% at depths 1–5.
+
+**What it means:**
+- **Asking this base model for a program does not move the arithmetic off the model.**
+  - **The intent:** #31's oracle shows that an exact executor on the same perturbations reaches σ\*'s level (−0.0358).
+  - **The outcome:** producing that executor is the step that fails. Interface compliance fails first, then
+    correctness.
+- **MC-B is a negative result and the weakest σ source tested.**
+  - **It ranks below MC-A robust** (#31), which already lost to RSS.
+  - **It is far below** the heuristics, D-pos-v2 and σ\*.
+- **No k increase and no prompt change follow** (D119 §9). A different prompt, a fine-tuned program writer or a
+  signature rule that maps the model's names would each be a new pre-registration.

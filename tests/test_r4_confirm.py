@@ -4,6 +4,7 @@ cap with a fake nvidia-smi) and the 23:00 waiter (scripts/run_at.sh). CPU only."
 import copy
 import json
 import os
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -107,10 +108,64 @@ def test_temp_guard_pauses_only_above_87_c_with_decimal_readings(tmp_path):
     assert "GPU at 88.10C > 87C: stage stopped" in guard_log("88.10")
 
 
+STALL_ENV = {"STALL_S": "2", "STALL_POLL_S": "0.2", "STALL_GRACE_S": "2"}
+
+
+def _stall_guard(tmp_path, stage_cmd: str):
+    """scripts/stall_guard.sh on a stage that leads its own process group, like timeout; {log} is the stage's log."""
+    slog, chain = tmp_path / "stage.log", tmp_path / "chain.log"
+    slog.touch()
+    stage = subprocess.Popen(["bash", "-c", stage_cmd.format(log=slog)], start_new_session=True)
+    guard = subprocess.Popen([str(SCRIPTS / "stall_guard.sh"), str(stage.pid), str(slog), str(chain)],
+                             env={**os.environ, **STALL_ENV})
+    return stage, guard, chain
+
+
+def test_stall_guard_kills_a_silent_stage_and_logs_blocked(tmp_path):
+    """D132: after a GPU driver reset the eval's process lived on, silent, until its timeout 3 h later (D131)."""
+    stage, guard, chain = _stall_guard(tmp_path, "sleep 60")
+    assert stage.wait(timeout=30) != 0  # killed after ~2 s of silence, not after 60
+    guard.wait(timeout=30)
+    assert "BLOCKED: stage.log silent for" in chain.read_text()
+
+
+def test_stall_guard_leaves_a_stage_that_writes_alone(tmp_path):
+    stage, guard, chain = _stall_guard(tmp_path, "for i in $(seq 25); do echo $i >> {log}; sleep 0.2; done")
+    assert stage.wait(timeout=30) == 0  # 5 s, longer than STALL_S, but never silent for it
+    guard.wait(timeout=30)
+    assert not chain.exists()
+
+
+def test_stall_guard_does_not_count_a_temperature_pause(tmp_path):
+    stage, guard, chain = _stall_guard(tmp_path, "for i in $(seq 10); do echo $i >> {log}; sleep 0.2; done")
+    time.sleep(0.5)
+    os.killpg(stage.pid, signal.SIGSTOP)  # what gpu_temp_guard.sh does above 87 C
+    time.sleep(4)  # silent for twice STALL_S while stopped
+    os.killpg(stage.pid, signal.SIGCONT)
+    assert stage.wait(timeout=30) == 0
+    guard.wait(timeout=30)
+    assert not chain.exists()
+
+
+def test_run_stage_puts_the_stall_guard_on_gpu_stages(tmp_path):
+    """D132: a GUARD=1 stage (SFT, eval, MC-B generation) that goes silent ends non-zero, BLOCKED, within seconds."""
+    e = {**os.environ, "QUEUE_LIB_ONLY": "1", "QUEUE_LOG": str(tmp_path / "log"), "DISK_GUARD": "off",
+         "TEMP_CMD": "echo 50.00", "POLL_S": "0.2", **STALL_ENV}
+    t0 = time.time()
+    r = subprocess.run(["bash", "-c", '. ./queue_r4_seeds.sh && GUARD=1 run_stage eval_x_s0 600 sleep 60; echo "rc=$?"'],
+                       cwd=SCRIPTS, capture_output=True, text=True, env=e, timeout=60)
+    assert time.time() - t0 < 30, r.stdout
+    rc = int(r.stdout.rsplit("rc=", 1)[1])
+    chain = (tmp_path / "log" / "chain.log").read_text()
+    assert rc != 0 and f"end eval_x_s0: exit {rc}" in chain
+    assert "BLOCKED: eval_x_s0.log silent for" in chain
+
+
 def _dry(tmp_path, **env):
     d = _fake_smi(tmp_path, 1500)
     e = {**os.environ, "PATH": f"{d}:{os.environ['PATH']}", "DRY_RUN": "1", "QUEUE_LOG": str(tmp_path / "q"),
-         "DISK_GUARD": "off", "GPU_DEADLINE": "09:00", "QUEUE_OUT": str(tmp_path / "out"), **env}
+         "DISK_GUARD": "off", "GPU_DEADLINE": "09:00", "QUEUE_OUT": str(tmp_path / "out"),
+         "MCB_OUT": str(tmp_path / "mcb"), **env}
     r = subprocess.run(["bash", str(SCRIPTS / "queue_r4_seeds.sh")], capture_output=True, text=True, env=e, timeout=600)
     assert r.returncode == 0, r.stderr
     return [ln.split("DRY ", 1)[1] for ln in (tmp_path / "q" / "chain.log").read_text().splitlines()
@@ -178,6 +233,26 @@ def test_dry_run_with_mc_b_adds_its_stages_after_the_evals(tmp_path):
     assert "physcal.eval.mc_b generate --set a6c_pairs --max-reserved-gib 5.9" in log
 
 
+def test_finished_mc_b_sets_and_the_one_time_analysis_are_skipped(tmp_path):
+    """D132: night 2 generated and analyzed A6c and A6, and ran D118's analysis; the next queue runs only A6b."""
+    for name, analyzed in (("a6c_pairs", True), ("a6_pairs", False)):
+        d = tmp_path / "mcb" / name
+        d.mkdir(parents=True)
+        (d / "generations.jsonl").write_text("{}\n" * 3)
+        (d / "meta.json").write_text(json.dumps({"n_problems": 3, "finished": "x"}))
+        if analyzed:
+            (d / "results.json").write_text("{}")
+    (tmp_path / "out" / "confirmatory").mkdir(parents=True)
+    (tmp_path / "out" / "confirmatory" / "results.json").write_text("{}")
+    names = [ln.split(" ", 1)[0] for ln in _dry(tmp_path, MC_B="1")]
+    assert names[10:] == ["mc_b_gen_a6b_pairs", "mc_b_exec_a6_pairs", "mc_b_analyze_a6_pairs"]
+    log = (tmp_path / "q" / "chain.log").read_text()
+    for skip in ("SKIP mc_b generate a6c_pairs: already generated", "SKIP mc_b generate a6_pairs: already generated",
+                 "SKIP mc_b analysis a6c_pairs: already analyzed", "SKIP r4_confirm: D118's one-time analysis exists"):
+        assert skip in log
+    assert "BLOCKED mc_b analysis a6b_pairs: no generations" in log  # a dry run generates nothing
+
+
 # ------------------------------------------------------------------------------------------- the waiter
 def test_run_at_past_start_execs_at_once_under_its_own_pid(tmp_path):
     pid_file, out = tmp_path / "w.pid", tmp_path / "out"
@@ -211,7 +286,7 @@ def test_run_at_future_start_waits_and_can_be_cancelled(tmp_path):
 
 
 def test_queue_logs_are_ignored_by_nothing_and_the_scripts_are_executable():
-    for name in ("queue_r4_seeds.sh", "run_at.sh"):
+    for name in ("queue_r4_seeds.sh", "run_at.sh", "gpu_temp_guard.sh", "stall_guard.sh"):
         assert os.access(SCRIPTS / name, os.X_OK)
     r = subprocess.run(["git", "check-ignore", "-q", "results/queue_r4_seeds/chain.log"], cwd=REPO_ROOT)
     assert r.returncode == 1  # the chain log is committed after every stage

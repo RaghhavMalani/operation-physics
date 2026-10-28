@@ -4650,3 +4650,50 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **The order change** (s1 after s2) does not affect a greedy eval.
 - **Expected cost:** probably MC-B's third set (A6b) does not fit before 10:00. It resumes on the next run (D127). A
   skipped set is not a partial set.
+
+### D132. Your decisions on night 2's report: FINDINGS #32 / #33, MC-B A6b in the next queue, a queue-level stall watchdog, the display (2026-10-28, ~10:00 IST)
+- **Your decisions (MORNING.md §6):**
+  1. **FINDINGS #32** (the confirmatory result) and **#33** (MC-B) are drafted. The failed secondaries get the same
+     prominence as the confirmed primary: K6, K7 with its negative estimate, the depth-5 score, and MC-B's negative.
+  2. **MC-B A6b goes into the next queue:** descriptive, ~31 min of GPU.
+  3. **A stall watchdog in the queue:** a GPU stage whose log has been silent for 15 min while it is not stopped by the
+     temperature guard is killed and BLOCKED, and the chain goes on.
+  4. **The display:** you set "turn off screen" to 1 min on AC. No TDR (driver timeout) changes.
+  - **No GPU work** until your next plan. Nothing was launched.
+- **The watchdog:** `scripts/stall_guard.sh PGID STAGE_LOG CHAIN_LOG`.
+  - **Where it runs:** `run_stage` starts it next to `gpu_temp_guard.sh` for every GUARD=1 stage (SFT, evals, MC-B
+    generation). CPU stages have no GPU to hang and get neither guard.
+  - **The silence:** every 30 s it reads the stage log's last write. Silence counts from the later of that write and
+    the last poll at which a process of the group was in state T.
+    - **Why:** a 10-min temperature pause (SIGSTOP of the whole group) is not a stall, and the clock restarts at the
+      SIGCONT.
+  - **After 900 s of silence:** it logs `stall(PGID): BLOCKED: <stage>.log silent for Ns while not temperature-paused`
+    and sends SIGTERM to the group, then SIGKILL after 30 s if the group is still alive.
+    - **The chain sees a non-zero exit** and logs `BLOCKED? <stage> exit N`, commits and goes on: your "continue".
+    - **The cost:** a stalled stage now costs 15 min instead of its timeout (D131: 3 h 15 min).
+  - **The settings:** `STALL_S` / `STALL_POLL_S` / `STALL_GRACE_S` (900 / 30 / 30), as environment defaults like the
+    temperature guard's.
+  - **Why 15 min is safe:** every GPU stage writes far more often than that. SFT writes a tqdm line per step (~6 s);
+    evals and MC-B write one per batch (17–40 s). Model loading and the reload check took ~2 min.
+- **Also: what already succeeded is skipped, so the next queue runs only A6b.**
+  - **What a rerun would have done before:** run with `MC_B=1`, the script would rerun every MC-B stage and D118's
+    analysis.
+    - **Generation on a complete set** loads the model on the GPU and overwrites `meta.json`, the record of the run
+      that produced the set.
+    - **r4_confirm** runs once (D118 §10).
+  - **The skips now:**
+    - **Generation:** skipped when `mcb_generated` (D127's check: `meta.json` finished, every problem present).
+    - **Execution and analysis:** skipped when `results.json` exists.
+    - **r4_confirm:** skipped when `results/stage_r4/confirmatory/results.json` exists.
+  - **`MCB_OUT`** (default `results/mc_b`, `configs/mc_b.yaml`'s output dir) replaces the literal path, so the dry-run
+    tests do not read the real MC-B results (D127's isolation).
+- **Tests** (`tests/test_r4_confirm.py`, 5 new):
+  - the guard kills a silent stage and logs BLOCKED;
+  - it leaves a stage that keeps writing alone;
+  - a 4 s SIGSTOP (twice `STALL_S`) is not counted;
+  - `run_stage` attaches it to GUARD=1 stages: a silent stage ends non-zero within seconds, BLOCKED;
+  - **A dry run with finished state:**
+    - **The state:** A6c generated and analyzed, A6 generated only, D118's analysis done.
+    - **What runs:** only A6b's generation and A6's execution and analysis, and each skip is logged.
+    - **Night 2's real state,** where A6 is analyzed too, leaves only A6b.
+  - The executable-bit test now covers both guards.

@@ -250,6 +250,13 @@ Sources: `results/mc_b/{a6c,a6}_pairs/summary.md`.
 
 ## 6. Decisions for you
 
+**Decided at ~10:00 (D132):**
+1. FINDINGS #32 and #33 are drafted.
+2. A6b goes into the next queue.
+3. The queue-level stall watchdog is added and tested.
+4. You set the display to turn off after 1 min on AC; no TDR changes.
+No GPU work until your next plan.
+
 1. **FINDINGS entries.** I have not written them.
    - **#32 (the confirmatory result):** P confirmed; K6 / K7 not supported, with K7's estimate negative; depth 5 keeps
      the slope but loses the score.

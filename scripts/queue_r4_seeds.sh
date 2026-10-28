@@ -11,8 +11,10 @@
 # The launch cap (D118 §1): host VRAM is read with nothing running in WSL (median of 8 readings, re-read while the
 # cap it gives is below parity), cap = min(5.9, total - host - 0.5) GiB, never raised; every stage gets it.
 # Every stage is a child whose PID goes to $LOG/<stage>.pid and is waited on with `wait` (never pgrep -f); every GPU
-# stage gets the in-stage temperature guard (scripts/gpu_temp_guard.sh) and the cool check before it. After every stage
-# the chain commits and pushes under the shared flock. The free-space guard (D111) runs before every stage, fail-closed.
+# stage gets the in-stage temperature guard (scripts/gpu_temp_guard.sh) and the cool check before it, and the stall
+# watchdog (scripts/stall_guard.sh, D132: a stage log silent for 15 min while not temperature-paused is killed and
+# BLOCKED; the chain goes on). After every stage the chain commits and pushes under the shared flock. The free-space
+# guard (D111) runs before every stage, fail-closed. Finished MC-B sets and D118's one-time analysis are skipped (D132).
 #
 # usage:  START=23:00 PID_FILE=results/queue_r4_seeds/waiter.pid GPU_DEADLINE=09:00 \
 #           setsid nohup bash scripts/run_at.sh bash scripts/queue_r4_seeds.sh > results/queue_r4_seeds/nohup.log 2>&1 &
@@ -36,6 +38,7 @@ DRY_RUN=${DRY_RUN:-0}
 MC_B=${MC_B:-0}                           # 1: the MC-B stages (D119; the following night)
 MCB_EST=${MCB_EST:-2400}                  # per set: 1,020 short programs, ~1,300-token prompts (estimate, unmeasured)
 MCB_SETS=${MCB_SETS:-"a6c_pairs a6_pairs a6b_pairs"}
+MCB_OUT=${MCB_OUT:-results/mc_b}         # configs/mc_b.yaml output_dir; tests: an empty dir
 SFT_ORDER=${SFT_ORDER:-"dpos2:1 dpos2:2 b2:1 b2:2"}
 EVAL_ORDER=${EVAL_ORDER:-"dpos2:0 b2:0 dpos2:1 b2:1 dpos2:2 b2:2"}
 CO_AUTHOR="Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -86,7 +89,8 @@ run_stage() {  # run_stage NAME TIMEOUT_S CMD...: child process, PID file, wait;
   timeout "$limit" "$@" > "$LOG/$name.log" 2>&1 &
   local pid=$!
   echo "$pid" > "$LOG/$name.pid"
-  [ "${GUARD:-0}" = 1 ] && { scripts/gpu_temp_guard.sh "$pid" "$LOG/chain.log" > /dev/null 2>&1 & }
+  [ "${GUARD:-0}" = 1 ] && { scripts/gpu_temp_guard.sh "$pid" "$LOG/chain.log" > /dev/null 2>&1 &
+                             scripts/stall_guard.sh "$pid" "$LOG/$name.log" "$LOG/chain.log" > /dev/null 2>&1 & }
   wait "$pid"; local rc=$?
   log "end $name: exit $rc"
   return $rc
@@ -187,6 +191,8 @@ done
 CPU_ENV="env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19"
 if [ "$MC_B" = 1 ]; then
   for set in $MCB_SETS; do
+    # a rerun would load the model and overwrite meta.json, the record of the generation that produced the set (D132)
+    if mcb_generated "$MCB_OUT/$set"; then log "SKIP mc_b generate $set: already generated"; continue; fi
     if [ "$(left)" -lt $((MCB_EST + SLACK_S)) ] && [ "$DRY_RUN" != 1 ]; then
       log "SKIP mc_b generate $set: $(( $(left) / 60 )) min left, needs $(( (MCB_EST + SLACK_S) / 60 )) min"; continue
     fi
@@ -195,24 +201,27 @@ if [ "$MC_B" = 1 ]; then
     GUARD=1 run_stage "mc_b_gen_$set" "$lim" $PY -m physcal.eval.mc_b generate --set "$set" --max-reserved-gib "$CAP"; rc=$?
     [ "$rc" != 0 ] && log "BLOCKED? mc_b_gen_$set exit $rc (see $LOG/mc_b_gen_$set.log)"
     commit_stage "MC-B (D119): $set, one greedy program per problem (exit $rc)" \
-      "results/mc_b/$set/generations.jsonl" "results/mc_b/$set/meta.json"
+      "$MCB_OUT/$set/generations.jsonl" "$MCB_OUT/$set/meta.json"
   done
   for set in $MCB_SETS; do
-    [ -f "results/mc_b/$set/generations.jsonl" ] || { log "BLOCKED mc_b analysis $set: no generations"; continue; }
-    mcb_generated "results/mc_b/$set" || {
+    if [ -f "$MCB_OUT/$set/results.json" ]; then log "SKIP mc_b analysis $set: already analyzed"; continue; fi
+    [ -f "$MCB_OUT/$set/generations.jsonl" ] || { log "BLOCKED mc_b analysis $set: no generations"; continue; }
+    mcb_generated "$MCB_OUT/$set" || {
       log "BLOCKED mc_b analysis $set: generation incomplete (it resumes on the next run; D127)"; continue; }
     run_stage "mc_b_exec_$set" 3600 $CPU_ENV $PY -m physcal.eval.mc_b execute --set "$set" \
       && run_stage "mc_b_analyze_$set" 3600 $CPU_ENV $PY -m physcal.eval.mc_b analyze --set "$set" \
       || log "BLOCKED mc_b execute/analyze $set (see $LOG/mc_b_exec_$set.log, $LOG/mc_b_analyze_$set.log)"
-    commit_stage "MC-B (D119): $set executed in the sandbox and analyzed" "results/mc_b/$set/executions.jsonl" \
-      "results/mc_b/$set/results.json" "results/mc_b/$set/summary.md"
+    commit_stage "MC-B (D119): $set executed in the sandbox and analyzed" "$MCB_OUT/$set/executions.jsonl" \
+      "$MCB_OUT/$set/results.json" "$MCB_OUT/$set/summary.md"
   done
 fi
 
 # ---- 12. CPU: D118's analysis, once all six confirmatory evals exist ----------------------------------------------------
 n_done=0
 for item in $EVAL_ORDER; do [ -f "$OUT/${item%%:*}/seed${item##*:}/confirmatory/rollouts.jsonl" ] && n_done=$((n_done + 1)); done
-if [ "$n_done" = 6 ] || [ "$DRY_RUN" = 1 ]; then
+if [ -f "$OUT/confirmatory/results.json" ]; then
+  log "SKIP r4_confirm: D118's one-time analysis exists ($OUT/confirmatory/results.json; D118 §10: it is not rerun)"
+elif [ "$n_done" = 6 ] || [ "$DRY_RUN" = 1 ]; then
   run_stage r4_confirm 5400 $CPU_ENV env PHYSCAL_CONFIRMATORY=1 $PY -m physcal.eval.r4_confirm analyze \
     || log "BLOCKED r4_confirm (see $LOG/r4_confirm.log)"
   commit_stage "R4-3 confirmatory analysis (D118): K1-K8, P, the depth split, 3 seeds on the frozen R4-5 set" \
