@@ -1,0 +1,58 @@
+W1028 05:22:30.409000 111210 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1028 05:22:30.454000 111210 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Unsloth: If you want to finetune Gemma 2, install flash-attn to make it faster!
+To install flash-attn, do the below:
+
+pip install --no-deps --upgrade "flash-attn>=2.6.3"
+==((====))==  Unsloth 2026.10.3: Fast Gemma2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/288 [00:00<?, ?it/s]Loading weights:   0%|          | 1/288 [00:00<02:57,  1.61it/s]Loading weights:  19%|█▉        | 56/288 [00:00<00:02, 103.77it/s]Loading weights:  38%|███▊      | 109/288 [00:00<00:00, 193.00it/s]Loading weights:  57%|█████▋    | 164/288 [00:00<00:00, 274.67it/s]Loading weights:  74%|███████▍  | 214/288 [00:01<00:00, 329.87it/s]Loading weights:  93%|█████████▎| 268/288 [00:01<00:00, 383.20it/s]Loading weights: 100%|██████████| 288/288 [00:01<00:00, 249.10it/s]
+Unsloth: Will load /home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--gemma-2-2b-it-bnb-4bit/snapshots/cfc3a78e491db11ed6fd461d9ce8ba921de01602 as a legacy tokenizer.
+Unsloth 2026.10.3 patched 26 layers with 26 QKV layers, 26 O layers and 26 MLP layers.
+/home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/unsloth/models/_utils.py:443: UserWarning: Unsloth: detected a manual forward/backward run before trainer.train(); reset the torch.compile graph cache it poisoned so training starts clean. To avoid this, run any pre-train probe under `with torch.no_grad():`.
+  warnings.warn(
+==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = 1
+   \\   /|    Num examples = 2,974 | Num Epochs = 1 | Total steps = 6
+O^O/ \_/ \    Batch size per device = 2 | Gradient accumulation steps = 4
+\        /    Data Parallel GPUs = 1 | Total batch size (2 x 4 x 1) = 8
+ "-____-"     Trainable parameters = 20,766,720 of 2,635,108,608 (0.79% trained)
+Unsloth: Will smartly offload gradients to save VRAM!
+  0%|          | 0/6 [00:00<?, ?it/s] 17%|█▋        | 1/6 [00:20<01:43, 20.79s/it] 33%|███▎      | 2/6 [00:31<00:59, 14.89s/it] 50%|█████     | 3/6 [00:42<00:39, 13.29s/it] 67%|██████▋   | 4/6 [00:53<00:24, 12.21s/it] 83%|████████▎ | 5/6 [01:04<00:11, 11.86s/it]100%|██████████| 6/6 [01:15<00:00, 11.49s/it]                                             100%|██████████| 6/6 [01:15<00:00, 11.49s/it]100%|██████████| 6/6 [01:15<00:00, 12.59s/it]
+Unsloth: Restored added_tokens_decoder metadata in /home/flash2404/operation-physics/results/r5_feasibility/gemma2_2b/scratch_train/final_adapter/tokenizer_config.json.
+Unsloth: Preserved sentencepiece asset `tokenizer.model` in /home/flash2404/operation-physics/results/r5_feasibility/gemma2_2b/scratch_train/final_adapter.
+Unsloth: Will smartly offload gradients to save VRAM!
+Unsloth: Double buffering enabled (parallel H2D + compute) for backward pass.
+{'train_runtime': '75.51', 'train_samples_per_second': '0.636', 'train_steps_per_second': '0.079', 'train_loss': '0.8439', 'epoch': '0.01614'}
+{
+ "kind": "R5-5 feasibility: stage R4's SFT path for a few steps (D133)",
+ "model": "gemma2_2b",
+ "repo": "unsloth/gemma-2-2b-it-bnb-4bit",
+ "revision": "cfc3a78e491db11ed6fd461d9ce8ba921de01602",
+ "cap_gib": 5.9,
+ "sequence_tokens": {
+  "n_rows": 3000,
+  "max": 2177,
+  "mean": 1565.0016666666668,
+  "p99": 2005.039999999999,
+  "dropped_over_max": 26
+ },
+ "oom_check": {
+  "batch": 2,
+  "tokens": 2023,
+  "loss": 0.741838276386261,
+  "seconds": 35.211209297180176,
+  "max_reserved_gib": 3.8515625
+ },
+ "steps": 6,
+ "seconds_per_step": 12.9387286901474,
+ "train_loss": 0.8439060846964518,
+ "temperature_pauses": 0,
+ "peak_reserved_gib": 3.8515625,
+ "peak_allocated_gib": 3.3222789764404297,
+ "nvidia_smi_peak_gib": 4.9462890625
+}

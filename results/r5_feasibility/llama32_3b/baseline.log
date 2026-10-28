@@ -1,0 +1,70 @@
+W1028 05:25:28.298000 112660 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1028 05:25:28.344000 112660 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Llama patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/254 [00:00<?, ?it/s]Loading weights:   0%|          | 1/254 [00:00<01:09,  3.63it/s]Loading weights:   8%|▊         | 21/254 [00:00<00:03, 70.61it/s]Loading weights:  20%|█▉        | 50/254 [00:00<00:01, 141.91it/s]Loading weights:  31%|███       | 79/254 [00:00<00:00, 188.50it/s]Loading weights:  42%|████▏     | 107/254 [00:00<00:00, 215.98it/s]Loading weights:  53%|█████▎    | 134/254 [00:00<00:00, 232.00it/s]Loading weights:  64%|██████▍   | 162/254 [00:00<00:00, 243.73it/s]Loading weights:  74%|███████▍  | 189/254 [00:00<00:00, 251.01it/s]Loading weights:  87%|████████▋ | 220/254 [00:01<00:00, 267.28it/s]Loading weights: 100%|██████████| 254/254 [00:01<00:00, 215.05it/s]
+Unsloth: Will load /home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Llama-3.2-3B-Instruct-bnb-4bit/snapshots/bb1d317a108579fb40e646af8924a5e7ec5604b1 as a legacy tokenizer.
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  OOM: batch -> 5 (backoff #1)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+  generated 5/50 (131s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 10/50 (220s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 15/50 (236s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 20/50 (251s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 25/50 (340s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 30/50 (360s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 35/50 (384s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 40/50 (472s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 45/50 (493s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 50/50 (509s)
+{
+ "kind": "R5-5 feasibility: untrained base on 50 development A6c problems (D133)",
+ "model": "llama32_3b",
+ "repo": "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
+ "revision": "bb1d317a108579fb40e646af8924a5e7ec5604b1",
+ "cap_gib": 5.9,
+ "seconds": 509.49817419052124,
+ "temperature_pauses": 0,
+ "oom_backoffs": 1,
+ "batch_size_final": 5,
+ "completion_tokens_median": 154.0,
+ "prompt_tokens_max": 1194,
+ "peak_reserved_gib": 5.8671875,
+ "nvidia_smi_peak_gib": 7.3349609375,
+ "n": 50,
+ "reasons": {
+  "unit_mismatch": 6,
+  "ok": 37,
+  "parse_fail": 7
+ },
+ "format_parsed": 0.86,
+ "units_ok": 0.74,
+ "sigma_stated": 0.74,
+ "steps_block": 0.86,
+ "truncated": 0.12,
+ "computation_correct": 0.0,
+ "within_5pct_of_f_xmeas": 0.04,
+ "within_1pct_of_truth": 0.0,
+ "by_depth_computation_correct": {
+  "1": 0.0,
+  "2": 0.0,
+  "3": 0.0,
+  "4": 0.0,
+  "5": 0.0
+ }
+}

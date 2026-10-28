@@ -1,0 +1,73 @@
+W1028 05:34:19.504000 114082 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1028 05:34:19.553000 114082 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Unsloth: If you want to finetune Gemma 2, install flash-attn to make it faster!
+To install flash-attn, do the below:
+
+pip install --no-deps --upgrade "flash-attn>=2.6.3"
+==((====))==  Unsloth 2026.10.3: Fast Gemma2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/288 [00:00<?, ?it/s]Loading weights:   0%|          | 1/288 [00:00<02:22,  2.01it/s]Loading weights:  13%|█▎        | 37/288 [00:00<00:03, 81.48it/s]Loading weights:  28%|██▊       | 80/288 [00:00<00:01, 163.26it/s]Loading weights:  43%|████▎     | 124/288 [00:00<00:00, 230.46it/s]Loading weights:  60%|██████    | 174/288 [00:00<00:00, 299.66it/s]Loading weights:  76%|███████▌  | 218/288 [00:01<00:00, 337.44it/s]Loading weights:  92%|█████████▏| 265/288 [00:01<00:00, 370.37it/s]Loading weights: 100%|██████████| 288/288 [00:01<00:00, 246.96it/s]
+Unsloth: Will load /home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--gemma-2-2b-it-bnb-4bit/snapshots/cfc3a78e491db11ed6fd461d9ce8ba921de01602 as a legacy tokenizer.
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  OOM: batch -> 5 (backoff #1)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 5/50 (67s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 10/50 (162s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 15/50 (174s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 20/50 (270s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 25/50 (289s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 30/50 (307s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 35/50 (403s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 40/50 (424s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 45/50 (463s)
+Both `max_new_tokens` (=1280) and `max_length`(=8192) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 50/50 (560s)
+{
+ "kind": "R5-5 feasibility: untrained base on 50 development A6c problems (D133)",
+ "model": "gemma2_2b",
+ "repo": "unsloth/gemma-2-2b-it-bnb-4bit",
+ "revision": "cfc3a78e491db11ed6fd461d9ce8ba921de01602",
+ "cap_gib": 5.9,
+ "seconds": 559.6100342273712,
+ "temperature_pauses": 0,
+ "oom_backoffs": 1,
+ "batch_size_final": 5,
+ "completion_tokens_median": 116.0,
+ "prompt_tokens_max": 1300,
+ "peak_reserved_gib": 5.888671875,
+ "nvidia_smi_peak_gib": 7.455078125,
+ "n": 50,
+ "reasons": {
+  "ok": 40,
+  "parse_fail": 9,
+  "unit_mismatch": 1
+ },
+ "format_parsed": 0.82,
+ "units_ok": 0.8,
+ "sigma_stated": 0.8,
+ "steps_block": 0.82,
+ "truncated": 0.08,
+ "computation_correct": 0.0,
+ "within_5pct_of_f_xmeas": 0.04,
+ "within_1pct_of_truth": 0.0,
+ "by_depth_computation_correct": {
+  "1": 0.0,
+  "2": 0.0,
+  "3": 0.0,
+  "4": 0.0,
+  "5": 0.0
+ }
+}

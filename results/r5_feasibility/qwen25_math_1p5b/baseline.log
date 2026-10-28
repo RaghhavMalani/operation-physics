@@ -1,0 +1,59 @@
+W1028 05:10:09.208000 109408 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1028 05:10:09.269000 109408 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  19%|█▊        | 63/338 [00:00<00:00, 621.57it/s]Loading weights:  41%|████      | 137/338 [00:00<00:00, 690.29it/s]Loading weights:  65%|██████▌   | 221/338 [00:00<00:00, 756.32it/s]Loading weights:  89%|████████▉ | 301/338 [00:00<00:00, 769.27it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 757.09it/s]
+Both `max_new_tokens` (=1280) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 10/50 (41s)
+Both `max_new_tokens` (=1280) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 20/50 (92s)
+Both `max_new_tokens` (=1280) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 30/50 (146s)
+Both `max_new_tokens` (=1280) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 40/50 (198s)
+Both `max_new_tokens` (=1280) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 50/50 (252s)
+{
+ "kind": "R5-5 feasibility: untrained base on 50 development A6c problems (D133)",
+ "model": "qwen25_math_1p5b",
+ "pinned_base": "base_4bit",
+ "pin": {
+  "dir": ".cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+  "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+  "revision": "e24e9530845f4e3a6648343796883cb509935039",
+  "content_sha256": "9939448b3a0fbe45",
+  "adapter": null,
+  "config": "base_4bit"
+ },
+ "cap_gib": 5.6,
+ "seconds": 251.67134833335876,
+ "temperature_pauses": 0,
+ "completion_tokens_median": 921.0,
+ "prompt_tokens_max": 1250,
+ "peak_reserved_gib": 3.5625,
+ "nvidia_smi_peak_gib": 5.8955078125,
+ "n": 50,
+ "reasons": {
+  "parse_fail": 50
+ },
+ "format_parsed": 0.0,
+ "units_ok": 0.0,
+ "sigma_stated": 0.0,
+ "steps_block": 0.0,
+ "truncated": 0.22,
+ "computation_correct": 0.0,
+ "within_5pct_of_f_xmeas": 0.0,
+ "within_1pct_of_truth": 0.0,
+ "by_depth_computation_correct": {
+  "1": 0.0,
+  "2": 0.0,
+  "3": 0.0,
+  "4": 0.0,
+  "5": 0.0
+ }
+}

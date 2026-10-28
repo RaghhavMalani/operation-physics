@@ -1,0 +1,56 @@
+W1028 05:15:53.555000 110416 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1028 05:15:53.603000 110416 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Llama patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:   1%|          | 1/146 [00:00<01:32,  1.56it/s]Loading weights:  13%|█▎        | 19/146 [00:00<00:03, 33.83it/s]Loading weights:  25%|██▌       | 37/146 [00:00<00:01, 62.47it/s]Loading weights:  39%|███▉      | 57/146 [00:00<00:00, 90.92it/s]Loading weights:  54%|█████▍    | 79/146 [00:01<00:00, 121.17it/s]Loading weights:  66%|██████▋   | 97/146 [00:01<00:00, 133.42it/s]Loading weights:  79%|███████▉  | 115/146 [00:01<00:00, 145.01it/s]Loading weights:  92%|█████████▏| 134/146 [00:01<00:00, 155.28it/s]Loading weights: 100%|██████████| 146/146 [00:01<00:00, 101.99it/s]
+Unsloth: Will load /home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Llama-3.2-1B-Instruct-bnb-4bit/snapshots/fcecd050a91025151bbf518e41a5577c356efdce as a legacy tokenizer.
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+  generated 10/50 (16s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 20/50 (28s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 30/50 (66s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 40/50 (84s)
+Both `max_new_tokens` (=1280) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 50/50 (94s)
+{
+ "kind": "R5-5 feasibility: untrained base on 50 development A6c problems (D133)",
+ "model": "llama32_1b",
+ "repo": "unsloth/Llama-3.2-1B-Instruct-bnb-4bit",
+ "revision": "fcecd050a91025151bbf518e41a5577c356efdce",
+ "cap_gib": 5.1,
+ "seconds": 93.55895447731018,
+ "temperature_pauses": 0,
+ "completion_tokens_median": 123.0,
+ "prompt_tokens_max": 1194,
+ "peak_reserved_gib": 3.48046875,
+ "nvidia_smi_peak_gib": 6.177734375,
+ "n": 50,
+ "reasons": {
+  "unit_mismatch": 3,
+  "ok": 21,
+  "parse_fail": 26
+ },
+ "format_parsed": 0.48,
+ "units_ok": 0.42,
+ "sigma_stated": 0.42,
+ "steps_block": 0.48,
+ "truncated": 0.02,
+ "computation_correct": 0.0,
+ "within_5pct_of_f_xmeas": 0.02,
+ "within_1pct_of_truth": 0.0,
+ "by_depth_computation_correct": {
+  "1": 0.0,
+  "2": 0.0,
+  "3": 0.0,
+  "4": 0.0,
+  "5": 0.0
+ }
+}

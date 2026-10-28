@@ -1,0 +1,36 @@
+# R5-5 feasibility (DECISIONS.md D133): can each candidate model family run the R4 protocol on the 8 GB GPU, and how
+# does its untrained base do on our format and arithmetic? Not a pre-registration; nothing here is a result about
+# propagation. One process per model and step (`baseline`, `train`), then `report`.
+output_dir: results/r5_feasibility
+candidates:
+  gemma2_2b:
+    repo: unsloth/gemma-2-2b-it-bnb-4bit           # Google's repo is gated; Unsloth's pre-quantized public mirror
+    end_of_turn: "<end_of_turn>"
+    system_in_user: true                           # Gemma's chat template has no system role
+  llama32_3b:
+    repo: unsloth/Llama-3.2-3B-Instruct-bnb-4bit
+    end_of_turn: "<|eot_id|>"
+    system_in_user: false
+  llama32_1b:
+    repo: unsloth/Llama-3.2-1B-Instruct-bnb-4bit
+    end_of_turn: "<|eot_id|>"
+    system_in_user: false
+  qwen25_math_1p5b:                                # the reference: every R4 run's pinned base, measured the same way
+    pinned_base: base_4bit
+    end_of_turn: "<|im_end|>"
+    system_in_user: false
+baseline:
+  set: a6c_pairs                                   # development A6c (not the frozen set)
+  member: lo
+  n_per_depth: 10                                  # 50 problems
+  prompt: v5_two_channel                           # the R4 eval prompt
+  max_new_tokens: 1280                             # D114's eval budget
+  batch_size: 10
+train:
+  arm: dpos2                                       # D-pos-v2's rows: the longer completions (S lines, the line)
+  max_steps: 6                                     # "a few steps only"
+  max_seq_length: 2048                             # the pinned base's
+cap_max_gib: 5.9                                   # D115's cap, lowered if host use needs it (never raised)
+cap_margin_gib: 0.5
+max_gpu_temp_c: 87
+pause_seconds: 600

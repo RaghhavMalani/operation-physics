@@ -1,0 +1,28 @@
+{
+ "kind": "R5-5 feasibility: stage R4's SFT path for a few steps (D133)",
+ "model": "llama32_1b",
+ "repo": "unsloth/Llama-3.2-1B-Instruct-bnb-4bit",
+ "revision": "fcecd050a91025151bbf518e41a5577c356efdce",
+ "cap_gib": 5.3,
+ "sequence_tokens": {
+  "n_rows": 3000,
+  "max": 1858,
+  "mean": 1393.6903333333332,
+  "p99": 1736.0099999999998,
+  "dropped_over_max": 0
+ },
+ "oom_check": {
+  "batch": 2,
+  "tokens": 1858,
+  "loss": 1.0501242876052856,
+  "seconds": 4.064887285232544,
+  "max_reserved_gib": 1.90234375
+ },
+ "steps": 6,
+ "seconds_per_step": 4.2118297417958575,
+ "train_loss": 1.3144224484761555,
+ "temperature_pauses": 0,
+ "peak_reserved_gib": 3.296875,
+ "peak_allocated_gib": 1.6433348655700684,
+ "nvidia_smi_peak_gib": 5.75390625
+}

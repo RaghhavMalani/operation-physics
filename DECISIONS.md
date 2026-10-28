@@ -4822,3 +4822,67 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     ×0.1, gross sensitivity errors). The grid's spacing near 10 and 0.1 could reflect that.
   - **What guards against it:** the choice itself used only the development data and the fixed objective. The
     confirmatory result is reported whatever it is.
+
+### D136. R5-5 feasibility: the three candidate families on the 8 GB GPU, and a recommendation (Llama-3.2-3B-Instruct) for your approval; nothing is pre-registered yet (2026-10-28)
+- **What ran** (`physcal/eval/r5_feasibility.py`, `configs/r5_feasibility.yaml`; results in `results/r5_feasibility/`,
+  table in `summary.md`):
+  - **The models:** Unsloth's public pre-quantized 4-bit mirrors, because Google's and Meta's repos are gated:
+    - `gemma-2-2b-it-bnb-4bit`, revision cfc3a78;
+    - `Llama-3.2-3B-Instruct-bnb-4bit`, bb1d317;
+    - `Llama-3.2-1B-Instruct-bnb-4bit`, fcecd05.
+    - The pinned Qwen2.5-Math-1.5B is measured the same way as the reference.
+  - **Training:** stage R4's own SFT path on D-pos-v2's 3,000 R4-1 rows, tokenized with each model's chat template
+    and end-of-turn token (the R4 tokenizer hard-codes Qwen's). The longest-batch OOM check, then 6 optimizer steps
+    under the launch cap; the adapters were deleted.
+  - **Baseline:** the untrained base on 50 development A6c problems, with prompt v5, 1,280 new tokens and the verifier.
+- **The GPU, against your "CPU only" header:** item 6 cannot be measured on the CPU. About 35 min of GPU in total,
+  under the cap and the 87 °C rule, with no pause needed.
+- **Training: all three fit.**
+
+| model | s / step (× Qwen) | peak reserved | rows over 2,048 tokens |
+|---|---|---|---|
+| Qwen (reference) | 6.2 (1.00) | 2.6 GiB | 6 |
+| Llama-3.2-1B | 4.2 (0.68) | 3.3 GiB | 0 |
+| **Llama-3.2-3B** | **10.2 (1.66)** | **4.2 GiB** | **0** |
+| Gemma-2-2B | 12.9 (2.10) | 3.9 GiB | 26 |
+
+  - **Llama's tokenizer is ~7% shorter on our rows** (it groups digits); Gemma's is ~4% longer and splits digits.
+- **Eval memory:**
+  - **Llama-3B and Gemma** OOM'd at batch 10 with 1,280 new tokens. They ran at batch 5, reaching 5.9 GiB reserved.
+  - **The likely cause:** prefill logits over a 128k / 256k vocabulary. Keeping only the last position's logits
+    should restore larger batches; untested.
+  - **As measured,** a frozen-set eval would take roughly 2–3× Qwen's (~1.8 h for D-pos-v2).
+- **The untrained bases (50 problems):**
+
+| model | parsed | units ok, σ stated | lenient arithmetic (final number within 1% of f(x_meas)) | median tokens |
+|---|---|---|---|---|
+| Qwen (reference) | 0% | 0% | 22% (70% at depth 1, 40% at depth 2, 0% beyond) | 921 |
+| Llama-3.2-3B | 86% | 74% | 2% | 154 |
+| Gemma-2-2B | 82% | 80% | 0% | 116 |
+| Llama-3.2-1B | 48% | 42% | 0% | 123 |
+
+  - **Format and arithmetic separate as R5-5 asked.** The general instruct models follow the format and answer in
+    about 150 tokens without working the chain; Qwen-Math ignores the format and reasons at length.
+  - **This probe confounds arithmetic with that answer style.** SFT teaches both the format and the worked steps:
+    Qwen's own format was 0% before SFT.
+- **Recommendation: Llama-3.2-3B-Instruct.**
+  - **For it:**
+    - a different family (Meta);
+    - the largest candidate, so a failed replication is the least attributable to capacity;
+    - the best format-following of the three;
+    - it fits training with headroom, and no row is over 2,048 tokens.
+  - **Against it:**
+    - 1.66× Qwen's step time (~2.1 h per 750-step SFT arm-seed);
+    - the eval batch limit above, until the logits fix;
+    - its base arithmetic in our format is near 0. #35 puts the loss in evaluating sensitivities, so a weaker
+      arithmetic model may propagate less: that is the risk the pilot measures.
+  - **The others:**
+    - **Llama-3.2-1B** is the cheapest, but a negative result would say little: 48% format, 0% arithmetic.
+    - **Gemma-2-2B** is the slowest. It drops 26 rows unless the sequence limit rises, its template has no system role
+      (the prompt would change: a protocol deviation), and its base arithmetic is 0%.
+- **Before a pre-registration, pending your approval:**
+  - pin the base (revision and content hash, as D78);
+  - decide the eval batch / logits question;
+  - set the per-arm night budget (one arm-seed per night, roughly);
+  - note the licence: the Llama 3.2 Community License applies to the mirror, with attribution if weights or outputs are
+    distributed.
