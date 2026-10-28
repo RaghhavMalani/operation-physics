@@ -83,3 +83,17 @@
 [02:48:06] disk: 53 GiB free on MLStorage
 [02:48:06] start eval_dpos2_s2 (timeout 13400s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2 --seed 2 --confirmatory --max-reserved-gib 5.9
 [05:39:58] end eval_dpos2_s2: exit 0
+=== relaunch 2026-10-28 05:40:23 IST after the D131 cut, GPU_DEADLINE=10:00 ===
+[05:40:23] R4 seeds chain start (D118); GPU deadline 10:00 IST (259 min left); chain PID 55404
+[05:40:40] host VRAM readings (MiB): 573 573 573 572 572 572 572 571
+[05:40:40] launch cap 5.9 GiB (max 5.9; D118 §1)
+[05:40:40] SKIP train dpos2 seed 1: results/stage_r4/dpos2/seed1/final_adapter exists
+[05:40:40] SKIP train dpos2 seed 2: results/stage_r4/dpos2/seed2/final_adapter exists
+[05:40:40] SKIP train b2 seed 1: results/stage_r4/b2/seed1/final_adapter exists
+[05:40:40] SKIP train b2 seed 2: results/stage_r4/b2/seed2/final_adapter exists
+[05:40:40] SKIP eval dpos2 seed 0: already evaluated
+[05:40:40] SKIP eval b2 seed 0: already evaluated
+[05:40:40] GPU at 57.90C, memory.used 571 MiB
+[05:40:43] disk: 53 GiB free on MLStorage
+[05:40:43] start eval_dpos2_s1 (timeout 13400s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2 --seed 1 --confirmatory --max-reserved-gib 5.9
+[07:24:30] end eval_dpos2_s1: exit 0
