@@ -2023,3 +2023,35 @@ regret):
   - **The sensitivities, if exact,** would also make it a better forecast than RSS and X1.
   - **Measurement noise** is handled; reasoning errors in the derivative are what cost the score.
 - **Scope:** this model, this benchmark, this training (R5-1). It is not a claim that small models cannot do it.
+
+## #36. R5-4's RSS fallback (post-hoc exploratory; bounds σ/RSS ∈ [0.333, 5] chosen on the development sets and frozen first, D135): it lifts the expected score above RSS and X1 on the frozen set, but erases most of the measured propagation (A6c slope 0.84 → 0.14), because a fallback on one member of a pair breaks the within-pair contrast (2026-10-28)
+
+**Status:** post-hoc exploratory (R5-4). It is not a confirmatory result and does not change K6 / K7.
+- **The bounds:** chosen on D-pos-v2 seed 0's development eval by a fixed grid and objective, frozen in D135
+  (`bad601f`) and applied once (`r5_diag fallback-apply`; the code refuses a second run).
+- **Disclosure:** the grid was designed after seeing #35's tail (D135).
+- **Sources:** `results/r5_diag/fallback_dev.*` and `results/r5_diag/fallback_confirmatory.*`.
+
+| frozen set, 3 seeds (seed means) | value [95% CI] |
+|---|---|
+| fallback rate (σ line unparsed, or σ/RSS outside [0.333, 5]) | 5.9% / 7.4% / 8.1% of problems |
+| expected crps_log | −0.0383 (54% of the RSS-to-σ\* gap; (a) 7%) |
+| fallback − (a) | +0.0014 [+0.0010, +0.0019] |
+| fallback − RSS | +0.0016 [+0.0014, +0.0017] |
+| fallback − X1 | +0.0009 [+0.0007, +0.0010] |
+| A6c slope (all pairs) [90% CI] | **+0.136 [−0.002, +0.267]** (stated σ on the same grading: +0.837) |
+
+- **On score, the guardrail works out of sample.** On the development set it was −0.03786 against RSS −0.03937 and X1
+  −0.03863. On the frozen set it is above both, with CIs that exclude 0, at about the same fallback rate.
+- **On propagation, it fails.** This is a descriptive breakdown of the same applied output, nothing re-chosen:
+  - **One member falls back in 15–20% of the A6c pairs** per seed (77 / 104 / 87 of 510). Their Δ ln σ compares RSS
+    with a stated σ, and their slope is 0.18–0.35.
+  - **Both members fall back in 13–21 pairs:** pure RSS, slope 0.
+  - **On the ~400 pairs where neither falls back:** the stated σ still propagates, at 0.66–0.83. That is a selected
+    subset, so read it descriptively.
+  - **The pooled A6c slope** falls to 0.14.
+- **What it means:** a rescue rule that swaps sources problem by problem buys forecast quality by giving up the
+  structural property that #32 confirmed.
+  - **The same trade-off as R5's central message,** now inside a single method. Any guardrail reported in the paper
+    must report both numbers.
+  - **The better route to both,** per #35's counterfactual: correct sensitivities, not a fallback.

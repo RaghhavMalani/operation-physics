@@ -92,3 +92,12 @@ def test_decompose_factors_and_causes():
     rec4 = _rec("sigma_rel = sqrt((2*0.02)^2) = 0.04", "S_u = 2", 4.0)
     assert D.decompose(_problem(), ref, rec4, vals, 0.10, 1e-3, 12)["cause"] == "chain selection: wrong number of terms"
     assert D.decompose(_problem(), ref, None, vals, 0.10, 1e-3, 12)["cause"] == "format: no parsable σ line"
+
+
+def test_fallback_uses_rss_for_unparsed_lines_zero_sigma_and_ratios_outside_the_bounds():
+    sig = np.array([0.02, 0.0, 0.5, 0.004, 0.02, 0.0])
+    parsed = np.array([True, True, True, True, False, True])
+    rss_sig = np.array([0.02, 0.02, 0.02, 0.02, 0.02, 0.0])
+    out, fb = D.fallback_sigma(sig, parsed, rss_sig, 0.333, 5.0)
+    assert fb.tolist() == [False, True, True, True, True, True]  # ok; σ = 0; ratio 25; ratio 0.2; unparsed; RSS = 0
+    assert out.tolist() == [0.02, 0.02, 0.02, 0.02, 0.02, 0.0]
