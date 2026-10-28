@@ -1,0 +1,315 @@
+{
+ "A": {
+  "split": [
+   0.4175,
+   0.4125,
+   0.425
+  ],
+  "uniform": [
+   0.105,
+   0.115,
+   0.105
+  ],
+  "split_mean": 0.4183333333333333,
+  "uniform_mean": 0.10833333333333334,
+  "diff": 0.30999999999999994,
+  "diff_ci95": [
+   0.2675,
+   0.35250000000000004
+  ],
+  "sft_only": 0.12,
+  "nominal": 0.68,
+  "source": "results/corrected/robustness_3v3/report.json: B_seed_level.per_run.*.cov1; A_problem_level_seed_mean.S1b / S1a"
+ },
+ "B": {
+  "rows": [
+   {
+    "label": "SFT stated \u03c3",
+    "group": "single answer",
+    "value": 0.49881817552602437,
+    "ci95": [
+     0.47444425699058695,
+     0.5240510076365816
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.sft_sigma.pairwise_accuracy"
+   },
+   {
+    "label": "split-credit RL stated \u03c3",
+    "group": "single answer",
+    "value": 0.4908689784053156,
+    "ci95": [
+     0.46112793869970464,
+     0.5206297440245478
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.split_sigma.pairwise_accuracy"
+   },
+   {
+    "label": "SFT greedy \u03c3 suffix",
+    "group": "single answer",
+    "value": 0.48856012366186785,
+    "ci95": [
+     0.4614053992478775,
+     0.5151729045542636
+    ],
+    "n_problems": 516,
+    "source": "results/e1d_x2/results.json: methods.sft_suffix.pairwise_accuracy"
+   },
+   {
+    "label": "supervised \u03c3 suffix (X3)",
+    "group": "single answer",
+    "value": 0.513234819121447,
+    "ci95": [
+     0.4838227320967146,
+     0.5429016703580656
+    ],
+    "n_problems": 516,
+    "source": "results/e1d_x2/results.json: methods.x3_a.pairwise_accuracy"
+   },
+   {
+    "label": "RL \u03c3 suffix (E1d)",
+    "group": "single answer",
+    "value": 0.5121158637873754,
+    "ci95": [
+     0.48332690222406793,
+     0.5409918039405684
+    ],
+    "n_problems": 516,
+    "source": "results/e1d_x2/results.json: methods.e1d.pairwise_accuracy"
+   },
+   {
+    "label": "text model p (A5)",
+    "group": "single answer",
+    "value": 0.4971230158730159,
+    "ci95": [
+     0.4806212509228498,
+     0.5135948314645626
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.a5_p.pairwise_accuracy"
+   },
+   {
+    "label": "text model \u03c3 (A5)",
+    "group": "single answer",
+    "value": 0.5166061046511629,
+    "ci95": [
+     0.49392607685031376,
+     0.5382991734726836
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.a5_sigma.pairwise_accuracy"
+   },
+   {
+    "label": "answer length",
+    "group": "single answer",
+    "value": 0.5350319536729421,
+    "ci95": [
+     0.5111836845930232,
+     0.5587576711886305
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.length.pairwise_accuracy"
+   },
+   {
+    "label": "hidden-state probe",
+    "group": "single answer",
+    "value": 0.5470941768180141,
+    "ci95": [
+     0.5199758328719085,
+     0.5743947835917314
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.probe.pairwise_accuracy"
+   },
+   {
+    "label": "hidden-state probe, cross-fitted",
+    "group": "single answer",
+    "value": 0.5396260151347361,
+    "ci95": [
+     0.5142945967146548,
+     0.565344136443337
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.probe_crossfit.pairwise_accuracy"
+   },
+   {
+    "label": "self-verification P(yes)",
+    "group": "single answer",
+    "value": 0.5241163713547435,
+    "ci95": [
+     0.4980827507844223,
+     0.550328938261351
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.x4_sft.pairwise_accuracy"
+   },
+   {
+    "label": "self-verification, no recompute",
+    "group": "single answer",
+    "value": 0.5262285437430786,
+    "ci95": [
+     0.500186184939092,
+     0.5525796534699151
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.x4_direct.pairwise_accuracy"
+   },
+   {
+    "label": "control: probe on random-init model",
+    "group": "control",
+    "value": 0.5302094868955334,
+    "ci95": [
+     0.5034537075489111,
+     0.556545715669989
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.random_init_probe.pairwise_accuracy"
+   },
+   {
+    "label": "control: self-verification, random init",
+    "group": "control",
+    "value": 0.48911498708010337,
+    "ci95": [
+     0.46452802002583976,
+     0.5138696820782577
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.x4_random_init.pairwise_accuracy"
+   },
+   {
+    "label": "control: self-verification, other problem",
+    "group": "control",
+    "value": 0.5132601974898487,
+    "ci95": [
+     0.48805215254706535,
+     0.539094511351052
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.x4_shuffled.pairwise_accuracy"
+   },
+   {
+    "label": "self-consistency, k = 8 samples",
+    "group": "several samples",
+    "value": 0.642906169250646,
+    "ci95": [
+     0.6155503645256553,
+     0.6705828661406424
+    ],
+    "n_problems": 516,
+    "source": "results/x2/robustness/results.json: methods.self_consistency.pairwise_accuracy"
+   }
+  ],
+  "tokens_k": 1564.1683333333333,
+  "tokens_one": 195.52104166666666,
+  "cost_ratio": 8.0,
+  "cost_source": "results/r5_diag/cost.json: x2.per_problem"
+ },
+ "C": {
+  "points": [
+   {
+    "name": "RSS",
+    "group": "heuristic",
+    "slope": 0.0,
+    "slope_ci": [
+     0.0,
+     0.0
+    ],
+    "d_rss": 0.0,
+    "d_rss_ci95": null,
+    "source": "results/stage_r4/confirmatory/stage_b_dpos2/results.json: comparators.rss",
+    "note": "the reference (\u0394 = 0); slope 0 by A6c's construction"
+   },
+   {
+    "name": "X1",
+    "group": "heuristic",
+    "slope": 0.002055973278569932,
+    "slope_ci": [
+     -0.0006623391541011936,
+     0.004849760590718196
+    ],
+    "d_rss": 0.0007237618390608866,
+    "d_rss_ci95": null,
+    "source": "results/stage_r4/confirmatory/stage_b_dpos2/results.json: comparators.x1 (slope CI 95%); \u0394 = oracle_centred.expected(x1) \u2212 (rss)",
+    "note": "no bootstrap CI for X1 \u2212 RSS is committed"
+   },
+   {
+    "name": "B-v2",
+    "group": "trained",
+    "slope": 0.4157508238407533,
+    "slope_ci": [
+     0.3146376980596299,
+     0.5173065294721997
+    ],
+    "d_rss": -0.0010743918133410077,
+    "d_rss_ci95": [
+     -0.0013200189689091418,
+     -0.0008424385727981928
+    ],
+    "source": "results/stage_r4/confirmatory/stage_b_b2/results.json: tests.B2 (K4), tests.B3 (K8)",
+    "note": "slope on answered pairs (509 / 510 / 510)"
+   },
+   {
+    "name": "D-pos-v2 (a)",
+    "group": "trained",
+    "slope": 0.8366929062244578,
+    "slope_ci": [
+     0.7151524698422261,
+     0.958306219140716
+    ],
+    "d_rss": 0.0001993769331389135,
+    "d_rss_ci95": [
+     -0.0003111773530822911,
+     0.000653561207106118
+    ],
+    "source": "results/r5_diag/tail.json: swaps.a",
+    "note": "all 510 pairs (unanswered members at the floor); K1 on answered pairs is +0.816"
+   },
+   {
+    "name": "RSS fallback (post-hoc)",
+    "group": "post-hoc",
+    "slope": 0.13584909614807297,
+    "slope_ci": [
+     -0.0020489133184911127,
+     0.26663131488544545
+    ],
+    "d_rss": 0.001585615882515646,
+    "d_rss_ci95": [
+     0.0014339857530409703,
+     0.0017410203121646286
+    ],
+    "source": "results/r5_diag/fallback_confirmatory.json: a6c_slope, minus_rss",
+    "note": ""
+   },
+   {
+    "name": "exact sensitivities (counterfactual)",
+    "group": "post-hoc",
+    "slope": 0.9696627124765529,
+    "slope_ci": [
+     0.8736654789954397,
+     1.0656530954929528
+    ],
+    "d_rss": 0.0015255015589473282,
+    "d_rss_ci95": [
+     0.0008597732512530061,
+     0.0020290822895258362
+    ],
+    "source": "results/r5_diag/tail.json: swaps.S",
+    "note": ""
+   }
+  ],
+  "sigma_star_gap": 0.002963100370881329,
+  "gap_source": "results/r5_diag/tail.json: rss_to_star_gap"
+ },
+ "sources": {
+  "robust3v3": "results/corrected/robustness_3v3/report.json",
+  "x2": "results/x2/results.json",
+  "x2r": "results/x2/robustness/results.json",
+  "e1d": "results/e1d_x2/results.json",
+  "cost": "results/r5_diag/cost.json",
+  "sb_dpos2": "results/stage_r4/confirmatory/stage_b_dpos2/results.json",
+  "sb_b2": "results/stage_r4/confirmatory/stage_b_b2/results.json",
+  "tail": "results/r5_diag/tail.json",
+  "fallback": "results/r5_diag/fallback_confirmatory.json"
+ }
+}
