@@ -87,3 +87,15 @@
 [02:48:04] GPU at 56.50C, memory.used 561 MiB
 [02:48:06] disk: 53 GiB free on MLStorage
 [02:48:06] start eval_dpos2_s2 (timeout 13400s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2 --seed 2 --confirmatory --max-reserved-gib 5.9
+[03:24:09] guard(33891): GPU at 87.30C > 87C: stage stopped for 600s
+[03:34:10] guard(33891): stage continued (GPU at 53.30C)
+[03:40:10] guard(33891): GPU at 87.40C > 87C: stage stopped for 600s
+[03:50:10] guard(33891): stage continued (GPU at 54.10C)
+[04:24:13] guard(33891): GPU at 87.10C > 87C: stage stopped for 600s
+[04:34:13] guard(33891): stage continued (GPU at 53.90C)
+[04:46:14] guard(33891): GPU at 87.90C > 87C: stage stopped for 600s
+[04:56:14] guard(33891): stage continued (GPU at 53.70C)
+[05:22:46] guard(33891): GPU at 87.10C > 87C: stage stopped for 600s
+[05:32:46] guard(33891): stage continued (GPU at 54.10C)
+[05:39:58] end eval_dpos2_s2: exit 0
+[05:40:18] chain 8120 stopped by the session at the commit after eval_dpos2_s2 (D131: retry D-pos-v2 s1 before MC-B); the session makes the identical commit and relaunches
