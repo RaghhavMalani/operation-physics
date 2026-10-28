@@ -1771,8 +1771,11 @@ ran once, 2026-10-28 09:29–09:31 IST, on all six evals: complete, not rerun. C
   - **It is the problem set, not the seed:** seed 0 is #30's adapter, and on the frozen set its depth-5 slope is +0.80
     (102 pairs).
   - **Single-depth cells are noisy:** about 100 pairs each, with a seed SD up to 0.28 (depth 4).
-  - **What it changes:** #30's "the explicit computation does not extrapolate to the unseen depth" holds for the score,
-    not for the slope.
+  - **Corrected by #34 (same day):** neither single-depth OLS slope is robust; a few high-leverage pairs drive both.
+    - **The robust slopes:** Theil–Sen +0.48 (development) and +0.75 (frozen).
+    - **What both sets share:** the same share of reversed pairs and the same cell-mean under-propagation at depth 5.
+    - **So:** neither "does not extrapolate" (0.06) nor "propagates at depth 5" (0.82) should be read from a
+      single-depth OLS slope. Depth 5 is extrapolation in chain length, not to new physical laws (R5-8).
 
 **What it means:**
 - **The propagation result is solid.** Visible sensitivity derivations trained on mixed-level data yield a stated σ
@@ -1864,3 +1867,65 @@ rejected. M1–M4 are below zero with CIs that exclude zero; M5's CI spans zero:
   - **It is far below** the heuristics, D-pos-v2 and σ\*.
 - **No k increase and no prompt change follow** (D119 §9). A different prompt, a fine-tuned program writer or a
   signature rule that maps the model's names would each be a new pre-registration.
+
+## #34. The depth-5 discrepancy (+0.06 on the development set, +0.80 on the frozen set for the same seed-0 adapter) is a fragile estimator, not a different model or a different construction: a few high-leverage pairs with reversed direction drive the 100-pair OLS slope; robust slopes are +0.48 and +0.75, and the two sets share the same reversal count and cell-mean under-propagation (descriptive, D133 item 2; 2026-10-28)
+
+**Status:** descriptive; not a test. The order (D133) was to explain it before anything else relies on it.
+- **Sources:** `results/r5_diag/depth5.{json,md}` (`physcal.eval.r5_diag depth5`).
+- **The scope:** D-pos-v2 seed 0, σ (a), A6c, the development sets (#30's eval) and the frozen R4-5 set (#32's eval).
+- **The estimator:** #30's (`r4_analysis.slope`: OLS of Δ ln σ_stated on Δ ln σ\* over pairs with both members
+  answered; pairs bootstrap, 90% CI). It reproduces both published numbers exactly.
+
+**What is the same in both sets:**
+- **The construction:** `configs/pairs.yaml`'s allocation construction, unchanged.
+  - 3 level cells × 34 pairs at depth 5, the same family split (12 / 11 / 11) and no seeds without a pair.
+  - Only the pair-seed offset differs (2.0 × 10⁹ vs 2.3 × 10⁹).
+  - **The σ\* ratio medians per cell:** 3.56 / 1.81 / 1.59 (development) vs 3.50 / 1.84 / 1.60 (frozen).
+- **The usable pairs:** 102 / 102 in both; no unanswered member at depth 5.
+- **The regressor's spread:** SD of Δ ln σ\* 0.350 vs 0.336.
+- **The chain mix:** 58 vs 63 distinct chains; 98 vs 100 value-dependent pairs.
+  - The chains of the four most influential development pairs also occur in the frozen set.
+- **The model's errors at depth 5, in aggregate:**
+  - **Reversed direction** (Δ ln σ_stated < 0 although Δ ln σ\* > 0 by construction): 20 of 102 pairs (development)
+    vs 19 (frozen).
+  - **Gross residuals** (|Δ ln σ_stated − Δ ln σ\*| > ln 10): 3 vs 2.
+  - **The 5%-level cells (68 pairs):** a mean Δ ln σ_stated of +0.452 vs +0.463, against a mean Δ ln σ\* of +0.866 vs
+    +0.881. Both sets under-propagate by about half there.
+
+**What differs: where the errors fall, and how much the estimator weights them:**
+
+| depth 5, A6c | development | frozen |
+|---|---|---|
+| OLS slope [90% CI] (#30's estimator) | +0.060 [−0.356, +0.488] | +0.803 [+0.502, +1.089] |
+| Theil–Sen [90% CI] | +0.477 [+0.121, +0.734] | +0.745 [+0.399, +1.008] |
+| without the 1 / 3 / 5 most influential pairs | +0.20 / +0.43 / +0.60 | +0.87 / +0.87 / +0.95 |
+| without the gross residuals | +0.43 | +0.76 |
+| corr(Δ ln σ\*, Δ ln σ_stated) | +0.03 | +0.39 |
+| mean Δ ln σ_stated in the 2% cell (Δ ln σ\* +0.49) | +0.255 | +0.123 |
+
+- **On the development set,** four kinematics pairs in the 1% / 5% cell sit at the far end of the regressor
+  (Δ ln σ\* +1.38 to +1.61) with the direction reversed (−0.85 to −1.44). Each comes from a different chain, and those
+  chains also occur in the frozen set. Their leave-one-out influences are −0.14, −0.10, −0.08 and −0.08; together they
+  take the slope from about +0.4 to +0.06.
+- **On the frozen set,** the reversals fall on lower-leverage pairs, and the 2% cell's stated spread is lower. Both
+  raise the OLS slope.
+- **The same fragility shows at depth 4 on the development set:** OLS +0.38 against Theil–Sen +0.88, and +0.89 without
+  five pairs.
+- **The 90% CIs do not overlap,** although both sets are draws from one construction and the model is the same.
+  - **The reading:** for a ~100-pair OLS slope with a few high-leverage gross pairs, the percentile pairs bootstrap
+    understates the variability between samples.
+  - **The status:** an interpretation, not a test.
+
+**What it means:**
+- **Not "does not extrapolate," not "propagates fully" at depth 5.**
+  - **The depth-5 behaviour, in both sets:** about four in five pairs move σ in the right direction; on the 5% cells
+    the average stated change is about half of σ\*'s; about one pair in five is reversed.
+  - **The OLS slope** turns that into 0.06 or 0.80 depending on which pairs the reversals land on.
+- **#30's depth-5 sentence and #32's correction of it are both superseded.** #32 now points here.
+  - **Unaffected:** the pooled confirmatory results (K1–K8, P) and the pre-registered depth split. Those are the
+    numbers D118 fixed; the depth split was always outside Holm.
+- **For any per-depth slope reported later** (the write-up, R5-5's replication):
+  - report Theil–Sen and the reversal count beside the OLS slope;
+  - give the pre-registered pooled numbers the weight.
+- **Depth 5 is extrapolation in chain length** (one more formula step from the same three families), not to new
+  physical laws (R5-8).

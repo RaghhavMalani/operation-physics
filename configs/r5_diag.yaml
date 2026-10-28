@@ -1,0 +1,10 @@
+# Round-5 diagnostics (DECISIONS.md D133-): descriptive, diagnostic and post-hoc analyses of existing logs. CPU only.
+# Nothing here is confirmatory; every output says which kind it is.
+output_dir: results/r5_diag
+stage_r4_config: stage_r4
+
+depth5:                       # the development-vs-frozen depth-5 discrepancy (FINDINGS #32; D133's order, item 2)
+  seed: 0                     # the one adapter evaluated on both sets
+  gross_factor: 10            # a pair whose Δ ln σ_stated misses Δ ln σ* by more than ln 10
+  influence_top: 5            # pairs listed by leave-one-out influence on the slope
+  theil_sen_ci: 0.90
