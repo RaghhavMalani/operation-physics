@@ -2055,3 +2055,57 @@ regret):
   - **The same trade-off as R5's central message,** now inside a single method. Any guardrail reported in the paper
     must report both numbers.
   - **The better route to both,** per #35's counterfactual: correct sensitivities, not a fallback.
+
+## #37. R5-8 reporting from existing logs: MC-B fails mostly at the interface (80–84%); of the programs that run, 97% compute the wrong chain. Sample agreement is the strongest correctness signal, but it costs about 8× the tokens of one answer: +0.10 within-problem accuracy (self-consistency) and +0.08 AUROC on A6c (MC-A's raw spread) over the best single-sample or free signal (descriptive, D133 item 5; 2026-10-28)
+
+**Status:** descriptive, from logs that already exist.
+- **The source:** `results/r5_diag/cost.{json,md}` (`physcal.eval.r5_diag cost`).
+- **What was recomputed:** only B-v2's single-sample stated-σ AUROC, with MC-A's own definitions (`mc_a.auroc`;
+  run 0 not computation-correct at τ = 10⁻³).
+- **Where the costs come from:** the runs' own records (tokens per completion; generation seconds on the one RTX 4060).
+
+**MC-B's failures split (R5-8; every problem counted, D119):**
+
+| set | interface (no program, signature, rejected) | runtime (exception, timeout, bad output) | semantic (runs, wrong chain) | correct (run 0) |
+|---|---|---|---|---|
+| A6c | 79.7% | 5.1% | 14.7% | 0.5% |
+| A6 | 83.5% | 7.5% | 8.7% | 0.3% |
+
+- **Interface failures dominate at every depth:** 72–88%.
+- **Among programs that run on all 9 inputs,** 97% (A6c) and 97% (A6) compute the wrong chain.
+- **The semantic share is highest at depth 2 on A6c** (24%), where more programs get past the interface. Correct
+  programs exist only at depths 1–2.
+- **So MC-B fails twice.** Fixing the interface (e.g. mapping the model's parameter names) would expose a semantic
+  failure rate near 97% on what it lets through.
+
+**Sample agreement against its cost (R5-8):**
+
+| signal | discrimination [95% CI] | model generations per problem | tokens / problem | GPU-s / problem |
+|---|---|---|---|---|
+| **X2 (#22), within-problem pairwise accuracy** (516 problems with right and wrong samples) | | | | |
+| self-consistency, k = 8 samples | **0.643 [0.616, 0.671]** | 8 | 1,564 | 6.07 |
+| hidden-state probe (SFT) | 0.547 [0.520, 0.574] | 1 + a forward pass | 196 | 0.76 + probe |
+| length only | 0.535 [0.511, 0.559] | 1 | 196 | 0.76 |
+| X4 self-verification | 0.524 [0.498, 0.550] | 1 + a short check | 196 + check | 0.76 + check |
+| SFT stated σ | 0.499 [0.474, 0.524] | 1 | 196 | 0.76 |
+| **MC-A (#31), AUROC for run 0 wrong, A6c** (B-v2) | | | | |
+| raw spread, k = 8 re-asks on perturbed inputs | **0.745** | 1 + 8 | 248 + 1,984 | + 6.89 |
+| raw spread, k = 4 | 0.710 | 1 + 4 | 248 + 992 | + 3.44 |
+| raw spread, k = 2 | 0.638 | 1 + 2 | 248 + 496 | + 1.72 |
+| X1 / σ\* / RSS (no model call) | 0.666 / 0.665 / 0.654 | – | 0 | 0 |
+| B-v2 stated σ (run 0 itself) | 0.655 | 1 | 248 | – |
+
+- **On A6 and A6b, the same picture:** raw k = 8 gives 0.670 and 0.696; the best free or single-sample signal gives
+  0.576 (RSS) and 0.598 (B-v2's σ). k = 8 costs 1,954 and 1,855 extra tokens and 8.5 and 7.8 GPU-s per problem.
+- **The cost scales linearly with k:** about 248 tokens per re-ask (the length of one answer). At k = 2, the spread
+  (0.638) is below the free surface signals (0.665).
+- **The time column is approximate:**
+  - **X2's seconds:** sampled generation at its own batch size, over all k samples.
+  - **MC-A's seconds:** greedy at batch 16, prorated to the first k re-asks by tokens.
+  - Both are wall time on the one GPU.
+
+**What it means (R5-1's correctness-discrimination panel):**
+- **The single answer, its stated σ, its hidden state and its self-check carry little or no within-problem correctness
+  signal.**
+- **Agreement across samples does carry it,** but at about 8× the inference tokens, roughly linear in k.
+- **Any comparison with a single-sample method reports both axes,** discrimination and cost.

@@ -101,3 +101,12 @@ def test_fallback_uses_rss_for_unparsed_lines_zero_sigma_and_ratios_outside_the_
     out, fb = D.fallback_sigma(sig, parsed, rss_sig, 0.333, 5.0)
     assert fb.tolist() == [False, True, True, True, True, True]  # ok; σ = 0; ratio 25; ratio 0.2; unparsed; RSS = 0
     assert out.tolist() == [0.02, 0.02, 0.02, 0.02, 0.02, 0.0]
+
+
+def test_mcb_kind_splits_interface_runtime_semantic_and_correct():
+    i, rt, tau = ["no_program", "signature", "rejected"], ["exception", "timeout", "bad_output"], 1e-3
+    ran = lambda y0: {"failure": None, "y_si": [y0], "ln_oracle": [math.log(2.0)]}
+    assert D.mcb_kind({"failure": "signature"}, i, rt, tau) == "interface"
+    assert D.mcb_kind({"failure": "exception"}, i, rt, tau) == "runtime"
+    assert D.mcb_kind(ran(2.0005), i, rt, tau) == "correct"
+    assert D.mcb_kind(ran(2.5), i, rt, tau) == "semantic"

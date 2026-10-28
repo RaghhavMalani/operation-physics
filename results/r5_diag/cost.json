@@ -1,0 +1,249 @@
+{
+ "kind": "R5-8 reporting from existing logs (descriptive; D133 item 5)",
+ "mcb_split": {
+  "a6c_pairs": {
+   "n": 1020,
+   "share": {
+    "interface": 0.7970588235294118,
+    "runtime": 0.050980392156862744,
+    "semantic": 0.14705882352941177,
+    "correct": 0.004901960784313725
+   },
+   "exact_program": 0.004901960784313725,
+   "by_depth": {
+    "1": {
+     "interface": 0.7696078431372549,
+     "runtime": 0.058823529411764705,
+     "semantic": 0.1568627450980392,
+     "correct": 0.014705882352941176
+    },
+    "2": {
+     "interface": 0.7205882352941176,
+     "runtime": 0.029411764705882353,
+     "semantic": 0.24019607843137256,
+     "correct": 0.00980392156862745
+    },
+    "3": {
+     "interface": 0.8088235294117647,
+     "runtime": 0.04411764705882353,
+     "semantic": 0.14705882352941177,
+     "correct": 0.0
+    },
+    "4": {
+     "interface": 0.8431372549019608,
+     "runtime": 0.06372549019607843,
+     "semantic": 0.09313725490196079,
+     "correct": 0.0
+    },
+    "5": {
+     "interface": 0.8431372549019608,
+     "runtime": 0.058823529411764705,
+     "semantic": 0.09803921568627451,
+     "correct": 0.0
+    }
+   }
+  },
+  "a6_pairs": {
+   "n": 1020,
+   "share": {
+    "interface": 0.8352941176470589,
+    "runtime": 0.07450980392156863,
+    "semantic": 0.08725490196078431,
+    "correct": 0.0029411764705882353
+   },
+   "exact_program": 0.0029411764705882353,
+   "by_depth": {
+    "1": {
+     "interface": 0.7941176470588235,
+     "runtime": 0.10294117647058823,
+     "semantic": 0.09313725490196079,
+     "correct": 0.00980392156862745
+    },
+    "2": {
+     "interface": 0.8823529411764706,
+     "runtime": 0.06862745098039216,
+     "semantic": 0.04411764705882353,
+     "correct": 0.004901960784313725
+    },
+    "3": {
+     "interface": 0.8333333333333334,
+     "runtime": 0.06862745098039216,
+     "semantic": 0.09803921568627451,
+     "correct": 0.0
+    },
+    "4": {
+     "interface": 0.8627450980392157,
+     "runtime": 0.049019607843137254,
+     "semantic": 0.08823529411764706,
+     "correct": 0.0
+    },
+    "5": {
+     "interface": 0.803921568627451,
+     "runtime": 0.08333333333333333,
+     "semantic": 0.11274509803921569,
+     "correct": 0.0
+    }
+   }
+  }
+ },
+ "x2": {
+  "n_problems": 1200,
+  "k": 8.0,
+  "tokens": 1877002,
+  "seconds": 7285.652530193329,
+  "per_problem": {
+   "tokens_k": 1564.1683333333333,
+   "seconds_k": 6.071377108494441,
+   "tokens_one": 195.52104166666666,
+   "seconds_one": 0.7589221385618051
+  },
+  "methods": {
+   "self_consistency": {
+    "n_problems": 516,
+    "pairwise_accuracy": 0.642906169250646,
+    "ci95": [
+     0.6155503645256553,
+     0.6705828661406424
+    ],
+    "p_one_sided_gt_half": 0.0
+   },
+   "probe": {
+    "n_problems": 516,
+    "pairwise_accuracy": 0.5470941768180141,
+    "ci95": [
+     0.5199758328719085,
+     0.5743947835917314
+    ],
+    "p_one_sided_gt_half": 0.0001
+   },
+   "random_init_probe": {
+    "n_problems": 516,
+    "pairwise_accuracy": 0.5302094868955334,
+    "ci95": [
+     0.5034537075489111,
+     0.556545715669989
+    ],
+    "p_one_sided_gt_half": 0.0132
+   },
+   "length": {
+    "n_problems": 516,
+    "pairwise_accuracy": 0.5350319536729421,
+    "ci95": [
+     0.5111836845930232,
+     0.5587576711886305
+    ],
+    "p_one_sided_gt_half": 0.0015
+   },
+   "x4_sft": {
+    "n_problems": 516,
+    "pairwise_accuracy": 0.5241163713547435,
+    "ci95": [
+     0.4980827507844223,
+     0.550328938261351
+    ],
+    "p_one_sided_gt_half": 0.0333
+   },
+   "sft_sigma": {
+    "n_problems": 516,
+    "pairwise_accuracy": 0.49881817552602437,
+    "ci95": [
+     0.47444425699058695,
+     0.5240510076365816
+    ],
+    "p_one_sided_gt_half": 0.5405
+   }
+  }
+ },
+ "mc_a": {
+  "a6c_pairs": {
+   "n_problems": 1020,
+   "run0_tokens_per_problem": 248.04117647058823,
+   "stated_sigma_auroc": 0.6545313278606835,
+   "comparators_auroc": {
+    "sigma_star": 0.6646253507828687,
+    "rss": 0.6536887933069317,
+    "x1": 0.665998977156495
+   },
+   "k": {
+    "2": {
+     "raw_auroc": 0.6382248419837918,
+     "robust_auroc": 0.638074038133704,
+     "extra_tokens_per_problem": 496.07450980392156,
+     "extra_seconds_per_problem": 1.7221044819627676
+    },
+    "4": {
+     "raw_auroc": 0.7099451860788376,
+     "robust_auroc": 0.6351169713341551,
+     "extra_tokens_per_problem": 992.1970588235295,
+     "extra_seconds_per_problem": 3.4443757303023763
+    },
+    "8": {
+     "raw_auroc": 0.7450890398384432,
+     "robust_auroc": 0.6560033045713237,
+     "extra_tokens_per_problem": 1983.8117647058823,
+     "extra_seconds_per_problem": 6.886729843709983
+    }
+   }
+  },
+  "a6_pairs": {
+   "n_problems": 1020,
+   "run0_tokens_per_problem": 244.28627450980392,
+   "stated_sigma_auroc": 0.5132036510549155,
+   "comparators_auroc": {
+    "sigma_star": 0.5599401466407302,
+    "rss": 0.5760077809367051,
+    "x1": 0.4992667963489451
+   },
+   "k": {
+    "2": {
+     "raw_auroc": 0.5605775849169534,
+     "robust_auroc": 0.5605775849169534,
+     "extra_tokens_per_problem": 488.4450980392157,
+     "extra_seconds_per_problem": 2.116384302355245
+    },
+    "4": {
+     "raw_auroc": 0.6346491096812809,
+     "robust_auroc": 0.5771719287745025,
+     "extra_tokens_per_problem": 976.9911764705882,
+     "extra_seconds_per_problem": 4.233206142762696
+    },
+    "8": {
+     "raw_auroc": 0.6704234625168337,
+     "robust_auroc": 0.5978752057459225,
+     "extra_tokens_per_problem": 1954.0656862745097,
+     "extra_seconds_per_problem": 8.46677336061702
+    }
+   }
+  },
+  "a6b_pairs": {
+   "n_problems": 1020,
+   "run0_tokens_per_problem": 231.72941176470587,
+   "stated_sigma_auroc": 0.5981893956289027,
+   "comparators_auroc": {
+    "sigma_star": 0.5691765165031222,
+    "rss": 0.5855541926851026,
+    "x1": 0.5829198260481713
+   },
+   "k": {
+    "2": {
+     "raw_auroc": 0.621571141837645,
+     "robust_auroc": 0.6205118198037467,
+     "extra_tokens_per_problem": 463.6264705882353,
+     "extra_seconds_per_problem": 1.938201955281378
+    },
+    "4": {
+     "raw_auroc": 0.6652263603925067,
+     "robust_auroc": 0.6606684879571811,
+     "extra_tokens_per_problem": 927.2519607843137,
+     "extra_seconds_per_problem": 3.876399812009037
+    },
+    "8": {
+     "raw_auroc": 0.6962812221231044,
+     "robust_auroc": 0.6472736396074933,
+     "extra_tokens_per_problem": 1854.95,
+     "extra_seconds_per_problem": 7.754664465960334
+    }
+   }
+  }
+ }
+}

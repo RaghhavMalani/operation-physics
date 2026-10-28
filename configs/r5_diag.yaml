@@ -25,3 +25,13 @@ fallback:                     # R5-4 (post-hoc exploratory): RSS when the σ lin
   # Chosen by `r5_diag fallback-choose` on the development sets (maximum mean expected crps_log over problems with
   # predictive draws; ties -> the widest bounds), then frozen here by a D-entry before `fallback-apply` runs, once.
   frozen_bounds: [0.333, 5.0]   # D135 (2026-10-28), from results/r5_diag/fallback_dev.md; frozen before fallback-apply
+
+cost:                         # R5-8 reporting: MC-B's failure split, and sample agreement against its inference cost
+  mcb_sets: [a6c_pairs, a6_pairs]
+  mcb_interface: [no_program, signature, rejected]
+  mcb_runtime: [exception, timeout, bad_output]
+  x2_chunks: results/x2/sft_k8                       # X2's k = 8 sampled completions (D74), one dir per chunk
+  x2_robustness: results/x2/robustness/results.json  # #22: within-problem pairwise accuracy per readout
+  x2_methods: [self_consistency, probe, random_init_probe, length, x4_sft, sft_sigma]
+  mc_a_sets: [a6c_pairs, a6_pairs, a6b_pairs]        # #31: k = 8 input perturbations of B-v2, run 0 = its eval
+  mc_a_k: [2, 4, 8]

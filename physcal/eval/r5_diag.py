@@ -590,6 +590,143 @@ def render_fallback_apply(res: dict) -> str:
                       f"- fallback − X1: {d('minus_x1')}",
                       f"- A6c slope (all pairs): {sl['value']:+.3f} [{sl['ci90'][0]:+.3f}, {sl['ci90'][1]:+.3f}]", ""])
 
+# ------------------------------------------------------------------------------------------- R5-8 reporting
+def mcb_kind(r: dict, interface: list[str], runtime: list[str], tau: float) -> str:
+    """One MC-B execution record: interface / runtime failure, or (it ran) semantic vs correct on run 0."""
+    if r["failure"] in interface:
+        return "interface"
+    if r["failure"] in runtime:
+        return "runtime"
+    ok = r["y_si"][0] > 0 and abs(math.log(r["y_si"][0]) - r["ln_oracle"][0]) <= tau
+    return "correct" if ok else "semantic"
+
+
+def mcb_split(cfg: dict) -> dict:
+    """MC-B's programs per set: interface (no program, signature, rejected), runtime (exception, timeout, bad output),
+    semantic (ran on all k + 1 inputs, run 0 not computation-correct), correct; overall and by depth."""
+    cc_cfg, mb = cfg["cost"], load_config("mc_b")
+    tau = load_config("pairs")["analysis"]["tau"]
+    out = {}
+    for name in cc_cfg["mcb_sets"]:
+        rows = [json.loads(line) for line in open(REPO_ROOT / mb["output_dir"] / name / "executions.jsonl")]
+        rows = [r for r in rows if not r["excluded"]]
+        kinds = [mcb_kind(r, cc_cfg["mcb_interface"], cc_cfg["mcb_runtime"], tau) for r in rows]
+        exact = [r["failure"] is None and all(y > 0 and abs(math.log(y) - lo) <= tau for y, lo in zip(r["y_si"], r["ln_oracle"]))
+                 for r in rows]
+        share = lambda ks: {k: ks.count(k) / len(ks) for k in ("interface", "runtime", "semantic", "correct")}
+        out[name] = {"n": len(rows), "share": share(kinds), "exact_program": float(np.mean(exact)),
+                     "by_depth": {str(d): share([k for k, r in zip(kinds, rows) if r["depth"] == d])
+                                  for d in sorted({r["depth"] for r in rows})}}
+    return out
+
+
+def x2_cost(cfg: dict) -> dict:
+    """Self-consistency (k = 8 samples) against single-sample readouts: X2's within-problem pairwise accuracy and the
+    k = 8 run's measured tokens and generation seconds."""
+    from pathlib import Path
+
+    cc_cfg = cfg["cost"]
+    secs = toks = n = 0
+    probs = set()
+    for d in sorted(Path(REPO_ROOT / cc_cfg["x2_chunks"]).glob("chunk_*")):
+        secs += json.loads((d / "metrics.json").read_text())["generation_seconds"]
+        for line in open(d / "rollouts.jsonl"):
+            r = json.loads(line)
+            n += 1
+            toks += r["n_tokens"]
+            probs.add(B._key(r["problem"]))
+    rob = json.loads((REPO_ROOT / cc_cfg["x2_robustness"]).read_text())["methods"]
+    k = n / len(probs)
+    return {"n_problems": len(probs), "k": k, "tokens": toks, "seconds": secs,
+            "per_problem": {"tokens_k": toks / len(probs), "seconds_k": secs / len(probs),
+                            "tokens_one": toks / n, "seconds_one": secs / n},
+            "methods": {m: rob[m]["pairwise_accuracy"] for m in cc_cfg["x2_methods"] if m in rob}}
+
+
+def mc_a_cost(cfg: dict) -> dict:
+    """MC-A's raw spread (k input-perturbed re-asks of B-v2) against free and single-sample signals: the AUROC for
+    run 0 not computation-correct, and the measured tokens / seconds (seconds prorated to the first k runs by tokens)."""
+    from physcal.eval import mc_a
+
+    cc_cfg, ma = cfg["cost"], load_config("mc_a")
+    sa = load_config("stage_a")
+    tau = load_config("pairs")["analysis"]["tau"]
+    allp = stage_a.load_sets(sa)
+    out = {}
+    for name in cc_cfg["mc_a_sets"]:
+        d = REPO_ROOT / mc_a.set_dir(name, ma)
+        meta, res = json.loads((d / "meta.json").read_text()), json.loads((d / "results.json").read_text())
+        tok_j: dict = {}
+        for line in open(d / "runs.jsonl"):
+            r = json.loads(line)
+            tok_j[r["j"]] = tok_j.get(r["j"], 0) + r["n_tokens"]
+        probs = [p for p in allp if p["_set"] == name]
+        recs = B.read_records(REPO_ROOT / meta["run0_tape"])
+        sig, bds = B.model_sigma(probs, recs)
+        cc0 = np.array([b["reason"] == "ok" and (b.get("mu_si") or 0) > 0 and
+                        abs(math.log(b["mu_si"] / p["noise"]["point_estimate_si"])) <= tau for b, p in zip(bds, probs)])
+        run0_tok = sum(r["n_tokens"] for r in recs if r["split"] == name)
+        all_tok = sum(tok_j.values())
+        n = len(probs)
+        out[name] = {"n_problems": n, "run0_tokens_per_problem": run0_tok / n,
+                     "stated_sigma_auroc": mc_a.auroc(sig, ~cc0),
+                     "comparators_auroc": {c: v["epistemic_auroc_run0_wrong"] for c, v in res["comparators"].items()},
+                     "k": {}}
+        for k in cc_cfg["mc_a_k"]:
+            tk = sum(v for j, v in tok_j.items() if j <= k)  # MC-A's runs are j = 1..k (mc_a.estimates)
+            out[name]["k"][str(k)] = {"raw_auroc": res["variants"][f"raw_k{k}"]["epistemic_auroc_run0_wrong"],
+                                      "robust_auroc": res["variants"][f"robust_k{k}"]["epistemic_auroc_run0_wrong"],
+                                      "extra_tokens_per_problem": tk / n,
+                                      "extra_seconds_per_problem": meta["seconds"] * tk / all_tok / n}
+    return out
+
+
+def cost(cfg: dict | None = None) -> dict:
+    cfg = cfg or _config()
+    return {"kind": "R5-8 reporting from existing logs (descriptive; D133 item 5)", "mcb_split": mcb_split(cfg),
+            "x2": x2_cost(cfg), "mc_a": mc_a_cost(cfg)}
+
+
+def render_cost(res: dict) -> str:
+    pct = lambda v: f"{100 * v:.1f}%"
+    L = ["# R5-8: MC-B's failure split, and sample agreement against its inference cost (descriptive; D133 item 5)", "",
+         "## MC-B programs (every problem counted; D119)", "",
+         "| set | interface (no program / signature / rejected) | runtime (exception / timeout / bad output) | "
+         "semantic (runs, wrong chain) | correct (run 0) | exact program |", "|---|---|---|---|---|---|"]
+    for name, m in res["mcb_split"].items():
+        sh = m["share"]
+        L.append(f"| {name} | {pct(sh['interface'])} | {pct(sh['runtime'])} | {pct(sh['semantic'])} | "
+                 f"{pct(sh['correct'])} | {pct(m['exact_program'])} |")
+    L += ["", "| set, depth | interface | runtime | semantic | correct |", "|---|---|---|---|---|"]
+    for name, m in res["mcb_split"].items():
+        for d, sh in m["by_depth"].items():
+            L.append(f"| {name}, d{d} | {pct(sh['interface'])} | {pct(sh['runtime'])} | {pct(sh['semantic'])} | "
+                     f"{pct(sh['correct'])} |")
+    x = res["x2"]
+    pp = x["per_problem"]
+    L += ["", f"## Self-consistency (X2, #22): within-problem pairwise accuracy vs cost ({x['n_problems']} problems, "
+          f"k = {x['k']:g})", "",
+          f"Measured: {x['tokens']:,} tokens and {x['seconds']:,.0f} GPU-s for all k = {x['k']:g} samples, i.e. "
+          f"{pp['tokens_k']:,.0f} tokens and {pp['seconds_k']:.2f} GPU-s per problem; one sample "
+          f"{pp['tokens_one']:,.0f} tokens and {pp['seconds_one']:.2f} GPU-s.", "",
+          "| readout | pairwise accuracy [95% CI] | generations per problem |", "|---|---|---|"]
+    gens = {"self_consistency": f"{x['k']:g}"}
+    for m, v in x["methods"].items():
+        L.append(f"| {m} | {v['pairwise_accuracy']:.3f} [{v['ci95'][0]:.3f}, {v['ci95'][1]:.3f}] | "
+                 f"{gens.get(m, '1 (plus a forward pass or a short check)' if m.startswith(('probe', 'random', 'x4')) else '1')} |")
+    L += ["", "## MC-A's raw spread (#31): AUROC for run 0 wrong vs cost (B-v2; run 0 is its eval)", "",
+          "| set | signal | AUROC | extra generations | extra tokens / problem | extra GPU-s / problem |",
+          "|---|---|---|---|---|---|"]
+    for name, m in res["mc_a"].items():
+        for c, v in m["comparators_auroc"].items():
+            L.append(f"| {name} | {c} (no model call) | {v:.3f} | 0 | 0 | 0 |")
+        L.append(f"| {name} | B-v2 stated σ (run 0 itself) | {m['stated_sigma_auroc']:.3f} | 0 | 0 | 0 |")
+        for k, v in m["k"].items():
+            L.append(f"| {name} | raw spread, k = {k} | {v['raw_auroc']:.3f} | {k} | {v['extra_tokens_per_problem']:,.0f} | "
+                     f"{v['extra_seconds_per_problem']:.2f} |")
+        L.append(f"| {name} | (run 0's own cost) | – | 1 | {m['run0_tokens_per_problem']:,.0f} | – |")
+    return "\n".join(L) + "\n"
+
 def _write(name: str, res: dict, md: str, cfg: dict) -> None:
     out = REPO_ROOT / cfg["output_dir"]
     out.mkdir(parents=True, exist_ok=True)
@@ -599,7 +736,7 @@ def _write(name: str, res: dict, md: str, cfg: dict) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["depth5", "tail", "fallback-choose", "fallback-apply"])
+    ap.add_argument("what", choices=["depth5", "tail", "fallback-choose", "fallback-apply", "cost"])
     a = ap.parse_args()
     cfg = _config()
     if a.what == "depth5":
@@ -618,6 +755,10 @@ def main() -> None:
         res = fallback_apply(cfg)
         _write("fallback_confirmatory", res, render_fallback_apply(res), cfg)
         print(render_fallback_apply(res))
+    elif a.what == "cost":
+        res = cost(cfg)
+        _write("cost", res, render_cost(res), cfg)
+        print(render_cost(res))
 
 
 if __name__ == "__main__":
