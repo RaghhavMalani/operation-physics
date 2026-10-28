@@ -145,3 +145,8 @@
 [09:28:25] disk: 53 GiB free on MLStorage
 [09:28:25] start mc_b_analyze_a6_pairs (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.mc_b analyze --set a6_pairs
 [09:28:55] end mc_b_analyze_a6_pairs: exit 0
+[09:28:57] commit 'MC-B (D119): a6_pairs executed in the sandbox and analyzed': pushed
+[09:28:57] BLOCKED mc_b analysis a6b_pairs: no generations
+[09:28:58] disk: 53 GiB free on MLStorage
+[09:28:58] start r4_confirm (timeout 5400s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.r4_confirm analyze
+[09:30:52] end r4_confirm: exit 0
