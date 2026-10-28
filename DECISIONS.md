@@ -5010,3 +5010,50 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **SFT:** 8,400 s each, which includes ~6 min of fingerprint recording.
   - **Evals:** 9,000 s (D-pos-v2) and 7,000 s (B-v2), each including ~6 min of reload check; timeouts are 2× the
     estimates.
+
+### D139. Your two additions for the night of 2026-10-28/29: the go rule on D-pos-v2 as soon as its Llama eval exists, and SFT D-pos-v2 seed 1 only on GO (2026-10-29, ~00:15 IST; recorded before the go rule or any seed-1 step runs; the XM chain is untouched)
+- **What you asked:**
+  - When the Llama D-pos-v2 pilot eval finishes, run D137's pre-registered go rule for D-pos-v2.
+  - If and only if it passes, append "SFT D-pos-v2 Llama seed 1" after MC-B A6b, gated to finish by 10:00. Its eval
+    runs on a later night. If the rule fails or cannot be evaluated, nothing is added.
+  - Report the go / no-go in MORNING.md.
+- **An amendment to D137's timing only.** D137 runs the go rule inside the one-time pilot analysis, after both Llama
+  evals. The rule uses only D-pos-v2's logs, so it now runs earlier, from the same logs with the same code:
+  - **The code path** (`physcal/eval/xm_go.py`):
+    - the frozen A6c + A6b problems;
+    - `r4_confirm.seed_sources`, `r4_analysis.model_pairs` and `r4_analysis.slope` (OLS within pairs, pairs bootstrap
+      B = 10,000, seed 0);
+    - `xm_pilot.go_rule`: K1 ∧ C2 ∧ C3 on D-pos-v2's answer σ (a).
+  - **Validated on a stand-in:** on Qwen seed 0's frozen logs, it reproduces r4_confirm's per-seed values exactly
+    (A6c slope, A6b slope, A6c pair count; `tests/test_xm_followup.py`).
+  - **Runs once,** writing `results/stage_xm/go_dpos2/go.json` and `summary.md`.
+  - **Evaluable only when the eval finished:** it needs `metrics.json`, which is written after the tape, plus all 2,040
+    records. Otherwise the rule is "cannot be evaluated" and nothing is added.
+  - **The one-time pilot analysis (xm_pilot)** still runs when both evals exist, and must reproduce the same K1 / C2 / C3
+    numbers.
+- **Seed 1** (`physcal/train/stage_xm_seed.py`): stage XM's functions with the config's seed set to 1.
+  - What follows the seed: the arm config, LoRA init, data order, output dir (`dpos2/seed1`) and run id, as stage R4's
+    seeds did. Nothing else changes (tested).
+  - `stage_xm.py` is not edited, because the chain's queued stages import it.
+- **The follow-up queue** (`scripts/queue_xm_followup.sh`) runs beside the chain, with the same library functions and
+  guards:
+  1. **Waiting for the eval:** it polls the chain's log for the D-pos-v2 eval's end, skip or block, or for the chain's exit
+     (PID-based).
+  2. **The go rule:** it then runs the rule (CPU, 1 thread, nice 19) and commits + pushes.
+  3. **After the chain:** it waits for the chain's PID to exit and takes the chain's queue lock.
+  4. **Seed 1, on GO only:** it runs the seed-1 SFT, with the temperature guard, stall watchdog, free-space guard,
+     `--stop-at` = deadline − 15 min, and the launch cap.
+  5. **The time gate:** the seed-1 SFT starts only if time left ≥ estimate + 15 min. The estimate is the longest
+     measured wall time of tonight's XM SFT stages (PID file to the log's last write, pauses included), at least
+     8,400 s. A run that cannot finish is not started, which avoids a partial adapter.
+  6. **Commit + push** after the seed-1 stage.
+- **A risk I am not acting on** (your instruction: don't disturb the running chain):
+  - **The pause rate:** since 18:51 the temperature guard has paused the D-pos-v2 SFT 21 times × 10 min. That is ~35%
+    GPU duty (692 / 750 steps at 00:13, 5 h 26 min wall).
+  - **The eval's timeout:** the queue gives the D-pos-v2 eval a 5-hour timeout (2 × its 9,000 s estimate).
+  - **If the eval runs at this duty cycle,** it may reach that timeout before it finishes. `run_eval` writes its tape
+    only after all generation, so a timed-out eval leaves nothing.
+  - **What then follows:**
+    - The go rule cannot be evaluated, so nothing is added.
+    - B-v2's SFT would then start (gate: 9,300 s) and be stopped at 09:45 with an incomplete adapter. Next night its eval
+      is BLOCKED until the partial adapter is set aside.
