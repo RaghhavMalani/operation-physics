@@ -120,3 +120,8 @@
 [07:24:36] disk: 53 GiB free on MLStorage
 [07:24:36] start eval_b2_s2 (timeout 7800s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm b2 --seed 2 --confirmatory --max-reserved-gib 5.9
 [08:25:20] end eval_b2_s2: exit 0
+[08:25:24] commit 'R4 confirmatory (D118): b2 seed 2 greedy eval on the frozen R4-5 set (exit 0)': pushed
+[08:25:24] GPU at 57.20C, memory.used 723 MiB
+[08:25:26] disk: 53 GiB free on MLStorage
+[08:25:26] start mc_b_gen_a6c_pairs (timeout 4800s): uv run python -m physcal.eval.mc_b generate --set a6c_pairs --max-reserved-gib 5.9
+[08:56:03] end mc_b_gen_a6c_pairs: exit 0
