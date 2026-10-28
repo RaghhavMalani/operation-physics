@@ -4799,3 +4799,26 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   literally would make the second citation wrong.
 - **For the write-up:** cite both, with the full references above. The first is the scoring rule's source, and it must
   never appear with JRSS-B.
+
+### D135. R5-4's RSS-fallback bounds, chosen on the development sets only and frozen before any confirmatory application: σ/RSS in [0.333, 5] (2026-10-28)
+- **The rule (R5-4):** use RSS instead of the stated σ (a) when the σ line does not parse, or σ/RSS lies outside
+  [lo, hi]. σ = 0 has ratio 0 and falls back.
+- **The selection:** fixed in `configs/r5_diag.yaml` before it ran.
+  - **The data:** D-pos-v2 seed 0's development eval, the only one, on A6 / A6b / A6c (3,060 problems).
+  - **The grid:** lo ∈ {0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.333, 0.5, 0.667} × hi ∈ {1.5, 2, 3, 5, 10, 20, 50, 100, ∞}.
+  - **The objective:** the maximum mean oracle-centred expected crps_log over problems with draws; ties go to the
+    widest bounds.
+  - **The run:** `r5_diag fallback-choose`; output `results/r5_diag/fallback_dev.{json,md}`.
+- **The result on the development set** (for the record; it is the selection data, not evidence):
+  - **The chosen bounds, lo = 0.333 and hi = 5:** −0.03786, with 5.9% of problems falling back.
+  - **The baselines:** (a) −0.03946, RSS −0.03937, X1 −0.03863, σ\* −0.03650.
+  - **The surface is flat in lo** below 0.333 (within 0.0001); it peaks at hi = 5. hi = 10 gives −0.03831.
+- **Frozen:** `fallback.frozen_bounds: [0.333, 5.0]` in `configs/r5_diag.yaml`, committed with this entry before
+  `fallback-apply` runs.
+  - **It runs once:** the code refuses if `results/r5_diag/fallback_confirmatory.json` exists.
+  - **Its label:** post-hoc exploratory. No confirmatory claim follows, and K6 / K7 stand as tested.
+- **Disclosure (rescue bias):**
+  - **What I had seen:** I designed the grid after seeing the frozen set's tail (#35: σ decimal shifts of ×10 and
+    ×0.1, gross sensitivity errors). The grid's spacing near 10 and 0.1 could reflect that.
+  - **What guards against it:** the choice itself used only the development data and the fixed objective. The
+    confirmatory result is reported whatever it is.

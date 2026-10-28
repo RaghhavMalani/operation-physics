@@ -473,6 +473,123 @@ def render_tail(res: dict) -> str:
     return "\n".join(L) + "\n"
 
 
+# ------------------------------------------------------------------------------------------- R5-4 (post-hoc)
+def fallback_sigma(sig: np.ndarray, parsed: np.ndarray, rss_sig: np.ndarray, lo: float, hi: float):
+    """σ with the RSS fallback: RSS where the σ line does not parse or σ/RSS is outside [lo, hi] (σ = 0 has ratio 0)."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = np.where(rss_sig > 0, sig / rss_sig, np.inf)
+    fb = ~parsed | (ratio < lo) | (ratio > hi)
+    return np.where(fb, rss_sig, sig), fb
+
+
+def _fallback_inputs(ctx: Ctx, seed: int, arm: str):
+    recs = ctx.records(arm, seed)
+    sig, _ = B.model_sigma(ctx.problems, recs)
+    by = {(r["split"], *B._key(r["problem"])): r for r in recs}
+    parsed = np.array([Dn.parse_line(by[(p["_set"], *B._key(p))]["completion"])["parsed"]
+                       if (p["_set"], *B._key(p)) in by else False for p in ctx.problems])
+    return sig, parsed
+
+
+def _scoring(ctx: Ctx):
+    sa, ac = ctx.sa, ctx.ac
+    terms = [oc.problem_terms(p, sa["mc"]["n_draws"], sa["mc"]["seed_tag"]) for p in ctx.problems]
+    has = np.array([t["draws"] is not None for t in terms])
+    src, _ = stage_a.sources(ctx.problems, sa)
+    bcfg = load_config(ac["stage_b_config"])["analysis"]
+    comp = {"sigma_star": src[stage_a.STAR], "rss": src[bcfg["rss_source"]], "x1": src[bcfg["x1_source"]]}
+    return terms, has, comp
+
+
+def fallback_choose(cfg: dict | None = None) -> dict:
+    """The development sets only: every (lo, hi) on the grid, scored; the chosen pair by the configured rule."""
+    cfg = cfg or _config()
+    fc = cfg["fallback"]
+    ctx = Ctx("development", cfg)
+    sc = reward_config()["scoring"]
+    terms, has, comp = _scoring(ctx)
+    sig, parsed = _fallback_inputs(ctx, fc["dev_seed"], fc["arm"])
+    base = {"a": float(np.mean(oc.score_source(terms, sig, sc)["expected"][has]))}
+    base.update({n: float(np.mean(oc.score_source(terms, s, sc)["expected"][has])) for n, s in comp.items()})
+    grid = []
+    for lo in fc["grid_lo"]:
+        for hi in fc["grid_hi"]:
+            s, fb = fallback_sigma(sig, parsed, comp["rss"], lo, hi)
+            grid.append({"lo": lo, "hi": hi, "expected": float(np.mean(oc.score_source(terms, s, sc)["expected"][has])),
+                         "fallback_rate": float(fb.mean())})
+    best = max(grid, key=lambda g: (round(g["expected"], 12), -g["lo"], g["hi"]))  # ties -> the widest bounds
+    return {"kind": "R5-4 bound selection on the development sets only (post-hoc exploratory; D133)",
+            "arm": fc["arm"], "seed": fc["dev_seed"], "rule": "max mean expected crps_log; ties -> widest",
+            "baseline": base, "line_unparsed_rate": float((~parsed).mean()), "grid": grid,
+            "chosen": {"lo": best["lo"], "hi": best["hi"]}}
+
+
+def render_fallback_choose(res: dict) -> str:
+    his = sorted({g["hi"] for g in res["grid"]})
+    los = sorted({g["lo"] for g in res["grid"]})
+    at = {(g["lo"], g["hi"]): g for g in res["grid"]}
+    L = [f"# R5-4: choosing the RSS-fallback bounds on the development sets (seed {res['seed']}; post-hoc exploratory)",
+         "", f"Rule: {res['rule']}. Baselines (mean expected crps_log): " +
+         ", ".join(f"{k} {v:+.5f}" for k, v in res["baseline"].items()) +
+         f". σ line unparsed: {res['line_unparsed_rate']:.2%}.", "",
+         "Mean expected crps_log (fallback rate) by lower bound (rows) and upper bound (columns):", "",
+         "| lo \\ hi | " + " | ".join(f"{h:g}" for h in his) + " |", "|---|" + "---|" * len(his)]
+    for lo in los:
+        L.append(f"| {lo:g} | " + " | ".join(f"{at[(lo, h)]['expected']:+.5f} ({at[(lo, h)]['fallback_rate']:.1%})"
+                                            for h in his) + " |")
+    L += ["", f"**Chosen:** lo = {res['chosen']['lo']:g}, hi = {res['chosen']['hi']:g}."]
+    return "\n".join(L) + "\n"
+
+
+def fallback_apply(cfg: dict | None = None) -> dict:
+    """Once, on the frozen confirmatory logs, with the bounds a D-entry froze in the config."""
+    cfg = cfg or _config()
+    fc = cfg["fallback"]
+    if not fc.get("frozen_bounds"):
+        raise RuntimeError("R5-4: no frozen bounds in configs/r5_diag.yaml; choose them on the development sets first")
+    out = REPO_ROOT / cfg["output_dir"] / "fallback_confirmatory.json"
+    if out.exists():
+        raise RuntimeError(f"R5-4 is applied once; {out} exists")
+    lo, hi = fc["frozen_bounds"]
+    ctx = Ctx("frozen", cfg)
+    ac, sc = ctx.ac, reward_config()["scoring"]
+    floor = ctx.pc["analysis"]["sigma_floor_rel"]
+    terms, has, comp = _scoring(ctx)
+    cexp = {n: oc.score_source(terms, s, sc)["expected"] for n, s in comp.items()}
+    boot = oc.ClusterBootstrap([(p["_set"], p["noise"]["pair"]["pair_seed"]) for p in ctx.problems], ac["bootstrap"],
+                               ac["seed"])
+    exp_fb, exp_a, rows, rate = {}, {}, {}, {}
+    for s in ctx.r4["confirmatory"]["seeds"]:
+        sig, parsed = _fallback_inputs(ctx, s, fc["arm"])
+        fsig, fb = fallback_sigma(sig, parsed, comp["rss"], lo, hi)
+        exp_fb[s] = oc.score_source(terms, fsig, sc)["expected"]
+        exp_a[s] = oc.score_source(terms, sig, sc)["expected"]
+        rows[s] = B.source_rows(ctx.problems, fsig, floor)
+        rate[s] = float(fb.mean())
+    gap = float(np.mean(cexp["sigma_star"][has]) - np.mean(cexp["rss"][has]))
+    m = float(np.mean([np.mean(exp_fb[s][has]) for s in exp_fb]))
+    return {"kind": "R5-4 RSS fallback applied once to the frozen confirmatory logs: POST-HOC EXPLORATORY (D133)",
+            "bounds": [lo, hi], "fallback_rate": rate, "expected": m,
+            "share_of_rss_to_star_gap": (m - float(np.mean(cexp["rss"][has]))) / gap,
+            "minus_a": RC.seed_mean_diff(boot, exp_fb, exp_a, has),
+            "minus_rss": RC.seed_mean_diff(boot, exp_fb, cexp["rss"], has),
+            "minus_x1": RC.seed_mean_diff(boot, exp_fb, cexp["x1"], has),
+            "a6c_slope": RC.seed_mean_slope(rows, "a6c_pairs", "ok", ac)}
+
+
+def render_fallback_apply(res: dict) -> str:
+    d = lambda k: (f"{res[k]['value']:+.4f} [{res[k]['ci95'][0]:+.4f}, {res[k]['ci95'][1]:+.4f}], one-sided "
+                   f"p {res[k]['p_one_sided']:.4f}")
+    sl = res["a6c_slope"]
+    return "\n".join([f"# R5-4 applied once (frozen set, 3 seeds): {res['kind']}", "",
+                      f"Bounds (frozen before this run): σ/RSS in [{res['bounds'][0]:g}, {res['bounds'][1]:g}].",
+                      "Fallback rate per seed: " + ", ".join(f"{k}: {v:.1%}" for k, v in res["fallback_rate"].items()),
+                      "", f"- expected crps_log (seed mean): {res['expected']:+.4f}; share of the RSS-to-σ* gap "
+                      f"{res['share_of_rss_to_star_gap']:+.0%}",
+                      f"- fallback − (a): {d('minus_a')}", f"- fallback − RSS: {d('minus_rss')}",
+                      f"- fallback − X1: {d('minus_x1')}",
+                      f"- A6c slope (all pairs): {sl['value']:+.3f} [{sl['ci90'][0]:+.3f}, {sl['ci90'][1]:+.3f}]", ""])
+
 def _write(name: str, res: dict, md: str, cfg: dict) -> None:
     out = REPO_ROOT / cfg["output_dir"]
     out.mkdir(parents=True, exist_ok=True)
@@ -482,7 +599,7 @@ def _write(name: str, res: dict, md: str, cfg: dict) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["depth5", "tail"])
+    ap.add_argument("what", choices=["depth5", "tail", "fallback-choose", "fallback-apply"])
     a = ap.parse_args()
     cfg = _config()
     if a.what == "depth5":
@@ -493,6 +610,14 @@ def main() -> None:
         res = tail(cfg)
         _write("tail", res, render_tail(res), cfg)
         print(render_tail(res))
+    elif a.what == "fallback-choose":
+        res = fallback_choose(cfg)
+        _write("fallback_dev", res, render_fallback_choose(res), cfg)
+        print(render_fallback_choose(res))
+    elif a.what == "fallback-apply":
+        res = fallback_apply(cfg)
+        _write("fallback_confirmatory", res, render_fallback_apply(res), cfg)
+        print(render_fallback_apply(res))
 
 
 if __name__ == "__main__":

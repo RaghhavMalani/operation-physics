@@ -16,3 +16,12 @@ tail:                         # R5-2 (descriptive autopsy) and R5-3 (diagnostic 
   trim_share: 0.05            # R5-2: the 95%-trimmed expected score drops each source's lowest 5%
   max_pow: 12                 # the S-line evaluator refuses larger exponents
   material_factor: 1.25       # a component is a cause only if it moves σ by more than 25% (2-s.f. rounding is < 5%)
+
+fallback:                     # R5-4 (post-hoc exploratory): RSS when the σ line does not parse or σ/RSS is outside bounds
+  arm: dpos2
+  dev_seed: 0                 # the only seed with a development eval
+  grid_lo: [0.0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.333, 0.5, 0.667]   # 0: no lower bound (σ = 0 still falls back: σ/RSS = 0)
+  grid_hi: [1.5, 2.0, 3.0, 5.0, 10.0, 20.0, 50.0, 100.0, .inf]
+  # Chosen by `r5_diag fallback-choose` on the development sets (maximum mean expected crps_log over problems with
+  # predictive draws; ties -> the widest bounds), then frozen here by a D-entry before `fallback-apply` runs, once.
+  frozen_bounds: [0.333, 5.0]   # D135 (2026-10-28), from results/r5_diag/fallback_dev.md; frozen before fallback-apply
