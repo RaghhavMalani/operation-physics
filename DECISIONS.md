@@ -4781,3 +4781,21 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - R5-4 (bounds frozen first);
   - R5-8's MC-B split and sample-agreement cost;
   - R5-5's feasibility check (one model recommended; no pre-registration until you approve).
+
+### D134. R5-10's citation fix: no citation in the repo was wrong; the two 2007 Gneiting papers are distinct, and each is cited at its own venue (2026-10-28)
+- **The check:** every mention of Gneiting / Raftery / JRSS in the repo (DECISIONS.md, the review syntheses; no paper
+  draft exists yet), against the authors' own PDFs (`sites.stat.washington.edu/raftery/Research/PDF/Gneiting2007jasa.pdf`
+  and `…/Gneiting2007jrssb.pdf`).
+- **The two papers:**
+  - **Gneiting & Raftery (2007),** "Strictly Proper Scoring Rules, Prediction, and Estimation", *JASA* 102(477):
+    359–378.
+    - **Where it is cited:** `REVIEW_SYNTHESIS_2026-10-14.md`, as JASA (correct).
+    - **What to cite it for:** propriety, CRPS and the log score.
+  - **Gneiting, Balabdaoui & Raftery (2007),** "Probabilistic forecasts, calibration and sharpness", *JRSS-B* 69(2):
+    243–268.
+    - **Where it is cited:** D-entry R2-7 and `REVIEW_SYNTHESIS_ROUND2_2026-10-17.md`, as JRSS-B (correct).
+    - **What to cite it for:** "maximize sharpness subject to calibration", PIT histograms and calibration notions.
+- **Decision:** no change to either citation. R5-10's sentence reads like the two papers merged into one; applying it
+  literally would make the second citation wrong.
+- **For the write-up:** cite both, with the full references above. The first is the scoring rule's source, and it must
+  never appear with JRSS-B.
