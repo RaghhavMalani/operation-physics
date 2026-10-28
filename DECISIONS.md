@@ -4886,3 +4886,104 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - set the per-arm night budget (one arm-seed per night, roughly);
   - note the licence: the Llama 3.2 Community License applies to the mirror, with attribution if weights or outputs are
     distributed.
+
+### D137. Your decisions on D136, and the pre-registration of the cross-model pilot (R5-5): D-pos-v2 and B-v2 SFT on Llama-3.2-3B-Instruct, seed 0, evaluated on the frozen A6c + A6b (2026-10-28, ~18:20 IST; written before any Llama adapter, any Llama completion on the frozen set, or any statistic from them exists)
+- **1. The model (your approval):**
+  - **The repo:** `unsloth/Llama-3.2-3B-Instruct-bnb-4bit`, revision `bb1d317a108579fb40e646af8924a5e7ec5604b1`, weights
+    content hash `573ff397255fc706`.
+    - **Pinned:** `configs/base_llama32_3b_4bit.yaml`, checked before every load as D78's base is.
+    - **Quantization:** nf4, double quant, bf16 compute, as Qwen's.
+  - **The other candidates, for the record:**
+    - `unsloth/gemma-2-2b-it-bnb-4bit`, `cfc3a78e491db11ed6fd461d9ce8ba921de01602`;
+    - `unsloth/Llama-3.2-1B-Instruct-bnb-4bit`, `fcecd050a91025151bbf518e41a5577c356efdce`.
+  - **The licence:** the Llama 3.2 Community License (Meta). The paper states it; "Built with Llama" if weights or
+    outputs are shared.
+  - **The chat handling this base needs,** fixed in its config:
+    - **The date:** its template writes today's date into the system header, so `date_string: "26 Jul 2024"` (the
+      template's own fallback) is fixed for training and eval alike.
+    - **One BOS:** eval prompts are tokenized without a second BOS (`prompt_add_special_tokens: false`; the template
+      writes `<|begin_of_text|>`).
+    - **The end of turn:** SFT labels end with `<|eot_id|>`. `sft_phase12.tokenize` hard-coded Qwen's `<|im_end|>`; it now
+      takes the token, defaulting to Qwen's.
+    - **Qwen's path is byte-for-byte unchanged:** every new parameter defaults to the old behaviour (tested). The
+      eval passes `add_special_tokens` only when a config turns it off, so Qwen's tokenizer call is exactly the
+      old one. The equivalence check below ran with an explicit `add_special_tokens=True` for Qwen, which is the
+      tokenizer's default: the same tokenization.
+- **2. Eval memory (your item 2):**
+  - **The change:** `run_eval` passes `logits_to_keep=1` when the generation config sets `last_logits_only`.
+  - **The check** (`physcal/eval/xm_checks.py`; `results/stage_xm/checks/`): 30 development problems (A6c + A6b, 3 per
+    depth per set) through the real eval backend without and with it.
+    - **Qwen,** with stage R4's D-pos-v2 seed-0 adapter, batch 16: byte-identical on 30 / 30.
+    - **The Llama base,** batch 5: byte-identical on 30 / 30.
+    - **Accepted:** `last_logits_only: true` in `configs/stage_xm.yaml`.
+  - **What the probe found:** the eval already projected only the last position at prefill for both models (`lm_head`
+    input `[4, 1, d]`). Unsloth's generate wrapper sets `logits_to_keep = 1` by default, and full logits would cost
+    +1.3–1.4 GiB at batch 4. The flag changes nothing today; it guards against a change of that default.
+  - **So the batch limit is the KV cache, not the logits.** The worst case (the longest development prompts, 1,212
+    tokens, every completion forced to 1,280 new tokens) fits at batch 6 (5.87 GiB reserved under the 5.9 GiB cap)
+    and not at 8.
+    - **The eval batch is 6.** run_eval's halving backoff covers a lower launch cap and is logged.
+    - **The A6c / A6b sets are batched the same way for both arms.** Greedy completions can depend on the batch; the
+      pilot's arms are compared with each other at batch 6.
+- **3. The pre-registration.**
+  - **The arms:** D-pos-v2 (`dpos2`) and B-v2 (`b2`), seed 0 each, on the Llama base.
+  - **The data:** the R4-1 files, unchanged, with their manifest checksums checked at load.
+  - **The recipe** (stage R4's, read from `configs/stage_r4.yaml`; `physcal/train/stage_xm.py`):
+    - LoRA r 16, α 16, dropout 0 on all 7 projections;
+    - 2 epochs = 750 optimizer steps (3,000 rows at batch 2 × 4);
+    - lr 1e-4, constant with 10 warm-up steps, adamw_8bit, gradient clipping 1.0;
+    - bf16, Unsloth gradient checkpointing;
+    - the 5.9 GiB cap (the launch cap may lower it);
+    - rows over 2,048 tokens dropped and counted (none expected: the longest is 1,858).
+  - **The eval:** the frozen R4-5 A6c + A6b (2,040 problems; A6 later), with `PHYSCAL_CONFIRMATORY=1`.
+    - Prompt v5, greedy, 1,280 new tokens, batch 6, last-position logits.
+    - The adapter is unmerged on the pinned base, and R2-1's reload check runs as in every R4 eval.
+    - **Everything else is stage R4's confirmatory eval config:** a test checks that only the keys D137 names differ.
+  - **The primary, the go rule:** R4-3's criterion (D113, D125) on D-pos-v2's answer σ (a), at one seed. The estimator
+    is `r4_analysis.slope` (D95's OLS of Δ ln σ on Δ ln σ\* within pairs; pairs bootstrap, B = 10,000, seed 0).
+    - **K1:** the A6c slope over pairs with both members answered is > 0, by its one-sided bootstrap p < 0.05. There is
+      no Holm family: it is the one test. At one seed K1 equals C1, the 90% CI's lower bound > 0.
+    - **C2:** the A6c slope ≥ 0.5.
+    - **C3:** the A6b slope (Δ ln σ on Δ ln truth, computation-correct pairs, τ = 10⁻³) has its 90% CI inside
+      (−0.3, +0.3), D59's margin.
+      - **Fewer than 3 such pairs:** the slope is undefined and C3 is not met.
+      - **The risk, flagged now:** Qwen seed 0 had only 17 such pairs on the frozen A6b. A model with weaker arithmetic
+        may have too few for C3 to hold, whatever its propagation. Then the pilot is NO-GO, reported with that reason.
+    - **GO iff K1 ∧ C2 ∧ C3.**
+  - **The consequences:**
+    - **GO:** seeds 1 and 2 of both arms, and A6 for all, under a further entry.
+    - **NO-GO:** no seed expansion. It is reported as a failed replication at one seed, with the same prominence as a
+      success.
+  - **Reported, descriptive only, with no test:**
+    - D-pos-v2's (b), (c), (c_S) and B-v2's (a), each with its slopes and C1–C3.
+    - The A6b slope on all answered pairs.
+    - Per-depth OLS and Theil–Sen slopes with reversed-pair counts, labelled fragile (#34).
+    - Oracle-centred expected crps_log on A6c + A6b: D-pos-v2 − B-v2, − RSS, − X1, and B-v2 − RSS, with cluster-bootstrap
+      95% CIs, and D-pos-v2's share of the RSS-to-σ\* gap.
+    - **Post-SFT format-following per arm:** parsed, units ok, σ stated, σ line parsed, truncated.
+    - **Post-SFT arithmetic per arm:** computation-correct at τ, within 1% of the truth; overall, by depth and by set.
+      Reported beside the untrained base's (D136), so capability and mechanism stay apart (R5-5).
+    - R5-2's tail categories for D-pos-v2 (a): `r5_diag.decompose`, the worst 5% by regret against σ\*, and base
+      rates.
+    - Qwen seed 0's same statistics on the same two sets, side by side. The code reproduces r4_confirm's seed-0 values
+      exactly (tested).
+  - **The analysis:** `physcal.eval.xm_pilot analyze`, CPU, run once (it refuses if its results exist), after both
+    evals exist.
+  - **The reading, fixed now:**
+    - **GO:** "the explicit-propagation recipe transfers to a second model family (Llama-3.2-3B) at one seed".
+    - **NO-GO:** "it does not transfer at one seed on this model". The format and arithmetic numbers say whether the
+      cause is the mechanism or the model's capability.
+- **4. Depth 5 (your item 4):** FINDINGS and the paper report Theil–Sen beside OLS and call per-depth estimates fragile.
+  Never "propagates" or "does not propagate" at a depth.
+  - **Done:** #32's depth split rewritten with the 3-seed OLS / Theil–Sen table (`r5_diag depth-ts`,
+    `results/r5_diag/depth_ts.md`); #30's two depth-5 sentences marked superseded.
+- **5. The queue** (`scripts/queue_xm.sh`; queue_r4_seeds.sh's functions in library mode):
+  - **The order:** SFT D-pos-v2 → its eval → SFT B-v2 → its eval → MC-B A6b (D132) → the pilot analysis (CPU) once both
+    evals exist.
+  - **The guards:** `GPU_DEADLINE=10:00` with every stage gated; the stall watchdog, temperature and free-space
+    guards.
+  - **Commits:** a commit and push after every stage; finished stages are skipped.
+  - **A smoke run first,** on development problems only:
+    - 60 SFT steps of D-pos-v2 into a scratch directory;
+    - an eval of 10 problems per set through the same path, including the reload check.
+    - The smoke adapter is never evaluated on the frozen set, and is deleted.

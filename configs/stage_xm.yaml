@@ -1,0 +1,28 @@
+# D137 (pre-registered): the cross-model pilot (R5-5). D-pos-v2 and B-v2 SFT on Llama-3.2-3B-Instruct (4-bit), seed 0
+# each, with stage R4's data, recipe and step budget; evaluated on the frozen confirmatory A6c + A6b (A6 later).
+stage_r4_config: stage_r4              # the arms, the R4-1 data (sft_r4), LoRA and train settings, read from there unchanged
+pinned_base: base_llama32_3b_4bit      # D137
+seed: 0
+output_dir: results/stage_xm           # <arm>/seed0/{final_adapter, summary.json, events.jsonl, confirmatory/}
+max_reserved_gib: 5.9                  # D115's cap; the queue's launch cap may lower it, never raise it
+eval:
+  prompt: v5_two_channel               # the R4 eval prompt
+  max_new_tokens: 1280                 # D114's budget, as every Qwen R4 eval
+  batch_size: 6                        # D137: `xm_checks batch-fit`: the largest that fits 1,280 tokens under 5.9 GiB
+  last_logits_only: true               # D137: `xm_checks equivalence` byte-identical for both models (30/30 each)
+  output_subdir: confirmatory
+  splits:                              # the frozen R4-5 files; run_eval needs PHYSCAL_CONFIRMATORY=1
+    a6b_pairs:
+      file: data/eval_sets/2.0.0+bdbb2279/confirmatory/a6b_pairs.jsonl
+      verify_regenerate: -1
+    a6c_pairs:
+      file: data/eval_sets/2.0.0+bdbb2279/confirmatory/a6c_pairs.jsonl
+      verify_regenerate: -1
+checks:                                # D137 item 2, on development problems only
+  n_per_depth_per_set: 3               # 3 x 5 depths x (A6c, A6b) = 30 problems
+  sets: [a6c_pairs, a6b_pairs]
+  qwen_arm: dpos2                      # the current Qwen adapter (seed 0) through stage R4's own eval config
+  qwen_batch_size: 16                  # stage R4's
+  llama_batch_size: 5                  # the batch that is known to fit (D136)
+  batch_candidates: [16, 12, 10, 8, 6, 5]
+  output_dir: results/stage_xm/checks

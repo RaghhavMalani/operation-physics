@@ -727,6 +727,47 @@ def render_cost(res: dict) -> str:
         L.append(f"| {name} | (run 0's own cost) | – | 1 | {m['run0_tokens_per_problem']:,.0f} | – |")
     return "\n".join(L) + "\n"
 
+# ------------------------------------------------------------------------------------------- per-depth Theil-Sen (D137 item 4)
+def depth_ts(cfg: dict | None = None) -> dict:
+    """The frozen set's per-depth A6c slopes for (a), both arms, every confirmatory seed: OLS (#32's), Theil-Sen and the
+    reversed-pair count. Per-depth estimates are fragile (#34); this is what FINDINGS and the paper report beside OLS."""
+    cfg = cfg or _config()
+    dc = cfg["depth5"]
+    ctx = Ctx("frozen", cfg)
+    out: dict = {"kind": "descriptive (D137 item 4; #34)", "alpha": dc["theil_sen_ci"], "arms": {}}
+    for arm in ctx.r4["arms"]:
+        out["arms"][arm] = {}
+        for s in ctx.r4["confirmatory"]["seeds"]:
+            _, bds = B.model_sigma(ctx.problems, ctx.records(arm, s))
+            used = R.model_pairs(ctx.problems, bds, ctx.pc)["a6c"]
+            per = {}
+            for d in sorted({p["lo"]["pair"][1] for p in used}):
+                sub = [p for p in used if p["lo"]["pair"][1] == d]
+                x, y = pair_xy(sub)
+                ts = stats.theilslopes(y, x, alpha=dc["theil_sen_ci"])
+                per[str(d)] = {"n": len(sub), "ols": float(a6_pairs.ols_slope(x, y)), "theil_sen": float(ts.slope),
+                               "ts_ci": [float(ts.low_slope), float(ts.high_slope)], "n_reversed": int((y < 0).sum())}
+            out["arms"][arm][str(s)] = per
+    return out
+
+
+def render_depth_ts(res: dict) -> str:
+    L = ["# Per-depth A6c slopes on the frozen set: OLS and Theil-Sen, every seed (descriptive; per-depth estimates are "
+         "fragile, #34)", ""]
+    for arm, seeds in res["arms"].items():
+        depths = list(next(iter(seeds.values())))
+        L += [f"**{arm} (a)**", "", "| seed | " + " | ".join(f"d{d}: OLS / TS [90% CI] / reversed" for d in depths) + " |",
+              "|---|" + "---|" * len(depths)]
+        for s, per in seeds.items():
+            L.append(f"| {s} | " + " | ".join(f"{v['ols']:+.2f} / {v['theil_sen']:+.2f} [{v['ts_ci'][0]:+.2f}, "
+                                               f"{v['ts_ci'][1]:+.2f}] / {v['n_reversed']}" for v in per.values()) + " |")
+        L.append("| mean | " + " | ".join(
+            f"{np.mean([seeds[s][d]['ols'] for s in seeds]):+.2f} / {np.mean([seeds[s][d]['theil_sen'] for s in seeds]):+.2f}"
+            for d in depths) + " |")
+        L.append("")
+    return "\n".join(L) + "\n"
+
+
 def _write(name: str, res: dict, md: str, cfg: dict) -> None:
     out = REPO_ROOT / cfg["output_dir"]
     out.mkdir(parents=True, exist_ok=True)
@@ -736,7 +777,7 @@ def _write(name: str, res: dict, md: str, cfg: dict) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["depth5", "tail", "fallback-choose", "fallback-apply", "cost"])
+    ap.add_argument("what", choices=["depth5", "tail", "fallback-choose", "fallback-apply", "cost", "depth-ts"])
     a = ap.parse_args()
     cfg = _config()
     if a.what == "depth5":
@@ -755,6 +796,10 @@ def main() -> None:
         res = fallback_apply(cfg)
         _write("fallback_confirmatory", res, render_fallback_apply(res), cfg)
         print(render_fallback_apply(res))
+    elif a.what == "depth-ts":
+        res = depth_ts(cfg)
+        _write("depth_ts", res, render_depth_ts(res), cfg)
+        print(render_depth_ts(res))
     elif a.what == "cost":
         res = cost(cfg)
         _write("cost", res, render_cost(res), cfg)

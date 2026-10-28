@@ -1,0 +1,31 @@
+{
+ "decision": "D137 item 2",
+ "model": "qwen",
+ "no_argument": {
+  "prompt_len": 1222,
+  "prefill_lm_head_input": [
+   4,
+   1,
+   1536
+  ],
+  "peak_reserved_gib": 3.78125
+ },
+ "logits_to_keep_1": {
+  "prompt_len": 1222,
+  "prefill_lm_head_input": [
+   4,
+   1,
+   1536
+  ],
+  "peak_reserved_gib": 3.78125
+ },
+ "logits_to_keep_0": {
+  "prompt_len": 1222,
+  "prefill_lm_head_input": [
+   4,
+   1222,
+   1536
+  ],
+  "peak_reserved_gib": 5.1875
+ }
+}

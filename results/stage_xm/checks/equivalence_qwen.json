@@ -1,0 +1,14 @@
+{
+ "decision": "D137 item 2",
+ "model": "qwen",
+ "n_problems": 30,
+ "batch_size": 16,
+ "max_new_tokens": 1280,
+ "cap_gib": 5.6,
+ "byte_identical": true,
+ "n_identical": 30,
+ "prefill_logits_len_without": [],
+ "prefill_logits_len_with": [],
+ "oom_backoffs": 0,
+ "mismatches": []
+}

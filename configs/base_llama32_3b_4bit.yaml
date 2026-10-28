@@ -1,0 +1,15 @@
+# D137 (your approval of D136, 2026-10-28): the pinned 4-bit base of the cross-model pilot (R5-5), as D78's is for
+# Qwen. Loaders get the local snapshot dir of this commit (physcal/base.py), never a hub name.
+repo_id: unsloth/Llama-3.2-3B-Instruct-bnb-4bit   # Unsloth's public pre-quantized mirror (Meta's repo is gated)
+revision: bb1d317a108579fb40e646af8924a5e7ec5604b1
+content_sha256: 573ff397255fc706   # fingerprint._dir_content_hash of the snapshot's weights = R2-1's base_identity
+# quantization: nf4, double quant, bf16 compute (the snapshot's config.json), as base_4bit
+# licence: Llama 3.2 Community License (Meta). The paper says so; "Built with Llama" if weights or outputs are shared.
+model:
+  max_seq_length: 2048
+  text_only: false
+  chat_template_kwargs: {date_string: "26 Jul 2024"}   # the template writes today's date otherwise (the template's own
+                                                       # fallback date, fixed so every prompt is the same on any day)
+  end_of_turn: "<|eot_id|>"                            # SFT labels end with it (sft_phase12.tokenize's default is Qwen's)
+  prompt_add_special_tokens: false                     # the template already writes <|begin_of_text|>; the tokenizer
+                                                       # would add a second one to every eval prompt

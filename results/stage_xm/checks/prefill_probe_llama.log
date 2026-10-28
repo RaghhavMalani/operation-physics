@@ -1,0 +1,46 @@
+W1028 12:27:50.556000 3456 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1028 12:27:50.603000 3456 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Llama patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/254 [00:00<?, ?it/s]Loading weights:   0%|          | 1/254 [00:00<00:34,  7.28it/s]Loading weights:  18%|█▊        | 45/254 [00:00<00:00, 227.85it/s]Loading weights:  41%|████      | 104/254 [00:00<00:00, 379.31it/s]Loading weights:  65%|██████▌   | 166/254 [00:00<00:00, 469.36it/s]Loading weights:  88%|████████▊ | 224/254 [00:00<00:00, 505.37it/s]Loading weights: 100%|██████████| 254/254 [00:00<00:00, 434.15it/s]
+Unsloth: Will load .cache/huggingface/hub/models--unsloth--Llama-3.2-3B-Instruct-bnb-4bit/snapshots/bb1d317a108579fb40e646af8924a5e7ec5604b1 as a legacy tokenizer.
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': True}, 'bnb_4bit_linear_modules': 196}
+Both `max_new_tokens` (=4) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Both `max_new_tokens` (=4) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+Both `max_new_tokens` (=4) and `max_length`(=131072) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+{
+ "decision": "D137 item 2",
+ "model": "llama",
+ "no_argument": {
+  "prompt_len": 1162,
+  "prefill_lm_head_input": [
+   4,
+   1,
+   3072
+  ],
+  "peak_reserved_gib": 3.689453125
+ },
+ "logits_to_keep_1": {
+  "prompt_len": 1162,
+  "prefill_lm_head_input": [
+   4,
+   1,
+   3072
+  ],
+  "peak_reserved_gib": 3.716796875
+ },
+ "logits_to_keep_0": {
+  "prompt_len": 1162,
+  "prefill_lm_head_input": [
+   4,
+   1162,
+   3072
+  ],
+  "peak_reserved_gib": 4.986328125
+ }
+}

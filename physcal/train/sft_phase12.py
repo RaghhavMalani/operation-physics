@@ -116,8 +116,10 @@ def masked_spans(row: dict, cfg: dict) -> list[list[int]]:
     return [list(m) for m in sorted({tuple(m) for m in masked})]
 
 
-def tokenize(row: dict, problem_text: str, tok, cfg: dict, chat_template_kwargs: dict | None = None) -> dict:
-    """input_ids / labels as physcal.train.sft_data.tokenize, with the arm's spans masked (-100)."""
+def tokenize(row: dict, problem_text: str, tok, cfg: dict, chat_template_kwargs: dict | None = None,
+             end_of_turn: str = "<|im_end|>") -> dict:
+    """input_ids / labels as physcal.train.sft_data.tokenize, with the arm's spans masked (-100). `end_of_turn`: the
+    base's turn-closing token (D137; Qwen's by default)."""
     from physcal.prompt import build_messages
 
     prompt = tok.apply_chat_template(build_messages(problem_text, cfg["prompt"]), tokenize=False,
@@ -129,7 +131,7 @@ def tokenize(row: dict, problem_text: str, tok, cfg: dict, chat_template_kwargs:
         raise ValueError(f"seed {row['seed']} ({row['arm']}): the config's masks differ from the built data's; rebuild")
     hit = lambda s, e: any(s < hi and e > lo for lo, hi in spans)
     labels = [-100 if hit(s, e) else t for t, (s, e) in zip(enc["input_ids"], enc["offset_mapping"])]
-    eos = tok.convert_tokens_to_ids("<|im_end|>")
+    eos = tok.convert_tokens_to_ids(end_of_turn)
     ids = prompt_ids + enc["input_ids"] + [eos]
     return {"input_ids": ids, "attention_mask": [1] * len(ids), "labels": [-100] * len(prompt_ids) + labels + [eos],
             "n_masked": sum(1 for x in labels if x == -100)}

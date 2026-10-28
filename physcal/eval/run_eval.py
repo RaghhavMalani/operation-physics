@@ -246,6 +246,8 @@ class HFBackend:
         self.torch = torch
         self.gen_cfg = gen_cfg
         self.chat_template_kwargs = model_cfg.get("chat_template_kwargs") or {}
+        # D137: a template that writes its own BOS (Llama) must not get a second one from the tokenizer; default as before
+        self.add_special_tokens = model_cfg.get("prompt_add_special_tokens", True)
         self.oom_backoffs = 0
         revision = model_cfg.get("revision") if model_id == model_cfg.get("id") else None
         self.device = model_cfg.get("device", "cuda")  # "cpu" for CPU-only checks (tiny models)
@@ -352,7 +354,10 @@ class HFBackend:
         decoding = {"do_sample": True, "temperature": g["temperature"], "top_p": g["top_p"], "top_k": g["top_k"]} \
             if g["do_sample"] else {"do_sample": False, "temperature": None, "top_p": None, "top_k": None}
         try:
-            enc = self.tok(prompts, return_tensors="pt", padding=True).to(self.device)
+            bos = {} if getattr(self, "add_special_tokens", True) else {"add_special_tokens": False}  # D137 (Llama)
+            enc = self.tok(prompts, return_tensors="pt", padding=True, **bos).to(self.device)
+            # D137: only the last position's logits at prefill, if the config asks (equivalence-checked before use)
+            keep = {"logits_to_keep": 1} if g.get("last_logits_only") else {}
             with torch.inference_mode():
                 out = self.model.generate(
                     **enc,
@@ -362,6 +367,7 @@ class HFBackend:
                     eos_token_id=sorted(self.eos_ids),
                     pad_token_id=self.pad_id,
                     **decoding,
+                    **keep,
                 )
         except Exception as exc:
             if not _is_oom(exc) or (len(prompts) == 1 and k == 1):

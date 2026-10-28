@@ -1,0 +1,39 @@
+{
+ "decision": "D137 item 2",
+ "cap_gib": 5.9,
+ "max_new_tokens": 1280,
+ "last_logits_only": true,
+ "tried": [
+  {
+   "batch": 16,
+   "fits": false,
+   "peak_reserved_gib": 5.6640625,
+   "prompt_tokens_max": 1212
+  },
+  {
+   "batch": 12,
+   "fits": false,
+   "peak_reserved_gib": 5.896484375,
+   "prompt_tokens_max": 1212
+  },
+  {
+   "batch": 10,
+   "fits": false,
+   "peak_reserved_gib": 5.884765625,
+   "prompt_tokens_max": 1212
+  },
+  {
+   "batch": 8,
+   "fits": false,
+   "peak_reserved_gib": 5.845703125,
+   "prompt_tokens_max": 1212
+  },
+  {
+   "batch": 6,
+   "fits": true,
+   "peak_reserved_gib": 5.873046875,
+   "prompt_tokens_max": 1212
+  }
+ ],
+ "largest_fitting": 6
+}

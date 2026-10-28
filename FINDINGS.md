@@ -1587,7 +1587,8 @@ in-distribution for both arms (mixed per-given levels in training); depth 5 is h
 - **By depth (A6c slope, answer σ):** +1.00 (depth 1), +0.97, +0.76, +0.38 [−0.05, +0.85] (depth 4), and +0.06
   [−0.36, +0.49] at the held-out depth 5.
   - **By chain type:** power-law chains +0.98; value-dependent chains +0.49.
-  - **The explicit computation does not extrapolate** to the unseen depth. The value-dependent sensitivities are what
+  - **[Superseded by #34 / D137: per-depth slopes are fragile; do not read extrapolation from one.]** The explicit
+    computation does not extrapolate to the unseen depth. The value-dependent sensitivities are what
     breaks.
 - **B-v2:** mixed-level data alone teaches the implicit model to read *where* the noise is.
   - **The evidence:** A6c +0.47 [+0.33, +0.61], against stage B's +0.04, and about level with D-pos-v2 at every
@@ -1606,7 +1607,8 @@ in-distribution for both arms (mixed per-given levels in training); depth 5 is h
   - **Act 3 was negative because the data never contained the behaviour.** With mixed levels and visible derivations
     of value-dependent sensitivities, a 1.5B model with 750 SFT steps learns explicit first-order propagation: slopes
     near 1 at depths 1–2, calibrated coverage, a vol beta of 0.85.
-  - **It is still a learned computation that degrades with chain depth** and fails to extrapolate to depth 5. The
+  - **It is still a learned computation that degrades with chain depth** [the depth-5 reading is superseded by #34 /
+    D137: per-depth slopes are fragile]. The
     gross errors at depth make its expected score no better than RSS.
   - **This fits R4-8's framing.** Computing uncertainty explicitly works where the computation is right. Whether it
     beats the heuristics hinges on the arithmetic of long symbolic derivatives, which MC-A (#31) and a later MC-B
@@ -1755,27 +1757,25 @@ ran once, 2026-10-28 09:29–09:31 IST, on all six evals: complete, not rerun. C
 | K7, D-pos-v2 (a) − X1 | −0.0001 [−0.0005, +0.0003] | **−0.0022 [−0.0033, −0.0012]** |
 | K5, D-pos-v2 − B-v2 | +0.0016 [+0.0011, +0.0020] | +0.0001 [−0.0011, +0.0012] |
 
-- **Depth 5 propagates but loses on score.**
-  - **The slope:** (a) holds at +0.82 at the held-out depth.
-  - **The score:** there it is below both RSS and X1, with CIs below zero.
-  - **At depths 1–4** it is ahead of RSS, and not distinguishable from X1 (CI spans 0). The pooled K6 / K7 fail on
-    the deep chains.
+- **Per-depth slopes are fragile (#34; D137 item 4):** report them, never "propagates" or "does not propagate" at a
+  single depth.
+  - **(a)'s A6c slope by depth, 3-seed mean, OLS / Theil–Sen:** 1.01 / 0.99, 0.84 / 1.02, 0.99 / 0.95, 0.62 / 0.89,
+    0.82 / 0.93 at depths 1–5.
+  - **Reversed pairs per seed:** 0–3 at depth 1, rising to 16–19 at depth 5 (`results/r5_diag/depth_ts.md`).
+  - **B-v2's Theil–Sen slopes lie well below its OLS** (0.10–0.28 against 0.26–0.65): a few pairs carry them.
+- **The score is where depth 5 differs:** there D-pos-v2 is below both RSS and X1, with CIs below zero.
+  - **At depths 1–4** it is ahead of RSS, and not distinguishable from X1 (CI spans 0).
+  - **So the pooled K6 / K7 fail on the deep chains.**
+  - **Depth 5 is extrapolation in chain length** (one more step from the same three families), not to new physical
+    laws (R5-8).
 - **The regret is concentrated (D118 §9):** the worst 5% of problems hold 83% / 69% / 76% of (a)'s expected-score
   regret against σ\*. In every seed the mean regret is highest at depth 5 (0.0063 / 0.0033 / 0.0050, against
   0.0013–0.0021 at depth 1).
   - **Not measured here:** the share of gross misses (#30: σ off by more than 10× on 1.5% of the development set).
-- **#30's depth-5 claim is not reproduced.**
-  - **The numbers:**
-    - **#30's development curve for (a):** 1.00 / 0.97 / 0.76 / 0.38 / 0.06 at depths 1–5.
-    - **The confirmatory seed mean:** 1.01 / 0.84 / 0.99 / 0.62 / 0.82.
-  - **It is the problem set, not the seed:** seed 0 is #30's adapter, and on the frozen set its depth-5 slope is +0.80
-    (102 pairs).
-  - **Single-depth cells are noisy:** about 100 pairs each, with a seed SD up to 0.28 (depth 4).
-  - **Corrected by #34 (same day):** neither single-depth OLS slope is robust; a few high-leverage pairs drive both.
-    - **The robust slopes:** Theil–Sen +0.48 (development) and +0.75 (frozen).
-    - **What both sets share:** the same share of reversed pairs and the same cell-mean under-propagation at depth 5.
-    - **So:** neither "does not extrapolate" (0.06) nor "propagates at depth 5" (0.82) should be read from a
-      single-depth OLS slope. Depth 5 is extrapolation in chain length, not to new physical laws (R5-8).
+- **#30's development depth curve is not reproduced by OLS** (#30: 1.00 / 0.97 / 0.76 / 0.38 / 0.06; here 1.01 / 0.84 /
+  0.99 / 0.62 / 0.82). #34 shows why: neither single-depth OLS slope is robust.
+  - **The same seed-0 adapter:** Theil–Sen gives +0.48 on the development set and +0.75 on the frozen set at depth 5.
+  - **What both sets share:** the same reversal count and the same cell-mean under-propagation.
 
 **What it means:**
 - **The propagation result is solid.** Visible sensitivity derivations trained on mixed-level data yield a stated σ

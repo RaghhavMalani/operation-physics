@@ -1,0 +1,18 @@
+{
+ "decision": "D137 item 2",
+ "model": "llama",
+ "n_problems": 30,
+ "batch_size": 5,
+ "max_new_tokens": 1280,
+ "cap_gib": 5.8,
+ "byte_identical": true,
+ "n_identical": 30,
+ "prefill_logits_len_without": [
+  1
+ ],
+ "prefill_logits_len_with": [
+  1
+ ],
+ "oom_backoffs": 0,
+ "mismatches": []
+}

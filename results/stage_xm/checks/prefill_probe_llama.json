@@ -1,0 +1,31 @@
+{
+ "decision": "D137 item 2",
+ "model": "llama",
+ "no_argument": {
+  "prompt_len": 1162,
+  "prefill_lm_head_input": [
+   4,
+   1,
+   3072
+  ],
+  "peak_reserved_gib": 3.689453125
+ },
+ "logits_to_keep_1": {
+  "prompt_len": 1162,
+  "prefill_lm_head_input": [
+   4,
+   1,
+   3072
+  ],
+  "peak_reserved_gib": 3.716796875
+ },
+ "logits_to_keep_0": {
+  "prompt_len": 1162,
+  "prefill_lm_head_input": [
+   4,
+   1162,
+   3072
+  ],
+  "peak_reserved_gib": 4.986328125
+ }
+}
