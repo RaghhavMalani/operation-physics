@@ -1,0 +1,54 @@
+[18:46:17] XM chain start (D137); GPU deadline 10:00 IST (913 min left); chain PID 10129
+[18:46:34] host VRAM readings (MiB): 1299 1299 1299 1299 1299 1299 1299 1299
+[18:46:34] launch cap 5.9 GiB (max 5.9)
+[18:46:35] GPU at 52.10C, memory.used 1299 MiB
+[18:46:37] disk: 47 GiB free on MLStorage
+[18:46:37] start xm_train_dpos2 (timeout 54505s): uv run python -m physcal.train.stage_xm train --arm dpos2 --stop-at 2026-10-29T09:45:00+05:30 --max-reserved-gib 5.9
+[18:51:07] guard(10252): GPU at 87.10C > 87C: stage stopped for 600s
+[19:01:07] guard(10252): stage continued (GPU at 55.50C)
+[19:03:07] guard(10252): GPU at 87.20C > 87C: stage stopped for 600s
+[19:13:08] guard(10252): stage continued (GPU at 55.20C)
+[19:16:38] guard(10252): GPU at 87.10C > 87C: stage stopped for 600s
+[19:26:38] guard(10252): stage continued (GPU at 54.90C)
+[19:36:39] guard(10252): GPU at 87.70C > 87C: stage stopped for 600s
+[19:46:39] guard(10252): stage continued (GPU at 55.10C)
+[19:50:40] guard(10252): GPU at 87.80C > 87C: stage stopped for 600s
+[20:00:40] guard(10252): stage continued (GPU at 55.20C)
+[20:06:40] guard(10252): GPU at 87.20C > 87C: stage stopped for 600s
+[20:16:40] guard(10252): stage continued (GPU at 55.30C)
+[20:35:43] guard(10252): GPU at 87.20C > 87C: stage stopped for 600s
+[20:45:43] guard(10252): stage continued (GPU at 53.70C)
+[20:59:44] guard(10252): GPU at 87.40C > 87C: stage stopped for 600s
+[21:09:44] guard(10252): stage continued (GPU at 53.30C)
+[21:12:15] guard(10252): GPU at 87.10C > 87C: stage stopped for 600s
+[21:22:15] guard(10252): stage continued (GPU at 53.00C)
+[21:26:15] guard(10252): GPU at 87.40C > 87C: stage stopped for 600s
+[21:36:15] guard(10252): stage continued (GPU at 53.30C)
+[21:38:15] guard(10252): GPU at 87.10C > 87C: stage stopped for 600s
+[21:48:16] guard(10252): stage continued (GPU at 58.60C)
+[21:50:16] guard(10252): GPU at 87.90C > 87C: stage stopped for 600s
+[22:00:16] guard(10252): stage continued (GPU at 54.90C)
+[22:02:46] guard(10252): GPU at 87.20C > 87C: stage stopped for 600s
+[22:12:46] guard(10252): stage continued (GPU at 54.10C)
+[22:16:46] guard(10252): GPU at 87.20C > 87C: stage stopped for 600s
+[22:26:47] guard(10252): stage continued (GPU at 53.00C)
+[22:29:17] guard(10252): GPU at 87.40C > 87C: stage stopped for 600s
+[22:39:17] guard(10252): stage continued (GPU at 53.40C)
+[22:41:17] guard(10252): GPU at 87.20C > 87C: stage stopped for 600s
+[22:51:17] guard(10252): stage continued (GPU at 55.20C)
+[22:58:18] guard(10252): GPU at 87.10C > 87C: stage stopped for 600s
+[23:08:18] guard(10252): stage continued (GPU at 55.30C)
+[23:11:48] guard(10252): GPU at 87.10C > 87C: stage stopped for 600s
+[23:21:49] guard(10252): stage continued (GPU at 54.80C)
+[23:25:49] guard(10252): GPU at 87.40C > 87C: stage stopped for 600s
+[23:35:49] guard(10252): stage continued (GPU at 55.30C)
+[23:44:20] guard(10252): GPU at 87.20C > 87C: stage stopped for 600s
+[23:54:20] guard(10252): stage continued (GPU at 54.90C)
+[00:00:51] guard(10252): GPU at 87.10C > 87C: stage stopped for 600s
+[00:10:51] guard(10252): stage continued (GPU at 55.80C)
+[00:16:22] guard(10252): GPU at 87.20C > 87C: stage stopped for 600s
+[00:26:22] guard(10252): stage continued (GPU at 62.60C)
+[00:32:52] guard(10252): GPU at 87.40C > 87C: stage stopped for 600s
+[00:42:52] guard(10252): stage continued (GPU at 64.30C)
+[00:51:22] end xm_train_dpos2: exit 0
+[00:51:22] train xm dpos2: 750 steps of 750, 364 min

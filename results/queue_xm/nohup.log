@@ -1,0 +1,9 @@
+=== launch 2026-10-28 18:46:17 IST, GPU_DEADLINE=10:00 (D137) ===
+[18:46:17] XM chain start (D137); GPU deadline 10:00 IST (913 min left); chain PID 10129
+[18:46:34] host VRAM readings (MiB): 1299 1299 1299 1299 1299 1299 1299 1299
+[18:46:34] launch cap 5.9 GiB (max 5.9)
+[18:46:35] GPU at 52.10C, memory.used 1299 MiB
+[18:46:37] disk: 47 GiB free on MLStorage
+[18:46:37] start xm_train_dpos2 (timeout 54505s): uv run python -m physcal.train.stage_xm train --arm dpos2 --stop-at 2026-10-29T09:45:00+05:30 --max-reserved-gib 5.9
+[00:51:22] end xm_train_dpos2: exit 0
+[00:51:22] train xm dpos2: 750 steps of 750, 364 min
