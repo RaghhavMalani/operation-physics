@@ -1929,3 +1929,97 @@ rejected. M1–M4 are below zero with CIs that exclude zero; M5's CI spans zero:
   - give the pre-registered pooled numbers the weight.
 - **Depth 5 is extrapolation in chain length** (one more formula step from the same three families), not to new
   physical laws (R5-8).
+
+## #35. R5-2 / R5-3 on the frozen D-pos-v2 logs: the tail is wrong value-dependent sensitivities (formula 43%, substituting the model's own wrong intermediates 19%), with chain selection, σ decimal shifts and missing answers behind most of the rest. Making only the sensitivities exact closes 51% of the RSS-to-σ\* gap and beats both RSS and X1; levels are already right, and exact aggregation alone makes it worse (descriptive and diagnostic, D133; 2026-10-28)
+
+**Status:** descriptive (R5-2) and diagnostic (R5-3); no pre-registration, no test. R5-3's variants are counterfactuals
+for locating the loss, never a method.
+- **Source:** `results/r5_diag/tail.{json,md}` (`physcal.eval.r5_diag tail`).
+- **The data:** D-pos-v2 seeds 0–2 on the frozen R4-5 set (3,060 problems, 3,039 with predictive draws), σ (a).
+- **The scores:** oracle-centred expected crps_log, as in #32. Differences use the cluster bootstrap over pairs
+  (B = 10,000) at the 3-seed mean.
+
+**The decomposition.**
+- **When it applies:** the σ line parses with as many terms as the builder's (96–98% of problems).
+- **The identity:** σ_a = copy × aggregation × rss(model S, model levels), with
+  rss(model S, model levels) = sensitivity factor × level factor × rss(builder S, builder levels). It is exact
+  (tested).
+- **The cause on a problem:** the factor with the largest |log| if it moves σ by more than 25%. Otherwise the first
+  failure: format, or chain selection (a wrong number of terms).
+- **A wrong sensitivity is traced through its S line:**
+  - **formula:** the model's expression, evaluated at the true values, is off by more than 10%;
+  - **substitution:** a right formula with wrong numbers, mostly the model's own wrong intermediates in an answer
+    that is not computation-correct;
+  - **S-line arithmetic, or transcription into the σ line.**
+  - **The evaluator:** a restricted arithmetic AST, never Python `eval`.
+
+**R5-2: the worst 5% by regret against σ\*** (152 per seed, 456 pooled; they hold 83% / 69% / 76% of each seed's
+regret):
+
+| cause (worst 5%, pooled) | n | share | base rate over all problems |
+|---|---|---|---|
+| sensitivity, value-dependent: wrong formula (incl. 18 lines with no expression) | 195 | 43% | 13.3% |
+| sensitivity, value-dependent: substitution of the model's own wrong intermediates | 87 | 19% | 8.0% |
+| copy: σ = X·\|μ\| written a power of ten off (×10⁻¹ 33, ×10 31, other powers 7) | 71 | 16% | 1.1% |
+| chain selection: the σ line has the wrong number of terms | 35 | 8% | 2.7% |
+| sensitivity: power-law exponent wrong | 28 | 6% | 5.2% |
+| format: no answer σ | 26 | 6% | 0.5% |
+| format: no parsable σ line | 7 | 2% | 0.2% |
+| aggregation (X vs the root-sum-square of its own terms) | 5 | 1% | 5.3% |
+| transcription / S-line arithmetic / other substitution | 2 | 0.4% | 0.2% |
+
+- **No problem in the worst 5% is wrong only by rounding.** Level reads are never the cause (exact levels change
+  nothing, see below).
+- **Over-represented relative to their base rates:**
+  - **copy decimal shifts:** 16% of the tail, 1.1% of problems;
+  - **missing answers:** 6% vs 0.5%;
+  - **chain selection:** 8% vs 2.7%.
+- **By depth (pooled worst 5%):**
+  - **Wrong value-dependent formulas grow to depth 5:** 13 / 24 / 33 / 21 / 104.
+  - **Power-law exponent errors and chain selection appear mostly at depth 5:** 22 of 28, and 20 of 35.
+  - **Substitution of the model's own wrong intermediates peaks at depths 1–3:** 20 / 16 / 29 / 17 / 5.
+- **The answers in the tail are less often computation-correct:** 7–9% vs 14–15% overall. The two error streams share
+  causes: a wrong intermediate corrupts both μ and the sensitivity built from it.
+- **The 95%-trimmed expected score** (each source drops its own lowest 5%):
+  - **D-pos-v2 (a):** −0.0335 (full −0.0397);
+  - **RSS:** −0.0338 (−0.0399);
+  - **X1:** −0.0333 (−0.0392);
+  - **σ\*:** −0.0317 (−0.0370).
+  - **The ordering does not change when the tail is cut.** D-pos-v2 sits between RSS and X1 either way. Its deficit is
+    not only the tail.
+
+**R5-3: one component exact at a time** (seed means; problems that do not decompose keep (a), except under the ceiling):
+
+| variant | expected crps_log | − (a) [95% CI] | − RSS [95% CI] | − X1 [95% CI] | share of RSS→σ\* gap | A6c slope [90% CI] |
+|---|---|---|---|---|---|---|
+| (a) as stated | −0.0397 | – | +0.0002 [−0.0003, +0.0007] | −0.0005 [−0.0010, −0.0001] | +7% | +0.837 [+0.715, +0.958] |
+| **exact sensitivities** | **−0.0384** | **+0.0013 [+0.0006, +0.0019]** | **+0.0015 [+0.0009, +0.0020]** | **+0.0008 [+0.0001, +0.0013]** | **+51%** | **+0.970 [+0.874, +1.066]** |
+| exact levels | −0.0397 | −0.0000 [−0.0000, +0.0000] | +0.0002 | −0.0005 | +7% | +0.838 |
+| exact aggregation | −0.0408 | −0.0010 [−0.0018, −0.0005] | −0.0008 | −0.0015 | −28% | +0.806 |
+| exact copy (σ = X, source (b)) | −0.0397 | +0.0000 [−0.0005, +0.0005] | +0.0002 | −0.0005 | +8% | +0.857 |
+| model's terms, exact aggregation and copy (source (c)) | −0.0417 | −0.0020 [−0.0047, −0.0003] | −0.0018 | −0.0025 | −60% | +0.826 |
+| fully exact (the builder's line; ceiling) | −0.0370 | +0.0028 [+0.0023, +0.0033] | +0.0030 | +0.0022 | +100% | +0.998 |
+
+- **(a)'s slope differs from K1's.** This table grades every pair, with unanswered members at the floor; K1 uses
+  answered pairs only (+0.816).
+- **Where the loss is:**
+  - **The sensitivities.** With only them exact, the stated σ beats RSS and X1, both with CIs above 0. It closes 51% of
+    the RSS-to-σ\* gap, and its A6c slope rises to 0.97.
+  - **The rest of the gap:** the copy's decimal shifts, chain selection, missing answers and the first-order line's
+    rounding. Note that the ceiling equals σ\*'s score to 4 decimals, so the first-order formula itself costs nothing.
+- **Exact aggregation alone, and (c), score worse than the stated σ.**
+  - **Why:** on a minority of lines, the model's own X and copy pull an absurd root-sum-square back toward a plausible
+    size. An example at depth 1: terms (−153·0.02)² + (1156·0.02)² give 23.3, the line says X = 2.4, and σ = 0.24.
+  - **How often:** 6–11% of the ~600 problems per seed with a material sensitivity error; the median share undone is
+    about 0. So it matters for the mean through a few gross lines, not in general.
+  - **This is not a method.** (c) at depth 1 scores −0.0404 against (a)'s −0.0355.
+
+**What it means (R5-1's framing):**
+- **The reasoning error behind the forecast gap is specific:** deriving and evaluating the derivative of a
+  value-dependent relation, at the depth where it is hardest. Most of the rest is bookkeeping (a power of ten in
+  σ = X·|μ|, the term set, a missing σ). The propagation structure (levels, root-sum-square, copying X) is right.
+- **The counterfactual separates the two halves of #32.**
+  - **The structure** gives a σ that propagates (slope 0.84 as stated).
+  - **The sensitivities, if exact,** would also make it a better forecast than RSS and X1.
+  - **Measurement noise** is handled; reasoning errors in the derivative are what cost the score.
+- **Scope:** this model, this benchmark, this training (R5-1). It is not a claim that small models cannot do it.

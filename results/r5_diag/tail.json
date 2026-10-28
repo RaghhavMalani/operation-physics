@@ -1,0 +1,1099 @@
+{
+ "kind": "R5-2 descriptive autopsy and R5-3 diagnostic component swaps (D133); not tests, not methods",
+ "arm": "dpos2",
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "n_problems": 3060,
+ "n_with_draws": 3039,
+ "sensitivity_rel_tol": 0.1,
+ "per_seed": {
+  "0": {
+   "n_worst": 152,
+   "share_decomposable": 0.9761437908496732,
+   "causes_worst": {
+    "copy: decimal shift (\u00d710^2)": 1,
+    "chain selection: wrong number of terms": 9,
+    "sensitivity: power-law exponent": 16,
+    "sensitivity: value-dependent: substitution (own wrong intermediates)": 31,
+    "copy: decimal shift (\u00d710^1)": 15,
+    "sensitivity: value-dependent: formula": 53,
+    "format: no answer \u03c3": 9,
+    "copy: decimal shift (\u00d710^-1)": 10,
+    "sensitivity: value-dependent: formula (no expression)": 6,
+    "aggregation": 1,
+    "copy: decimal shift (\u00d710^-2)": 1
+   },
+   "causes_worst_by_depth": {
+    "1": {
+     "copy: decimal shift (\u00d710^2)": 1,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 6,
+     "sensitivity: value-dependent: formula": 3,
+     "copy: decimal shift (\u00d710^-1)": 3,
+     "copy: decimal shift (\u00d710^1)": 1
+    },
+    "2": {
+     "copy: decimal shift (\u00d710^1)": 4,
+     "sensitivity: value-dependent: formula": 5,
+     "format: no answer \u03c3": 3,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 6,
+     "chain selection: wrong number of terms": 2,
+     "aggregation": 1,
+     "copy: decimal shift (\u00d710^-1)": 1
+    },
+    "3": {
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 11,
+     "sensitivity: value-dependent: formula": 10,
+     "copy: decimal shift (\u00d710^-1)": 1,
+     "sensitivity: power-law exponent": 1,
+     "copy: decimal shift (\u00d710^1)": 1,
+     "copy: decimal shift (\u00d710^-2)": 1,
+     "chain selection: wrong number of terms": 1
+    },
+    "4": {
+     "copy: decimal shift (\u00d710^1)": 7,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 6,
+     "chain selection: wrong number of terms": 1,
+     "sensitivity: power-law exponent": 2,
+     "sensitivity: value-dependent: formula": 7,
+     "format: no answer \u03c3": 5,
+     "copy: decimal shift (\u00d710^-1)": 4
+    },
+    "5": {
+     "chain selection: wrong number of terms": 5,
+     "sensitivity: power-law exponent": 13,
+     "copy: decimal shift (\u00d710^1)": 2,
+     "sensitivity: value-dependent: formula": 28,
+     "copy: decimal shift (\u00d710^-1)": 1,
+     "sensitivity: value-dependent: formula (no expression)": 6,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 2,
+     "format: no answer \u03c3": 1
+    }
+   },
+   "worst_by_depth": {
+    "1": 14,
+    "5": 58,
+    "3": 26,
+    "2": 22,
+    "4": 32
+   },
+   "worst_regret_share": 0.8264639924664451,
+   "causes_all": {
+    "sensitivity: value-dependent: formula": 359,
+    "no material component error (rounding, first order)": 1890,
+    "sensitivity: value-dependent: substitution (own wrong intermediates)": 281,
+    "sensitivity: within tolerance on every term (rounding)": 40,
+    "sensitivity: value-dependent: S-line arithmetic": 64,
+    "aggregation": 112,
+    "copy: decimal shift (\u00d710^-1)": 15,
+    "copy: decimal shift (\u00d710^1)": 18,
+    "sensitivity: value-dependent: formula (no expression)": 38,
+    "chain selection: wrong number of terms": 57,
+    "format: no answer \u03c3": 15,
+    "sensitivity: power-law exponent": 158,
+    "copy: decimal shift (\u00d710^-2)": 1,
+    "level": 5,
+    "sensitivity: transcription (S line right, \u03c3-line coefficient wrong)": 5,
+    "copy: decimal shift (\u00d710^2)": 1,
+    "format: no parsable \u03c3 line": 1
+   },
+   "worst_computation_correct": 0.07236842105263158,
+   "all_computation_correct": 0.14444444444444443,
+   "compensation": {
+    "n": 606,
+    "share_offsetting": 0.08250825082508251,
+    "median_share_undone": 0.011576744475582405
+   }
+  },
+  "1": {
+   "n_worst": 152,
+   "share_decomposable": 0.9591503267973857,
+   "causes_worst": {
+    "sensitivity: value-dependent: formula": 51,
+    "sensitivity: value-dependent: substitution (own wrong intermediates)": 45,
+    "chain selection: wrong number of terms": 14,
+    "copy: decimal shift (\u00d710^1)": 6,
+    "copy: decimal shift (\u00d710^-1)": 10,
+    "sensitivity: power-law exponent": 4,
+    "sensitivity: value-dependent: formula (no expression)": 7,
+    "format: no answer \u03c3": 6,
+    "copy: decimal shift (\u00d710^-2)": 3,
+    "sensitivity: transcription (S line right, \u03c3-line coefficient wrong)": 1,
+    "copy: decimal shift (\u00d710^3)": 1,
+    "aggregation": 4
+   },
+   "causes_worst_by_depth": {
+    "1": {
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 11,
+     "copy: decimal shift (\u00d710^1)": 2,
+     "copy: decimal shift (\u00d710^-1)": 2,
+     "sensitivity: value-dependent: formula": 3,
+     "format: no answer \u03c3": 1,
+     "copy: decimal shift (\u00d710^3)": 1
+    },
+    "2": {
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 9,
+     "sensitivity: value-dependent: formula": 6,
+     "format: no answer \u03c3": 3,
+     "copy: decimal shift (\u00d710^-1)": 2,
+     "sensitivity: power-law exponent": 1,
+     "chain selection: wrong number of terms": 1
+    },
+    "3": {
+     "sensitivity: value-dependent: formula": 8,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 15,
+     "copy: decimal shift (\u00d710^1)": 2,
+     "copy: decimal shift (\u00d710^-1)": 3,
+     "chain selection: wrong number of terms": 3,
+     "copy: decimal shift (\u00d710^-2)": 3,
+     "aggregation": 1,
+     "format: no answer \u03c3": 1
+    },
+    "4": {
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 8,
+     "copy: decimal shift (\u00d710^-1)": 2,
+     "sensitivity: value-dependent: formula": 5,
+     "format: no answer \u03c3": 1,
+     "chain selection: wrong number of terms": 1
+    },
+    "5": {
+     "chain selection: wrong number of terms": 9,
+     "sensitivity: value-dependent: formula": 29,
+     "sensitivity: power-law exponent": 3,
+     "copy: decimal shift (\u00d710^1)": 2,
+     "sensitivity: value-dependent: formula (no expression)": 7,
+     "copy: decimal shift (\u00d710^-1)": 1,
+     "sensitivity: transcription (S line right, \u03c3-line coefficient wrong)": 1,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 2,
+     "aggregation": 3
+    }
+   },
+   "worst_by_depth": {
+    "3": 36,
+    "1": 20,
+    "5": 57,
+    "4": 17,
+    "2": 22
+   },
+   "worst_regret_share": 0.6911247258806621,
+   "causes_all": {
+    "sensitivity: value-dependent: substitution (own wrong intermediates)": 259,
+    "sensitivity: value-dependent: formula": 332,
+    "no material component error (rounding, first order)": 1786,
+    "sensitivity: within tolerance on every term (rounding)": 46,
+    "sensitivity: value-dependent: S-line arithmetic": 68,
+    "aggregation": 204,
+    "format: no answer \u03c3": 9,
+    "copy: decimal shift (\u00d710^3)": 1,
+    "copy: decimal shift (\u00d710^-1)": 25,
+    "chain selection: wrong number of terms": 112,
+    "copy: decimal shift (\u00d710^1)": 7,
+    "sensitivity: power-law exponent": 153,
+    "sensitivity: value-dependent: formula (no expression)": 41,
+    "sensitivity: transcription (S line right, \u03c3-line coefficient wrong)": 6,
+    "sensitivity: value-dependent: substitution (values)": 3,
+    "format: \u03c3 line = 0 on a noisy problem": 1,
+    "copy: decimal shift (\u00d710^-2)": 3,
+    "format: no parsable \u03c3 line": 3,
+    "level": 1
+   },
+   "worst_computation_correct": 0.08552631578947369,
+   "all_computation_correct": 0.14607843137254903,
+   "compensation": {
+    "n": 599,
+    "share_offsetting": 0.11185308848080133,
+    "median_share_undone": -0.006088772414265961
+   }
+  },
+  "2": {
+   "n_worst": 152,
+   "share_decomposable": 0.9630718954248366,
+   "causes_worst": {
+    "sensitivity: value-dependent: formula": 73,
+    "copy: decimal shift (\u00d710^1)": 10,
+    "sensitivity: value-dependent: substitution (own wrong intermediates)": 11,
+    "sensitivity: power-law exponent": 8,
+    "chain selection: wrong number of terms": 12,
+    "copy: decimal shift (\u00d710^-1)": 13,
+    "format: no answer \u03c3": 11,
+    "format: no parsable \u03c3 line": 7,
+    "sensitivity: value-dependent: formula (no expression)": 5,
+    "sensitivity: value-dependent: substitution (values)": 1,
+    "copy: decimal shift (\u00d710^-2)": 1
+   },
+   "causes_worst_by_depth": {
+    "1": {
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 3,
+     "sensitivity: value-dependent: formula": 7,
+     "copy: decimal shift (\u00d710^-1)": 3,
+     "copy: decimal shift (\u00d710^1)": 1
+    },
+    "2": {
+     "sensitivity: value-dependent: formula": 13,
+     "chain selection: wrong number of terms": 2,
+     "format: no answer \u03c3": 6,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 1,
+     "copy: decimal shift (\u00d710^-1)": 1,
+     "format: no parsable \u03c3 line": 1
+    },
+    "3": {
+     "sensitivity: value-dependent: formula": 15,
+     "copy: decimal shift (\u00d710^1)": 2,
+     "sensitivity: power-law exponent": 1,
+     "copy: decimal shift (\u00d710^-1)": 2,
+     "copy: decimal shift (\u00d710^-2)": 1,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 3,
+     "format: no parsable \u03c3 line": 2
+    },
+    "4": {
+     "copy: decimal shift (\u00d710^1)": 4,
+     "chain selection: wrong number of terms": 4,
+     "copy: decimal shift (\u00d710^-1)": 3,
+     "sensitivity: value-dependent: formula": 8,
+     "format: no parsable \u03c3 line": 2,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 3,
+     "format: no answer \u03c3": 1,
+     "sensitivity: power-law exponent": 1,
+     "sensitivity: value-dependent: formula (no expression)": 1
+    },
+    "5": {
+     "copy: decimal shift (\u00d710^1)": 3,
+     "sensitivity: power-law exponent": 6,
+     "sensitivity: value-dependent: formula": 30,
+     "sensitivity: value-dependent: substitution (own wrong intermediates)": 1,
+     "format: no answer \u03c3": 4,
+     "copy: decimal shift (\u00d710^-1)": 4,
+     "chain selection: wrong number of terms": 6,
+     "format: no parsable \u03c3 line": 2,
+     "sensitivity: value-dependent: formula (no expression)": 4,
+     "sensitivity: value-dependent: substitution (values)": 1
+    }
+   },
+   "worst_by_depth": {
+    "2": 24,
+    "5": 61,
+    "3": 26,
+    "4": 27,
+    "1": 14
+   },
+   "worst_regret_share": 0.7575433998063358,
+   "causes_all": {
+    "no material component error (rounding, first order)": 1831,
+    "sensitivity: value-dependent: formula": 404,
+    "sensitivity: value-dependent: substitution (own wrong intermediates)": 193,
+    "sensitivity: within tolerance on every term (rounding)": 34,
+    "sensitivity: value-dependent: formula (no expression)": 50,
+    "sensitivity: value-dependent: S-line arithmetic": 68,
+    "aggregation": 166,
+    "format: no parsable \u03c3 line": 18,
+    "copy: decimal shift (\u00d710^1)": 10,
+    "copy: decimal shift (\u00d710^-1)": 18,
+    "sensitivity: power-law exponent": 163,
+    "format: no answer \u03c3": 19,
+    "level": 4,
+    "chain selection: wrong number of terms": 76,
+    "sensitivity: value-dependent: substitution (values)": 2,
+    "copy: decimal shift (\u00d710^-2)": 2,
+    "sensitivity: transcription (S line right, \u03c3-line coefficient wrong)": 2
+   },
+   "worst_computation_correct": 0.08552631578947369,
+   "all_computation_correct": 0.15130718954248365,
+   "compensation": {
+    "n": 614,
+    "share_offsetting": 0.06351791530944625,
+    "median_share_undone": -0.03958624516906495
+   }
+  }
+ },
+ "causes_worst_pooled": {
+  "copy: decimal shift (\u00d710^2)": 1,
+  "chain selection: wrong number of terms": 35,
+  "sensitivity: power-law exponent": 28,
+  "sensitivity: value-dependent: substitution (own wrong intermediates)": 87,
+  "copy: decimal shift (\u00d710^1)": 31,
+  "sensitivity: value-dependent: formula": 177,
+  "format: no answer \u03c3": 26,
+  "copy: decimal shift (\u00d710^-1)": 33,
+  "sensitivity: value-dependent: formula (no expression)": 18,
+  "aggregation": 5,
+  "copy: decimal shift (\u00d710^-2)": 5,
+  "sensitivity: transcription (S line right, \u03c3-line coefficient wrong)": 1,
+  "copy: decimal shift (\u00d710^3)": 1,
+  "format: no parsable \u03c3 line": 7,
+  "sensitivity: value-dependent: substitution (values)": 1
+ },
+ "causes_worst_pooled_by_depth": {
+  "1": {
+   "copy: decimal shift (\u00d710^2)": 1,
+   "sensitivity: value-dependent: substitution (own wrong intermediates)": 20,
+   "sensitivity: value-dependent: formula": 13,
+   "copy: decimal shift (\u00d710^-1)": 8,
+   "copy: decimal shift (\u00d710^1)": 4,
+   "format: no answer \u03c3": 1,
+   "copy: decimal shift (\u00d710^3)": 1
+  },
+  "2": {
+   "copy: decimal shift (\u00d710^1)": 4,
+   "sensitivity: value-dependent: formula": 24,
+   "format: no answer \u03c3": 12,
+   "sensitivity: value-dependent: substitution (own wrong intermediates)": 16,
+   "chain selection: wrong number of terms": 5,
+   "aggregation": 1,
+   "copy: decimal shift (\u00d710^-1)": 4,
+   "sensitivity: power-law exponent": 1,
+   "format: no parsable \u03c3 line": 1
+  },
+  "3": {
+   "sensitivity: value-dependent: substitution (own wrong intermediates)": 29,
+   "sensitivity: value-dependent: formula": 33,
+   "copy: decimal shift (\u00d710^-1)": 6,
+   "sensitivity: power-law exponent": 2,
+   "copy: decimal shift (\u00d710^1)": 5,
+   "copy: decimal shift (\u00d710^-2)": 5,
+   "chain selection: wrong number of terms": 4,
+   "aggregation": 1,
+   "format: no answer \u03c3": 1,
+   "format: no parsable \u03c3 line": 2
+  },
+  "4": {
+   "copy: decimal shift (\u00d710^1)": 11,
+   "sensitivity: value-dependent: substitution (own wrong intermediates)": 17,
+   "chain selection: wrong number of terms": 6,
+   "sensitivity: power-law exponent": 3,
+   "sensitivity: value-dependent: formula": 20,
+   "format: no answer \u03c3": 7,
+   "copy: decimal shift (\u00d710^-1)": 9,
+   "format: no parsable \u03c3 line": 2,
+   "sensitivity: value-dependent: formula (no expression)": 1
+  },
+  "5": {
+   "chain selection: wrong number of terms": 20,
+   "sensitivity: power-law exponent": 22,
+   "copy: decimal shift (\u00d710^1)": 7,
+   "sensitivity: value-dependent: formula": 87,
+   "copy: decimal shift (\u00d710^-1)": 6,
+   "sensitivity: value-dependent: formula (no expression)": 17,
+   "sensitivity: value-dependent: substitution (own wrong intermediates)": 5,
+   "format: no answer \u03c3": 5,
+   "sensitivity: transcription (S line right, \u03c3-line coefficient wrong)": 1,
+   "aggregation": 3,
+   "format: no parsable \u03c3 line": 2,
+   "sensitivity: value-dependent: substitution (values)": 1
+  }
+ },
+ "trimmed": {
+  "dpos2_a": {
+   "full": -0.03972739275408321,
+   "trimmed": -0.033454616022456966
+  },
+  "sigma_star": {
+   "full": -0.0369636693163408,
+   "trimmed": -0.03169545119725014
+  },
+  "rss": {
+   "full": -0.03992676968722213,
+   "trimmed": -0.03381585956696783
+  },
+  "x1": {
+   "full": -0.03920300784816124,
+   "trimmed": -0.03330237932036285
+  }
+ },
+ "rss_to_star_gap": 0.002963100370881329,
+ "swaps": {
+  "a": {
+   "name": "(a) as stated",
+   "expected": -0.03972739275408321,
+   "minus_a": null,
+   "minus_rss": {
+    "value": 0.0001993769331389135,
+    "ci95": [
+     -0.0003111773530822911,
+     0.000653561207106118
+    ],
+    "ci90": [
+     -0.00022046132234436157,
+     0.0005943090775105667
+    ],
+    "p_one_sided": 0.2014,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.00045453007560367173,
+     "1": 0.0009862867682178217,
+     "2": 6.637410680259047e-05
+    }
+   },
+   "minus_x1": {
+    "value": -0.0005243849059219734,
+    "ci95": [
+     -0.0010269673483197116,
+     -8.049915628802762e-05
+    ],
+    "ci90": [
+     -0.0009318930915757525,
+     -0.00013974984936636594
+    ],
+    "p_one_sided": 0.9908,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.0011782919146645589,
+     "1": 0.0002625249291569347,
+     "2": -0.0006573877322582966
+    }
+   },
+   "share_of_rss_to_star_gap": 0.0672865945069599,
+   "a6c_slope": {
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "value": 0.8366929062244578,
+    "ci95": [
+     0.689869214647907,
+     0.9801801644041538
+    ],
+    "ci90": [
+     0.7151524698422261,
+     0.958306219140716
+    ],
+    "p_one_sided": 0.0,
+    "per_seed": {
+     "0": {
+      "value": 0.9080256081457985,
+      "n_pairs": 510
+     },
+     "1": {
+      "value": 0.8367831025230855,
+      "n_pairs": 510
+     },
+     "2": {
+      "value": 0.7652700080044893,
+      "n_pairs": 510
+     }
+    },
+    "seed_sd": 0.07137784281172661
+   },
+   "expected_by_depth": {
+    "1": -0.03552235253483612,
+    "2": -0.03720218708168956,
+    "3": -0.03969162370798345,
+    "4": -0.04218830426347538,
+    "5": -0.04402060965672253
+   }
+  },
+  "S": {
+   "name": "exact sensitivities (model's levels, aggregation, copy)",
+   "expected": -0.038401268128274796,
+   "minus_a": {
+    "value": 0.0013261246258084148,
+    "ci95": [
+     0.0006331942066654294,
+     0.0018967445330726862
+    ],
+    "ci90": [
+     0.0007606339694425481,
+     0.0018164530694474317
+    ],
+    "p_one_sided": 0.0003,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": 0.0017251506014953235,
+     "1": 0.00038704209159287666,
+     "2": 0.001866181184337043
+    }
+   },
+   "minus_rss": {
+    "value": 0.0015255015589473282,
+    "ci95": [
+     0.0008597732512530061,
+     0.0020290822895258362
+    ],
+    "ci90": [
+     0.0009845743703345495,
+     0.001966091962511727
+    ],
+    "p_one_sided": 0.0,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": 0.001270620525891652,
+     "1": 0.0013733288598106984,
+     "2": 0.0019325552911396337
+    }
+   },
+   "minus_x1": {
+    "value": 0.0008017397198864411,
+    "ci95": [
+     0.00013972072663130916,
+     0.0012940201284042127
+    ],
+    "ci90": [
+     0.0002659908947485103,
+     0.0012309998157506343
+    ],
+    "p_one_sided": 0.0113,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": 0.0005468586868307648,
+     "1": 0.0006495670207498112,
+     "2": 0.0012087934520787465
+    }
+   },
+   "share_of_rss_to_star_gap": 0.5148329006801732,
+   "a6c_slope": {
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "value": 0.9696627124765529,
+    "ci95": [
+     0.8553836201149441,
+     1.0858674768941996
+    ],
+    "ci90": [
+     0.8736654789954397,
+     1.0656530954929528
+    ],
+    "p_one_sided": 0.0,
+    "per_seed": {
+     "0": {
+      "value": 1.062441858380702,
+      "n_pairs": 510
+     },
+     "1": {
+      "value": 1.004458003752077,
+      "n_pairs": 510
+     },
+     "2": {
+      "value": 0.84208827529688,
+      "n_pairs": 510
+     }
+    },
+    "seed_sd": 0.11422328841213218
+   },
+   "expected_by_depth": {
+    "1": -0.03600415163209574,
+    "2": -0.036022590840854775,
+    "3": -0.037546047167616496,
+    "4": -0.04121720414557345,
+    "5": -0.04120789106210623
+   }
+  },
+  "L": {
+   "name": "exact levels (model's sensitivities, aggregation, copy)",
+   "expected": -0.03972761480226662,
+   "minus_a": {
+    "value": -2.2204818340786323e-07,
+    "ci95": [
+     -6.5105053481065975e-06,
+     4.566025301993848e-06
+    ],
+    "ci90": [
+     -5.339413576023539e-06,
+     3.9319730697233935e-06
+    ],
+    "p_one_sided": 0.4953,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": 3.25233264396694e-06,
+     "1": -6.459049596881571e-06,
+     "2": 2.5405724026908637e-06
+    }
+   },
+   "minus_rss": {
+    "value": 0.0001991548849555057,
+    "ci95": [
+     -0.000312305836464079,
+     0.0006535147256294944
+    ],
+    "ci90": [
+     -0.0002204478236956853,
+     0.0005934594539971683
+    ],
+    "p_one_sided": 0.2016,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.0004512777429597048,
+     "1": 0.0009798277186209403,
+     "2": 6.89146792052813e-05
+    }
+   },
+   "minus_x1": {
+    "value": -0.0005246069541053813,
+    "ci95": [
+     -0.00102694378394567,
+     -8.046063028482952e-05
+    ],
+    "ci90": [
+     -0.0009321720497505986,
+     -0.00014082339820728693
+    ],
+    "p_one_sided": 0.9909,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.0011750395820205918,
+     "1": 0.00025606587956005314,
+     "2": -0.0006548471598556057
+    }
+   },
+   "share_of_rss_to_star_gap": 0.06721165672031189,
+   "a6c_slope": {
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "value": 0.8384007089540866,
+    "ci95": [
+     0.6914587038644654,
+     0.9827121699046254
+    ],
+    "ci90": [
+     0.7167832271258847,
+     0.9604421572336712
+    ],
+    "p_one_sided": 0.0,
+    "per_seed": {
+     "0": {
+      "value": 0.9041271794334415,
+      "n_pairs": 510
+     },
+     "1": {
+      "value": 0.8220655255398867,
+      "n_pairs": 510
+     },
+     "2": {
+      "value": 0.7890094218889315,
+      "n_pairs": 510
+     }
+    },
+    "seed_sd": 0.05927185831742418
+   },
+   "expected_by_depth": {
+    "1": -0.03552235253483612,
+    "2": -0.03720372953204812,
+    "3": -0.03969920507317215,
+    "4": -0.04218542816183251,
+    "5": -0.04401554680524746
+   }
+  },
+  "A": {
+   "name": "exact aggregation (model's terms and copy)",
+   "expected": -0.04075180421730341,
+   "minus_a": {
+    "value": -0.0010244114632201955,
+    "ci95": [
+     -0.0017636335267937567,
+     -0.000467032164906441
+    ],
+    "ci90": [
+     -0.0016130107093922804,
+     -0.0005423295263982829
+    ],
+    "p_one_sided": 1.0,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.0006505603983182595,
+     "1": -0.0019451927662791804,
+     "2": -0.00047748122506314654
+    }
+   },
+   "minus_rss": {
+    "value": -0.0008250345300812818,
+    "ci95": [
+     -0.0017778523194013148,
+     -2.3388011585857223e-05
+    ],
+    "ci90": [
+     -0.0016017038513410024,
+     -0.0001455373617913927
+    ],
+    "p_one_sided": 0.9788,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.0011050904739219314,
+     "1": -0.0009589059980613585,
+     "2": -0.0004111071182605561
+    }
+   },
+   "minus_x1": {
+    "value": -0.001548796369142169,
+    "ci95": [
+     -0.0024952770444349936,
+     -0.000757659597325818
+    ],
+    "ci90": [
+     -0.002322663743124957,
+     -0.0008763900434401144
+    ],
+    "p_one_sided": 1.0,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.001828852312982818,
+     "1": -0.001682667837122246,
+     "2": -0.0011348689573214429
+    }
+   },
+   "share_of_rss_to_star_gap": -0.2784362413737223,
+   "a6c_slope": {
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "value": 0.8055505218752964,
+    "ci95": [
+     0.6725211317238773,
+     0.938614901877895
+    ],
+    "ci90": [
+     0.6943629350626686,
+     0.9164911167268267
+    ],
+    "p_one_sided": 0.0,
+    "per_seed": {
+     "0": {
+      "value": 0.9381736227949825,
+      "n_pairs": 510
+     },
+     "1": {
+      "value": 0.8149706759572715,
+      "n_pairs": 510
+     },
+     "2": {
+      "value": 0.6635072668736355,
+      "n_pairs": 510
+     }
+    },
+    "seed_sd": 0.13757527483517573
+   },
+   "expected_by_depth": {
+    "1": -0.036005580130040994,
+    "2": -0.03743650291433641,
+    "3": -0.0401970619945996,
+    "4": -0.04307205998525595,
+    "5": -0.04702467070866892
+   }
+  },
+  "C": {
+   "name": "exact copy, i.e. \u03c3 = the line's X (= (b))",
+   "expected": -0.03968496121337317,
+   "minus_a": {
+    "value": 4.24315407100442e-05,
+    "ci95": [
+     -0.0004954373421017728,
+     0.0004955210836668773
+    ],
+    "ci90": [
+     -0.0003953235808197953,
+     0.000429997381939837
+    ],
+    "p_one_sided": 0.4263,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.00023530033060962017,
+     "1": 2.0299125262324855e-05,
+     "2": 0.0003422958274774277
+    }
+   },
+   "minus_rss": {
+    "value": 0.00024180847384895762,
+    "ci95": [
+     -0.0004370094946116027,
+     0.0008346201339250718
+    ],
+    "ci90": [
+     -0.000321274788287231,
+     0.0007483813586152623
+    ],
+    "p_one_sided": 0.2232,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.0006898304062132917,
+     "1": 0.0010065858934801466,
+     "2": 0.00040866993428001816
+    }
+   },
+   "minus_x1": {
+    "value": -0.0004819533652119293,
+    "ci95": [
+     -0.001156257573215488,
+     0.00010090140552773708
+    ],
+    "ci90": [
+     -0.0010394556714796526,
+     1.8183599219566536e-05
+    ],
+    "p_one_sided": 0.9421,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.001413592245274179,
+     "1": 0.00028282405441925956,
+     "2": -0.000315091904780869
+    }
+   },
+   "share_of_rss_to_star_gap": 0.08160657540501538,
+   "a6c_slope": {
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "value": 0.8570827810160214,
+    "ci95": [
+     0.7165791603943443,
+     0.9966557031987556
+    ],
+    "ci90": [
+     0.7372981444515557,
+     0.9754069392067398
+    ],
+    "p_one_sided": 0.0,
+    "per_seed": {
+     "0": {
+      "value": 0.9277118061182262,
+      "n_pairs": 510
+     },
+     "1": {
+      "value": 0.836961947792563,
+      "n_pairs": 510
+     },
+     "2": {
+      "value": 0.806574589137275,
+      "n_pairs": 510
+     }
+    },
+    "seed_sd": 0.06302533047654083
+   },
+   "expected_by_depth": {
+    "1": -0.03555608327976252,
+    "2": -0.03681178484521519,
+    "3": -0.039366905311728546,
+    "4": -0.04194468401062842,
+    "5": -0.044728947526636614
+   }
+  },
+  "AC": {
+   "name": "model's terms, exact aggregation and copy (= (c))",
+   "expected": -0.0417171004291434,
+   "minus_a": {
+    "value": -0.0019897076750601877,
+    "ci95": [
+     -0.004728789611800852,
+     -0.0003195688714132588
+    ],
+    "ci90": [
+     -0.004176376851475224,
+     -0.00045999732178579676
+    ],
+    "p_one_sided": 0.9971,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.0023725030348048667,
+     "1": -0.0032964733873383427,
+     "2": -0.0003001466030373529
+    }
+   },
+   "minus_rss": {
+    "value": -0.001790330741921274,
+    "ci95": [
+     -0.004546148863666574,
+     -9.611859081077543e-06
+    ],
+    "ci90": [
+     -0.004041870600590075,
+     -0.00017057837849234806
+    ],
+    "p_one_sided": 0.9764,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.0028270331104085383,
+     "1": -0.002310186619120521,
+     "2": -0.0002337724962347623
+    }
+   },
+   "minus_x1": {
+    "value": -0.002514092580982161,
+    "ci95": [
+     -0.0052525090455231675,
+     -0.0007434736521781981
+    ],
+    "ci90": [
+     -0.004768937564317108,
+     -0.0009047532633106969
+    ],
+    "p_one_sided": 1.0,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": -0.003550794949469425,
+     "1": -0.0030339484581814076,
+     "2": -0.0009575343352956497
+    }
+   },
+   "share_of_rss_to_star_gap": -0.6042086051201727,
+   "a6c_slope": {
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "value": 0.8259403966668627,
+    "ci95": [
+     0.6962291841898209,
+     0.9550016085814358
+    ],
+    "ci90": [
+     0.7163172724052208,
+     0.9335708070121789
+    ],
+    "p_one_sided": 0.0,
+    "per_seed": {
+     "0": {
+      "value": 0.9578598207674123,
+      "n_pairs": 510
+     },
+     "1": {
+      "value": 0.8151495212267496,
+      "n_pairs": 510
+     },
+     "2": {
+      "value": 0.7048118480064264,
+      "n_pairs": 510
+     }
+    },
+    "seed_sd": 0.12686863826093583
+   },
+   "expected_by_depth": {
+    "1": -0.040411435759465215,
+    "2": -0.03705266683811973,
+    "3": -0.03985944943437491,
+    "4": -0.04306680096012203,
+    "5": -0.04817111467816385
+   }
+  },
+  "exact": {
+   "name": "fully exact: the builder's line, unrounded (ceiling)",
+   "expected": -0.03696282572758163,
+   "minus_a": {
+    "value": 0.0027645670265015825,
+    "ci95": [
+     0.002311639145079656,
+     0.003275190067008285
+    ],
+    "ci90": [
+     0.002374752548714001,
+     0.0031855300107032332
+    ],
+    "p_one_sided": 0.0,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": 0.003418474035244168,
+     "1": 0.001977657191422675,
+     "2": 0.002897569852837906
+    }
+   },
+   "minus_rss": {
+    "value": 0.002963943959640496,
+    "ci95": [
+     0.002797837889871961,
+     0.0031356137214586213
+    ],
+    "ci90": [
+     0.002826149481683725,
+     0.0031068273187800956
+    ],
+    "p_one_sided": 0.0,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": 0.002963943959640496,
+     "1": 0.002963943959640496,
+     "2": 0.002963943959640496
+    }
+   },
+   "minus_x1": {
+    "value": 0.0022401821205796095,
+    "ci95": [
+     0.0021020280795432315,
+     0.0023817224416544276
+    ],
+    "ci90": [
+     0.0021225669122859406,
+     0.002360056160606832
+    ],
+    "p_one_sided": 0.0,
+    "n_problems": 3039,
+    "per_seed": {
+     "0": 0.0022401821205796095,
+     "1": 0.0022401821205796095,
+     "2": 0.0022401821205796095
+    }
+   },
+   "share_of_rss_to_star_gap": 1.0002846980032998,
+   "a6c_slope": {
+    "seeds": [
+     0,
+     1,
+     2
+    ],
+    "value": 0.9981241839955027,
+    "ci95": [
+     0.9951376784282899,
+     1.0010236385083784
+    ],
+    "ci90": [
+     0.9956282202518476,
+     1.0005614924911348
+    ],
+    "p_one_sided": 0.0,
+    "per_seed": {
+     "0": {
+      "value": 0.9981241839955028,
+      "n_pairs": 510
+     },
+     "1": {
+      "value": 0.9981241839955028,
+      "n_pairs": 510
+     },
+     "2": {
+      "value": 0.9981241839955028,
+      "n_pairs": 510
+     }
+    },
+    "seed_sd": 1.3597399555105182e-16
+   },
+   "expected_by_depth": {
+    "1": -0.03397970368301195,
+    "2": -0.03517649845169156,
+    "3": -0.0367354207632018,
+    "4": -0.03978163798073033,
+    "5": -0.03913681460234827
+   }
+  }
+ },
+ "comparators_by_depth": {
+  "sigma_star": {
+   "1": -0.03398072447530793,
+   "2": -0.03517701503491442,
+   "3": -0.03673637986796804,
+   "4": -0.0397826348826673,
+   "5": -0.03913754284018215
+  },
+  "rss": {
+   "1": -0.037066911481641124,
+   "2": -0.03813434269801517,
+   "3": -0.03953990824511816,
+   "4": -0.042636606569688616,
+   "5": -0.04225003201639505
+  },
+  "x1": {
+   "1": -0.03621494122008605,
+   "2": -0.0373961257055007,
+   "3": -0.03879902956179829,
+   "4": -0.04174190940867965,
+   "5": -0.04185480341583623
+  }
+ }
+}

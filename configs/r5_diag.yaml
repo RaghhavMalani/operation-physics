@@ -8,3 +8,11 @@ depth5:                       # the development-vs-frozen depth-5 discrepancy (F
   gross_factor: 10            # a pair whose Δ ln σ_stated misses Δ ln σ* by more than ln 10
   influence_top: 5            # pairs listed by leave-one-out influence on the slope
   theil_sen_ci: 0.90
+
+tail:                         # R5-2 (descriptive autopsy) and R5-3 (diagnostic component swaps), frozen D-pos-v2 logs
+  arm: dpos2
+  seeds: [0, 1, 2]
+  worst_share: 0.05           # R5-2: the worst 5% of problems by regret against σ* (D118 §9's share), per seed
+  trim_share: 0.05            # R5-2: the 95%-trimmed expected score drops each source's lowest 5%
+  max_pow: 12                 # the S-line evaluator refuses larger exponents
+  material_factor: 1.25       # a component is a cause only if it moves σ by more than 25% (2-s.f. rounding is < 5%)
