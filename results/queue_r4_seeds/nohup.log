@@ -134,3 +134,5 @@
 [09:28:58] disk: 53 GiB free on MLStorage
 [09:28:58] start r4_confirm (timeout 5400s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.r4_confirm analyze
 [09:30:52] end r4_confirm: exit 0
+[09:30:55] commit 'R4-3 confirmatory analysis (D118): K1-K8, P, the depth split, 3 seeds on the frozen R4-5 set': pushed
+[09:30:55] R4 seeds chain done
