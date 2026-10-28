@@ -1550,7 +1550,7 @@ in-distribution for both arms (mixed per-given levels in training); depth 5 is h
 | R1–R3: D-pos-v2 (a) / (b) / (c) A6c slope > 0 | +0.53 / +0.60 / +0.67 | supported (all three) |
 | R4: B-v2 A6c slope > 0 | +0.47 [+0.33, +0.61] | supported |
 | R5: expected crps_log, D-pos-v2 − B-v2 > 0 | +0.0015 [+0.0008, +0.0022] | supported |
-| R6: D-pos-v2 − RSS > 0 | −0.0001 [−0.0008, +0.0005] | not supported (a tie) |
+| R6: D-pos-v2 − RSS > 0 | −0.0001 [−0.0008, +0.0005] | not supported (not rejected; not equivalence, D133) |
 | R7: D-pos-v2 − X1 > 0 | −0.0008 [−0.0015, −0.0002] | not supported (below X1) |
 | R8: B-v2 − RSS > 0 | −0.0016 [−0.0020, −0.0013] | not supported |
 
@@ -1594,8 +1594,8 @@ in-distribution for both arms (mixed per-given levels in training); depth 5 is h
     depth.
   - **But not how much the values amplify it:** A6 −0.29.
   - **Its σ is a scaled surface reading:** median abs ln(σ / σ\*) 0.48, coverage 55%. It scores below RSS (R8).
-- **Exploratory (not pre-registered; CPU, after the analysis):** why a σ with median abs ln(σ / σ\*) 0.02–0.07 only
-  ties RSS (0.40).
+- **Exploratory (not pre-registered; CPU, after the analysis):** why a σ with median abs ln(σ / σ\*) 0.02–0.07 is
+  not shown to beat RSS (0.40).
   - **The worst 5% of problems carry most of the regret** against σ\*: 80% for (a), 89% for (c), against 36% for RSS
     and 38% for X1.
   - **Gross misses:** 1.5% of (a)'s σ are off by more than 10× (RSS: none, because its σ is bounded by the stated
@@ -1727,7 +1727,12 @@ ran once, 2026-10-28 09:29–09:31 IST, on all six evals: complete, not rerun. C
 | **K7: D-pos-v2 (a) − X1 > 0, "beats X1"** | **−0.0005 [−0.0009, −0.0001]** | 0.99 | **not rejected** | −0.0012 / +0.0003 / −0.0007 |
 | K8: B-v2 − RSS > 0 | −0.0011 [−0.0013, −0.0009] | 1 | not rejected | −0.0016 / −0.0009 / −0.0007 |
 
-- **K6: a tie with RSS.** The sign changes across seeds.
+- **K6 is not rejected.** That is not equivalence to RSS (D133): the 90% CI runs from −0.0002 to +0.0006, and the
+  sign changes across seeds.
+- **Against the RSS-to-σ\* gap** (0.00296 on this set, oracle-centred expected crps_log, held fixed):
+  - **D-pos-v2 (a)** closes 7% of it (90% CI −7% to +20%);
+  - **X1** closes 24%;
+  - **K7** is −18% (90% CI −31% to −5%).
 - **K7: the estimate is below zero, with a CI that excludes zero** (95% [−0.0010, −0.0001]). Read it as "X1 scores
   better", but descriptively only: K7 tests the other direction.
   - **This repeats #30's development result:** R7 −0.0008 [−0.0015, −0.0002].
@@ -1753,7 +1758,8 @@ ran once, 2026-10-28 09:29–09:31 IST, on all six evals: complete, not rerun. C
 - **Depth 5 propagates but loses on score.**
   - **The slope:** (a) holds at +0.82 at the held-out depth.
   - **The score:** there it is below both RSS and X1, with CIs below zero.
-  - **At depths 1–4** it is ahead of RSS and level with X1. The pooled K6 / K7 fail on the deep chains.
+  - **At depths 1–4** it is ahead of RSS, and not distinguishable from X1 (CI spans 0). The pooled K6 / K7 fail on
+    the deep chains.
 - **The regret is concentrated (D118 §9):** the worst 5% of problems hold 83% / 69% / 76% of (a)'s expected-score
   regret against σ\*. In every seed the mean regret is highest at depth 5 (0.0063 / 0.0033 / 0.0050, against
   0.0013–0.0021 at depth 1).
@@ -1772,7 +1778,8 @@ ran once, 2026-10-28 09:29–09:31 IST, on all six evals: complete, not rerun. C
 - **The propagation result is solid.** Visible sensitivity derivations trained on mixed-level data yield a stated σ
   that tracks σ\* problem by problem. It holds on fresh problems, in every seed, for all three graded σ values, with
   slopes near 1 and coverage near nominal.
-- **The decision-relevant result is negative.** On expected score the learned σ ties the RSS heuristic and trails X1.
+- **The decision-relevant result is negative.** On expected score the learned σ is not shown to beat the RSS heuristic
+  (it closes 7% of the RSS-to-σ\* gap, 90% CI −7% to +20%), and its estimate trails X1's.
   A few gross misses, concentrated in deep (and held-out) chains, cost what the close fit to σ\* gains elsewhere.
 - **Both halves stand together:** "propagates" does not imply "is a better forecast than a surface heuristic". The
   remaining gap lives in the tail of deep, value-dependent chains (#30's line diagnostics), which an exact executor

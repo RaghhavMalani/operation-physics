@@ -4697,3 +4697,87 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     - **What runs:** only A6b's generation and A6's execution and analysis, and each skip is logged.
     - **Night 2's real state,** where A6 is analyzed too, leaves only A6b.
   - The executable-bit test now covers both guards.
+
+### D133. Round-5 review synthesis (Gemini, ChatGPT): R5-1 to R5-10, recorded before any result they affect (your decision, 2026-10-28; `REVIEW_SYNTHESIS_ROUND5_2026-10-28.md`, committed with this entry)
+- **The state when recorded:**
+  - D118's confirmatory analysis exists (FINDINGS #32, `d8bc805`) and MC-B's A6c / A6 analyses exist (#33).
+  - Nothing that R5-2, R5-3, R5-4, R5-5, R5-6 or R5-8 asks for has been computed.
+- **The central message** (both reviewers):
+  - Structural correctness (learning how uncertainty should propagate) is not forecast quality. D-pos-v2's confirmed
+    propagation (A6c +0.816) and its unsupported score secondaries (K6, K7) get equal prominence. That tension is the
+    paper's central contribution.
+  - **K6 is never called a "tie":** failure to reject is not equivalence.
+  - **Score differences are reported with intervals,** normalized against the RSS-to-oracle gap where possible.
+- **R5-1, framing:**
+  - **The title:** "When Language Models Quote Uncertainty: Separating Reasoning Errors from Measurement Noise".
+    "Quoting Volatility" stays the project name.
+  - **Claims are scoped to this model, benchmark and training procedures.** Not "small models cannot", not "explicit
+    propagation gives better calibration", not "all bf16 merging is unsafe".
+  - **The headline figure** has three panels (optimization; within-problem correctness discrimination; propagation vs
+    forecast quality), from real frozen-evaluation data only.
+- **R5-2, a tail-error autopsy** (CPU, descriptive, no new pre-registration):
+  - **The data:** the frozen confirmatory D-pos-v2 logs.
+  - **The causes:** classify the worst 5% of problems by cause (wrong sensitivity, power-law vs value-dependent;
+    arithmetic in the line; wrong level read; aggregation; copy; chain selection; format), by depth.
+  - **The score:** report a 95%-trimmed expected score beside the full one.
+- **R5-3, a hybrid-oracle ablation** (CPU, diagnostic, labelled so; never presented as a deployable method). From the
+  logged lines, recompute σ with each component replaced by its exact value, one at a time:
+  - exact sensitivities with the model's levels and aggregation;
+  - the model's sensitivities with exact aggregation (σ source (c));
+  - exact levels;
+  - fully exact (the ceiling).
+- **R5-4, an RSS-fallback guardrail** (post-hoc exploratory, guarded against rescue bias):
+  - **The rule:** fall back to RSS when the line fails to parse, or σ/RSS lies outside fixed bounds.
+  - **The order:** the bounds are chosen on the development sets only and frozen in their own D-entry before they are
+    applied, once, to the confirmatory logs.
+- **R5-5, cross-model replication** (the main remaining experiment; its own pre-registration):
+  - **The comparison:** D-pos-v2 vs B-v2 SFT on another model family, with the same data, protocol and frozen set.
+  - **The candidates:** Gemma-2-2B-it, Llama-3.2-3B-Instruct, Llama-3.2-1B-Instruct.
+  - **Feasibility first, for each candidate:** 4-bit + LoRA within 8 GB at the needed sequence length, step time,
+    baseline format-following and arithmetic accuracy.
+  - **Then:** pick one; pre-register (after your approval); a 1-seed-per-arm pilot; 3 seeds if the pilot passes R4-3's
+    criterion.
+  - **Reported separately:** format-following and base accuracy, so a weaker model does not hide the mechanism.
+- **R5-6, fresh counterfactual generalization** (optional, if nights remain):
+  - **What:** unseen coefficient changes inside value-dependent relations (new Jacobians, same surface form) and unseen
+    formula compositions.
+  - **How:** a new frozen set, under its own pre-registration.
+- **R5-7, cut from this paper:**
+  - nested Monte Carlo; MC-B SFT;
+  - joint answer-generation RL at lr 5e-5 (E1d stated as exploratory; Act 1's claim scoped to the frozen-answer
+    setting);
+  - retraining D-pos-v2 on depths 4–5 (it would destroy the held-out-depth claim);
+  - Kelly and finance metrics; new hyperparameter searches;
+  - the optics family, unless R5-6 is done.
+  - **Nested MC goes to future work,** with ChatGPT's sequence: semantic validity, then execution tests, then input
+    sampling.
+- **R5-8, reporting rules:**
+  - **The statistical unit:** uncertainty over both seeds and problems (clustered or hierarchical). 5,390 pairs, or 3
+    seeds on shared problems, are never treated as independent.
+  - **Sample agreement:** discrimination reported against inference tokens and GPU-seconds.
+  - **MC-B:** failures split into interface (no program, signature, rejected) and semantic (runs, computes the wrong
+    chain).
+  - **Depth 5** is extrapolation in chain length, not to new physical laws; say so.
+  - **A chronological decision timeline** separates confirmatory from exploratory analyses.
+  - **A reproducibility appendix:** reload, precision and adapter checks; superseded merged results kept and labelled.
+- **R5-9, venue:**
+  - a public arXiv preprint around 2026-11-20, then a 2027 workshop (LM evaluation, uncertainty, or AI for science);
+  - main track only after cross-model replication and genuine family or formula transfer.
+- **R5-10, references:**
+  - **The fix:** Gneiting & Raftery (2007) is JASA, not JRSS-B.
+  - **To verify before citing:** Damani et al. (2507.16806); Park et al. (2605.20740); Guo et al. (2604.05306);
+    Grünefeld et al. (2605.07776); Wang et al. (2609.32470); Kapoor et al. (2406.08391); PAL (2211.10435); Program of
+    Thoughts (2211.12588).
+- **Applied with this entry:**
+  - **K6's wording in FINDINGS #32 and #30's R6:** "tie", "ties" and "level with" become "not rejected" or "not
+    distinguishable"; failure to reject is not equivalence.
+  - **#32 gains the normalized differences.** The RSS-to-σ\* gap on the frozen set is 0.00296 (expected crps_log, the
+    oracle-centred estimate, 3,039 problems with draws). D-pos-v2 (a) closes 7% of it (90% CI −7% to +20%); X1 closes
+    24%; K7 is −18% (90% CI −31% to −5%). The gap is held fixed in these ratios.
+- **Your order for today's CPU work:**
+  - the citation (R5-10);
+  - the depth-5 discrepancy (#32, development vs frozen), explained before anything relies on it;
+  - R5-2 and R5-3;
+  - R5-4 (bounds frozen first);
+  - R5-8's MC-B split and sample-agreement cost;
+  - R5-5's feasibility check (one model recommended; no pre-registration until you approve).

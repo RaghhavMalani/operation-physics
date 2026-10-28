@@ -12,7 +12,7 @@ The previous report (night 1) is in git history: `git show 682b522:MORNING.md`.
 3. **The secondaries fail, with the same prominence (D118 §12):**
    - **K6, beats RSS:** not supported (+0.0002 [−0.0002, +0.0006], p = 0.20).
    - **K7, beats X1:** not supported. The difference is negative and its CI excludes 0: −0.0005 [−0.0009, −0.0001].
-   - So the stated σ propagates noise, but its expected score is no better than either heuristic.
+   - So the stated σ propagates noise, but its expected score is not shown to beat either heuristic (not rejected is not equivalence, D133).
 4. **MC-B fails all five tests on A6c (M1–M5, Holm), and none is close.**
    - **Program failures, unconditional:** 84.8% on A6c and 91.0% on A6. Most are `signature` failures (64–68%).
    - **Correct programs:** 0.3–0.5% compute the chain correctly.
