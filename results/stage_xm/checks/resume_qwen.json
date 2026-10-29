@@ -1,0 +1,26 @@
+{
+ "decision": "D142 (acceptance: byte-identical greedy completions after a kill and a resume)",
+ "model": "qwen",
+ "n_problems": 30,
+ "same_keys": true,
+ "n_identical": 30,
+ "byte_identical": true,
+ "batches_total": 2,
+ "killed_with_batches_on_disk": 1,
+ "resumed_run": {
+  "partial_file": "completions.partial.jsonl",
+  "sessions": 2,
+  "batches_total": 2,
+  "batches_resumed": 1,
+  "batches_generated_this_session": 1,
+  "moved_aside": null
+ },
+ "accepted": true,
+ "mismatches": [],
+ "seconds": {
+  "single_s": 182.77925324440002,
+  "killed_after_s": 153.70270991325378,
+  "resumed_s": 138.2470405101776
+ },
+ "batch_size": 16
+}

@@ -151,6 +151,155 @@ class GpuMemoryPoller:
         self._thread.join()
 
 
+PARTIAL_NAME = "completions.partial.jsonl"
+VERSIONED_PACKAGES = ("torch", "transformers", "peft", "bitsandbytes", "accelerate", "unsloth", "unsloth_zoo")
+
+
+def package_versions() -> dict[str, str | None]:
+    from importlib.metadata import PackageNotFoundError, version
+
+    out: dict[str, str | None] = {}
+    for name in VERSIONED_PACKAGES:
+        try:
+            out[name] = version(name)
+        except PackageNotFoundError:
+            out[name] = None
+    return out
+
+
+def _sha256_json(x: Any) -> str:
+    return hashlib.sha256(json.dumps(x, sort_keys=True, default=str).encode()).hexdigest()
+
+
+class PartialCompletions:
+    """D142: a greedy eval's completions on disk, one JSONL line per finished batch, so an eval that is cut off (timeout,
+    stall kill, crash) resumes instead of starting over. The batches are the backend's own fixed partition (prompts
+    sorted by length, cut every batch_size), so a resumed run generates exactly the batches a single run would have
+    generated, with the same composition.
+
+    Line 1 is a header with the eval's identity (model, adapter hash, generation config, package versions, the hashes of
+    the rendered prompts and of the partition); then one `session` line per (re)start and one `batch` line per batch.
+    Each batch line goes to disk in one O_APPEND write, then fsync. A torn last line (a kill mid-write) is cut off and
+    that batch is generated again. A file whose header names another identity, or that is damaged before its last
+    line, is moved aside (never mixed in, never deleted) and the eval starts from scratch."""
+
+    def __init__(self, path: str | Path):
+        self.path = Path(path)
+        self.sessions = 0
+        self.resumed = 0
+        self.generated = 0
+        self.n_batches = 0
+        self.moved_aside: str | None = None
+
+    def _write(self, records: list[dict]) -> None:
+        data = "".join(json.dumps(r, allow_nan=False) + "\n" for r in records).encode()
+        fd = os.open(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
+        try:
+            view = memoryview(data)
+            while view:
+                view = view[os.write(fd, view):]
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+
+    def _set_aside(self, why: str) -> None:
+        stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+        dest = self.path.with_name(f"{self.path.stem}.stale-{stamp}{self.path.suffix}")
+        self.path.rename(dest)
+        self.moved_aside = f"{dest.name}: {why}"
+        print(f"  partial completions: {why}; moved aside to {dest.name}, starting from scratch", flush=True)
+
+    def _read(self, key: str, batches: list[list[int]], k: int) -> dict[int, list[list[dict]]] | None:
+        """The finished batches of a matching file (a torn last line is cut off), or None if the file must go aside."""
+        raw = self.path.read_bytes()
+        lines = raw.split(b"\n")
+        complete, tail = lines[:-1], lines[-1]  # tail: bytes after the last newline (a torn write), usually empty
+        done: dict[int, list[list[dict]]] = {}
+        good_bytes = 0
+        for n, line in enumerate(complete):
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                if n == len(complete) - 1 and not tail:  # the last line is torn but ends in a newline: cut it off
+                    break
+                self._set_aside(f"line {n + 1} does not parse")
+                return None
+            if n == 0:
+                if rec.get("kind") != "header" or rec.get("identity_sha256") != key:
+                    self._set_aside("another eval's identity (model, adapter, generation, prompts or packages)")
+                    return None
+            elif rec.get("kind") == "batch":
+                b = rec.get("b")
+                ok = isinstance(b, int) and 0 <= b < len(batches) and rec.get("idx") == batches[b] \
+                    and len(rec.get("gens", [])) == len(batches[b]) and all(len(g) == k for g in rec["gens"])
+                if not ok:
+                    self._set_aside(f"line {n + 1} is not a batch of this partition")
+                    return None
+                done[b] = rec["gens"]
+            elif rec.get("kind") == "session":
+                self.sessions += 1
+            good_bytes += len(line) + 1
+        if good_bytes < len(raw):
+            print(f"  partial completions: cut off {len(raw) - good_bytes} bytes of a torn last line", flush=True)
+            os.truncate(self.path, good_bytes)
+        return done
+
+    def open(self, identity: dict, batches: list[list[int]], k: int) -> dict[int, list[list["Generation"]]]:
+        """Start (or continue) the file; returns {batch index: per-prompt Generation lists} already on disk."""
+        key = _sha256_json(identity)
+        self.sessions = self.resumed = self.generated = 0
+        self.n_batches = len(batches)
+        done: dict[int, list[list[dict]]] | None = None
+        if self.path.exists() and self.path.stat().st_size:
+            done = self._read(key, batches, k)
+        if done is None:
+            done = {}
+            self.path.unlink(missing_ok=True)
+            self._write([{"kind": "header", "identity_sha256": key, "identity": identity,
+                          "batches_sha256": _sha256_json(batches), "n_batches": len(batches)}])
+        self.sessions += 1
+        self.resumed = len(done)
+        self._write([{"kind": "session", "n": self.sessions, "pid": os.getpid(),
+                      "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "batches_on_disk": len(done)}])
+        if done:
+            print(f"  partial completions: resuming, {len(done)} of {len(batches)} batches on disk "
+                  f"(session {self.sessions})", flush=True)
+        return {b: [[Generation(**g) for g in per] for per in gens] for b, gens in done.items()}
+
+    def append(self, b: int, idx: list[int], gens: list[list["Generation"]]) -> None:
+        self._write([{"kind": "batch", "b": b, "idx": idx,
+                      "gens": [[{"text": g.text, "n_tokens": g.n_tokens, "truncated": g.truncated} for g in per]
+                               for per in gens]}])
+        self.generated += 1
+
+    def summary(self) -> dict[str, Any]:
+        return {"partial_file": self.path.name, "sessions": self.sessions, "batches_total": self.n_batches,
+                "batches_resumed": self.resumed, "batches_generated_this_session": self.generated,
+                "moved_aside": self.moved_aside}
+
+
+def generate_batched(prompts: list[str], batches: list[list[int]], k: int,
+                     generate: Callable[[list[str], int], list[list["Generation"]]],
+                     partial: PartialCompletions | None = None, identity: dict | None = None) -> list[list["Generation"]]:
+    """Per-prompt completions, batch by batch in the given partition; with `partial` (D142), batches already on disk are
+    taken from it and every new batch is written to it as soon as it is generated."""
+    done = partial.open(identity or {}, batches, k) if partial is not None else {}
+    results: list[list[Generation]] = [[] for _ in prompts]
+    t0, n_done = time.time(), 0
+    for b, idx in enumerate(batches):
+        gens = done.get(b)
+        if gens is None:
+            gens = generate([prompts[i] for i in idx], k)
+            if partial is not None:
+                partial.append(b, idx, gens)
+        for i, per in zip(idx, gens):
+            results[i] = per
+        n_done += len(idx)
+        if b not in done:
+            print(f"  generated {n_done * k}/{len(prompts) * k}  ({time.time() - t0:.0f}s)", flush=True)
+    return results
+
+
 LOADERS = ("transformers", "unsloth_4bit")
 
 
@@ -236,6 +385,7 @@ class HFBackend:
 
             check_merge_allowed(model_cfg["lora"], bool(model_cfg.get("merge_adapter", False)))
         self.loader = loader
+        self.model_id = model_id
         if loader == "unsloth_4bit" and model_cfg.get("device", "cuda") != "cuda":
             raise ValueError("the unsloth_4bit loader needs CUDA")
         import torch
@@ -321,8 +471,11 @@ class HFBackend:
             self.eos_ids.add(self.tok.eos_token_id)
         self.pad_id = self.tok.pad_token_id if self.tok.pad_token_id is not None else next(iter(self.eos_ids))
 
-    def __call__(self, conversations: list[list[dict]]) -> list[Generation]:
-        """`num_samples` completions per conversation, flattened conversation-major."""
+    supports_resume = True  # D142: run() hands greedy evals a PartialCompletions
+
+    def __call__(self, conversations: list[list[dict]], partial: PartialCompletions | None = None) -> list[Generation]:
+        """`num_samples` completions per conversation, flattened conversation-major. With `partial` (D142), finished
+        batches are read from / written to disk; the partition is the same either way."""
         torch = self.torch
         g = self.gen_cfg
         k = g["num_samples"]
@@ -332,16 +485,21 @@ class HFBackend:
             for c in conversations
         ]
         order = sorted(range(len(prompts)), key=lambda i: -len(prompts[i]))  # largest batch first: OOM early
-        results: list[list[Generation]] = [[] for _ in prompts]
         per_batch = max(1, g["batch_size"] // k)
-        t0 = time.time()
-        for start in range(0, len(order), per_batch):
-            idx = order[start:start + per_batch]
-            for i, gens in zip(idx, self._generate([prompts[i] for i in idx], k)):
-                results[i] = gens
-            done = min(start + per_batch, len(order))
-            print(f"  generated {done * k}/{len(order) * k}  ({time.time() - t0:.0f}s)", flush=True)
+        batches = [order[s:s + per_batch] for s in range(0, len(order), per_batch)]
+        identity = self.resume_identity(prompts) if partial is not None else None
+        results = generate_batched(prompts, batches, k, self._generate, partial, identity)
         return [gen for per_prompt in results for gen in per_prompt]
+
+    def resume_identity(self, prompts: list[str]) -> dict[str, Any]:
+        """What must match for a partial file's completions to be reused (D142): the model and adapter weights, every
+        generation parameter, the prompt tokenization switch, the rendered prompts and the package versions. Not the
+        memory cap, which only changes the OOM backoff, logged either way."""
+        return {"model_id": self.model_id, "revision": self.revision, "lora_hash": self.lora_hash,
+                "loader": self.loader, "generation": self.gen_cfg,
+                "add_special_tokens": getattr(self, "add_special_tokens", True),
+                "chat_template_kwargs": self.chat_template_kwargs, "n_prompts": len(prompts),
+                "prompts_sha256": _sha256_json(prompts), "packages": package_versions()}
 
     def _generate(self, prompts: list[str], k: int) -> list[list[Generation]]:
         """k completions per prompt. On CUDA OOM, split the prompts (then the samples) in half and retry.
@@ -424,7 +582,12 @@ def run(
     backend_factory: Callable[[str], Backend] | None = None,
     limit: int | None = None,
     output_dir: str | Path | None = None,
+    resume: bool = True,
 ) -> dict[str, Any]:
+    """With `resume` (D142), a greedy eval on a backend that supports it writes every finished batch to
+    `<output_dir>/completions.partial.jsonl` and, when restarted on the same identity, generates only the batches that
+    are missing. The file is deleted once metrics.json is written. Sampled evals never resume (their random stream runs
+    across batches)."""
     env_cfg = load_config(eval_cfg["env_config"]) if eval_cfg.get("env_config") else env_config()
     rw_cfg = reward_config()
     out = Path(output_dir or REPO_ROOT / eval_cfg["output_dir"])
@@ -453,10 +616,16 @@ def run(
     t0 = time.time()
     backend = None
     on_gpu = eval_cfg["model"].get("device", "cuda") == "cuda"
+    partial = PartialCompletions(out / PARTIAL_NAME) if resume and not eval_cfg["generation"]["do_sample"] else None
+
+    def generate(b) -> list[Generation]:
+        return b(conversations, partial=partial) if partial is not None and getattr(b, "supports_resume", False) \
+            else b(conversations)
+
     with (GpuMemoryPoller(interval_s=eval_cfg["memory_poll_seconds"]) if on_gpu else NoPoller()) as poller:
         try:
             backend = factory(model_id)
-            generations = backend(conversations)
+            generations = generate(backend)
         except Exception as exc:
             if not _is_oom(exc):
                 raise
@@ -468,7 +637,7 @@ def run(
                 backend.close()
             model_id = eval_cfg["model"]["fallback_id"]
             backend = factory(model_id)
-            generations = backend(conversations)
+            generations = generate(backend)  # another identity: a partial file of the first model is moved aside
     gen_seconds = time.time() - t0
     if len(generations) != len(items) * k:
         raise RuntimeError(f"backend returned {len(generations)} completions, expected {len(items) * k}")
@@ -497,6 +666,8 @@ def run(
     if loader_check is not None:
         meta["loader_check"] = loader_check
     meta["provenance"] = getattr(backend, "provenance", None)  # R2-1 / D72
+    resumed = partial.summary() if partial is not None and partial.sessions else None
+    meta["resume"] = resumed  # D142: None when no partial file was used
     tape_path = out / "rollouts.jsonl"
     tape_path.unlink(missing_ok=True)
     records: dict[str, list[dict]] = {name: [] for name in splits}
@@ -524,6 +695,7 @@ def run(
         "oom_fallback": oom_fallback,
         "oom_error": oom_error,
         "generation_seconds": gen_seconds,
+        "resume": resumed,
         "memory": memory,
         "generator_version": meta["generator_version"],
         "reward_rule": rw_cfg["scoring"]["rule"],
@@ -532,6 +704,8 @@ def run(
         "splits": {},
     }
     write_metrics(metrics, records, rw_cfg, cal, k, out)
+    if resumed is not None:
+        (out / PARTIAL_NAME).unlink(missing_ok=True)  # everything is in the tape and metrics.json now
     print(f"eval done in {gen_seconds:.0f}s; results in {out}", flush=True)
     return metrics
 
@@ -582,6 +756,10 @@ def render_summary(m: dict) -> str:
         f"- generator: `{m['generator_version']}`, reward rule: `{m['reward_rule']}`, prompt: `{m.get('prompt_id', 'v1')}`",
         f"- generation time: {m['generation_seconds']:.0f} s",
     ]
+    if m.get("resume"):  # D142
+        r = m["resume"]
+        lines.append(f"- resumed (D142): session {r['sessions']}; {r['batches_resumed']} of {r['batches_total']} batches "
+                     f"read from `{r['partial_file']}`, {r['batches_generated_this_session']} generated in this session")
     for k, v in m["memory"].items():
         lines.append(f"- {k}: {v:.2f}" if isinstance(v, float) else f"- {k}: {v}")
     for name, why in m["skipped_splits"].items():

@@ -862,3 +862,18 @@ Progress:
 - [ ] **Tomorrow, after the morning report:** arm a second 23:00 IST waiter the same way, with `MC_B=1`.
 - [x] **23:36 IST: the 23:00 waiter had died with a WSL restart, so the queue was launched by hand** (`GPU_DEADLINE=10:00`,
   chain PID 632; D126).
+
+## 2026-10-29/30 night: recovery of 28/29, resumable evals, temperature hysteresis, the XM queue (your instructions at ~01:10 IST; GPU deadline 13:00 IST)
+- [x] **Recovery (D140):** `git fsck` clean, local = origin (`ac78c5f`), integrity check clean on 64 files.
+  - 47 GiB free; no stale process; the locks are free.
+  - B-v2's empty leftovers set aside to `results/discarded/`.
+  - MORNING.md written for 28/29 (`d911d45`).
+- [x] **D141:** family H (H1–H5) declared not run, with reasons.
+- [x] **D142, resumable evals:** per-batch partial file and resume; 8 CPU tests.
+  - [x] **The GPU byte-identity checks:** Llama 30 / 30 and Qwen 30 / 30, after SIGKILL + resume: ACCEPTED.
+- [x] **D143:** the temperature guard resumes at ≤ 75 °C (read every 30 s), 10 min at most; 6 tests.
+- [x] **D144:** `scripts/queue_xm2.sh`; 6 tests.
+- [x] **Full test suite** (CPU, GPU idle): 696 passed, 3 failed.
+  - **The 3 failures:** one structural disk-guard test on the library-mode queue scripts; 2 of them have failed since 28 Oct.
+  - **After the test fix:** 699 passed, 0 failed (D144).
+- [ ] **Launch** `GPU_DEADLINE=13:00 scripts/queue_xm2.sh`; watch it; MORNING.md at the end.

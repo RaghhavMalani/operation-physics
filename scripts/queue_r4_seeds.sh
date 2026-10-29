@@ -53,8 +53,17 @@ left() { echo $((DEADLINE - $(date +%s))); }
 smi() { nvidia-smi --query-gpu="$1" --format=csv,noheader,nounits | head -1 | cut -d. -f1 | tr -dc '0-9'; }  # integer part
 gpu_c() { nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits | head -1 | tr -dc '0-9.'; }
 hot() { awk -v t="$1" 'BEGIN {exit !(t + 0 > 87)}'; }  # the driver reports 55.70, not 55 (D129): compare as a number
-cool() { [ "$DRY_RUN" = 1 ] && return; while t=$(gpu_c); hot "$t"; do
-           log "GPU at ${t}C > 87C: pausing 600s"; sleep 600; done; log "GPU at ${t}C, memory.used $(smi memory.used) MiB"; }
+COOL_RESUME_C=${COOL_RESUME_C:-75}       # D143: between stages, the same rule as the in-stage guard: wait until <= 75 C,
+COOL_CHECK_S=${COOL_CHECK_S:-30}         # read every 30 s, for 10 min at most; then read again (> 87 C: another pause)
+COOL_MAX_S=${COOL_MAX_S:-600}
+cooled() { [ -n "$1" ] && awk -v t="$1" -v r="$COOL_RESUME_C" 'BEGIN {exit !(t + 0 <= r + 0)}'; }
+cool() { [ "$DRY_RUN" = 1 ] && return; local t0 rem
+         while t=$(gpu_c); hot "$t"; do
+           t0=$(date +%s); log "GPU at ${t}C > 87C: pausing until <= ${COOL_RESUME_C}C (${COOL_MAX_S}s at most)"
+           while rem=$(( COOL_MAX_S - ($(date +%s) - t0) )); [ "$rem" -gt 0 ]; do
+             sleep $(( COOL_CHECK_S < rem ? COOL_CHECK_S : rem )); t=$(gpu_c); cooled "$t" && break; done
+           log "pause ended after $(( $(date +%s) - t0 ))s (GPU at ${t}C)"
+         done; log "GPU at ${t}C, memory.used $(smi memory.used) MiB"; }
 
 host_mib() {  # the steady host use with nothing running in WSL: the median of 8 readings, 2 s apart
   local v=() i

@@ -5115,3 +5115,155 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - Holm family H is never formed, so it corrects nothing.
 - **Where it shows:** decision_timeline.md's "Not run" item and paper_outline.md's ledger now cite this entry. The
   paper reports family H as not run, with these reasons.
+
+### D142. Evals are resumable: every finished batch goes to disk, and a restarted eval generates only the missing batches (your instruction, 2026-10-30; built and tested before any GPU stage of the night)
+- **Why:** on 28/29 Oct the D-pos-v2 Llama eval timed out at 1,926 / 2,040 problems and saved nothing (D140). `run_eval`
+  kept every completion in memory until the last batch.
+- **The change** (`physcal/eval/run_eval.py`):
+  - **`HFBackend.__call__`** builds its partition as before: prompts sorted by length, cut every `batch_size`.
+    - It then runs it through `generate_batched`.
+    - With a `PartialCompletions` file, a batch already on disk is read back, not generated. Every new batch is
+      written as soon as it exists.
+  - **The file** is `<output_dir>/completions.partial.jsonl`:
+    - **Header:** the eval's identity: model id, revision, adapter weights hash, loader, the full generation config,
+      the BOS switch, the chat-template kwargs, the SHA-256 of the rendered prompts and the package versions (torch,
+      transformers, peft, bitsandbytes, accelerate, unsloth, unsloth_zoo). It also stores the partition's hash.
+    - **One `session` line per (re)start.**
+    - **One `batch` line per finished batch,** holding its indices and per-prompt completions (text, token count,
+      truncation).
+  - **The writes:** each batch line goes to disk in one `O_APPEND` `os.write` loop, then `fsync`.
+  - **A torn last line** (a kill mid-write) is cut off and that batch is generated again.
+  - **A file is moved aside,** renamed `…stale-<UTC time>.jsonl` (never deleted, never mixed in), if any of these hold:
+    - its header names another identity;
+    - a line before its last does not parse;
+    - a batch line does not match this partition.
+    The eval then starts from scratch.
+  - **`run()`** (its new `resume=True` default):
+    - **Which evals use it:** only greedy evals (`do_sample: false`) on a backend that supports it (`HFBackend`). Sampled
+      evals never resume, because their random stream runs across batches.
+    - **What it records:** `metrics.json` and the tape's meta get a `resume` block (sessions, batches total / resumed /
+      generated this session), and summary.md shows it.
+    - **When the file goes:** it is deleted once `metrics.json` is written.
+  - **Not part of the identity:** the memory cap. It changes only the OOM backoff, which is logged either way.
+- **Why it can be byte-identical:** a resumed run generates the same batches, with the same composition, that one
+  uninterrupted run would. Greedy completions can depend on the batch (left padding, D137), so this is what makes them
+  comparable.
+- **CPU tests** (`tests/test_resume_eval.py`, 8):
+  - a cut-off run resumes to the same completions, and only the missing batches are generated, each with its
+    single-run composition;
+  - a torn last line is cut off and regenerated;
+  - another identity is moved aside, not mixed;
+  - damage before the last line, or a foreign partition, moves the file aside;
+  - a real SIGKILL of a child process loses at most the batch in flight;
+  - HFBackend resumes with its own length-sorted partition, and another adapter hash reuses nothing;
+  - `run()` resumes to the same tape, scores and metrics, then deletes the file;
+  - sampled evals and plain backends never write one.
+- **The GPU acceptance check (your criterion):** `physcal/eval/resume_check.py`, on the 30 development problems of
+  D137's equivalence check (never the frozen set). It runs three passes:
+  - (a) one uninterrupted run;
+  - (b) a run SIGKILLed once at least half its batches are on disk;
+  - (c) a restart that resumes (b).
+  - **Accepted only if** (c)'s completions are byte-identical to (a)'s (text, token count, truncation, reward), and (c)
+    read at least one batch and generated at least one.
+  - **The configs:** each model's real eval config. Qwen uses stage R4's D-pos-v2 seed-0 adapter at batch 16. Llama
+    uses the stage-XM D-pos-v2 adapter at batch 6.
+  - **Results:** `results/stage_xm/checks/resume_{qwen,llama}.json`. **Both ACCEPTED** (2026-10-30, 01:35–02:05 IST):
+    - **Llama** (batch 6, 5 batches): 30 / 30 byte-identical.
+      - (b) was killed with 3 batches on disk; (c) read 3 and generated 2.
+      - The temperature guard (D143) paused run (b) mid-generation for 30 s (87.2 °C → 63.9 °C). The completions
+        stayed identical.
+    - **Qwen** (batch 16, 2 batches): 30 / 30 byte-identical. (b) was killed with 1 batch on disk; (c) read 1 and
+      generated 1.
+- **The queue (D144):** a cut-off eval is BLOCKED-but-resumable. The next attempt or the next night's run continues it.
+
+### D143. The temperature guard pauses above 87 °C as before, but resumes as soon as the GPU is ≤ 75 °C (read every 30 s), with 10 min as the longest pause (your instruction, 2026-10-30)
+- **Why:**
+  - **The pauses were mostly idle:** on 28/29 Oct the GPU read 53–64 °C at every resume after a fixed 10-min pause,
+    25–35 °C below the trip point.
+  - **The cost:** each SFT stage was paused 63% of its time, and the night 46% (D140).
+- **The in-stage guard** (`scripts/gpu_temp_guard.sh`):
+  - **Unchanged:** the trip point (> 87 °C, read every 30 s), the SIGSTOP of the stage's process group, and SIGCONT at
+    the end of the pause.
+  - **Changed:** during a pause the guard reads the temperature every `CHECK_S` = 30 s. It continues the stage at the
+    first reading ≤ `RESUME_C` = 75 °C, or after `PAUSE_S` = 600 s at most.
+    - **Unreadable readings:** an empty reading never ends a pause early (fail closed). An unreadable reading outside a
+      pause still never starts one, as before.
+    - **The log:** each pause logs its start, and its end with the actual length and reason: "stage continued after Ns
+      paused (GPU at T C <= 75C | the 600s maximum | the stage ended; …)".
+- **Between stages** (`cool()` in `scripts/queue_r4_seeds.sh`):
+  - The same rule: wait until ≤ 75 °C, read every 30 s, 600 s at most, then read again.
+  - It logs "pause ended after Ns".
+  - This applies your rule to the queue's other fixed 10-min pause. Nothing else changes.
+- **Unchanged:** the stall watchdog (a stopped stage still counts as paused), the free-space guard, the deadline gates,
+  and every retired queue script.
+- **Tests** (`tests/test_temp_guard.py`, 6):
+  - a pause ends at the first reading ≤ 75 °C, and 75.00 counts as cool;
+  - a pause that never cools lasts the maximum;
+  - an unreadable reading never ends a pause, and 75.10 keeps it;
+  - no pause at ≤ 87 °C;
+  - `cool()` waits for 75 °C and logs the pause.
+  - **D129's and D132's guard tests still pass.**
+
+### D144. Tonight's queue, 2026-10-29/30 (`scripts/queue_xm2.sh`, `GPU_DEADLINE=13:00` IST): the D-pos-v2 Llama eval (resumable), the go rule, MC-B A6b, then SFT B-v2 only if it can finish (your instruction, 2026-10-30)
+- **The order, each stage gated and committed + pushed:**
+  1. **Eval D-pos-v2** (Llama, seed 0) on the frozen A6c + A6b: D137's config, unchanged, under D142's resume.
+     - **Attempts:** a cut-off attempt is retried and continues from the partial file, up to 3 attempts (the
+       overnight rule), each only while ≥ 30 min are left.
+     - **An attempt that ends without `metrics.json`** is logged BLOCKED-resumable with its batch count and
+       committed (logs only). The next attempt or the next night continues it.
+     - **The stage timeout** is the time left to the deadline.
+  2. **The go rule** (D137's, run early per D139: `physcal.eval.xm_go`; CPU, 1 thread, nice 19), once, when the eval's
+     `metrics.json` exists.
+     - **No seed-1 stage tonight, GO or not** (your instruction). The verdict is logged and reported.
+  3. **MC-B A6b** (D132): the GPU generation (estimate 2,400 s; timeout 2×), then execute + analyze on the CPU. This is
+     queue_xm.sh's block unchanged.
+  4. **SFT B-v2** (Llama, seed 0) from scratch, only if it can finish by 13:00. Two checks decide (below).
+- **Not tonight:**
+  - seed 1, whatever the go rule says;
+  - B-v2's eval;
+  - the one-time pilot analysis (`xm_pilot`), which needs both Llama evals.
+- **B-v2's start gate:**
+  - **The active time:** 8,800 s, from 28/29 Oct.
+    - **The rate:** 427 steps took 11,291 s of tqdm time, of which 6,600 s were 11 complete pauses. That leaves
+      11.0 s / step.
+    - **The total:** × 750 = 8,250 s, plus 345 s for R2-1's fingerprint and ~200 s for loading.
+  - **The pause stretch:** the active time is divided by (1 − tonight's paused share of GPU-stage time). The share
+    is summed per stage from the guard's logged pause lengths (D143), capped at 0.9.
+  - **Slack:** 15 min is added.
+- **B-v2's projection check** (the part that decides):
+  - **Why it is needed:** SFT heats the GPU more than an eval does (28/29: 63% vs 17% paused under the old rule), so the
+    gate's share from tonight's eval would understate it.
+  - **The rule:** 30 min into the stage, then every 15 min, it projects the end from the stage's own tqdm line (steps,
+    elapsed time with pauses included), plus a 600-s tail for the fingerprint and save.
+    - **If the end falls after 12:45** (deadline − slack), it stops the stage: SIGTERM to the process group, then SIGKILL
+      30 s later.
+    - **The incomplete directory** goes to `results/discarded/xm-b2-seed0-incomplete-<time>` and is committed as such.
+  - **Without it,** `--stop-at` would end an unfinishable run at 12:45 with a partial adapter. That is the case your
+    instruction excludes.
+- **What changes from `queue_xm.sh`:**
+  - The eval's done marker is its `metrics.json`, not `rollouts.jsonl`, since the tape is written before the metrics.
+  - Eval stages are named `xm_eval_dpos2_a<attempt>`.
+  - Every GPU stage logs its pause count and paused seconds, with the night's running totals.
+- **The same as every queue:**
+  - the launch cap (min(5.9, total − host − 0.5) GiB, never raised);
+  - the free-space guard (≥ 15 GiB on MLStorage);
+  - the stall watchdog (15 min of silence while not paused);
+  - the temperature guard (D143);
+  - the single-instance lock (`results/queue_xm2/queue.lock`);
+  - every CPU stage at 1 thread, nice 19.
+- **The watcher:** this Claude Code session, PID-based. It wakes on a stage's end, BLOCKED, a stall or the chain's exit,
+  and keeps `docs/lab_notebook.md` current.
+- **Full suite before the launch** (02:05–02:16 IST, GPU idle): 696 passed, 3 failed.
+  - **All 3 failures** are one structural test, `test_disk_guard.py::test_every_queue_script_guards_every_stage_launcher`,
+    on the three library-mode queue scripts. It requires `. scripts/disk_guard.sh` on the line after the `cd`.
+  - **Two predate tonight:** `queue_xm.sh` (D137) and `queue_xm_followup.sh` (D139) have failed since 28 Oct. The full
+    suite was not run after them. The third is `queue_xm2.sh`, which copied their header.
+  - **D111's rule holds for all three:**
+    - each sources `queue_r4_seeds.sh`, whose `cd` is followed by `. scripts/disk_guard.sh`;
+    - each launches stages only through that library's `run_stage`, which calls `disk_guard` first.
+  - **The fix:** the test now checks library-mode scripts by that route.
+    - Only settings come before the library.
+    - The script defines no launcher of its own.
+    - Its stages go through `run_stage`.
+    - The check on scripts with their own launchers is unchanged.
+  - **After the fix:** 27 / 27 in `test_disk_guard.py`. The suite is 699 passed, 0 failed, 0 skipped.

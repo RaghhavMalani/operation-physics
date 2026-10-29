@@ -57,10 +57,23 @@ def test_threshold_and_label_are_settable(tmp_path):
     assert "on Other" in _guard(tmp_path, str(40 * GIB), DISK_GUARD_LABEL="Other")
 
 
+LIB = "QUEUE_LIB_ONLY=1 . scripts/queue_r4_seeds.sh"
+
+
 @pytest.mark.parametrize("script", sorted(p.name for p in SCRIPTS.glob("queue_*.sh")))
 def test_every_queue_script_guards_every_stage_launcher(script):
     lines = (SCRIPTS / script).read_text().splitlines()
     cd = lines.index('cd "$(dirname "$0")/.."')
+    head = lines[cd + 1:cd + 6]
+    if any(line.startswith(LIB) for line in head):
+        # library mode (D137, D139, D144): the guarded launchers are queue_r4_seeds.sh's (checked as its own case);
+        # nothing before the library may start a stage, and the script defines no launcher of its own
+        assert all(re.match(r"^(export |mkdir -p |[A-Z_]+=)", line) for line in head[:next(
+            i for i, line in enumerate(head) if line.startswith(LIB))]), "only settings before the library"
+        assert not any(re.match(r"^(run_stage|run_gpu|run_cpu)\(\) \{", line) for line in lines), \
+            "a library-mode script launches stages only through the library's run_stage"
+        assert "run_stage " in "\n".join(lines)
+        return
     assert lines[cd + 1].startswith(". scripts/disk_guard.sh"), "the helper is sourced right after the cd"
     launchers = [i for i, line in enumerate(lines) if re.match(r"^(run_stage|run_gpu|run_cpu)\(\) \{", line)]
     assert launchers, "a queue script without a stage launcher"

@@ -1,0 +1,26 @@
+{
+ "decision": "D142 (acceptance: byte-identical greedy completions after a kill and a resume)",
+ "model": "llama",
+ "n_problems": 30,
+ "same_keys": true,
+ "n_identical": 30,
+ "byte_identical": true,
+ "batches_total": 5,
+ "killed_with_batches_on_disk": 3,
+ "resumed_run": {
+  "partial_file": "completions.partial.jsonl",
+  "sessions": 2,
+  "batches_total": 5,
+  "batches_resumed": 3,
+  "batches_generated_this_session": 2,
+  "moved_aside": null
+ },
+ "accepted": true,
+ "mismatches": [],
+ "seconds": {
+  "single_s": 477.9137167930603,
+  "killed_after_s": 434.18357729911804,
+  "resumed_s": 336.1216621398926
+ },
+ "batch_size": 6
+}
