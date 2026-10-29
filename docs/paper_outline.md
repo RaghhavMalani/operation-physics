@@ -230,7 +230,7 @@ A6c + A6b.
   - Within-problem tests use sampled answers at T = 1.
   - X1's score difference against RSS has no committed CI (headline panel C).
 - **Not run:**
-  - **Family H** (H1–H5): not run. Add a D-entry before the write-up; see decision_timeline.
+  - **Family H** (H1–H5): not run (D141; see decision_timeline).
   - **Kelly / finance metrics:** cut (R5-7).
 
 ## Appendix A. Pre-registration ledger

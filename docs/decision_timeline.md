@@ -119,8 +119,8 @@ paper's methods section and the reproducibility appendix.
   - The gate it required passed ([#12][f12]), and D50/A7 trimmed it.
   - But the stated-σ model it was written for was replaced by the Phase 12 stage designs (R3-4: aleatoric propagation
     only), and R5-7 cut the Kelly and finance metrics.
-  - **No D-entry declares H not run.** PREREGISTRATION.md requires every hypothesis to be reported as supported, not
-    supported or not run. One should be added before the write-up.
+  - **D141 (2026-10-30) declares H not run,** with these reasons. PREREGISTRATION.md requires every hypothesis to be
+    reported as supported, not supported or not run.
 
 [f1]: ../FINDINGS.md#1-on-the-untrained-15b-model-a-binary-reward-gives-no-grpo-signal-crps-does-2026-10-12
 [f2]: ../FINDINGS.md#2-which-small-model-gives-grpo-a-signal-format-following-and-length-beat-raw-math-skill-2026-10-12

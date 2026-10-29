@@ -68,3 +68,30 @@
 [05:46:01] guard(53297): stage continued (GPU at 63.50C)
 [05:51:33] end xm_eval_dpos2: exit 124
 [05:51:33] BLOCKED? xm_eval_dpos2 exit 124 (see results/queue_xm/xm_eval_dpos2.log)
+[05:51:36] commit 'XM pilot (D137): dpos2 (Llama, seed 0) greedy eval on the frozen A6c + A6b (exit 124)': pushed
+[05:51:36] GPU at 73.00C, memory.used 880 MiB
+[05:51:39] disk: 47 GiB free on MLStorage
+[05:51:39] start xm_train_b2 (timeout 14604s): uv run python -m physcal.train.stage_xm train --arm b2 --stop-at 2026-10-29T09:45:00+05:30 --max-reserved-gib 5.9
+[05:54:39] guard(102507): GPU at 87.30C > 87C: stage stopped for 600s
+[06:04:40] guard(102507): stage continued (GPU at 62.20C)
+[06:12:11] guard(102507): GPU at 88.00C > 87C: stage stopped for 600s
+[06:22:11] guard(102507): stage continued (GPU at 63.10C)
+[06:28:12] guard(102507): GPU at 87.10C > 87C: stage stopped for 600s
+[06:38:12] guard(102507): stage continued (GPU at 63.80C)
+[06:40:42] guard(102507): GPU at 87.60C > 87C: stage stopped for 600s
+[06:50:42] guard(102507): stage continued (GPU at 63.30C)
+[06:54:13] guard(102507): GPU at 87.10C > 87C: stage stopped for 600s
+[07:04:13] guard(102507): stage continued (GPU at 63.10C)
+[07:08:43] guard(102507): GPU at 87.20C > 87C: stage stopped for 600s
+[07:18:43] guard(102507): stage continued (GPU at 62.20C)
+[07:32:45] guard(102507): GPU at 87.50C > 87C: stage stopped for 600s
+[07:42:45] guard(102507): stage continued (GPU at 62.60C)
+[07:43:46] guard(102507): GPU at 87.10C > 87C: stage stopped for 600s
+[07:53:46] guard(102507): stage continued (GPU at 59.00C)
+[08:15:19] guard(102507): GPU at 87.20C > 87C: stage stopped for 600s
+[08:25:19] guard(102507): stage continued (GPU at 48.10C)
+[08:32:19] guard(102507): GPU at 87.20C > 87C: stage stopped for 600s
+[08:42:19] guard(102507): stage continued (GPU at 44.90C)
+[08:47:50] guard(102507): GPU at 87.10C > 87C: stage stopped for 600s
+[08:57:50] guard(102507): stage continued (GPU at 52.00C)
+[09:00:50] guard(102507): GPU at 87.50C > 87C: stage stopped for 600s

@@ -13,3 +13,7 @@
 [00:51:33] start xm_eval_dpos2 (timeout 18000s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_xm eval --arm dpos2 --max-reserved-gib 5.9
 [05:51:33] end xm_eval_dpos2: exit 124
 [05:51:33] BLOCKED? xm_eval_dpos2 exit 124 (see results/queue_xm/xm_eval_dpos2.log)
+[05:51:36] commit 'XM pilot (D137): dpos2 (Llama, seed 0) greedy eval on the frozen A6c + A6b (exit 124)': pushed
+[05:51:36] GPU at 73.00C, memory.used 880 MiB
+[05:51:39] disk: 47 GiB free on MLStorage
+[05:51:39] start xm_train_b2 (timeout 14604s): uv run python -m physcal.train.stage_xm train --arm b2 --stop-at 2026-10-29T09:45:00+05:30 --max-reserved-gib 5.9

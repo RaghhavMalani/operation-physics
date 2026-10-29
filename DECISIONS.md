@@ -5057,3 +5057,61 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     - The go rule cannot be evaluated, so nothing is added.
     - B-v2's SFT would then start (gate: 9,300 s) and be stopped at 09:45 with an incomplete adapter. Next night its eval
       is BLOCKED until the partial adapter is set aside.
+
+### D140. Night 2026-10-28/29 recovered: the D-pos-v2 Llama eval timed out with nothing saved, B-v2's SFT froze with the laptop at step 427, and its leftovers are set aside (2026-10-30, ~01:30 IST; recovery before any new GPU stage)
+- **What happened** (the committed `results/queue_xm/chain.log`; MORNING.md has the timeline):
+  - **SFT D-pos-v2 (Llama, seed 0):** 750 / 750 steps, exit 0, in 365 min. 230 min of that were 23 temperature pauses (63%).
+  - **Its eval on the frozen A6c + A6b:** timed out at 05:51 (exit 124) after 1,926 / 2,040 problems. Five pauses
+    (50 min).
+    - **Nothing was saved,** because `run_eval` wrote completions only after the last batch (D139 flagged this risk).
+    - **So the go rule (D139) could not be evaluated** (no `metrics.json`), and no seed-1 stage was added.
+  - **SFT B-v2 (Llama, seed 0):** started at 05:51 and reached step 427 / 750 by ~09:00.
+    - At 09:00:50 the temperature guard paused it (its 12th pause). After that, no process in WSL wrote anything: no
+      "continued" line, no stall-guard line, no chain line.
+    - **Windows logged no driver reset** (no nvlddmkm event since 28 Oct 18:00) and no crash. Its System log runs on
+      normally until a `shutdown.exe` shutdown at 09:54:29 IST on your account, which Kernel-Boot records as successful.
+    - **The cause is unknown.** A WSL-side freeze cannot be seen from inside WSL. The stall guard counts a stopped
+      (state T) stage as paused, so even a living guard would not have fired.
+  - **Pause time:** 40 pauses, 390 of the 854 min from 18:46:37 to 09:00:50 (46%). Each SFT stage was paused 63% of
+    its time.
+- **Checks after the restart** (2026-10-30, 01:11 IST, WSL up 3 min):
+  - **git:** `fsck --full` is clean (dangling objects only); local `main` = `origin/main` = `ac78c5f`. The only
+    uncommitted changes are the queue logs from 05:51 onward.
+  - **Integrity:** `scripts/integrity_check.py` on the 64 files written since 28 Oct 18:00 IST found no problems.
+    - Its only note: `xm_train_b2.log` ends without a newline, mid-progress-bar, as expected for a freeze.
+    - The D-pos-v2 adapter's safetensors are structurally sound (392 tensors, none all-zero).
+  - **Resources:** 47 GiB free on MLStorage. The GPU is at 57 °C with 916 MiB used and no compute process. No queue
+    process is alive (every recorded PID is dead), and both queue locks are free.
+- **Set aside, not deleted:** `results/stage_xm/b2/seed0` → `results/discarded/xm-b2-seed0-hang-2026-10-29/seed0`.
+  - **What was there:** only an empty `checkpoints/` directory. No checkpoint had been saved by step 427, and there is
+    no adapter and no `summary.json`.
+  - **Why move it:** B-v2's next SFT starts from scratch (your instruction). The queue's skip and gate checks then see
+    no B-v2 directory at all.
+- **`.gitignore`:** the stage_xm adapter weights, checkpoints, raw tapes, eval partial files (D142) and the XM queues'
+  PID / lock files, matching stage R4's lines. The configs, fingerprints and gzipped tapes stay committed.
+
+### D141. Family H (H1–H5, PREREGISTRATION.md) is declared NOT RUN (your instruction, 2026-10-30; written before the write-up, as decision_timeline.md and paper_outline.md asked)
+- **The status:** H1a, H1b, H2a, H2b, H3, H4a, H4b, H5a and H5b were never tested. None is supported or not supported.
+  The paper's pre-registration ledger lists each as **not run**.
+- **The reasons, in order:**
+  1. **The model they were written for was never built.** Family H compares "the Phase 12 stated-σ model (seed mean over 3
+     seeds)", i.e. GRPO with crps_log and a depth × noise curriculum, against SFT, post-hoc and conformal.
+     - R3-4 (D93) scoped Phase 12 to aleatoric σ propagation, in stages A–D.
+     - The explicit-propagation SFT (stage D, then R4's D-pos-v2) became the model of record.
+     - No checkpoint matches family H's definition of "RL".
+  2. **Its precondition passed, but the family was trimmed before any of it ran.** The gate passed under D57's FINAL rule
+     (FINDINGS #12). D50/A7 then cut H4b (Kelly), the market scoring rule and the stress suite (down to the A6 pairs
+     plus unit swaps).
+  3. **R5-7 (D133) cut Kelly and the finance metrics from this paper.** That leaves H4 without its pre-registered form.
+  4. **Its questions were answered by other pre-registered families,** each with its own primary. These are not
+     substitutes for H's tests:
+     - propagation (H1's question): A6 / A6c, D113 / D118, FINDINGS #32;
+     - conditional calibration against post-hoc (H2's): family N, D50 / A5;
+     - uncertainty sources (H3's): X1–X4, MC-A / MC-B.
+- **What this does not do:**
+  - It does not edit PREREGISTRATION.md, which is never edited.
+  - It reports no H statistic computed after the fact.
+  - It does not claim any H result from the other families.
+  - Holm family H is never formed, so it corrects nothing.
+- **Where it shows:** decision_timeline.md's "Not run" item and paper_outline.md's ledger now cite this entry. The
+  paper reports family H as not run, with these reasons.

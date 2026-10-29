@@ -89,3 +89,17 @@ results/confirmatory_build/pid
 results/queue_r4_tail/*.pid
 results/queue_r4_seeds/*.pid
 results/queue_r4_seeds/queue.lock
+# XM pilot (D137) and its follow-up queues: the Llama adapters / checkpoints / raw tapes (configs, fingerprints and
+# gzipped tapes committed), eval partial files (D142), queue PID and lock files
+results/stage_xm/*/seed*/final_adapter/adapter_model.safetensors
+results/stage_xm/*/seed*/final_adapter/tokenizer.json
+results/stage_xm/*/seed*/final_adapter/README.md
+results/stage_xm/*/seed*/final_adapter/chat_template.jinja
+results/stage_xm/*/seed*/final_adapter/tokenizer_config.json
+results/stage_xm/*/seed*/checkpoints/
+results/stage_xm/*/seed*/confirmatory/rollouts.jsonl
+results/stage_xm/*/seed*/confirmatory/completions.partial*.jsonl
+results/queue_xm*/*.pid
+results/queue_xm*/*.lock
+results/queue_xm*/*/*.pid
+results/queue_xm*/*/*.lock

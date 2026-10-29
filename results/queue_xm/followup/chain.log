@@ -3,3 +3,5 @@
 [05:51:47] start xm_go (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.xm_go analyze
 [05:51:50] end xm_go: exit 1
 [05:51:50] go rule not evaluated (see results/queue_xm/followup/xm_go.log): nothing is added (D139)
+[05:51:54] commit 'XM pilot (D139): D137's go rule on D-pos-v2 (Llama, seed 0), before B-v2's eval': pushed
+[05:51:54] go rule: ? (True = GO; anything else adds nothing)
