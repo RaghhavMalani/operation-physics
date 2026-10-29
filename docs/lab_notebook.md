@@ -183,3 +183,12 @@ GPU_DEADLINE=13:00 setsid nohup scripts/queue_xm2.sh >> results/queue_xm2/nohup.
   - At that rate the remaining 834 take ~1.5 h, so the eval ends at ~05:55.
 - **Temperature:** no pause since 03:15. Still 2 pauses, 60 s in total. The GPU holds at ~81 °C under load.
 - **GPU:** 6,178 MiB device-wide, 93 % utilization. Free space: 47.2 GiB.
+
+### 05:27 Heartbeat 3: eval at 87 %, one more short pause
+
+- **`xm_eval_dpos2_a1`:** 1,782 / 2,040 problems after 10,875 s, and 297 / 340 batches on disk.
+  - In the last hour: 576 problems at ~6.1 s each.
+  - The remaining 258 take ~26 min, so generation ends at ~05:55. After that the eval scores the records and writes
+    metrics.json.
+- **Temperature:** pause 3 at 05:08:23 (87.6 °C), continued after 31 s (64.1 °C). The night's total is 3 pauses, 91 s.
+- **GPU:** 80.6 °C, 6,895 MiB device-wide. Free space: 47.2 GiB.
