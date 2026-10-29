@@ -143,3 +143,34 @@ Brief (your message, ~01:10 IST): (1) recovery checks, (2) resumable evals, (3) 
 - **Dry run of `queue_xm2.sh`:** the order is eval → go → MC-B gen / exec / analyze → B-v2 SFT, with a B-v2 estimate of
   146 min at a share of 0.
 - **Host VRAM** with nothing in WSL: 828–834 MiB, so the launch cap is 5.9 GiB.
+
+### 02:18 Launch (D144)
+
+```
+mkdir -p results/queue_xm2
+GPU_DEADLINE=13:00 setsid nohup scripts/queue_xm2.sh >> results/queue_xm2/nohup.log 2>&1 < /dev/null &
+```
+
+- **The chain:** PID 35695, started 02:18:47, 641 min left.
+- **Host VRAM:** 741–751 MiB, so the launch cap is 5.9 GiB.
+- **`xm_eval_dpos2_a1`** started 02:19:07 (timeout 38,455 s = the deadline). Free space: 47 GiB.
+- **The R2-1 reload check passed** at ~02:24: adapter logit delta 3.97; tokenizer matches; 196 bnb-4bit modules.
+- **The partial file:**
+  - **Header identity:** `lora_hash 3c99b36c58b68995`, 340 batches.
+  - **Batches:** 2 on disk by 02:26 (~43 s per batch on the longest prompts).
+  - **The GPU then:** 81 °C, 5.86 GiB device-wide.
+- **The watcher:** this session runs `watch.sh 35695 results/queue_xm2 <next line> 3600` in the background. It exits on a
+  stage end / BLOCKED / SKIP / go rule / B-v2 line, on a suspected stall (stage log silent > 15 min while not
+  SIGSTOPped), on the chain's exit, or on a 1-h heartbeat.
+
+### 03:26 Heartbeat 1: eval running, two short pauses
+
+- **`xm_eval_dpos2_a1`:** 630 / 2,040 problems generated after 3,685 s, and 105 / 340 batches on disk.
+  - The prompts run longest first, so the rate should improve: ~5.8 s / problem so far.
+- **Temperature pauses:** 2, each 30 s.
+  - 03:02:11 at 87.8 °C, continued at 64.4 °C.
+  - 03:15:13 at 87.7 °C, continued at 63.8 °C.
+  - Under the 28/29 rule each would have been 600 s. That is 19 min of GPU time saved so far.
+- **GPU:** 81.4 °C, 6,905 MiB device-wide, 93 % utilization. Free space: 47.2 GiB.
+- **Cosmetic issue:** the guard's resume line repeats the reading ("GPU at 64.40C <= 75C; GPU at 64.40C").
+  - It is left as is, because the guard script is running and bash reads scripts as it goes. Tidy up after the night.
