@@ -174,3 +174,12 @@ GPU_DEADLINE=13:00 setsid nohup scripts/queue_xm2.sh >> results/queue_xm2/nohup.
 - **GPU:** 81.4 °C, 6,905 MiB device-wide, 93 % utilization. Free space: 47.2 GiB.
 - **Cosmetic issue:** the guard's resume line repeats the reading ("GPU at 64.40C <= 75C; GPU at 64.40C").
   - It is left as is, because the guard script is running and bash reads scripts as it goes. Tidy up after the night.
+
+### 04:27 Heartbeat 2: eval at 59 %, no new pauses
+
+- **`xm_eval_dpos2_a1`:** 1,206 / 2,040 problems after 7,339 s, and 201 / 340 batches on disk.
+  - In the last hour: 576 problems at ~6.3 s each. That is not faster than the first hour, even though the prompts
+    get shorter.
+  - At that rate the remaining 834 take ~1.5 h, so the eval ends at ~05:55.
+- **Temperature:** no pause since 03:15. Still 2 pauses, 60 s in total. The GPU holds at ~81 °C under load.
+- **GPU:** 6,178 MiB device-wide, 93 % utilization. Free space: 47.2 GiB.
