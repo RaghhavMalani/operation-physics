@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/flash2404/operation-physics/physcal/eval/xm_go.py", line 94, in <module>
+    main()
+  File "/home/flash2404/operation-physics/physcal/eval/xm_go.py", line 90, in main
+    print(render(analyze()))
+                 ^^^^^^^^^
+  File "/home/flash2404/operation-physics/physcal/eval/xm_go.py", line 65, in analyze
+    raise RuntimeError(f"D139: the go rule cannot be evaluated: {g['reason']}")
+RuntimeError: D139: the go rule cannot be evaluated: no finished eval in /home/flash2404/operation-physics/results/stage_xm/dpos2/seed0/confirmatory (no metrics.json)

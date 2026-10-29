@@ -1,0 +1,5 @@
+[00:13:44] XM follow-up start (D139): chain PID 10129, its log from line 49; GPU deadline 10:00 IST; PID 46728
+[05:51:47] disk: 47 GiB free on MLStorage
+[05:51:47] start xm_go (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.xm_go analyze
+[05:51:50] end xm_go: exit 1
+[05:51:50] go rule not evaluated (see results/queue_xm/followup/xm_go.log): nothing is added (D139)
