@@ -22,3 +22,10 @@
 [15:59:31] guard(167686): stage continued after 30s paused (GPU at 63.10C <= 75C)
 [16:21:47] end r56_eval_b2_s0_a1: exit 0
 [16:21:47] r56_eval_b2_s0_a1: 1 temperature pauses, 30s paused of 1969s; tonight so far 4 pauses, 120s of 5563s (D143)
+[16:21:51] commit 'R5-6 J (D147): b2 seed 0 greedy eval on the frozen J set, attempt 1 (exit 0)': pushed
+[16:21:51] eval r5_6 dpos2 seed 1 attempt 1 of 3: 0 of 102 batches already on disk
+[16:21:51] GPU at 63.60C, memory.used 985 MiB
+[16:21:53] disk: 47 GiB free on MLStorage
+[16:21:53] start r56_eval_dpos2_s1_a1 (timeout 63489s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2 --seed 1 --r5-6 --max-reserved-gib 5.9
+[17:20:34] end r56_eval_dpos2_s1_a1: exit 0
+[17:20:34] r56_eval_dpos2_s1_a1: 0 temperature pauses, 0s paused of 3523s; tonight so far 4 pauses, 120s of 9086s (D143)
