@@ -1,0 +1,9 @@
+{
+ "kind": "D151 item 1, secondary (descriptive): MC-A's raw spread as a two-stage stopping rule; MC-A's own draw order j = 1..8 (one realization: it reproduces #37's k curve)",
+ "thetas": {
+  "q0.25": 0.012504849821563246,
+  "q0.5": 0.035891798871543694,
+  "q0.75": 0.09555178151952878
+ },
+ "best_on_selection": "q0.75"
+}
