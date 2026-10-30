@@ -928,3 +928,25 @@ Progress:
 - [x] **4. Compiled** (16 pages) and sent; `tests/test_paper.py` 11 passed.
 - [ ] **Next:** Introduction and the three results acts; Related work after the references are verified (R5-10);
   Discussion, Limitations, appendices.
+
+## 2026-10-31 night: exploratory follow-up track (your instructions; D151–D154; NOT the paper, D148 applies to it)
+- [x] **D151:** the plan and analysis rules for all three items, pushed (`a8938c7`) before any data.
+- [x] **1. Uncertainty-guided test-time compute** (offline, X2's k = 8):
+  - **Headline policy** (D75, the stated-σ gate; chosen on the selection half, reported on the evaluation half):
+    - 26% of majority@8's tokens, at −3.6 points;
+    - matched-accuracy saving +0.21 [+0.12, +0.30].
+  - **No-loss policies** (B3, C): 10–21% fewer tokens.
+  - **MC-A's two-stage spread stop** loses AUROC on every set.
+- [x] **2. Exact arithmetic on D-pos-v2's own lines** (offline, 3 seeds; the anchors reproduce #35):
+  - E − (a) = −0.0016 [−0.0034, −0.0003], so it hurts;
+  - E_chain ≈ (a); it is the best non-oracle source at depths 1–2, descriptively.
+- [x] **3. Scale check (7B):** the main stage was not run (D153: D151's 120 s / problem rule fired at 1,024 tokens).
+  - **The development-only measurement at 2,048 tokens:**
+    - 277 / 474 / 852 s per problem;
+    - batch 8 runs out of memory;
+    - readouts 0.9 / 0.8 s per answer;
+    - the native 1.5B takes ~45 s per problem.
+  - **D152:** Qwen's decoding (X2's T = 1 degenerates). **D154:** the after-box unit parser.
+- [x] **The write-up:** `docs/exploratory/followup_feasibility.md`; MORNING.md.
+- [ ] **For your decision:** a cloud or vLLM run of item 3 (the code and queue are ready), or one of D153's
+  alternatives.

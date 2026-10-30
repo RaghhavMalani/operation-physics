@@ -1,92 +1,140 @@
-# Report: 2026-10-30 afternoon/evening: R5-6 part J (D147–D149)
+# Report: night of 2026-10-30/31, the exploratory follow-up track (D151–D154; not the paper)
 
-Written on 2026-10-30 at ~19:35 IST, as soon as the chain ended.
-- **Sources:** `results/queue_r5_6/chain.log`, the stage logs and the result files. The working log is in
-  `docs/lab_notebook.md`.
-- **The previous report** (29/30 night) is in git history: `git show fef5b15:MORNING.md`.
+Written on 2026-10-31 at ~02:50 IST, once the GPU work ended.
+- **Sources:**
+  - the full write-up: `docs/exploratory/followup_feasibility.md`;
+  - the working log: `docs/lab_notebook.md`;
+  - results in `results/followup/`.
+- **The previous report** (R5-6 part J) is in git history: `git show 0e3e62f:MORNING.md`.
+- **D148's freeze held.** Nothing tonight touched `paper/`, FINDINGS.md, the frozen sets or the paper's results. The
+  frozen D-pos-v2 logs were only read.
 
 **Short version.**
-1. **Pre-registered, then built.** D147 was pushed (`8405f0f`) before any J set, completion or statistic existed.
-   The freeze (D148) and the Llama caveat in the outline are done too.
-2. **Built, frozen and CPU-tested (D149).**
-   - **The frozen J set:** 816 sensitivity + 816 invariance problems; all 24 cells full; every problem replays.
-   - **X1** reproduces exactly.
-   - **The analysis** reproduces R4-3's numbers on the development files.
-   - **Tests:** the full suite, 728 passed, 0 failed.
-3. **The chain ran 14:48 → 19:26 IST, 14.5 h before the 10:00 deadline.**
-   - Six evals, each on its first attempt; 0 OOM backoffs; every R2-1 fingerprint check passed.
-   - 5 temperature pauses of 30 s, 150 s in all (0.9%).
-   - **Every commit was pushed:** `main` = `origin/main` when the chain ended.
-4. **The result: P_J is CONFIRMED (FINDINGS #39).** D-pos-v2's answer σ propagates through Jacobians outside its
-   training range:
-   - J1: slope **+0.985 [+0.868, +1.103]**, seeds 0.94 / 0.97 / 1.05;
-   - C2: ≥ 0.5;
-   - C3: J-invariance **+0.026 [−0.055, +0.119]**, inside ±0.3.
-5. **Explicit beats implicit on the slope:** J2 +0.530 [+0.377, +0.676], Holm-rejected. B-v2 (+0.455) fails C2 and C3.
-6. **No score gain:** D-pos-v2 vs RSS +0.0011 (p = 0.072) and vs X1 +0.0000, neither rejected. This is #32's pattern.
-7. **The caveat to report with it:** a propagator clamped to the training range would already reach +0.831.
-   - So the set shows "propagates, not a lookup". It only weakly shows "uses the out-of-range part".
-   - Descriptively, D-pos-v2 is above the clamped one where clamping matters: rank-flip pairs +1.12 vs +0.36 (43 pairs).
-8. **No decision is needed from you for the experiment.** Under D148, R5-6 was the last one. What's next is the
-   write-up.
+1. **The plan came first.** D151 (the plan and every analysis rule, marked exploratory) was pushed at 01:15 IST
+   (`a8938c7`), before any data.
+2. **Item 1, uncertainty-guided test-time compute:** a modest token saving, and voting itself buys little.
+   - **Voting:** on X2's samples, majority@8 is only +4.3 points over one sample (0.382 vs 0.339) at 8× the tokens.
+   - **The selected policy** (chosen on half the problems): "stop after one sample if its stated σ is small, else draw
+     until two agree". On the other half it uses 26% of majority@8's tokens at −3.6 points.
+     - At matched accuracy it saves **21% [12%, 30%]** of the fixed-k curve's tokens.
+   - **Policies with no accuracy loss** ("stop at 3 agreeing", "stop when the majority is settled") save 10–21%.
+   - **MC-A's raw spread as a two-stage stop rule fails** on every set (it loses AUROC).
+3. **Item 2, a calculator on the model's own lines:** it hurts slightly.
+   - **The anchors** reproduce #35 exactly (−0.0397, −0.0417).
+   - **Re-evaluating every S formula** at the model's own values, with exact aggregation, scores **−0.0016 [−0.0034,
+     −0.0003]** below the stated σ, and below RSS and X1.
+   - **Re-deriving the intermediates too** recovers it to ≈ the stated σ. It is best at depths 1–2 and worse at 4–5.
+   - **The bottleneck is the derivative and the chain, not the arithmetic** (#35's picture).
+4. **Item 3, the 7B scale check: stopped by its own pre-stated rule (D153); there is no 7B result.**
+   - **What went wrong:**
+     - X2's T = 1 decoding degenerates on the 7B (D152 moved to Qwen's documented sampling);
+     - the 7B's native chain-of-thought needs more than 1,024 tokens from depth 2 up;
+     - at ~6.6 decoding steps / s under bitsandbytes, a problem takes 139–155 s at 1,024 tokens, against the rule's
+       120 s.
+   - **A development-only measurement at 2,048 tokens:**
+     - 277 / 474 / 852 s per problem at depths 1–3;
+     - batch 8 runs out of memory at that budget;
+     - so about 50 problems per night locally, too few to measure.
+   - **A real run needs** a cloud GPU or vLLM-class serving (estimated 1–2.5 h for 1,200 problems; an assumption). The
+     code, the tested parser, the readouts and a queue script are ready.
+5. **The tests:** see §5. No experiment needs your decision tonight, but item 3's next step does (§6).
 
-## 1. What was built (D147 → D149)
+## 1. Item 1: uncertainty-guided test-time compute (`results/followup/ttc/`)
 
-- **The training support** (`data/jacobian_support/r4_1.json`, SHA-256 `eda3c3b2…`): from the 3,000 R4-1 problems
-  both arms trained on, per chain, the log-sensitivity of every given.
-- **A J pair:**
-  - its chain occurs in training;
-  - one given's sensitivity is ≥ 0.1 outside that chain's training range;
-  - every shown and computed value lies inside its training range.
-- **Sensitivity pairs:** A6c's allocation on J worlds.
-- **Invariance pairs:** new, by dimensional scaling. The world and a copy scaled along a direction that fixes g have
-  identical Jacobians and a target ×2–8. A6b's power-law chains could not be used: their Jacobians never change.
-- **How far outside** (median [IQR], sensitivity): exceedance 0.38 [0.17, 0.77]; nearest trained Jacobian (L∞)
-  0.41; the chain's training problems 3 [1, 5].
-  - **Thin cell:** dynamics at depth 1 is nearly absent from the sensitivity set; its chains are mostly power laws.
+- **Data:** X2's 1,200 candidates × 8 samples of the SFT 1.5B; tokens are completion tokens.
+- **Averaging:** each number is the mean over 200 random draw orders, which agrees with the fixed order.
+- **The selection:** the policy was selected on a hash half (604 / 596) and is reported on the other half.
 
-## 2. The evals (operational)
-
-| eval | time (IST) | generation | answered (inv / sens) | parse fail | pauses |
+| evaluation half (604 problems) | accuracy | tokens | Δ vs maj@8 | tokens / maj@8 | matched-accuracy saving |
 |---|---|---|---|---|---|
-| D-pos-v2 s0 | 14:49 → 15:49 | 3,534 s | 814 / 816 | 0.2% / 0.0% | 3 × 30 s |
-| B-v2 s0 | 15:49 → 16:22 | 1,909 s | 816 / 815 | 0.0% / 0.1% | 1 |
-| D-pos-v2 s1 | 16:22 → 17:20 | 3,465 s | 815 / 815 | 0.1% / 0.0% | 0 |
-| B-v2 s1 | 17:21 → 17:54 | 1,948 s | 816 / 816 | 0 | 1 |
-| D-pos-v2 s2 | 17:54 → 18:53 | 3,453 s | 813 / 809 | 0.4% / 0.5% | 0 |
-| B-v2 s2 | 18:53 → 19:25 | 1,892 s | 816 / 816 | 0 | 0 |
+| **D75** (stated-σ gate, then 2 agreeing) | 0.353 | 402 | −0.036 [−0.049, −0.022] | 0.26 | **+0.21 [+0.12, +0.30]** |
+| majority@8 | 0.388 | 1,563 | – | 1.00 | – |
 
-- **Every eval:** truncation ≤ 0.1%, 0 OOM backoffs, 102 / 102 batches in one session.
-- **Memory:** the device-wide peak was 5.2–6.6 GiB.
-- **The analysis:** 46 s, CPU, 1 thread.
+- **In-sample, all problems:**
+  - B3 (stop at 3 agreeing) loses 0.001 [−0.005, +0.003] at 0.79 of the tokens;
+  - C (stop when settled) loses 0.000 at 0.90;
+  - A (your example: 2 agree, else 8) loses 0.003 at 0.81.
+- **The gate works between problems:** a small first stated σ means "more samples will not change the answer" often
+  enough. That is not within-problem signal, which X2 (#19) showed this σ does not have.
+- **MC-A** (B-v2, A6c): stopping after 2 re-asks when their spread is small gives AUROC 0.663 at 939 tokens, against
+  fixed k = 3 at 0.700 with 751 tokens. A k = 2 and a k = 8 spread are not on one scale.
+- **Caveats:**
+  - early-stopped self-consistency is prior art (references to verify);
+  - one model and T = 1;
+  - the fixed-k curve is flat, so matched savings are noisy in-sample.
 
-## 3. The result (`results/r5_6/summary.md`; FINDINGS #39)
+## 2. Item 2: exact arithmetic on D-pos-v2's own lines (`results/followup/arith/results.json`)
 
-| test (Holm over J1–J6) | seed mean [90% CI] | p | Holm |
-|---|---|---|---|
-| **J1** D-pos-v2 (a) J-sensitivity slope > 0 (primary) | +0.985 [+0.868, +1.103] | < 1e-4 | rejected |
-| **J2** explicit − implicit slope | +0.530 [+0.377, +0.676] | < 1e-4 | rejected |
-| J3 D-pos-v2 − RSS (expected crps_log) | +0.0011 [−0.0002, +0.0020] | 0.072 | – |
-| J4 D-pos-v2 − X1 | +0.0000 [−0.0013, +0.0008] | 0.44 | – |
-| J5 B-v2 − RSS | −0.0005 [−0.0008, −0.0002] | 0.997 | – |
-| J6 B-v2 − X1 | −0.0016 [−0.0019, −0.0013] | 1.0 | – |
+- **Coverage:**
+  - 3,016–3,023 problems per seed are re-evaluated;
+  - 95% of S formulas evaluate (the rest keep the written number);
+  - σ moves by more than 25% on 10–14% of problems.
 
-- **The line sources (b) and (c):** both slopes are ≈ 1.0, and their invariance is inside ±0.3 on all 408 pairs.
-- **The limits** (FINDINGS #39 states them at the result's prominence):
-  1. **The clamped comparator** (sensitivities clipped into the training range) reaches +0.831 [+0.737, +0.919]. No
-     test compares D-pos-v2 with it; that comparison was not pre-registered.
-     - D-pos-v2 is above it descriptively in the subgroups where clamping matters: exceedance above the median +0.835 vs
-       +0.623; strict +0.895 vs +0.710; rank flip +1.123 vs +0.357.
-  2. **C3 rests on 72–86 computation-correct invariance pairs per seed,** almost all at depths 1–2.
-  3. **D-pos-v2's S lines** are less accurate on the out-of-range terms: 58–64% within 10%, against 69–75% in range.
-     Its answer σ still tracks σ\* at slope ≈ 1.
-- **Context (#32, depths 1–4, in-range):** 0.855. The J slope is not lower.
+| variant (seed mean, oracle-centred expected crps_log) | value | − (a) [95% CI] | − RSS | − X1 | A6c slope |
+|---|---|---|---|---|---|
+| (a) as stated | −0.0397 | – | +0.0002 | −0.0005 | 0.837 |
+| E: S re-evaluated, exact aggregation + copy | −0.0413 | **−0.0016 [−0.0034, −0.0003]** | −0.0014 | −0.0021 | 0.826 |
+| E_S: S re-evaluated, own aggregation + copy | −0.0403 | −0.0006 [−0.0014, −0.0000] | −0.0004 | −0.0011 | 0.849 |
+| E_chain: intermediates re-derived too | −0.0402 | −0.0005 [−0.0018, +0.0006] | −0.0003 | −0.0010 | 0.829 |
 
-## 4. State, and what's next
+- **E_chain by depth:**
+  - −0.0343 / −0.0368 at depths 1 / 2: the best non-oracle source there, ahead of RSS (−0.0371 / −0.0381) and X1;
+    descriptive, seen after the fact;
+  - −0.0476 at depth 5, against RSS's −0.0423.
 
-- **The chain:** it exited; the lock is free; no GPU process.
-- **The checks:** the integrity check on the 122 files written since 14:30 found 0 problems; free space 47.17 GiB.
-- **Updated:** `docs/decision_timeline.md` (D147–D149 → #39), `docs/paper_outline.md` (status, two claims to avoid,
-  the ledger), PROGRESS.md, `docs/lab_notebook.md`.
-- **D148 is now in force:** no new experiments for this paper. The next step is the write-up (Phase 15).
-  - **Report with it:** R5-6 alongside the clamped comparator, and the depth-1–2 basis of C3.
+## 3. Item 3: the 7B (`results/followup/scale/`, D152–D154)
+
+| development problems only (kinematics, depths 1 / 2 / 3), 2,048 tokens | 7B 4-bit | native 1.5B 4-bit |
+|---|---|---|
+| s / problem | 277 / 474 / 852 | 23 / 67 / 46 |
+| batch 8 | out of memory (halves to 2 × 4, then 2 × 2) | fits (peak 2.3 GiB) |
+| answered correct | 13 / 20 (all 3 problems mixed) | 3 / 24 |
+| P(yes) / hidden states, s per answer | 0.89 / 0.81 | 0.14 / 0.12 |
+
+- **The parser** was checked on these answers only. One fix (D154): the unit written after the box.
+- **No 7B answer to a non-development problem exists.**
+
+## 4. Decisions made tonight (all logged; please review)
+
+- **D152, decoding:**
+  - **The change:** T 0.7, top_p 0.8, top_k 20 for both 7B and the 1.5B control, instead of X2's T = 1.
+  - **The reason:** T = 1 makes the 7B ramble and switch language.
+  - **The cost:** the comparison with X2's SFT numbers changes model, format and decoding at once.
+- **D153, item 3 stopped by D151's own rule.**
+  - **Not done:** a depth-1-only run, a short-answer prompt, or the 7B judging the 1.5B's answers. Each would have
+    changed the design after the rule fired.
+  - **Instead:** the GPU time went to a development-only measurement for planning.
+- **D154:** the parser fix (development check), and the process fault below.
+
+## 5. Problems, and the state
+
+- **A fault of mine, with no consequence:**
+  - **The cause:** the hand-launched feasibility runs used `timeout … setsid uv run …`, which put Python in its own
+    process group. The temperature and stall guards watched `timeout`'s group, so a pause would not have stopped the
+    GPU process.
+  - **Found and fixed** mid-run (02:15). The GPU peaked at 84.3 °C, so no pause was due.
+  - **The queue scripts are unaffected** (`run_stage` uses plain `timeout`).
+- **Hand-stopped runs:**
+  - the first T = 1 feasibility (rule-relevant numbers in D152);
+  - the 1,024-token feasibility after 2 problems (D153);
+  - a 12-problem 2,048-token run after 1 problem, which would have hit its own timeout before writing anything. It
+    was re-run on 3 problems.
+  - Their logs are committed.
+- **BLOCKED:** none.
+- **Tests:** see the suite line in §6 (the full suite ran after the GPU work).
+- **The state:**
+  - no GPU process;
+  - every commit pushed;
+  - free space on MLStorage ~42 GiB after the 5.5 GB model download.
+  - The 7B weights stay in the repo-local HF cache for a future run (`.cache/` is gitignored).
+
+## 6. Recommendation
+
+- **Item 3 is the one worth continuing**, and it needs other hardware. My suggestion:
+  - one cloud session with vLLM (AWQ 7B, or bf16 on a 40–80 GB GPU) running `followup_scale`'s prompts and parser on
+    the first 600–1,200 X2 candidates;
+  - the readouts (P(yes), hidden states) can run locally afterwards at ~1.7 s per kept answer, or there.
+  - **Before that:** decide whether the native 1.5B control is worth it. It is cheap but rarely right natively.
+- **Item 1:** publishable only as a small note unless a model with a larger voting gain is used.
+- **Item 2:** answers its question (no). The interesting next step is symbolic differentiation of the model's own
+  chain.
