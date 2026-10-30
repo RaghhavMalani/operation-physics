@@ -487,3 +487,7 @@ Brief (your message, ~10:00 IST):
 - **`tests/test_r5_6.py`** (4): the development A6b / A6c with seed 0's tapes × 3 and injected J metadata.
   - J1 = R1, J2 = R1 − R4 (1e-12); P_J follows D147 §8; every split runs; 1,020 distance rows.
 - `68449cb`.
+
+### 15:13 Full suite (CPU, 1 thread, nice 19, during the first eval): 728 passed, 1 skipped, 0 failed (13 min 50 s)
+- 705 before + 23 new (test_pairs_j 16, test_r5_6 4, test_queue_r5_6 3).
+- D-pos-v2 s0 at 624 / 1,632.
