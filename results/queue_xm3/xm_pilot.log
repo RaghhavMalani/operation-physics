@@ -1,0 +1,43 @@
+# The cross-model pilot (D137): D-pos-v2 and B-v2 on Llama-3.2-3B-Instruct, seed 0, frozen A6c + A6b
+
+**Go rule (K1 ∧ C2 ∧ C3 on D-pos-v2's answer σ): NO-GO** (K1 True, C2 True, C3 False). 2040 problems.
+
+## llama
+
+| arm / σ source | A6c slope [90% CI] (n pairs) | p (one-sided) | A6b slope, cc pairs [90% CI] (n) | K1 / C2 / C3 | Theil-Sen by depth 1–5 (fragile, #34) |
+|---|---|---|---|---|---|
+| dpos2 (a) | +0.785 [+0.595, +0.974] (505) | 0.0 | +0.567 [-3.552, +843.415] (4) | True / True / False | +1.02 / +0.87 / +1.01 / +0.95 / +0.47 |
+| dpos2 (b) | +0.722 [+0.541, +0.889] (510) | 0.0 | +0.006 [+0.001, +0.012] (510) | True / True / True | +1.02 / +0.87 / +0.98 / +0.92 / +0.49 |
+| dpos2 (c) | +0.726 [+0.552, +0.881] (510) | 0.0 | +0.005 [+0.001, +0.009] (510) | True / True / True | +0.99 / +0.98 / +0.99 / +0.95 / +0.66 |
+| dpos2 (c_S) | +0.797 [+0.648, +0.940] (510) | 0.0 | +0.005 [+0.001, +0.009] (510) | True / True / True | +0.99 / +0.98 / +0.99 / +0.98 / +0.66 |
+| b2 (a) | +0.396 [+0.246, +0.544] (508) | 0.0 | +0.190 [-1.828, +0.390] (6) | True / False / False | +0.05 / +0.00 / +0.00 / +0.02 / +0.25 |
+
+| arm | parsed | units ok | σ stated | σ line parsed | truncated | computation-correct | within 1% of truth | expected crps_log |
+|---|---|---|---|---|---|---|---|---|
+| dpos2 | 99.8% | 99.7% | 99.7% | 99.4% | 0.2% | 8.0% | 9.3% | -0.0441 |
+| b2 | 100.0% | 100.0% | 99.8% | 0.0% | 0.0% | 8.0% | 9.8% | -0.0352 |
+
+Expected crps_log differences (oracle-centred, cluster bootstrap over pairs, 95% CI; descriptive): dpos2_minus_rss -0.0105 [-0.0203, -0.0027]; dpos2_minus_x1 -0.0111 [-0.0210, -0.0033]; b2_minus_rss -0.0017 [-0.0026, -0.0009]; dpos2_minus_b2 -0.0089 [-0.0188, -0.0009]; D-pos-v2's share of the RSS-to-σ* gap -528%
+
+R5-2 tail (D-pos-v2 (a), worst 5% = 102 problems, 96% of the regret): sensitivity: value-dependent: formula 28; copy: decimal shift (×10^-1) 13; copy: decimal shift (×10^-2) 12; sensitivity: value-dependent: substitution (own wrong intermediates) 11; format: no parsable σ line 9; sensitivity: power-law exponent 6; copy: decimal shift (×10^3) 4; chain selection: wrong number of terms 4; sensitivity: value-dependent: formula (no expression) 4; copy: decimal shift (×10^2) 3; copy: decimal shift (×10^1) 3; sensitivity: value-dependent: S-line arithmetic 2; copy: decimal shift (×10^-3) 1; level 1; format: no answer σ 1
+
+## qwen_seed0
+
+| arm / σ source | A6c slope [90% CI] (n pairs) | p (one-sided) | A6b slope, cc pairs [90% CI] (n) | K1 / C2 / C3 | Theil-Sen by depth 1–5 (fragile, #34) |
+|---|---|---|---|---|---|
+| dpos2 (a) | +0.778 [+0.640, +0.904] (505) | 0.0 | -0.025 [-0.139, +0.080] (17) | True / True / True | +0.87 / +0.91 / +0.88 / +0.87 / +0.75 |
+| dpos2 (b) | +0.801 [+0.669, +0.926] (510) | 0.0 | -0.017 [-0.046, +0.003] (510) | True / True / True | +0.85 / +0.94 / +0.88 / +0.89 / +0.74 |
+| dpos2 (c) | +0.838 [+0.712, +0.951] (510) | 0.0 | -0.015 [-0.044, +0.004] (510) | True / True / True | +0.96 / +1.00 / +0.98 / +0.96 / +0.81 |
+| dpos2 (c_S) | +0.831 [+0.705, +0.945] (510) | 0.0 | +0.001 [-0.007, +0.009] (510) | True / True / True | +0.96 / +1.00 / +0.98 / +0.96 / +0.83 |
+| b2 (a) | +0.455 [+0.308, +0.599] (509) | 0.0 | +0.095 [-0.021, +0.285] (19) | True / False / True | +0.39 / +0.12 / +0.16 / +0.31 / +0.11 |
+
+| arm | parsed | units ok | σ stated | σ line parsed | truncated | computation-correct | within 1% of truth | expected crps_log |
+|---|---|---|---|---|---|---|---|---|
+| dpos2 | 99.9% | 99.7% | 99.6% | 100.0% | 0.0% | 11.7% | 12.9% | -0.0350 |
+| b2 | 99.9% | 99.9% | 99.9% | 0.0% | 0.0% | 11.9% | 14.0% | -0.0353 |
+
+Expected crps_log differences (oracle-centred, cluster bootstrap over pairs, 95% CI; descriptive): dpos2_minus_rss -0.0014 [-0.0029, -0.0001]; dpos2_minus_x1 -0.0020 [-0.0035, -0.0008]; b2_minus_rss -0.0018 [-0.0023, -0.0013]; dpos2_minus_b2 +0.0004 [-0.0012, +0.0017]; D-pos-v2's share of the RSS-to-σ* gap -71%
+
+R5-2 tail (D-pos-v2 (a), worst 5% = 102 problems, 89% of the regret): sensitivity: value-dependent: formula 35; sensitivity: power-law exponent 20; sensitivity: value-dependent: substitution (own wrong intermediates) 13; copy: decimal shift (×10^1) 11; format: no answer σ 6; chain selection: wrong number of terms 5; copy: decimal shift (×10^-1) 5; sensitivity: value-dependent: formula (no expression) 5; copy: decimal shift (×10^2) 1; aggregation 1
+
+
