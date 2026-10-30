@@ -524,3 +524,29 @@ Brief (your message, ~10:00 IST):
 -   a6b_pairs: n 816, answered 813, parse fail 0.004, truncation 0.000, unit mismatch 0.000, mean tokens 389
 -   a6c_pairs: n 816, answered 809, parse fail 0.005, truncation 0.001, unit mismatch 0.004, mean tokens 405
 - 17:54:09 → 18:52:38, exit 0, first attempt; fingerprint check passed; 0 pauses. `r56_eval_b2_s2_a1` started 18:52:44.
+
+### 19:25 J eval 6 of 6 done: B-v2 s2 (operational counts only); the analysis starts
+- b2/seed2/r5_6: gen 1892s, OOM backoffs 0, peak 5.27 GiB device-wide, resume 0+102/102
+-   a6b_pairs: n 816, answered 816, parse fail 0.000, truncation 0.000, unit mismatch 0.000, mean tokens 218
+-   a6c_pairs: n 816, answered 816, parse fail 0.000, truncation 0.000, unit mismatch 0.000, mean tokens 223
+- 18:52:44 → 19:25:12, exit 0, first attempt; fingerprint check passed; 0 pauses.
+- **All six evals ran on their first attempt.** In all: 5 pauses, 150 s of 16,552 s GPU-stage time (0.9%).
+- `x1_r5_6` skipped (done at 14:50). `r5_6_analysis` started 19:25:24 (CPU, 1 thread, nice 19).
+
+### 19:26 The analysis and the chain's end
+- **`r5_6_analysis`:** 19:25:24 → 19:26:10, exit 0 (46 s, 1 thread). The queue's commit `f5835fc` was pushed.
+  "R5-6 J chain done" at 19:26:12.
+- **After the chain:** PID 151740 gone; the lock is free; no GPU compute process; `HEAD` = `origin/main` = `f5835fc`.
+  - **The integrity check** on the 122 files written since 14:30 IST: 0 problems (`find -newermt` takes UTC: a first
+    run with "14:30" matched no file).
+  - Free space on MLStorage 47.17 GiB.
+- **The result (FINDINGS #39): P_J confirmed.**
+  - J1 +0.985 [+0.868, +1.103] (seeds 0.941 / 0.967 / 1.047; 403–407 answered pairs); C3 +0.026 [−0.055, +0.119] on
+    72–86 computation-correct pairs per seed.
+  - J2 +0.530 rejected. J3 +0.0011 (p 0.072), J4 0.0000, J5 −0.0005, J6 −0.0016: none rejected.
+  - **The caveat:** the clamped comparator reaches +0.831 [+0.737, +0.919]. Rank-flip pairs (43): D-pos-v2 +1.123 vs
+    clamped +0.357.
+  - B-v2: J-sensitivity +0.455; J-invariance +0.184 [−0.032, +0.400], so C3 fails.
+  - S lines within 10%: out-of-range terms 58–64%, in-range 69–75%.
+- **Docs:** FINDINGS #39; `decision_timeline.md` (D147–D149 → #39; the anchor checked against #38's slug rule); the
+  paper outline (status, claims to avoid, ledger); PROGRESS; MORNING.md.

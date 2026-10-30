@@ -196,11 +196,15 @@ A6c + A6b.
 **Fresh Jacobians (R5-6 part J; D147–D149):** D-pos-v2 and B-v2 × 3 seeds on a frozen J set. Chains are trained ones;
 one given's sensitivity lies outside every value that chain had in training (≥ 0.1); magnitudes stay in range.
 - **P_J = J1 ∧ C2 ∧ C3:** R4-3's criterion on the J sensitivity / J invariance (dimensional-scaling) pairs.
-- **Status: evals running** (2026-10-30/31). Report "not confirmed" with the same prominence as a confirmation.
+- **Status: P_J confirmed** ([#39](../FINDINGS.md#39-r5-6-part-j-3-seeds-frozen-j-set-d-pos-v2s-answer-σ-propagates-through-jacobians-outside-its-training-range-so-p_j-is-confirmed-j1-slope-0985-0868-1103-c2-c3-explicit-beats-implicit-on-the-slope-j2-0530-no-score-gain-over-rss-or-x1-j3-j4-not-rejected-a-propagator-clamped-to-the-training-range-would-already-reach-0831-d147--d149-2026-10-30)):
+  J1 +0.985 [+0.868, +1.103], C3 +0.026 [−0.055, +0.119]; explicit − implicit +0.530 (J2); no gain over RSS / X1 (J3,
+  J4).
+- **Report with it:** the clamped comparator (+0.831): most of the set's contrast is reachable inside the training
+  range. C3 rests on 72–86 computation-correct pairs per seed, nearly all at depths 1–2.
 - **Scope:** new Jacobians of trained chains only. Not new formulas, compositions or physics (part U, optics, not
   run; D148).
 
-**FINDINGS:** #17, #23, #27, #28, #29, #30, #31, #32, #33, #34, #35, #36, #37, #38.
+**FINDINGS:** #17, #23, #27, #28, #29, #30, #31, #32, #33, #34, #35, #36, #37, #38, #39.
 
 **Figures:**
 - headline panel C;
@@ -254,7 +258,7 @@ one given's sensitivity lies outside every value that chain had in training (≥
 
 Every pre-registered hypothesis is marked supported, not supported, or not run, in PREREGISTRATION.md's and
 DECISIONS.md's order:
-- families P, S, N, E1, X1–X4, E1c / E1d, D102, stages B / C / D, R4-1–R4-5, D118 (K1–K8, P), MC-B, D137;
+- families P, S, N, E1, X1–X4, E1c / E1d, D102, stages B / C / D, R4-1–R4-5, D118 (K1–K8, P), MC-B, D137, D147 (J1–J6, P_J);
 - **family H: not run.**
 
 Source: [decision_timeline.md](decision_timeline.md), which also lists every amendment made after a result (D47,
@@ -298,6 +302,8 @@ D54, D57, D92, D135).
 | "CRPS as an RL reward is our contribution" | DAR uses CRPS over rollouts; ours is a stated σ against a known σ\* | CLAUDE.md prior work |
 | silent GRPO groups (#1) as a finding | known (Dr.GRPO / DAPO); motivation only | CLAUDE.md prior work |
 | any statistic treating 5,390 pairs or 3 seeds as independent | clustered over problems / pairs; seed means | R5-8, R3-7 |
+| "propagates through Jacobians it never saw" without the comparator | "outside the training range of trained chains"; report the clamped comparator's +0.831 beside J1 | #39, D147 |
+| "generalizes to new physics / formulas" from R5-6 | part J moved Jacobians only; part U was not run | #39, D148 |
 | "the Llama model is scale-invariant" / "passes the A6b control" | C3 was unmeasurable (4 pairs); the descriptive all-answered A6b slope is −0.168, excluding 0 | #38, D146 |
 | cross-model claims before R5-5 passes | "on Qwen2.5-Math-1.5B"; the Llama pilot is reported as a pilot, go or no-go | R5-5, D137 |
 | "the generator's σ\* was validated" without the history | the gate failed twice and passed under the amended FINAL rule (D54, D57) | #9, #11, #12 |

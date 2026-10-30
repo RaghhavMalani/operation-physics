@@ -47,3 +47,5 @@
 [19:25:24] disk: 47 GiB free on MLStorage
 [19:25:24] start r5_6_analysis (timeout 7200s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.r5_6 analyze
 [19:26:10] end r5_6_analysis: exit 0
+[19:26:12] commit 'R5-6 J (D147): the one-time analysis, P_J and J1-J6, D-pos-v2 and B-v2 x 3 seeds on the frozen J set': pushed
+[19:26:12] R5-6 J chain done: 5 temperature pauses, 150s paused of 16552s GPU-stage time

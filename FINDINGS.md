@@ -2250,3 +2250,99 @@ problems):
   errors (decimal shifts) decide both C3's denominator and the score.
 - **A stronger arithmetic model** is the condition for a measurable answer-σ control on a second family. That is a
   design question for later, not part of this pilot (D146).
+
+## #39. R5-6 part J (3 seeds, frozen J set): D-pos-v2's answer σ propagates through Jacobians outside its training range, so P_J is confirmed (J1 slope +0.985 [+0.868, +1.103], C2, C3); explicit beats implicit on the slope (J2 +0.530); no score gain over RSS or X1 (J3, J4 not rejected); a propagator clamped to the training range would already reach +0.831 (D147 / D149; 2026-10-30)
+
+**Status:** confirmatory, pre-registered in D147 (`8405f0f`) before the J set, any completion or any statistic existed.
+- **The analysis:** run once by the queue (`physcal.eval.r5_6`, 46 s, `f5835fc`).
+- **Sources:** `results/r5_6/{results.json, summary.md, pair_distances.jsonl}`; the tapes in
+  `results/stage_r4/{dpos2,b2}/seed{0,1,2}/r5_6/`; the set in `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/`.
+- **Commits:**
+  - the set `ada4ede`, X1 `4fa3c69`, the analysis code `68449cb`;
+  - the evals `942104e`, `4d53d82`, `1ed19a2`, `1e4709d`, `06517f3`, `a4e89e5` (every one first attempt).
+- **The design (D147):**
+  - Chains the R4 arms were trained on. In each pair, at least one given's log-sensitivity lies outside every value
+    that chain had in the 3,000 training problems, by ≥ 0.1. Every shown and computed value stays inside its training
+    range.
+  - **Sensitivity pairs:** A6c's allocation on such worlds. **Invariance pairs:** a world and its dimensionally scaled
+    copy, so the Jacobian is identical and the target ×2–8.
+  - 408 + 408 pairs, depths 1–4. Models: Qwen D-pos-v2 and B-v2 (R4), seeds 0–2, D118's eval.
+  - **How far outside** (median [IQR], sensitivity set):
+    - exceedance 0.38 [0.17, 0.77];
+    - L∞ to the nearest training Jacobian of the chain 0.41;
+    - the chain's training problems 3 [1, 5].
+
+**The primary and the tests** (seed means; stage B's joint bootstrap over pairs, B = 10,000; Holm over J1–J6):
+
+| test | value [90% CI] | p | Holm |
+|---|---|---|---|
+| **J1** D-pos-v2 (a): J-sensitivity slope > 0 (primary) | **+0.985 [+0.868, +1.103]** (seeds +0.941, +0.967, +1.047) | < 1e-4 | rejected |
+| **J2** explicit − implicit slope > 0 | **+0.530 [+0.377, +0.676]** (B-v2 +0.455) | < 1e-4 | rejected |
+| J3 D-pos-v2 − RSS > 0 (expected crps_log) | +0.0011 [−0.0002, +0.0020] | 0.072 | not rejected |
+| J4 D-pos-v2 − X1 > 0 | +0.0000 [−0.0013, +0.0008] | 0.44 | not rejected |
+| J5 B-v2 − RSS > 0 | −0.0005 [−0.0008, −0.0002] | 0.997 | not rejected |
+| J6 B-v2 − X1 > 0 | −0.0016 [−0.0019, −0.0013] | 1.0 | not rejected |
+
+- **P_J = J1 ∧ C2 ∧ C3: confirmed.**
+  - **C2:** +0.985 ≥ 0.5.
+  - **C3:** the J-invariance slope (on Δ ln truth, computation-correct pairs) is +0.026 [−0.055, +0.119], inside ±0.3.
+- **The reading D147 §12 fixed:** D-pos-v2's explicit sensitivity computation propagates measurement noise through
+  Jacobians outside its training range (same chains, same value ranges), across 3 seeds, and is invariant to a change of
+  scale there.
+
+**Per σ source** (seed means; J sensitivity [90% CI] / J invariance [90% CI]):
+
+| source | J sensitivity | J invariance | C1 ∧ C2 ∧ C3 |
+|---|---|---|---|
+| D-pos-v2 (a) answer σ | +0.985 [+0.868, +1.103] | +0.026 [−0.055, +0.119] (cc pairs) | yes |
+| D-pos-v2 (b) line's X | +1.007 [+0.861, +1.172] | +0.026 [−0.028, +0.078] (all pairs) | yes |
+| D-pos-v2 (c) exact from terms | +0.980 [+0.835, +1.143] | +0.004 [−0.081, +0.082] | yes |
+| B-v2 (a) | +0.455 [+0.348, +0.564] | +0.184 [−0.032, +0.400] (seeds +0.41, −0.22, +0.36) | **no** (C2, C3 fail) |
+| σ\* / RSS / X1 | +1.000 / 0.000 / −0.001 | 0.000 / 0.000 / +0.006 | – |
+| **clamped** (σ_δ with sensitivities clipped into the training range) | **+0.831 [+0.737, +0.919]** | 0.000 | – |
+
+**Three limits, as prominent as the result:**
+1. **Most of the set's contrast is reachable inside the training range.**
+   - A model that propagated exactly but clamped every sensitivity into its trained range would score +0.831 on J
+     sensitivity. So the J set separates "propagates" from "looks up σ", but only weakly separates "uses the out-of-range
+     Jacobian" from "uses the nearest trained one".
+   - **No pre-registered test compares D-pos-v2 with the clamped comparator.** Descriptively, D-pos-v2 is above it where
+     clamping matters most:
+     - exceedance above the median: +0.835 vs +0.623 (408 pairs);
+     - strict pairs (outside the range over every training chain to that target): +0.895 vs +0.710 (255);
+     - **rank flip** (the dominant given was never dominant for that chain in training): +1.123 [+0.878, +1.380] vs
+       +0.357 [+0.004, +0.801], and B-v2 +0.178 (only 43 pairs).
+   - These are subgroups outside the Holm family.
+2. **C3 rests on 72–86 computation-correct invariance pairs per seed (of 408), nearly all at depths 1–2.**
+   - Depths 3–4 have 1–7 per seed, so their slopes are undefined.
+   - The line sources (b) and (c), measured on all 408 pairs, are inside ±0.3 too (see the table).
+3. **No score gain.**
+   - D-pos-v2's expected crps_log does not beat RSS (J3, p = 0.072) or X1 (J4): the same pattern as #32's K6 / K7.
+   - B-v2 is below both: J5 and J6 have CIs below 0.
+
+**Descriptive (D147 §10):**
+- **By depth** (D-pos-v2 (a), J sensitivity): +0.955 / +0.820 / +1.134 / +0.999 at depths 1–4. B-v2: +0.252 / +0.665 /
+  +0.295 / +0.591.
+- **By the chain's training count:** 1–2 problems +0.941; ≥ 3 problems +1.026.
+- **D-pos-v2's S lines** (within 10% of the true sensitivity at the shown values):
+  - out-of-range terms 58–64% (3,952 terms per seed);
+  - in-range terms 69–75%.
+  - So the model computes the new sensitivities less accurately, but the answer's σ still tracks σ\* at slope ≈ 1.
+- **Context, not a test** (#32, frozen R4-5, depths 1–4, in-range Jacobians, another chain mix): D-pos-v2 (a) A6c
+  +0.855 [+0.734, +0.966]; B-v2 +0.379. The J set's slope is not lower.
+- **Operations:**
+  - 6 / 6 evals on the first attempt, 0 OOM backoffs, R2-1 fingerprint checks passed;
+  - answered 99.4–100%; truncation ≤ 0.1%;
+  - computation-correct 23.6–25.5% (both arms);
+  - 5 temperature pauses, 150 s in 4.6 h.
+
+**What it means:**
+- **The R4-3 result (#32) is not a lookup of trained Jacobians.** On trained chains moved to Jacobians they never had in
+  training, D-pos-v2's stated σ keeps tracking σ\* (slope ≈ 1, 3 seeds). It stays scale-invariant where that can be
+  measured (depths 1–2), and the implicit control does neither as well.
+- **What it does not show:**
+  - that the gain comes from the out-of-range part of the Jacobian: the clamped comparator reaches +0.83, and only small
+    descriptive subgroups go beyond it;
+  - a better forecast than RSS or X1;
+  - anything about new formulas, compositions or physics (part U not run; D148).
+- **This is the paper's last experiment** (D148).

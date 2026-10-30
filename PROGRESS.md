@@ -905,10 +905,12 @@ Progress:
 - [x] **2. Built, frozen, CPU-tested** (D149): support `eda3c3b2…`; J set 816 + 816 problems, all 24 cells full,
   every problem replays (`ada4ede`); eval option and queue (`b31ef28`); X1 on J, reproduction passed (`4fa3c69`);
   the analysis, checked on the development files (`68449cb`).
-- [ ] **The six J evals** (`scripts/queue_r5_6.sh`, chain 151740, started 14:48): D-pos-v2 s0, B-v2 s0, D-pos-v2 s1,
-  B-v2 s1, D-pos-v2 s2, B-v2 s2.
-- [ ] **The one-time analysis** (`physcal.eval.r5_6`), when all six exist.
+- [x] **The six J evals** (`scripts/queue_r5_6.sh`, chain 151740, 14:48 → 19:26): all first attempt, 0 OOM,
+  5 pauses / 150 s (`942104e`, `4d53d82`, `1ed19a2`, `1e4709d`, `06517f3`, `a4e89e5`).
+- [x] **The one-time analysis** (`f5835fc`): **P_J confirmed** (J1 +0.985 [+0.868, +1.103], C2, C3); J2 rejected
+  (+0.530); J3–J6 not rejected; clamped comparator +0.831. **FINDINGS #39.**
 - [x] **3. D148: experiment freeze** after R5-6 (`8405f0f`).
 - [x] **4. Paper outline:** the Llama descriptive A6b slope (−0.168) in the limitations and the claims to avoid
   (`e4fd8fa`).
-- [ ] **MORNING.md** when the chain ends.
+- [x] **MORNING.md** when the chain ended (19:26).
+- [ ] **Next (D148):** no new experiments; the write-up.

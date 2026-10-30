@@ -85,9 +85,9 @@ paper's methods section and the reproducibility appendix.
 | 10-28 18:07 | D137 (`7892e89`) | The cross-model pilot (R5-5): D-pos-v2 and B-v2 on Llama-3.2-3B-Instruct, seed 0, frozen A6c + A6b; go rule = R4-3's criterion on D-pos-v2; 3 seeds only on GO | pre-registration | confirmatory (pilot) | [#38][f38]: NO-GO (C3 unmeasurable, 4 pairs) |
 | 10-28 18:46 | D138 (`b50cae1`) | R2-1's fingerprint for the Llama base records at sampling batch 4 | deviation (implementation), before any pilot output | – | [#38][f38] |
 | 10-29 00:13 | D139 (`9296d7b`) | D137's go rule runs as soon as the D-pos-v2 eval exists (same code, same logs); SFT seed 1 only on GO | amendment (timing), before the go rule runs | confirmatory (pilot) | [#38][f38] |
-| 10-30 14:39 | D147 (`8405f0f`) | **R5-6 part J:** Jacobians outside the training range of trained chains; the frozen J set (sensitivity + dimensional-scaling invariance pairs); D-pos-v2 and B-v2 × 3 seeds; P_J = J1 ∧ C2 ∧ C3, Holm over J1–J6 | pre-registration | confirmatory | pending (evals running) |
+| 10-30 14:39 | D147 (`8405f0f`) | **R5-6 part J:** Jacobians outside the training range of trained chains; the frozen J set (sensitivity + dimensional-scaling invariance pairs); D-pos-v2 and B-v2 × 3 seeds; P_J = J1 ∧ C2 ∧ C3, Holm over J1–J6 | pre-registration | **confirmatory** | [#39][f39]: P_J confirmed |
 | 10-30 14:39 | D148 (`8405f0f`) | Experiment freeze: R5-6 part J is the paper's last experiment; everything else is future work | scope decision | – | – |
-| 10-30 15:00 | D149 | R5-6 J build record: support, constructions, frozen set (all cells full), X1, the analysis checked on development files | build, before any J completion | confirmatory | pending |
+| 10-30 15:00 | D149 (`5f17510`) | R5-6 J build record: support, constructions, frozen set (all cells full), X1, the analysis checked on development files | build, before any J completion | confirmatory | [#39][f39] |
 
 ## Summary for the paper
 
@@ -95,6 +95,8 @@ paper's methods section and the reproducibility appendix.
   - families P ([#7][f7]), S and N ([#16][f16]; [#13][f13] superseded);
   - X1 ([#17][f17]), X2 ([#19][f19]), X4 ([#21][f21]), E1d within problems ([#26][f26]), stage B ([#27][f27]);
   - MC-B ([#33][f33]);
+  - R5-6 part J, D147 ([#39][f39]: P_J confirmed, 3 seeds; the clamped comparator already reaches +0.831; the
+    last experiment, D148);
   - **the primary: D118 / D125 ([#32][f32]).**
 - **Confirmatory pilots** (one seed; they steered the next step):
   - E1 ([#14][f14] → [#16][f16]);
@@ -163,3 +165,4 @@ paper's methods section and the reproducibility appendix.
 [f36]: ../FINDINGS.md#36-r5-4s-rss-fallback-post-hoc-exploratory-bounds-σrss--0333-5-chosen-on-the-development-sets-and-frozen-first-d135-it-lifts-the-expected-score-above-rss-and-x1-on-the-frozen-set-but-erases-most-of-the-measured-propagation-a6c-slope-084--014-because-a-fallback-on-one-member-of-a-pair-breaks-the-within-pair-contrast-2026-10-28
 [f37]: ../FINDINGS.md#37-r5-8-reporting-from-existing-logs-mc-b-fails-mostly-at-the-interface-8084-of-the-programs-that-run-97-compute-the-wrong-chain-sample-agreement-is-the-strongest-correctness-signal-but-it-costs-about-8-the-tokens-of-one-answer-010-within-problem-accuracy-self-consistency-and-008-auroc-on-a6c-mc-as-raw-spread-over-the-best-single-sample-or-free-signal-descriptive-d133-item-5-2026-10-28
 [f38]: ../FINDINGS.md#38-r5-5-cross-model-pilot-on-llama-32-3b-seed-0-frozen-a6c--a6b-the-explicit-propagation-recipes-a6c-result-replicates-k1-c2-d-pos-v2s-answer-σ-slope-0785-but-the-a6b-control-cannot-be-measured-4-computation-correct-pairs-so-the-pre-registered-go-rule-is-no-go-no-seed-expansion-a-failed-replication-at-one-seed-d137--d139--d146-2026-10-30
+[f39]: ../FINDINGS.md#39-r5-6-part-j-3-seeds-frozen-j-set-d-pos-v2s-answer-σ-propagates-through-jacobians-outside-its-training-range-so-p_j-is-confirmed-j1-slope-0985-0868-1103-c2-c3-explicit-beats-implicit-on-the-slope-j2-0530-no-score-gain-over-rss-or-x1-j3-j4-not-rejected-a-propagator-clamped-to-the-training-range-would-already-reach-0831-d147--d149-2026-10-30
