@@ -5336,3 +5336,174 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - post-SFT accuracy and format numbers.
 - **5. An estimate for R5-6** (fresh counterfactual generalization): generator changes, frozen set, GPU hours.
   - Nothing is built; you decide whether it runs.
+
+### D147. Pre-registration of R5-6 (part J only): fresh Jacobians outside the training range, the frozen J set, D-pos-v2 and B-v2 × 3 seeds (your decision, 2026-10-30, ~14:30 IST; written before any J set, J completion or J statistic exists)
+- **Status: confirmatory.** R5-6 (`REVIEW_SYNTHESIS_ROUND5_2026-10-28.md`), part J only: no optics family, no formula,
+  generator or verifier change (your decision on `docs/r5_6_estimate.md`). `generator_version` stays 2.0.0+bdbb2279.
+  - **What existed when this was written:** the estimate, and a generator-only feasibility count on development seeds
+    (900,000 + …, never used again; no model, no completion). It set two numbers below, the margin (0.1) and the
+    candidate worlds (96). Its counts: per chain draw, 4–98% of trained value-dependent chains yield a qualifying
+    world, lowest for dynamics at depth 1 (most of its chains are power laws, whose Jacobians are constant).
+  - **The question:** does D-pos-v2's answer σ still propagate measurement noise when the chain is a trained one but
+    its Jacobian (the per-given log-sensitivities d ln f / d ln x) lies outside every value that chain had in training?
+- **1. The training support (`data/jacobian_support/r4_1.json`, built from the R4-1 problems; SHA-256 of
+  `results/phase12_sft_data_r4/problems.jsonl` stored in it).**
+  - **The training data of both arms:** the same 3,000 R4-1 problems (D113 §1). D-pos-v2 and B-v2 are SFT-only, so
+    these are every problem either model was trained on.
+  - **Per chain** (family + its exact step sequence): for every given, the range [min, max] of its log-sensitivity
+    over the chain's training problems. The sensitivities are `noise.log_sensitivities` at the displayed givens (what
+    the builder's S lines show), for every chain given, noisy or exact.
+  - **Per quantity** (family + symbol): the range of its SI value over every training problem where it appears as a
+    given, an intermediate or the target.
+  - **Also stored, for the strict subgroup (§9):** per (family, given, target), the range over every training chain.
+- **2. A J world (both constructions), at the displayed givens:**
+  - **The chain was trained:** it occurs in the R4-1 problems at least once. Unseen whole chains are excluded, so the
+    only novelty is the Jacobian.
+  - **Out of range:** at least one given's log-sensitivity lies outside its training range for that chain by
+    ≥ 0.1 (absolute, in d ln f / d ln x).
+  - **Magnitudes in range:** every displayed given, and every value the chain computes (true and measured worlds),
+    lies inside that quantity's training range (§1). So the values are not new; only the Jacobian is.
+  - **Otherwise as the generator:** finite, positive, κ ≤ 5.
+  - **The candidates:** up to 96 world draws per chain (A6c: 24); the first that qualifies is used. Up to 20 chains per
+    pair seed.
+  - **Power-law chains never qualify** (constant Jacobians).
+- **3. J sensitivity pairs (`j_allocation`, the A6c construction on J worlds; D95):**
+  - one chain and one J world; identical displayed values; the high level h on the given where it moves σ\* least (lo)
+    or most (hi), l on every other given; σ\*_hi / σ\*_lo ≥ 1.5 (delta method); the stored σ\* is the MC value.
+  - The J test (§2) is applied at the displayed values, which both members share, so both members have the same
+    Jacobian.
+- **4. J invariance pairs (`j_invariance`, new: dimensional scaling).**
+  - **Why new:** A6b's power-law chains have constant Jacobians, so they can never be outside the training range.
+  - **The construction:** a J world (§2) and a scaled copy. Every chain given is multiplied by λ^(its dimension
+    exponents) along a scaling that leaves every constant of the family unchanged:
+    - kinematics (no constants): length, time or mass alone;
+    - dynamics and energy (g fixed): (length 2, time 1), or mass alone.
+  - **Why it is exact:** the formulas are dimensionally homogeneous, so every log-sensitivity, and therefore the
+    relative σ\*, is identical in both members, while the target changes by λ^(its exponent).
+  - **The scale factors:** tried in a fixed order (2, 1/2, 3, 1/3, 4, 1/4, 6, 1/6, 8, 1/8) per direction. The first
+    that changes the target by ≥ 2× and keeps every magnitude in range (§2) is used.
+  - **lo / hi:** the smaller / larger target, as A6b.
+  - **The same z, units, distractors and phrasing** for both members; the MC check |ln(σ\*_hi / σ\*_lo)| ≤ 1e-3, as
+    A6b.
+  - **The level:** one level for every given, as A6b.
+  - **The prediction:** a model that propagates states the same relative σ on both members. The test is A6b's slope of
+    Δ ln σ on Δ ln truth.
+- **5. The frozen J set (`data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/`):**
+  - **Cells:** depths 1–4 (the trained depths) × 3 level cells × 34 pairs.
+    - sensitivity: A6c's (l, h) = (1%, 5%), (2%, 5%), (1%, 2%);
+    - invariance: A6b's 1%, 2%, 5%.
+  - **Size:** 408 pairs = 816 problems per set, 1,632 in all.
+  - **Families:** round-robin over pair seeds; max 136 seeds per cell. A cell that cannot reach 34 pairs is reported,
+    not padded.
+  - **Fresh pair seeds:** 2,400,000,000 (sensitivity), 2,500,000,000 (invariance); cell stride 100,000.
+  - **The files:** `a6c_pairs.jsonl` (sensitivity) and `a6b_pairs.jsonl` (invariance), with SHA-256 manifests and
+    `FROZEN.md`. Under `confirmatory/`, so `run_eval` refuses them without `PHYSCAL_CONFIRMATORY=1`.
+  - **Replay:** every problem stores its construction, including the support file's SHA-256. `regenerate` rebuilds it
+    exactly (tested on every problem before the freeze, and by `run_eval` before generation).
+  - **Generator-only report (manifest, before any model):** per cell, the pairs, the families, and the distances (§9).
+- **6. Models and eval: D118's confirmatory eval exactly, on the J files.**
+  - **The adapters:** stage R4's D-pos-v2 (`dpos2`) and B-v2 (`b2`), seeds 0, 1 and 2 (`results/stage_r4/<arm>/
+    seed<s>/final_adapter`). Nothing is trained.
+  - **The settings:** stage B's eval config; greedy; prompt v5; the pinned 4-bit base; the adapter unmerged; 1,280 new
+    tokens (D114); batch 16 (D116); the launch cap (≤ 5.9 GiB, never raised); R2-1's reload check; resumable (D142).
+  - **The output:** `results/stage_r4/<arm>/seed<s>/r5_6/`.
+- **7. The σ sources:** D113 §3's (a), (b), (c) and (c_S) for D-pos-v2; (a) for B-v2.
+  - **Comparators:** σ\*, RSS (D95's heuristic, givens scope), X1 (D99's refit applied to the J files, only if its
+    reproduction passes; otherwise every X1 test is missing and enters Holm with p = 1).
+  - **The oracle-centred terms:** stage A's (4,000 predictive draws per problem, seed tag `stage_a`).
+- **8. The primary hypothesis P_J: D-pos-v2's answer σ (a) propagates on the J set at the 3-seed mean.**
+  - **P_J is confirmed iff all three hold** (R4-3's criterion, as D125):
+    - **J1:** the seed-mean slope on the J sensitivity pairs > 0, Holm-adjusted one-sided p < 0.05;
+    - **C2:** its seed-mean point estimate ≥ 0.5;
+    - **C3:** the seed-mean slope on the J invariance pairs (on Δ ln truth) has its 90% CI inside (−0.3, +0.3), on
+      computation-correct pairs.
+  - **The estimator:** D118 §5's.
+    - D95's OLS of Δ ln σ on Δ ln σ\* within pairs, with an intercept.
+    - Stage B's joint bootstrap over pairs (B = 10,000, seed 0): every seed's slope recomputed on the same resample;
+      the estimate is the mean of the 3 per-seed slopes.
+    - **(a)'s pair sets:** both members answered (sensitivity); both computation-correct, τ = 1e-3 (invariance).
+- **9. The tests: Holm over J1–J6 at α = 0.05.**
+  - **J1** (primary): above.
+  - **J2, explicit vs implicit slope:** the seed-mean slope of D-pos-v2 (a) minus B-v2's (a) on the J sensitivity
+    pairs > 0. Each arm uses its own answered pairs; both are recomputed on the same resamples.
+  - **J3 / J4:** D-pos-v2 (a) − RSS > 0, D-pos-v2 (a) − X1 > 0.
+  - **J5 / J6:** B-v2 − RSS > 0, B-v2 − X1 > 0.
+  - **J3–J6's statistic:** the seed-mean oracle-centred expected crps_log difference per problem, pooled over both J
+    sets, cluster bootstrap over pairs (B = 10,000, seed 0), as D118's K5–K8.
+- **10. Pre-specified, reported, untested (outside the Holm family).**
+  - **How far outside the training range each pair is,** per pair (a table) and summarized:
+    - the exceedance: the largest distance of a given's sensitivity outside its chain range, in d ln f / d ln x, and
+      which given;
+    - the nearest training Jacobian of the chain: the L∞ distance over the givens;
+    - the chain's number of training problems;
+    - the clamped σ: σ_δ with every sensitivity clipped into its training range, as ln(σ_δ / σ_clamped) per member.
+  - **The clamped comparator:** σ_clamped as a σ source (slope and expected score), next to σ\*, RSS and X1. It is what a
+    model that propagates exactly but only within its training range would state. Its slope shows how much of the
+    σ\* contrast lies outside the training range.
+  - **The splits** (every arm and source's slope):
+    - by depth 1–4;
+    - by exceedance (below / above the set's median);
+    - by chain training count (1–2 / ≥ 3);
+    - **strict:** pairs whose out-of-range given is also outside the (family, given, target) range over every training
+      chain;
+    - **rank flip** (sensitivity pairs): the hi given (the largest |S|) is never the largest in that chain's training
+      problems.
+  - **D-pos-v2's S lines on J** (D113 §5's diagnostics), split by whether the term is the out-of-range one: present,
+    exact, within 10%, median |ln ratio|.
+  - **Per seed:** values and the seed SD; operational counts (completions, truncation, parse fails, OOM backoffs).
+  - **Context, not a test:** R4-3's confirmatory slopes at depths 1–4 (#32), beside J's.
+    - The two sets differ in more than the Jacobian (chain mix: J excludes power-law chains). So the difference is not
+      an effect estimate.
+- **11. When the analysis runs:** once, after all six J evals exist (`physcal.eval.r5_6 analyze`; CPU, 1 thread,
+  nice 19). It refuses without `PHYSCAL_CONFIRMATORY=1` or before all six exist.
+  - **Interim reports:** operational counts only, as D118 §10.
+  - **If an eval is BLOCKED for good:** the analysis runs on the seeds that exist, labelled "incomplete (n seeds)". It
+    is not rerun later.
+- **12. The reading, fixed now.**
+  - **P_J confirmed:** "D-pos-v2's explicit sensitivity computation propagates measurement noise through Jacobians
+    outside its training range (same chains, same value ranges), across 3 seeds, and is invariant to a change of
+    scale there".
+  - **J1 ∧ C3 without C2:** "propagates below the practical threshold outside the training range".
+  - **¬C3 with J1 ∧ C2:** "tracks σ\* but is not scale-invariant outside the training range".
+  - **P_J not confirmed:** reported as a failed generalization, with the same prominence as a success. #32's result then
+    stands for in-range Jacobians only.
+  - **Either way:** the claim is about Jacobians outside the training range of trained chains in three families. It is
+    not about new formulas, new compositions or new physics (R5-8).
+- **13. Order and budget (`scripts/queue_r5_6.sh`; GPU_DEADLINE 10:00 IST on 2026-10-31).**
+  - **The order:** D-pos-v2 s0, B-v2 s0, D-pos-v2 s1, B-v2 s1, D-pos-v2 s2, B-v2 s2; then the analysis (CPU).
+    X1 on the J files runs before the chain (CPU).
+  - **The estimates:** per eval (1,632 problems), D-pos-v2 ~55–65 min, B-v2 ~35 min; about 5–5.5 h with loads and
+    pauses.
+  - **Every eval:** resumable with up to 3 attempts (D142), the temperature guard (D143), the stall watchdog (D132),
+    the free-space guard (D111), the single-instance lock, and a commit + push after every stage.
+- **[REVIEW]: three choices, with the alternatives.**
+  - **The invariance construction (§4).**
+    - Alternative: A6b's power-law construction. Rejected: its Jacobians are constant, so they are always inside the
+      training range.
+    - Alternative: two independent J worlds with matching σ\*. Rejected: the match would only be approximate and is
+      rarely found.
+  - **The support is per chain (§1).**
+    - **Alternative: per (family, given symbol)** over all chains. Rejected as the primary: the feasibility count found
+      0–15% qualifying per cell, and several cells empty.
+    - **Alternative: per (family, given, target).** Kept as the strict subgroup (§10). As a primary it leaves dynamics
+      at depths 1–2 nearly empty.
+    - **The cost of per chain:** most chains at depths 2–4 occur 1–3 times in training, so their ranges are narrow.
+      This is why the training count is a pre-specified split, and the margin is absolute.
+  - **Trained chains only (§2).**
+    - Alternative: unseen chains too. Rejected: that would mix a second novelty (the chain itself) into the J test.
+
+### D148. An experiment freeze for this paper after R5-6 (your decision, 2026-10-30, ~14:30 IST)
+- **The rule:** R5-6 part J (D147) is the last experiment of this paper.
+  - After its analysis, no new experiment, model, training run, eval set or analysis is started for the paper.
+  - Anything else goes to "future work" in the write-up, with the reason it was not run.
+- **What is still allowed:**
+  - finishing R5-6 (its evals, possibly over more than one night, and its pre-registered analysis);
+  - re-running an existing analysis to fix a bug, with the before / after numbers in a D-entry, as D146 item 3;
+  - figures and tables built from committed results, and the write-up.
+- **Already future work:**
+  - the optics family and unseen compositions (R5-6 part U);
+  - the cross-model seed expansion (NO-GO, #38);
+  - nested MC and an executor (R5-7);
+  - Family H (D141);
+  - Kelly / finance metrics (R5-7).
+- **Deviations:** any exception needs your explicit decision and its own D-entry.
