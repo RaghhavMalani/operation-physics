@@ -491,3 +491,12 @@ Brief (your message, ~10:00 IST):
 ### 15:13 Full suite (CPU, 1 thread, nice 19, during the first eval): 728 passed, 1 skipped, 0 failed (13 min 50 s)
 - 705 before + 23 new (test_pairs_j 16, test_r5_6 4, test_queue_r5_6 3).
 - D-pos-v2 s0 at 624 / 1,632.
+
+### 15:49 J eval 1 of 6 done: D-pos-v2 s0 (operational counts only, D147 §11)
+- `r56_eval_dpos2_s0_a1`: 14:49:01 → 15:48:53, exit 0, first attempt; the R2-1 fingerprint check passed.
+  - Generation 3,534 s (2.17 s / problem); 102 / 102 batches in one session; 0 OOM backoffs.
+  - Memory: torch max reserved 4.49 GiB; the nvidia-smi peak is 6.58 GiB device-wide.
+  - **3 pauses of 30 s** (> 87 °C at 15:26, 15:44, 15:47; each resumed at ~64 °C).
+- **Counts:** J invariance 816 problems, 814 answered, parse fail 0.2%; J sensitivity 816, 816 answered. Truncation 0,
+  unit mismatch 0; mean 393 / 404 tokens.
+- The queue's commit was pushed. `r56_eval_b2_s0_a1` started 15:49:00.
