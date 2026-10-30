@@ -340,3 +340,66 @@ GPU_DEADLINE=13:00 setsid nohup scripts/queue_xm2.sh >> results/queue_xm2/nohup.
     until its 120 s timeout. That confirms the bug and that the test catches it.
 - **The full suite after the night** (08:40–08:51, GPU idle, with the D145 fixes): 700 passed, 0 failed, 0 skipped.
 - **MORNING.md** for 29/30 is written, and PROGRESS.md is updated.
+
+---
+
+## 2026-10-30 day: your decisions on the 29/30 report (D146)
+
+Brief (your message, ~10:00 IST):
+1. NO-GO accepted; report D137's descriptive A6b slope on all answered pairs.
+2. Launch the B-v2 Llama eval (resumable) and `xm_pilot` now, with `GPU_DEADLINE=13:00`.
+3. MC-B M5 label fix + A6b re-run.
+4. FINDINGS #38.
+5. An R5-6 estimate.
+
+### 10:10 D146, the queue, the launch
+
+- **D146 recorded** before anything ran.
+- **`scripts/queue_xm2.sh`:** its eval loop is now the library function `eval_xm ARM TAG`, so both queues share one
+  tested path. The xm2 tests pass unchanged.
+- **`scripts/queue_xm3.sh`:** library mode (queue_r4_seeds.sh + queue_xm2.sh). Two stages:
+  - `eval_xm b2 D146`;
+  - `xm_pilot analyze` (CPU, 1 thread, nice 19, timeout 7,200 s), once, when both evals have metrics.json.
+- **Tests:** `tests/test_queue_xm3.py`, 3 tests; the queue, disk-guard and xm2 files together: 38 passed.
+- **Commit:** `2975667`, pushed.
+- **Pre-launch checks:** no B-v2 confirmatory dir yet; GPU 46.8 °C, 838 MiB, no compute process; xm3 lock free;
+  47.17 GiB free.
+- **The launch** (10:14:30):
+
+  ```
+  GPU_DEADLINE=13:00 setsid nohup scripts/queue_xm3.sh >> results/queue_xm3/nohup.log 2>&1 < /dev/null &
+  ```
+
+  - Chain PID 114795, 165 min left. Host 833 MiB, so the launch cap is 5.9 GiB.
+  - `xm_eval_b2_a1` started 10:14:48 (timeout 9,913 s).
+  - **The R2-1 reload check passed** ("unsloth_4bit fingerprint check: pass").
+  - **The rate:** 48 / 2,040 after 189 s, ~3.9 s / problem, so generation ends at ~12:35.
+- **The watcher:** `watch.sh 114795 results/queue_xm3 8 3600`. Its event pattern now matches any "chain done" and
+  "xm_pilot not run".
+
+### 10:15 D146 item 3: the MC-B M5 label
+
+- **`physcal/eval/mc_b.py`:** `TEST_NAMES["M5"]` = "MC-B's {set} slope > 0", filled from `res["set"]` (a6b_pairs →
+  A6b).
+- **A6c is unchanged:** its stored results re-render byte-identically to the committed summary.md.
+- **The test:** `test_the_m5_row_names_the_set_it_was_computed_on`. `tests/test_mc_b.py`: 24 passed (1 thread).
+- **The A6b re-run** (`mc_b analyze --set a6b_pairs`, CPU, 1 thread, nice 19, 23 s, exit 0):
+  - results.json is exactly equal to the copy saved before;
+  - summary.md differs in one line, the M5 label.
+- **Commit:** `f69af81`, pushed. It also corrects D146's time (~10:10, not ~09:10).
+
+### 10:20 D146 item 5: the R5-6 estimate (`docs/r5_6_estimate.md`)
+
+- **The CPU checks** (1 thread, nice 19):
+  - the SFT rows contain 203 of the 204 formula-to-formula transitions in any valid chain;
+  - the one unseen transition is in kinematics, in 3 chains;
+  - many whole chains are unseen at depths 2–4; depth 5 is entirely unseen.
+- **What follows:**
+  - `generator_version` hashes `configs/env.yaml`'s generator section only, so new relations in an existing family
+    would silently change old seeds' problems. New relations need a new family (optics; `heldout_families` already
+    lists it).
+  - The SFT rows store per-given sensitivities, so the Jacobian training support can be read directly.
+- **The estimate:**
+  - Part J (out-of-support Jacobians, a construction filter): ~0.5 day of code, ~3.2 GPU-h.
+  - J + U (an optics family): ~1.5–2 days, ~5.6 GPU-h.
+  - Both are for Qwen D-pos-v2 + B-v2 × 3 seeds, at the rates of the confirmatory evals.
