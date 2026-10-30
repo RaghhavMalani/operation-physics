@@ -202,19 +202,24 @@ def generate_problems(backend, probs: list[dict], cfg: dict, seed: int) -> tuple
     return rows, dt
 
 
-def feasibility(model: str, cap: float, cfg: dict | None = None) -> dict:
+def feasibility(model: str, cap: float, cfg: dict | None = None, max_new_tokens: int | None = None,
+                n: int | None = None, batch16: bool = True, tag: str = "") -> dict:
     """D151 3a: load under the cap, k = 8 on each dev problem (batch 8), then 2 problems at once (batch 16), and the
-    readout costs (direct P(yes) and hidden states) on a few dev answers."""
+    readout costs (direct P(yes) and hidden states) on a few dev answers. D153: a budget override, the number of dev
+    problems, no batch-16 test, and a file tag."""
     import torch
 
     cfg = cfg or _config()
     sc = cfg["scale"]
+    if max_new_tokens:
+        sc["generation"]["max_new_tokens"] = max_new_tokens
     lo, hi = sc["dev_indices"]
-    probs = [{**p, "_index": i} for i, p in enumerate(pool(cfg)) if lo <= i < hi][:sc["feasibility_n"]]
+    probs = [{**p, "_index": i} for i, p in enumerate(pool(cfg)) if lo <= i < hi][:n or sc["feasibility_n"]]
     out = out_dir(model, cfg)
     out.mkdir(parents=True, exist_ok=True)
-    res: dict = {"decision": "D151 item 3a (exploratory)", "identity": _identity(model, cfg), "cap_gib": cap,
-                 "dev_indices": [lo, hi]}
+    res: dict = {"decision": "D151 item 3a (exploratory)" + (f"; D153 ({tag})" if tag else ""),
+                 "identity": _identity(model, cfg), "cap_gib": cap, "dev_indices": [lo, hi],
+                 "generation": sc["generation"], "n_problems": len(probs)}
     t0 = time.time()
     backend = make_backend(model, cfg, cap)
     res["load_s"] = time.time() - t0
@@ -229,14 +234,20 @@ def feasibility(model: str, cap: float, cfg: dict | None = None) -> dict:
     res["s_per_problem_batch8"] = times
     res["peak_reserved_gib_batch8"] = torch.cuda.max_memory_reserved() / 1024**3
     res["oom_backoffs_batch8"] = backend.oom_backoffs
-    backend.gen_cfg["batch_size"] = 2 * sc["generation"]["k"]
-    before = backend.oom_backoffs
-    r2, dt2 = generate_problems(backend, probs[:2], cfg, sc["generation"]["seed"] + 20_000)
-    res["s_two_problems_batch16"] = dt2
-    res["batch16_oom_backoffs"] = backend.oom_backoffs - before
-    res["peak_reserved_gib_batch16"] = torch.cuda.max_memory_reserved() / 1024**3
-    backend.gen_cfg["batch_size"] = sc["generation"]["batch_size"]
-    (out / "feasibility_completions.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows + r2))
+    r2 = []
+    if batch16:
+        backend.gen_cfg["batch_size"] = 2 * sc["generation"]["k"]
+        before = backend.oom_backoffs
+        r2, dt2 = generate_problems(backend, probs[:2], cfg, sc["generation"]["seed"] + 20_000)
+        res["s_two_problems_batch16"] = dt2
+        res["batch16_oom_backoffs"] = backend.oom_backoffs - before
+        res["peak_reserved_gib_batch16"] = torch.cuda.max_memory_reserved() / 1024**3
+        backend.gen_cfg["batch_size"] = sc["generation"]["batch_size"]
+    res["by_problem"] = [{"index": p["_index"], "family": p["family"], "depth": p["depth"], "seconds": t,
+                          "tokens": [r["n_tokens"] for r in rows if r["index"] == p["_index"]],
+                          "correct": [r["correct"] for r in rows if r["index"] == p["_index"]]}
+                         for p, t in zip(probs, times)]
+    (out / f"feasibility{tag and '_' + tag}_completions.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows + r2))
     answered = [r for r in rows if r["value"] is not None]
     res["dev_summary"] = {"n": len(rows), "answered": len(answered),
                           "correct": sum(bool(r["correct"]) for r in answered),
@@ -260,7 +271,7 @@ def feasibility(model: str, cap: float, cfg: dict | None = None) -> dict:
         res["hidden_layers"] = len(states)
         res["peak_reserved_gib_readouts"] = torch.cuda.max_memory_reserved() / 1024**3
     res["seconds"] = time.time() - t0
-    (out / "feasibility.json").write_text(json.dumps(res, indent=1, default=str))
+    (out / f"feasibility{tag and '_' + tag}.json").write_text(json.dumps(res, indent=1, default=str))
     print(json.dumps({k: v for k, v in res.items() if k not in ("s_per_problem_batch8",)}, indent=1, default=str))
     return res
 
@@ -286,14 +297,43 @@ def sampled_prefix(model: str, cfg: dict | None = None) -> list[dict]:
     return rows
 
 
-def sample(model: str, cap: float, stop_at: float, cfg: dict | None = None) -> dict:
+def plan(deadline: float, cfg: dict | None = None) -> dict:
+    """D151's stop time for 7B sampling: the time left minus the slack is shared so that the 7B readouts (expected
+    kept answers x per-answer cost x margin) and, if its feasibility exists, the whole native 1.5B control fit on the
+    same prefix. Writes <scale>/plan.json; returns it (t_stop in epoch seconds)."""
+    cfg = cfg or _config()
+    sc = cfg["scale"]
+    now = time.time()
+    cost, parts = 0.0, {}
+    for m in sc["models"]:
+        f = out_dir(m, cfg) / "feasibility.json"
+        if not f.exists():
+            continue
+        fe = json.loads(f.read_text())
+        g = float(np.mean(fe["s_per_problem_batch8"]))
+        r = sc["expected_mixed_share"] * sc["generation"]["k"] * (fe["yes_s_per_answer"] + fe["hidden_s_per_answer"]) \
+            * sc["readout_margin"]
+        parts[m] = {"generate_s_per_problem": g, "readout_s_per_problem": r}
+        cost += g + r
+    avail = deadline - now - sc["stop_slack_s"] - sc["load_overhead_s"]
+    n = int(max(0.0, avail) / cost) // sc["chunk_size"] * sc["chunk_size"] if cost else 0
+    n = min(n, sc["dev_indices"][0])
+    res = {"now": now, "deadline": deadline, "available_s": avail, "per_problem_s": parts, "n_planned": n,
+           "t_stop": now + n * parts["7b"]["generate_s_per_problem"] + sc["load_overhead_s"] / 4,
+           "control_planned": "1.5b" in parts}
+    (REPO_ROOT / cfg["output_dir"] / "scale" / "plan.json").write_text(json.dumps(res, indent=1))
+    return res
+
+
+def sample(model: str, cap: float, stop_at: float, cfg: dict | None = None, limit: int | None = None) -> dict:
     """D151 3b: chunks of the pool in order from the first missing one; a chunk starts only if its projected end
-    (the running mean chunk time, the feasibility's before the first) is before `stop_at` (epoch seconds)."""
+    (the running mean chunk time, the feasibility's before the first) is before `stop_at` (epoch seconds). `limit`:
+    no chunk beyond the first `limit` candidates (the 1.5B control samples the 7B's prefix, no further)."""
     cfg = cfg or _config()
     sc = cfg["scale"]
     cs = sc["chunk_size"]
     probs = [{**p, "_index": i} for i, p in enumerate(pool(cfg))]
-    lo = sc["dev_indices"][0]
+    lo = min(sc["dev_indices"][0], limit if limit is not None else sc["dev_indices"][0])
     (out_dir(model, cfg) / "samples").mkdir(parents=True, exist_ok=True)
     start = len(sampled_prefix(model, cfg)) // sc["generation"]["k"]
     feas = json.loads((out_dir(model, cfg) / "feasibility.json").read_text())
@@ -447,7 +487,11 @@ def run_hidden(model: str, cap: float, cfg: dict | None = None) -> dict:
                  **{f"layer_{k:02d}": a for k, a in enumerate(layers)})
         tmp.rename(f)
         print(f"  hidden part {n}: {i + len(part)}/{len(items)} ({time.time() - t0:.0f}s)", flush=True)
-    return {"n": len(items), "seconds": time.time() - t0}
+    info = {"decision": "D151 item 3c (hidden states; the arrays are local, gitignored)", "n": len(items),
+            "parts": len(list(d.glob("part_[0-9][0-9][0-9][0-9].npz"))), "identity": _identity(model, cfg),
+            "position": "the token holding the closing brace of the last \\boxed{}", "seconds": time.time() - t0}
+    (out_dir(model, cfg) / "hidden_info.json").write_text(json.dumps(info, indent=1))
+    return info
 
 
 def load_hidden(model: str, cfg: dict) -> tuple[list[np.ndarray], list[tuple]]:
@@ -467,15 +511,24 @@ def load_hidden(model: str, cfg: dict) -> tuple[list[np.ndarray], list[tuple]]:
 # ------------------------------------------------------------------------------------------- main
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("action", choices=["feasibility", "sample", "yes", "hidden", "analyze"])
+    ap.add_argument("action", choices=["feasibility", "plan", "sample", "yes", "hidden", "analyze"])
     ap.add_argument("--model", default="7b")
     ap.add_argument("--cap", type=float, default=None, help="allocator cap, GiB")
     ap.add_argument("--stop-at", type=float, default=None, help="sample: epoch seconds")
+    ap.add_argument("--limit", type=int, default=None, help="sample: pool candidates at most (the control)")
+    ap.add_argument("--deadline", type=float, default=None, help="plan: epoch seconds")
+    ap.add_argument("--max-new-tokens", type=int, default=None, help="feasibility: budget override (D153)")
+    ap.add_argument("--n", type=int, default=None, help="feasibility: dev problems (D153)")
+    ap.add_argument("--no-batch16", action="store_true", help="feasibility: skip the 2-problem test (D153)")
+    ap.add_argument("--tag", default="", help="feasibility: output file tag (D153)")
     a = ap.parse_args()
+    if a.action == "plan":
+        print(json.dumps(plan(a.deadline), indent=1))
+        return
     if a.action == "feasibility":
-        feasibility(a.model, a.cap)
+        feasibility(a.model, a.cap, max_new_tokens=a.max_new_tokens, n=a.n, batch16=not a.no_batch16, tag=a.tag)
     elif a.action == "sample":
-        print(json.dumps(sample(a.model, a.cap, a.stop_at)))
+        print(json.dumps(sample(a.model, a.cap, a.stop_at, limit=a.limit)))
     elif a.action == "yes":
         print(json.dumps(run_yes(a.model, a.cap)))
     elif a.action == "hidden":

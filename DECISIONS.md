@@ -5804,3 +5804,41 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **Problems:** the first 6 dev problems (1188–1193), not 12. That keeps about 10 min of GPU time.
   - **Parser checks:** they use those 6 × 8 completions and the 2-problem batch-16 test.
   - **Analysis:** dev problems are still never analyzed.
+
+### D153. Item 3's main stage does not run: D151's 120 s / problem rule fired. What runs instead is a longer feasibility measurement on the development problems only, to size a future run (2026-10-31, ~01:55 IST; no non-development 7B completion exists)
+- **The measurement** (D152's decoding, k = 8, max_new_tokens 1,024, batch 8, cap 6.7 GiB):
+  - dev 1188 (kinematics, depth 1): 139.1 s; 1 of 8 samples at the cap; 6 of the 7 answered are correct.
+  - dev 1189 (kinematics, depth 2): 154.7 s; 7 of 8 at the cap.
+  - **The rate:** about 6.6 decoding steps / s, set by bitsandbytes dequantizing every weight at every step. The time
+    per problem is the longest sample's length / 6.6.
+  - **Memory:** it fits. About 7.4 GB used on the card in all, with ~0.8 GB of host use.
+- **Why the samples are long:** a 2-sample check on dev 1189 (both at the cap) shows legitimate step-by-step LaTeX
+  derivations, not loops. At 1,024 tokens both were still in phase 3 of 4. So the model's native chain-of-thought needs
+  more than 1,024 tokens from depth 2 up.
+  - **At a sufficient budget (2,048)** a problem would take about 300 s. In the ~9 h left, minus the readouts, that is
+    about 90 problems, and with an expected mixed share of 0.3–0.45, about 30–40 kept problems.
+  - **The resulting CI** on a within-problem pairwise accuracy would be about ±0.09.
+- **The rule:** D151 / D152 say: above 120 s / problem, stop and report; no main stage. It is applied as written.
+  - **Not done:**
+    - a depth-1-only run (it fits the budget, but changes the design after the rule fired);
+    - a shorter-answer prompt (that changes the native format);
+    - using the 7B to judge the SFT 1.5B's X2 answers (a different question: an external verifier, not the model's own
+      wall).
+  - All three are listed as options for the follow-up.
+- **What runs instead (feasibility, development problems only, never analyzed):**
+  - **The 7B on all 12 development problems** (1188–1199, one per cell): k = 8, max_new_tokens 2,048, batch 8. It
+    measures:
+    - s / problem at a budget that completes;
+    - peak memory and OOM backoffs at the full budget;
+    - lengths and truncation by depth;
+    - the readout costs (direct P(yes), hidden states) on 8 answers.
+  - **The native 1.5B control** on the same 12 problems, with the same settings: its rate and lengths, for the cost of
+    the control.
+  - **No batch-16 test:** at a 2,048 budget its KV cache cannot fit next to the 7B's 5.2 GiB of weights. The arithmetic
+    is in the report.
+  - **The outputs** go to `results/followup/scale/<model>/feasibility_2048.json` (plus the completions). The
+    1,024-token run was stopped before it wrote its file; its numbers are the two above, from its log.
+- **The report** says what a real run would need:
+  - a cloud GPU or a faster inference stack (e.g. vLLM with AWQ / GPTQ kernels instead of bitsandbytes);
+  - or a format with short answers (which would need SFT);
+  - and the N reachable per night on the 4060.
