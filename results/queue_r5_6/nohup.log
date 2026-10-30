@@ -7,3 +7,10 @@
 [14:49:01] start r56_eval_dpos2_s0_a1 (timeout 69061s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2 --seed 0 --r5-6 --max-reserved-gib 5.9
 [15:48:53] end r56_eval_dpos2_s0_a1: exit 0
 [15:48:53] r56_eval_dpos2_s0_a1: 3 temperature pauses, 90s paused of 3594s; tonight so far 3 pauses, 90s of 3594s (D143)
+[15:48:57] commit 'R5-6 J (D147): dpos2 seed 0 greedy eval on the frozen J set, attempt 1 (exit 0)': pushed
+[15:48:58] eval r5_6 b2 seed 0 attempt 1 of 3: 0 of 102 batches already on disk
+[15:48:58] GPU at 63.00C, memory.used 1553 MiB
+[15:49:00] disk: 47 GiB free on MLStorage
+[15:49:00] start r56_eval_b2_s0_a1 (timeout 65462s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm b2 --seed 0 --r5-6 --max-reserved-gib 5.9
+[16:21:47] end r56_eval_b2_s0_a1: exit 0
+[16:21:47] r56_eval_b2_s0_a1: 1 temperature pauses, 30s paused of 1969s; tonight so far 4 pauses, 120s of 5563s (D143)
