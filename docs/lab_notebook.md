@@ -427,5 +427,6 @@ Brief (your message, ~10:00 IST):
     D-pos-v2).
 - **The chain ended at 12:13:23.** No queue process left; the lock is free; no GPU compute process;
   `HEAD` = `origin/main` = `ffc4ee4`.
+- **Full suite after the stages** (GPU idle): 705 passed, 0 failed (700 + 3 queue_xm3 + 1 disk-guard case + 1 mc_b).
 - **FINDINGS #38 written.** `docs/decision_timeline.md` (D137–D139 rows, the summary list, the anchor) and
   `docs/paper_outline.md` (status, FINDINGS list) now cite it.
