@@ -1,0 +1,3 @@
+Fetching 11 files:   0%|          | 0/11 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 11 files:   9%|▉         | 1/11 [00:00<00:06,  1.50it/s]Fetching 11 files:  64%|██████▎   | 7/11 [00:00<00:00, 10.87it/s]Fetching 11 files:  91%|█████████ | 10/11 [00:01<00:00,  6.12it/s]Fetching 11 files:  91%|█████████ | 10/11 [00:20<00:00,  6.12it/s]Fetching 11 files: 100%|██████████| 11/11 [06:13<00:00, 58.44s/it]Fetching 11 files: 100%|██████████| 11/11 [06:13<00:00, 33.98s/it]
+/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-7B-Instruct-bnb-4bit/snapshots/2ab7fb373c247ef5933d034f016efefc66608458

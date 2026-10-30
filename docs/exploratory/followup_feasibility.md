@@ -257,6 +257,10 @@ only. **This is not FINDINGS #35:**
     the temperature and stall guards watched the wrong group.
   - **Found** during the third 7B run and re-pointed. The GPU peaked at 84.3 °C, so no pause was ever due.
   - **The queue scripts are not affected.**
+- **The paper's D-entry count (D155):**
+  - **The problem:** the paper's macro "The log has N entries" would have counted this track's D151–D154.
+  - **The fix:** it now skips D-entries under the follow-up project's section. The paper stays at 150, and `paper/`
+    is unchanged.
 - **Everything here is one night's exploratory work:**
   - item 1 re-reads one model's samples;
   - item 2 re-reads one model's logs;

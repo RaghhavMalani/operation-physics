@@ -1,0 +1,87 @@
+........................................................................ [  9%]
+........................................................................ [ 19%]
+........................................................................ [ 28%]
+........................................................................ [ 38%]
+........................................................................ [ 47%]
+........................................................................ [ 57%]
+........................................................................ [ 66%]
+F....................................................................... [ 76%]
+........................................................................ [ 85%]
+........................................................................ [ 95%]
+....................................                                     [100%]
+=================================== FAILURES ===================================
+___________ test_an_unreadable_temperature_never_ends_a_pause_early ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-flash2404/pytest-73/test_an_unreadable_temperature0')
+
+    def test_an_unreadable_temperature_never_ends_a_pause_early(tmp_path):
+        log, _ = _guard(tmp_path, [(0, "88.10"), (1.5, "")], pause_s=3, stage_s=6)
+>       assert _paused_s(log)[0] == 3 and "the 3s maximum" in log
+E       assert (4 == 3)
+
+tests/test_temp_guard.py:67: AssertionError
+=============================== warnings summary ===============================
+tests/test_e1_pilots.py::test_grpo_args_pass_the_pilot_setting_and_keep_e1a
+  /home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/torchao/quantization/quant_api.py:1542: DeprecationWarning: invalid escape sequence '\.'
+    """Configuration class for applying different quantization configs to modules or parameters based on their fully qualified names (FQNs).
+
+tests/test_oracle_centred.py::test_summarize_coverage_and_shares
+  /home/flash2404/operation-physics/physcal/eval/oracle_centred.py:95: RuntimeWarning: invalid value encountered in divide
+    boot = (self.counts @ num) / (self.counts @ den)
+
+tests/test_oracle_centred.py::test_summarize_coverage_and_shares
+  /home/flash2404/operation-physics/physcal/eval/oracle_centred.py:96: RuntimeWarning: invalid value encountered in scalar divide
+    return float(num.sum() / den.sum()), np.percentile(boot, [2.5, 97.5]).tolist()
+
+tests/test_oracle_centred.py::test_summarize_coverage_and_shares
+  /home/flash2404/operation-physics/physcal/eval/oracle_centred.py:103: RuntimeWarning: divide by zero encountered in divide
+    return (n * sxy - sx * sy) / (n * sxx - sx * sx)
+
+tests/test_oracle_centred.py::test_summarize_coverage_and_shares
+  /home/flash2404/operation-physics/physcal/eval/oracle_centred.py:103: RuntimeWarning: invalid value encountered in divide
+    return (n * sxy - sx * sy) / (n * sxx - sx * sx)
+
+tests/test_oracle_centred.py::test_summarize_coverage_and_shares
+  /home/flash2404/operation-physics/physcal/eval/oracle_centred.py:103: RuntimeWarning: divide by zero encountered in scalar divide
+    return (n * sxy - sx * sy) / (n * sxx - sx * sx)
+
+tests/test_oracle_centred.py::test_summarize_coverage_and_shares
+  /home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/numpy/lib/_function_base_impl.py:4596: RuntimeWarning: invalid value encountered in subtract
+    diff_b_a = b - a
+
+tests/test_r4_confirm.py::test_three_identical_seeds_reproduce_the_one_seed_development_analysis
+tests/test_r5_6.py::test_three_identical_seeds_on_the_development_files
+  /home/flash2404/operation-physics/physcal/eval/stage_b_analysis.py:138: RuntimeWarning: Mean of empty slice
+    b = np.nanmean(np.array(boots), axis=0)
+
+tests/test_r4_confirm.py::test_three_identical_seeds_reproduce_the_one_seed_development_analysis
+tests/test_r5_6.py::test_three_identical_seeds_on_the_development_files
+  /home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/numpy/lib/_nanfunctions_impl.py:1396: RuntimeWarning: All-NaN slice encountered
+    return _nanquantile_unchecked(
+
+tests/test_r4_confirm.py::test_three_identical_seeds_reproduce_the_one_seed_development_analysis
+  /home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/numpy/lib/_function_base_impl.py:4598: RuntimeWarning: invalid value encountered in subtract
+    subtract(b, diff_b_a * (1 - t), out=lerp_interpolation, where=t >= 0.5,
+
+tests/test_stage_a.py::test_resolution_and_ranking
+  /home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/numpy/_core/_methods.py:219: RuntimeWarning: Degrees of freedom <= 0 for slice
+    ret = _var(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+
+tests/test_stage_a.py::test_resolution_and_ranking
+  /home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/numpy/_core/_methods.py:211: RuntimeWarning: invalid value encountered in scalar divide
+    ret = ret.dtype.type(ret / rcount)
+
+tests/test_x2_robustness.py::test_separated_pairs_keep_only_clear_cases
+  /home/flash2404/operation-physics/physcal/eval/x2_pairs.py:219: RuntimeWarning: Mean of empty slice
+    boots = np.array([pa[rng.integers(0, len(pa), len(pa))].mean() for _ in range(n_boot)])
+
+tests/test_x2_robustness.py::test_separated_pairs_keep_only_clear_cases
+  /home/flash2404/operation-physics/.venv/lib/python3.11/site-packages/numpy/_core/_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+    ret = ret.dtype.type(ret / rcount)
+
+tests/test_x2_robustness.py::test_separated_pairs_keep_only_clear_cases
+  /home/flash2404/operation-physics/physcal/eval/x2_pairs.py:220: RuntimeWarning: Mean of empty slice
+    return {"n_problems": len(pa), "pairwise_accuracy": float(pa.mean()),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 failed, 755 passed, 17 warnings in 699.09s (0:11:39)

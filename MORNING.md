@@ -129,8 +129,14 @@ Written on 2026-10-31 at ~02:50 IST, once the GPU work ended.
     was re-run on 3 problems.
   - Their logs are committed.
 - **BLOCKED:** none.
-- **Tests:** the full suite after the GPU work was 755 passed, 1 failed (the paper count, fixed by D155). The re-run
-  is in §5's last line.
+- **Tests:**
+  - **The full suite after the GPU work:** 755 passed, 1 failed (the paper count, fixed by D155).
+  - **The re-run after D155:** 755 passed, 1 failed.
+    - The failure was `test_temp_guard.py::test_an_unreadable_temperature_never_ends_a_pause_early`, a wall-clock
+      test that measured a 3 s pause as 4 s under nice 19.
+    - That file was not touched tonight. Alone it passes 3 of 3 times (6 / 6 each).
+  - So every test passes, with one known timing flake.
+  - `test_followup.py` adds 15.
 - **The state:**
   - no GPU process;
   - every commit pushed;
