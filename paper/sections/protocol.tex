@@ -1,0 +1,109 @@
+% Section: Evaluation protocol (drafted 2026-10-30). Every claim cites its source in a comment; every number is
+% \pv{...}.
+\section{Evaluation protocol}
+\label{sec:protocol}
+
+\subsection{Pre-registration and the decision record}
+\label{sec:prereg}
+
+% PREREGISTRATION.md (written before results, never edited; deviations go to DECISIONS.md: CLAUDE.md working rules);
+% DECISIONS.md; docs/decision_timeline.md (R5-8); D141 (family H not run).
+The project's hypotheses were pre-registered in a file written before any result and never edited afterwards.
+Every experiment after that was specified in a dated entry of a public decision log, pushed to the repository before
+its data existed; the commit is the timestamp, and the few amendments made after a result are labelled
+(Section~\ref{sec:deviations}).
+The log has \pv{record.dentries} entries.
+Each pre-registration states the hypothesis, the estimator, the decision rule and what would count as failure, and
+labels the analysis confirmatory or exploratory.
+% Overnight working rules (decisions taken during unattended runs are logged with the alternatives considered).
+Decisions taken during unattended runs were logged in the same way, with the alternatives considered.
+% CLAUDE.md working rules: negative results with the same prominence; FINDINGS.md numbering.
+Results are recorded as numbered findings (\pv{record.findings} so far), each citing its entry, and a negative
+result is reported with the same prominence as a positive one.
+% D141.
+Pre-registered hypotheses that were not run are declared as such rather than dropped.
+A chronological timeline of every pre-registration and amendment, with its status, accompanies the paper.
+
+\subsection{Frozen evaluation sets}
+\label{sec:frozen}
+
+% D113 sec. 8 (R4-5: fresh seeds, manifests, FROZEN.md, the loader guard; "no model is evaluated on it ... until a
+% 3-seed confirmatory run has its own entry"); D118 sec. 2 (every problem regenerated and compared before
+% generation); D118 sec. 10 (interim reports: operational counts only; the analysis runs once).
+The development pair sets of Section~\ref{sec:pairs} were used to build and debug every analysis.
+Confirmatory claims rest on frozen sets built with fresh seeds after their analysis was specified: the R4-5 set
+(A6, A6b and A6c, \pv{frozen.aSixC.problems} problems each) and the J set.
+Each frozen file has a SHA-256 manifest; the evaluation loader refuses a frozen file unless the run sets an explicit
+confirmatory flag, and regenerates every problem from its seed and compares it before any generation.
+No model saw a frozen set before the confirmatory run that its entry registered.
+While those runs were in progress, interim reports gave only operational counts (completions, truncation, parse
+failures, memory backoffs), and each confirmatory analysis ran once, after all of its evaluations existed.
+
+% CLAUDE.md component 6 (tape and replay); D72, D77 (R2-1: training-time fingerprint and the reloaded-model check);
+% D78 (pinned base); D142 (resumable evals: a partial file keyed to the eval's identity).
+Every completion is logged with its problem, verifier breakdown and provenance, and replaying a log regenerates each
+problem from its seed and re-scores the completion exactly.
+Every adapter carries a fingerprint recorded at the end of training, and an evaluation reloads it and checks the
+fingerprint before generating.
+Long evaluations write each finished batch to disk under a key of the model, adapter, prompts and generation settings,
+so an interrupted greedy evaluation resumes without changing any completion.
+
+\subsection{Statistics}
+\label{sec:stats}
+
+% D50/A6, D95 (the pair slope); D59 (A6b on the change in the truth); configs/pairs.yaml analysis.sigma_floor_rel.
+\paragraph{Pair slopes.}
+For each pair set the statistic is the within-pair OLS slope with an intercept (Section~\ref{sec:pairs}): of
+$\Delta\ln\sigma_{\text{stated}}$ on $\Delta\ln\sigstar$ for A6, A6c and the J sensitivity pairs, and on
+$\Delta\ln y$ for A6b and the J invariance pairs.
+A stated $\sigma$ of zero enters at a relative floor of \pv{stat.floor}.
+% D113 sec. 4, D118 sec. 5 (pair sets per source).
+For an answer's $\sigma$, the noise-allocation slopes use pairs whose two members are both answered, and the
+invariance slopes use pairs whose two members are both computation-correct, so that a wrong answer cannot pass as
+invariance; values read from a propagation line use every pair.
+
+% D104 (stage B's joint bootstrap), D118 sec. 5; Davison & Hinkley (1997).
+\paragraph{Uncertainty over pairs and seeds.}
+Confidence intervals come from a bootstrap over pairs with \pv{stat.B} resamples.
+With several seeds, each resample draws the pairs once and recomputes every seed's statistic on them; the estimate is
+the mean of the per-seed statistics~\citep{davison1997bootstrap}.
+One-sided $p$-values are the share of resamples at or below zero.
+% D113 R5-R8, D118 K5-K8 (expected-score differences clustered over pairs); R5-8 (never 5,390 pairs or 3 seeds as
+% independent); D74, FINDINGS #22 (within-problem tests clustered over problems).
+Differences in expected score (Section~\ref{sec:expected}) are averaged over seeds per problem and bootstrapped with
+pairs as clusters.
+Within-problem comparisons of correctness signals are clustered over problems.
+Neither pairs nor seeds that share problems are ever treated as independent.
+
+% D113 sec. 4 (C1-C3), D118 sec. 6 and D125 (P = K1 and C2 and C3); D147 sec. 8 (P_J); Schuirmann (1987) TOST;
+% stage_r4.yaml analysis; pairs.yaml invariance_analysis.
+\paragraph{The propagation criterion.}
+A $\sigma$ source propagates if three conditions hold:
+the noise-allocation slope is positive (C1: the lower end of its \pv{stat.cilevel} interval is above zero);
+it is at least \pv{stat.practical}, a practical threshold (C2);
+and the invariance slope is equivalent to zero, with its \pv{stat.cilevel} interval inside
+$\pm\pv{stat.margin}$, a two one-sided tests criterion~\citep{schuirmann1987} (C3).
+The primary hypotheses of the confirmatory runs (P on the R4-5 set, P$_J$ on the J set) apply this criterion to
+D-pos-v2's answer $\sigma$, with C1 replaced by a one-sided test that is Holm-adjusted within its family.
+
+% Holm (1979); D118 sec. 7 (K1-K8), D147 sec. 9 (J1-J6), D118 sec. 8 and D147 sec. 10 (subgroups outside the family);
+% R5 central message (failure to reject is not equivalence).
+\paragraph{Multiplicity.}
+Each confirmatory run fixes its family of tests in advance (K1--K8 on the R4-5 set, J1--J6 on the J set), and $p$-values
+are Holm-adjusted~\citep{holm1979} within it at level \pv{stat.alpha}.
+Subgroup estimates (by depth, chain type or distance from the training range) are reported with intervals but are
+outside the family, and no confirmatory claim rests on them.
+A score difference that is not significant is reported as not rejected, never as a tie.
+
+\subsection{Deviations}
+\label{sec:deviations}
+
+% docs/decision_timeline.md (generated Table tab:deviations); D54, D57 (the gate), D92 (X2 robustness, after the
+% result), D114 (token budget; dropped rows), D125 (P amended before any confirmatory result), D131 (an eval rerun
+% after a driver reset), D135 (fallback bounds chosen after seeing #35), D146 (the cross-model NO-GO accepted).
+Table~\ref{tab:deviations} lists every amendment to a pre-registered plan and every deviation that touched a
+registered analysis, with when it was made relative to the data it affects.
+Most were made before any affected result existed.
+Those made after a result are labelled as such wherever the result is reported.
+
+\input{generated/tables/deviations}

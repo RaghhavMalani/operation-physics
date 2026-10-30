@@ -1,0 +1,65 @@
+% When Language Models Quote Uncertainty (working title; R5-1, D133). Project name: Quoting Volatility.
+% Build:  uv run python scripts/paper/build.py && cd paper && tectonic main.tex      (or: latexmk -pdf main.tex)
+% Every number in the text is a generated value (\pv{...}, paper/generated/macros.tex) or sits in a generated table
+% or figure (paper/generated/); paper/generated/SOURCES.md lists the committed files each one was built from.
+\documentclass[11pt]{article}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\fi
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[section]{placeins}
+\usepackage[retain-explicit-plus=true, group-separator={,}, group-minimum-digits=4, group-digits=integer]{siunitx}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{enumitem}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage[hidelinks]{hyperref}
+
+% Generated values: \pv{key} prints a value from paper/generated/macros.tex; an undefined key stops the build.
+\makeatletter
+\newcommand{\defpv}[2]{\expandafter\def\csname pv@#1\endcsname{#2}}
+\newcommand{\pv}[1]{\@ifundefined{pv@#1}{\PackageError{paper}{Undefined generated value `#1'}{Rebuild
+  paper/generated with scripts/paper/build.py.}}{\csname pv@#1\endcsname}}
+\makeatother
+\input{generated/macros}
+
+\newcommand{\sigstar}{\sigma^{\star}}
+\newcommand{\crpslog}{\mathrm{crps}_{\log}}
+\newcommand{\todo}[1]{\textcolor{gray}{\emph{[#1]}}}
+
+\title{When Language Models Quote Uncertainty:\\Separating Reasoning Errors from Measurement Noise}
+\author{Raghhav\thanks{Draft of \today. Author list and affiliations to be completed.}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\todo{Abstract to be written after the results sections.}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/related}
+\input{sections/setup}
+\input{sections/methods}
+\input{sections/protocol}
+\input{sections/results}
+\input{sections/discussion}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\input{sections/appendix}
+
+\end{document}

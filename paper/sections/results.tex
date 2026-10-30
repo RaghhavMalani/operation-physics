@@ -1,0 +1,36 @@
+% Sections: the three acts of the results. NOT drafted yet (docs/paper_outline.md sections 4-6). The tables and the
+% figure below are generated from committed results (scripts/paper/build.py) and placed where the text will use them.
+\section{Optimization: $\sigma$ rides on the answer's advantage}
+\label{sec:act1}
+\todo{To be written (docs/paper\_outline.md, section 4; FINDINGS \#6, \#14, \#16, \#18, \#25).}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{generated/figures/headline.pdf}
+  % scripts/figures/headline.py via scripts/paper/figures.py; sources in paper/generated/SOURCES.md
+  % (fig_headline); FINDINGS #18 (A), #19, #21, #22, #26, #37 (B), #32, #35, #36 (C).
+  \caption{The three findings.
+  (A) Uniform versus split credit: $1\sigma$ coverage per seed.
+  (B) Within-problem pairwise accuracy of every correctness readout measured, against self-consistency.
+  (C) On the frozen set, the noise-allocation slope against the expected-score difference from RSS.
+  Every point is read from a committed result file; the sidecar \texttt{headline\_data.json} traces each one.}
+  \label{fig:headline}
+\end{figure}
+
+\section{Does the model know which of its answers is right?}
+\label{sec:act2}
+\todo{To be written (docs/paper\_outline.md, section 5; FINDINGS \#7, \#19--\#22, \#26, \#37).}
+
+\input{generated/tables/cost}
+\input{generated/tables/cost_mca}
+
+\section{Propagation of measurement noise: structure is not forecast quality}
+\label{sec:act3}
+\todo{To be written (docs/paper\_outline.md, section 6; FINDINGS \#17, \#23, \#27--\#39).}
+
+\input{generated/tables/confirmatory}
+\input{generated/tables/tail}
+\input{generated/tables/swaps}
+\input{generated/tables/llama}
+\input{generated/tables/j_results}
+\input{generated/tables/j_subgroups}

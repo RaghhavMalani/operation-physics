@@ -1,0 +1,165 @@
+% Section: Methods (drafted 2026-10-30). Every claim cites its source in a comment; every number is \pv{...}.
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Model and training infrastructure}
+
+% configs/base_4bit.yaml (pinned snapshot, D78); stage_r4.yaml lora; Unsloth, TRL; D70 (Phase 12 trains on the
+% 4-bit base); D67, D68 (adapters are never merged for evaluation); FINDINGS #15 (the bf16 merge erased most of the
+% RL update; the superseded merged results stay labelled, #13, #14).
+All models are \pv{model.base}~\citep{yang2024qwen25math}, loaded with \pv{model.bits}-bit NF4 quantization~\citep{dettmers2023qlora} from a pinned
+snapshot and trained with LoRA adapters~\citep{hu2022lora} of rank \pv{lora.r} ($\alpha = \pv{lora.alpha}$) on all
+\pv{lora.modules} attention and MLP projections, using Unsloth~\citep{unsloth} and TRL~\citep{vonwerra2020trl}.
+Adapters are evaluated as trained: unmerged, on the same quantized base.
+An early evaluation path merged reinforcement-learning adapters into a bf16 copy of the model, which erased most of
+the update; those results are superseded and kept only as labelled records.
+% D137 (the cross-model pilot).
+A cross-model pilot repeats the D-pos-v2 and B-v2 recipes of Section~\ref{sec:dpos} on
+\pv{model.llama}~\citep{grattafiori2024llama3}.
+
+\subsection{Supervised warm-up}
+\label{sec:sft}
+
+% D35 (data and masking), FINDINGS #4 (format and length fixed; the A/B), configs/sft.yaml.
+Reinforcement learning starts from a supervised warm-up on \pv{sft.n} generator solutions written in the output
+format: the needed SI values, one line per chain step with the substituted numbers, the \texttt{<steps>} block and
+the answer.
+The $\sigma$ in these targets is a fixed \pv{sft.sigmarel} of the value, and its tokens are masked from the loss, so
+the warm-up teaches the format and the computation but never a particular uncertainty.
+It runs for \pv{sft.minutes} minutes at learning rate \pv{sft.lr}.
+
+\subsection{Reinforcement learning with a proper scoring rule}
+\label{sec:grpo}
+
+% D34, D36 (the GRPO design); configs/grpo_split_credit.yaml (identical to grpo_overnight2.yaml except split credit,
+% tested); DeepSeekMath (GRPO); D41 (matched-step comparisons).
+We train with GRPO~\citep{shao2024deepseekmath}: for each of \pv{grpo.prompts} problems per step the policy samples
+\pv{grpo.G} completions at temperature \pv{grpo.temp}, each completion is scored by the verifier
+(Section~\ref{sec:verifier}), and the reward is normalized within its group.
+There is no KL penalty ($\beta = \pv{grpo.beta}$); the learning rate is \pv{grpo.lr} and completions are capped at
+\pv{grpo.maxlen} tokens.
+% CLAUDE.md component 5 (curriculum); grpo_split_credit.yaml curriculum.
+Problems are drawn by a curriculum over (family, depth) cells that tracks each cell's pass rate $p$ with an
+exponential moving average (rate \pv{grpo.ema}) and samples cells in proportion to $p(1-p) + \pv{grpo.floor}$, the
+weight that favours groups with reward variance.
+Runs are compared at a matched step (\pv{grpo.step}).
+
+\paragraph{Split credit.}
+% Phase 9.5 step 3 (CLAUDE.md); D45, D46 (the trainer); grpo_split_credit.yaml split_credit; D62 (seeds 1, 2);
+% D71 / R2-6 (uniform-credit seeds); FINDINGS #6 (the sigma = 0 collapse under sequence-level credit), #16, #18.
+With sequence-level credit every token of a completion receives the same advantage, so the tokens of $\sigma$ are
+rewarded for the answer's correctness rather than for their own calibration.
+Split credit decomposes the verifier's reward $r$ into two parts that sum to it,
+\begin{equation}
+  r_{\text{answer}} = \crpslog(\mu, \sigma_{\text{ref}}) + w\,r_{\text{steps}}, \qquad
+  r_{\sigma} = \crpslog(\mu, \sigma) - \crpslog(\mu, \sigma_{\text{ref}}),
+  \label{eq:split}
+\end{equation}
+with a fixed reference $\sigma_{\text{ref}}$ of \pv{split.ref} of $\mu$ and the step weight $w$ of
+Section~\ref{sec:verifier}.
+Each part is normalized within its group.
+The tokens of the $\sigma$ number, located by parsing, receive the advantage of $r_{\sigma}$; every other token
+receives that of $r_{\text{answer}}$.
+A failed completion keeps its whole reward in $r_{\text{answer}}$.
+The verifier, the logged reward and every hyperparameter are those of the uniform-credit run; split credit and uniform
+credit are each trained with \pv{split.seeds} seeds.
+
+\paragraph{$\sigma$-only reinforcement learning (E1).}
+% D52 (E1 pre-registration), D94 / D101 (E1c, E1d; E1d's learning rate), R5-7 (E1d is exploratory);
+% configs/grpo_e1a.yaml, grpo_e1d.yaml; FINDINGS #14, #25.
+To isolate credit assignment completely, E1 holds the answer fixed.
+Each training prefix is a warm-up model's own completion truncated right after the ``$\pm$'' of its answer, and the
+policy samples only the remaining $\sigma$ suffix (at most \pv{eone.suffix} tokens), so that within a group only
+$\sigma$ varies.
+E1 trains for \pv{eone.steps} steps at learning rate \pv{eone.lr}; the E1d pilot repeats it at \pv{eone.lrd}, and is
+treated as exploratory.
+
+\subsection{Explicit propagation: D-pos-v2 and its implicit control B-v2}
+\label{sec:dpos}
+
+% D112, D113 sec. 1 (R4-1 data); results/phase12_sft_data_r4/manifest.json; configs/sft_r4.yaml.
+% Motivation: stage B (SFT on sigma*: reads the stated percentages, FINDINGS #27), stage C (sigma-only RL with the
+% predictive reward: copies the smallest percentage, #28) and stage D (an explicit line without value-dependent
+% derivations: exponent templates, #29) did not propagate.
+Supervising $\sigstar$ directly, rewarding $\sigma$ alone, and training an explicit propagation line on data without
+value-dependent derivatives all failed to make the stated $\sigma$ propagate noise.
+The data of this section contain the behaviour.
+They reuse \pv{rfour.n} training problems with mixed noise: each given's level is drawn independently from
+\pv{gen.mixedlevels}, and \pv{rfour.mixing} problems mix two or more noisy levels.
+Both arms see the same problems.
+
+% D113 sec. 1 (the explicit arm's format and masks); sft_r4.yaml arms.
+\paragraph{D-pos-v2 (explicit).}
+After the solution, the target completion writes one line per noisy given $x_i$:
+the given's total log-sensitivity $S_i = \partial\ln f/\partial\ln x_i$ as a symbolic expression derived by the chain
+rule over the steps, the same expression with the solution's values substituted, and its value to
+\pv{rfour.sfmt} significant figures.
+A power-law term is stated as its exponent.
+A propagation line then combines the terms with the stated levels $s_i$,
+\begin{equation}
+  \sigma_{\text{rel}} = \sqrt{\textstyle\sum_i (S_i\, s_i)^2} = X,
+  \label{eq:line}
+\end{equation}
+and the answer states $\sigma = X\,|\mu|$.
+Every token is trained, including the sensitivities, the line and $\sigma$.
+% D113 sec. 3 (the three sigma values; (c_S) descriptive).
+We read three values of $\sigma$ from each D-pos-v2 completion:
+(a) the answer's relative $\sigma$;
+(b) the line's stated $X$;
+(c) the exact value of Equation~\eqref{eq:line} computed from the line's own written terms.
+Comparing them locates a failure in the propagation itself, the arithmetic of the line, or the copy into the answer.
+
+% D113 sec. 1 (the supervised arm), D104 (stage B's arm).
+\paragraph{B-v2 (implicit).}
+The same problems and solutions with no sensitivity lines and no propagation line; $\sigstar$ itself is written after
+``$\pm$'' and trained.
+B-v2 can learn propagation only implicitly.
+
+% D113 sec. 2, D118 sec. 1 (recipe; seeds change the LoRA initialization, data order and trainer seed; data fixed);
+% stage_r4.yaml; D114 (token budget); D116 (eval batch).
+\paragraph{Training and evaluation.}
+Each arm trains a fresh adapter on the pinned base for \pv{rfour.epochs} epochs (\pv{rfour.steps} steps) at
+learning rate \pv{rfour.lr} and effective batch \pv{rfour.batch}, with \pv{rfour.seeds} seeds per arm.
+The seed changes the adapter's initialization and the data order, not the data.
+Evaluation is greedy, with up to \pv{rfour.tokens} new tokens, enough for the longest derivations.
+
+\subsection{Reference uncertainties}
+\label{sec:comparators}
+
+% D95 (the noise heuristics; RSS over the givens' stated levels is the primary); physcal/eval/noise_heuristics.py.
+Every stated $\sigma$ is compared with three references that need no model.
+$\sigstar$ is the generator's own value (Equation~\eqref{eq:sigstar}).
+RSS is the root sum of squares of the stated levels of the givens, $\sqrt{\sum_i s_i^2}$: correct for a product of
+first powers, and blind to the values.
+% D73 (X1 pre-registration), D99 (exact refit, reproduction gate before use), FINDINGS #17, #23.
+X1 is a shallow text model of $\sigstar$: gradient-boosted trees on the problem text's tokens, the stated levels and
+the displayed magnitudes, fitted on generator problems disjoint from every evaluation set.
+It is refit exactly and used only if it reproduces its published results.
+% D147 sec. 10 (the clamped comparator, J set only).
+On the J set we add a fourth, \emph{clamped} reference: the first-order $\sigma$ with every sensitivity clipped into
+its chain's training range, which is what a model that propagates exactly but only within its training range would
+state.
+
+\subsection{Executing instead of predicting: MC-A and MC-B}
+\label{sec:mc}
+
+% D112 (R4-4), D113 sec. 7 (MC-A, inference only); configs/mc_a.yaml; FINDINGS #31.
+MC-A estimates $\sigma$ by re-asking the model.
+For each problem it builds \pv{mca.k} perturbed copies in which every noisy given is redrawn from the generator's own
+predictive distribution, $x = x_{\text{meas}}/(1+s z)$ with $z \sim \mathcal{N}(0,1)$, and shown in its displayed
+unit; B-v2 answers each copy.
+Its $\sigma$ is the spread of $\ln\mu$ over the copies: the standard deviation (raw), or \pv{mca.mad} times the median
+absolute deviation over the copies whose solution steps match the unperturbed one (robust).
+The same perturbations pushed through the exact chain give an oracle that targets $\sigstar$.
+
+% D119 (MC-B pre-registration), D122 (deviations while building; the token budget); configs/mc_b.yaml;
+% FINDINGS #33, #37; PAL and Program of Thoughts limit its novelty.
+MC-B asks the model for the computation instead of the answer, in the spirit of program-aided
+reasoning~\citep{gao2023pal,chen2023pot}.
+The base model, without an adapter, writes a Python function \texttt{solve} whose parameters are the givens' own
+symbols; \pv{mcb.nexamples} worked examples from a disjoint seed range at depth \pv{mcb.exdepth} show the format, and
+generation is greedy with up to \pv{mcb.tokens} new tokens.
+A sandbox checks the program's syntax tree (only the \texttt{math} module, no dynamic code), calls it on the
+displayed values and on MC-A's perturbations, and takes the spread of the logarithms of its outputs as $\sigma$.
+A failing program is classified as an interface failure (no program, wrong signature, rejected), a runtime failure,
+or a semantic failure (it runs but computes the wrong chain).

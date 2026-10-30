@@ -1,0 +1,198 @@
+% Section: Setup (drafted 2026-10-30). Every claim cites its source in a comment; every number is \pv{...}.
+\section{Setup}
+\label{sec:setup}
+
+\subsection{A generator of physics problems with known uncertainty}
+\label{sec:generator}
+
+% Spec (CLAUDE.md, component 1); physcal/env/graph.py; D51 (generator 2.0.0); configs/env_v2.yaml.
+The benchmark is a procedural generator of multi-step physics word problems (generator version \pv{gen.version}).
+It has \pv{gen.nfamilies} formula families (\pv{gen.families}), each one physical scenario with named, dimensioned
+quantities and a set of relations written in SymPy~\citep{meurer2017sympy}: \pv{gen.nformulas.kinematics},
+\pv{gen.nformulas.dynamics} and \pv{gen.nformulas.energy} relations respectively.
+% physcal/env/graph.py: Family.sample_world, chains, is_valid_chain.
+A problem is a linear chain through its family's formula graph.
+The generator samples a consistent world (basis quantities log-uniform within physical ranges, derived quantities
+checked against plausibility bounds), picks a chain, shows the chain's inputs (the \emph{givens}) and asks for its
+output (the \emph{target}).
+The depth of a chain, from one step up to \pv{gen.maxdepth}, is its difficulty dial.
+% graph.py docstring: "the target's minimal derivation depth ... must equal the chain length ... no given may be
+% derivable from the other givens".
+Depth is honest: the target's shortest derivation from the givens, over all relations of the family, has exactly
+the chain's length, and no given can be derived from the others.
+% env_v2 splits.heldout_depths; R5-8 (depth 5 is extrapolation in chain length, not to new physics).
+Depth \pv{gen.heldoutdepth} is never used for training.
+It tests extrapolation in chain length within the same families, not transfer to new physical laws.
+
+% D10 (distractors), D11 (plausibility bounds), CLAUDE.md component 1 (units, phrasing), env_v2 display settings.
+Each problem's text is randomized: phrasing templates, display units with SI prefixes and non-SI units, and
+\pv{gen.distractors} distractor quantities that the answer does not depend on.
+% env_v2 max_condition_number; physcal/env/graph.py condition_number.
+Chains whose output amplifies relative errors in a given by more than a factor of \pv{gen.kappa}
+(the largest $|\partial \ln(\text{output}) / \partial \ln(\text{given})|$) are rejected.
+% physcal/env/graph.py evaluate_chain_with_units (pint dimension checks).
+The ground truth is computed in SI units with dimension checks at every step, then converted to the requested unit.
+Every problem is reproducible from its generator version and seed.
+
+\subsection{Measurement noise and the true uncertainty $\sigstar$}
+\label{sec:sigstar}
+
+% D51 (noise mode: 5 s.f. so that rounding is negligible against the noise, FINDINGS #8; a problem without noise
+% behaves as generator 1.1.0, 3 s.f., truth from the displayed values); D113 (mixed levels: every given at 5 s.f.,
+% level-0 givens exact); D54 (levels capped at 5% after FINDINGS #9; a post-hoc design change); configs/pairs.yaml.
+In the measurement-noise mode, each noisy given is shown as a measurement
+$x_{\text{meas}} = x_{\text{true}}(1+e)$, $e \sim \mathcal{N}(0, s^2)$, with \pv{gen.noisesigfigs} significant
+figures, so that rounding is negligible against the noise, and a stated relative uncertainty ``$\pm\, s$''; a value
+shown without one is exact.
+The truth is the noise-free chain evaluated on the unrounded true values.
+A problem without noise shows \pv{gen.sigfigs} significant figures, and its truth is computed from the displayed
+values.
+The pair sets of Section~\ref{sec:pairs} use the levels \pv{gen.levels}, and the training data of
+Section~\ref{sec:dpos} draws a level for each given independently from \pv{gen.mixedlevels}, where a level of zero
+means an exact given.
+
+% D50/A2 (sigma* definition), D51 (stored per problem; n_mc draws); JCGM 101 (propagation of distributions).
+Because the generator knows the measurement model, it knows each problem's correct uncertainty.
+Given the displayed values, the clean value of each noisy given is drawn as $x = x_{\text{meas}}/(1+e')$,
+$e' \sim \mathcal{N}(0, s^2)$, with exact givens and constants held fixed; \pv{gen.nmc} such draws are pushed through
+the chain, as in Monte Carlo propagation of distributions~\citep{jcgm101}.
+The target $\sigstar$ is the scale of the Gaussian in log space, centred at $\ln f(x_{\text{meas}})$, that minimizes
+the expected CRPS against these draws:
+\begin{equation}
+  \sigstar = \arg\min_{\sigma > 0}\; \mathbb{E}_{x}\!\left[\mathrm{CRPS}\!\left(\mathcal{N}(\ln f(x_{\text{meas}}),
+  \sigma^2),\, \ln f(x)\right)\right],
+  \label{eq:sigstar}
+\end{equation}
+where $f$ is the chain and $f(x_{\text{meas}})$ is what a correct solver computes from the displayed values.
+% D50/A2: also stored, the SD of the log draws and the delta-method value (used to build the pair sets).
+The standard deviation of the log draws and the first-order (delta-method) value are stored as well.
+
+% D50/A3 (gate), D57 (miss-count rule; FINAL run), FINDINGS #12 (passed), #9 and #11 (the two failed runs);
+% results/sigma_star_gate_final/gate.json.
+Before any model was evaluated on noisy problems, the generator had to pass a self-consistency gate: intervals
+$\ln f(x_{\text{meas}}) \pm k\sigstar$ must cover the clean truth at their nominal rates.
+On the final run, with \pv{gate.n} noisy problems in \pv{gate.ncells} depth-by-level cells of \pv{gate.percell}
+each, pooled coverage was \pv{gate.cov.one} at $k=1$ (nominal \pv{gate.nominal.one}, Kupiec~\citep{kupiec1995}
+$p = \pv{gate.kupiec.one}$) and \pv{gate.cov.two} at $k=2$ (nominal \pv{gate.nominal.two},
+$p = \pv{gate.kupiec.two}$).
+No cell was rejected after Holm correction, and the probability integral transform of the truth was uniform
+(Kolmogorov--Smirnov $p = \pv{gate.pitp}$).
+The \pv{gate.nzero} noise-free control problems were exact.
+% FINDINGS #9 (failed on one cell at 10% noise) -> D54 (cap at 5%, after the result); FINDINGS #11 (failed only on
+% the cell-share rule, which demanded zero misses) -> D57 (miss-count test, before the final run).
+The gate failed twice before this run.
+The first run failed on one cell at the highest noise level, after which the noise levels were capped; that cap was
+chosen after seeing the result.
+The second failed only on a rule that, as written, tolerated no cell outside its interval; it was replaced by a
+miss-count test before the final run.
+Both changes are listed in Table~\ref{tab:deviations}.
+
+\subsection{Output format and verifier}
+\label{sec:verifier}
+
+% CLAUDE.md component 3 (format); D16, D17 (parser); D83 (the <confidence> channel, verifier 1.2.0).
+A completion may reason freely, then reports the requested intermediate values in a \texttt{<steps>} block and the
+answer as \texttt{<answer>}$\mu \pm \sigma$ \textit{unit}\texttt{</answer>}.
+% D13 (failures score the rule's floor); CLAUDE.md component 4 (units gate).
+A completion that does not parse, or whose unit has the wrong dimension, scores the rule's floor
+(\pv{ver.floor}); an answer in another unit of the right dimension is converted.
+
+% D15 (the spec's relative CRPS is only approximately proper), D29 (crps_log is the default), D38 (its sigma floor);
+% configs/reward.yaml; Gneiting & Raftery (2007); closed form of the Gaussian CRPS: Gneiting et al. (2005).
+The scoring rule, $\crpslog$, scores the log of the truth $y$ against $\mathcal{N}(\ln\mu, (\sigma/\mu)^2)$:
+\begin{equation}
+  \crpslog(\mu,\sigma; y) = -\,s\left[z\left(2\Phi(z)-1\right) + 2\varphi(z) - \tfrac{1}{\sqrt{\pi}}\right],\qquad
+  z = \frac{\ln y - \ln \mu}{s},\quad s = \max\!\left(\sigma/\mu,\ \epsilon\right),
+  \label{eq:crpslog}
+\end{equation}
+the Gaussian CRPS in closed form~\citep{gneiting2005emos}, clipped below at the floor.
+It is strictly proper for log-normal beliefs~\citep{gneiting2007strictly} and scale-free.
+% D15: dividing by the truth reweights outcomes by 1/|y|; the optimal mu shifts and the optimal sigma inflates.
+The relative CRPS of the original specification divides by the truth, which reweights outcomes and makes it only
+approximately proper; it remains an ablation option.
+% D37, D38: a floor of 0.1% made the reward flat in sigma for an overconfident policy; verifier 1.1.0 floors at 1e-6.
+The floor $\epsilon$ is \pv{ver.sigmafloor} (verifier \pv{ver.version}): an earlier, larger floor made the reward
+flat in $\sigma$ exactly where an overconfident policy needed a gradient.
+% configs/reward.yaml weights and steps; D14 (step credit can never outweigh the final answer).
+During reinforcement learning the reward adds \pv{ver.stepweight} times the share of requested intermediates within
+\pv{ver.steptol} of their values; this weight is checked to be too small to ever outweigh the final score.
+An answer is \emph{accurate} if it is within \pv{ver.binary} of the truth.
+
+% D50/A1 (computation-correct subset); configs/pairs.yaml analysis.tau.
+On noisy problems, an answer is \emph{computation-correct} if $|\ln\mu - \ln f(x_{\text{meas}})| \leq
+\pv{ver.tau}$, that is, if it is what a correct solver computes from the displayed values.
+Comparisons of a stated $\sigma$ with $\sigstar$ that require a correct answer use this subset.
+
+\subsection{The oracle-centred expected score}
+\label{sec:expected}
+
+% FINDINGS #24 (stage A), D100; results/stage_a/results.json; results/r5_diag/tail.json (the gap).
+A single realized truth says little about whether a stated $\sigma$ is right: a $\sigma$ that is \pv{sa.scale}
+times too small scores better than $\sigstar$ against the realized truth on \pv{sa.halfwins} of problems.
+Because the generator knows the predictive distribution, we also score a stated relative $\sigma$ by its
+\emph{expected} $\crpslog$ over \pv{sa.draws} fresh predictive draws, centred at $f(x_{\text{meas}})$.
+Per-problem differences between sources then have \pv{sa.varratio.min}--\pv{sa.varratio.max} times less variance than
+the realized ones.
+Expected-score differences are reported with their intervals and, where useful, as a share of the gap between the
+noise heuristic RSS (Section~\ref{sec:comparators}) and $\sigstar$, which is \pv{gap.rss} on the frozen
+confirmatory set.
+
+\subsection{Counterfactual pair sets}
+\label{sec:pairs}
+
+% D50/A6, D58 (A6), D59 (A6b), D95 (A6c), D113 (the frozen confirmatory set), D147 (the J set);
+% configs/pairs.yaml; Table tab:pairs is generated from the sets' manifests.
+A model can state a plausible $\sigma$ without propagating anything, by learning which templates, depths and stated
+percentages go with which uncertainty.
+To separate propagation from such a lookup, we evaluate on matched pairs of problems that differ in exactly one
+respect (Table~\ref{tab:pairs}).
+The statistic is the within-pair slope: the ordinary least-squares slope, with an intercept, of
+$\Delta\ln\sigma_{\text{stated}}$ on $\Delta\ln\sigstar$ across pairs, where $\Delta$ is the difference between a
+pair's two members.
+An exact propagator has slope one; a reader of features that do not differ within a pair has slope zero.
+
+\begin{description}[leftmargin=0pt, itemsep=2pt]
+% D58; pairs.yaml construction.
+\item[A6 (value changes).] One chain template, two worlds: of \pv{pairs.aSix.worlds} candidate worlds, the two with
+  the lowest and highest delta-method $\sigstar$, kept if their ratio is at least \pv{pairs.aSix.ratio}.
+  Template, phrasing, noise level and the standardized measurement errors are shared.
+  Power-law chains cannot form A6 pairs, since their relative $\sigstar$ does not depend on the values.
+% D59; pairs.yaml invariance_construction.
+\item[A6b (invariance).] Power-law templates only, two worlds whose targets differ by a factor of at least
+  \pv{pairs.aSixB.ratio}, with relative $\sigstar$ checked equal by Monte Carlo (to within \pv{pairs.aSixB.mc} in
+  log).
+  Here the slope is taken on $\Delta\ln y$ and must be zero: a model whose relative $\sigma$ grows with the size of
+  the answer fails it.
+% D95; pairs.yaml allocation_construction; FINDINGS #23 (no surface reader propagates on A6c).
+\item[A6c (noise allocation).] One chain, one world and identical displayed values.
+  The two members differ only in which given carries the higher of two noise levels: in one member it sits where it
+  moves $\sigstar$ least, in the other where it moves it most (ratio at least \pv{pairs.aSixC.ratio}).
+  Both members show the same multiset of percentages, so no reader of the problem's surface can tell them apart.
+\end{description}
+
+% pairs.yaml export (cells x pairs); D113 sec. 8 (frozen confirmatory set; loader guard).
+Each development set has \pv{pairs.cells} depth-by-level cells of \pv{pairs.percell} pairs.
+The frozen confirmatory set (Section~\ref{sec:frozen}) repeats the three constructions with fresh seeds,
+\pv{frozen.aSixC.problems} problems each.
+
+% D147 (pre-registration), D149 (build); data/jacobian_support/r4_1.json; confirmatory/r5_6 manifests.
+\paragraph{Jacobians outside the training range (the J set).}
+A model trained on a chain might have learned that chain's typical sensitivities rather than computing them.
+The J set therefore uses only chains that occur in the training data, and moves them to Jacobians they never had
+there.
+For each of the \pv{j.support.chains} chains in the \pv{rfour.n} training problems we record the range of every
+given's log-sensitivity $\partial\ln f/\partial\ln x$ at the displayed values.
+A J world has at least one given whose sensitivity lies outside that range by at least \pv{j.margin}, while every
+displayed and computed value stays inside the range that quantity had in training; the first such world of up to
+\pv{j.worlds} draws is used.
+\emph{J sensitivity pairs} apply the A6c construction to J worlds.
+\emph{J invariance pairs} pair a J world with a copy rescaled along a dimensional direction that leaves every
+physical constant unchanged, which keeps every log-sensitivity, and so the relative $\sigstar$, identical while the
+target changes by a factor of \pv{j.scale.min} to \pv{j.scale.max}; A6b cannot be used here because its power-law
+Jacobians are constant.
+% J manifests: median exceedance and median chain training count; D147 sec. 10.
+The J set has \pv{j.sens.problems} sensitivity and \pv{j.inv.problems} invariance problems at the trained depths
+(up to \pv{j.maxdepth}). Across the sensitivity pairs, the most out-of-range sensitivity lies a median of
+\pv{j.sens.exc} outside its chain's range, and the median chain was seen \pv{j.sens.ntrain} times in training.
+
+\input{generated/tables/pair_sets}
