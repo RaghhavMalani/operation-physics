@@ -512,3 +512,9 @@ Brief (your message, ~10:00 IST):
 -   a6b_pairs: n 816, answered 815, parse fail 0.001, truncation 0.000, unit mismatch 0.000, mean tokens 392
 -   a6c_pairs: n 816, answered 815, parse fail 0.000, truncation 0.000, unit mismatch 0.001, mean tokens 404
 - 16:21:53 → 17:20:34, exit 0, first attempt; fingerprint check passed; 0 pauses. `r56_eval_b2_s1_a1` started 17:20:40.
+
+### 17:54 J eval 4 of 6 done: B-v2 s1 (operational counts only)
+- b2/seed1/r5_6: gen 1948s, OOM backoffs 0, peak 5.24 GiB device-wide, resume 0+102/102
+-   a6b_pairs: n 816, answered 816, parse fail 0.000, truncation 0.000, unit mismatch 0.000, mean tokens 219
+-   a6c_pairs: n 816, answered 816, parse fail 0.000, truncation 0.000, unit mismatch 0.000, mean tokens 224
+- 17:20:40 → 17:54:03, exit 0, first attempt; fingerprint check passed; 1 pause of 30 s. `r56_eval_dpos2_s2_a1` started 17:54:09.
