@@ -192,3 +192,56 @@ GPU_DEADLINE=13:00 setsid nohup scripts/queue_xm2.sh >> results/queue_xm2/nohup.
     metrics.json.
 - **Temperature:** pause 3 at 05:08:23 (87.6 °C), continued after 31 s (64.1 °C). The night's total is 3 pauses, 91 s.
 - **GPU:** 80.6 °C, 6,895 MiB device-wide. Free space: 47.2 GiB.
+
+### 05:44 Eval done: D-pos-v2 Llama s0 on A6c + A6b (exit 0)
+
+- **`xm_eval_dpos2_a1`:** ended 05:44:35 with exit 0, in one attempt.
+  - Stage wall time 12,330 s (3 h 25 min), of which 12,283 s were generation.
+  - 3 temperature pauses took 91 s, so 0.7 % of the stage was paused. On 28/29 the same eval was paused 17 % of its
+    wall time.
+- **Resume block** (D142, first real use):
+  - session 1: 0 of 340 batches read, 340 generated;
+  - nothing moved aside;
+  - the partial file was deleted after metrics.json, as designed.
+- **Memory:** torch max reserved 5.86 GiB; nvidia-smi peak 6.76 GiB device-wide.
+- **The queue's commit:** `2f0435f`, pushed. It holds metrics.json, summary.md, the plots, `rollouts.jsonl.gz`
+  (1.7 MB), meta, and the stage log.
+- **The headline numbers** (summary.md):
+
+  | split | n | acc ≤ 1 % | median rel. err | 1σ cov | 2σ cov | median rel σ | parse fail |
+  |---|---|---|---|---|---|---|---|
+  | a6b_pairs | 1,020 | 8.3 % | 0.215 | 24.0 % | 34.7 % | 0.026 | 0.0 % |
+  | a6c_pairs | 1,020 | 10.2 % | 0.124 | 28.5 % | 44.8 % | 0.037 | 0.4 % |
+
+  - **Accuracy falls with depth on A6b:** 20.1 % at depth 1, down to 2.9 % at depth 5.
+  - **Energy is the weak family:** 3.0 % on A6b, 4.4 % on A6c.
+  - **Coverage on computation-correct answers is near nominal** (A6b at 1 % noise: 66.7 %). The pooled under-coverage
+    comes from wrong answers.
+  - **The standing post-hoc scale (× 18.1)** takes 1σ coverage to 65.5 % on A6b and 85.2 % on A6c.
+  - **The go rule judges this record**, not these headline numbers.
+- **`xm_go` started 05:44:40:** CPU only, 1 thread, nice 19, `CUDA_VISIBLE_DEVICES=`.
+
+### 05:45 Go rule (D137 / D139) on D-pos-v2 Llama s0: NO-GO, failing on C3 with only 4 A6b pairs
+
+- **`xm_go`:** 05:44:40 → 05:44:58, exit 0. The queue's commit is `37d8723`, pushed. The output is
+  `results/stage_xm/go_dpos2/{go.json, summary.md}`.
+- **The verdict:** **NO-GO**, with K1 True, C2 True, C3 False (C1 True).
+
+  | criterion | estimate | 90 % CI | pairs | rule | met |
+  |---|---|---|---|---|---|
+  | K1 / C1 | A6c slope +0.785 | [+0.595, +0.974] | 505 | one-sided p < 0.05 (p = 0.0) | yes |
+  | C2 | A6c slope +0.785 | | 505 | ≥ 0.5 | yes |
+  | C3 | A6b slope +0.567 | [−3.55, +843] | 4 | CI inside (−0.3, +0.3); ≥ 3 pairs | no |
+
+- **Why C3 failed:** too few computation-correct A6b pairs, not an A6b slope shown to be away from 0.
+  - D137 flagged exactly this risk in advance: Qwen s0 had 17 such pairs, and a model with weaker arithmetic "may have
+    too few for C3 to hold, whatever its propagation. Then the pilot is NO-GO, reported with that reason."
+  - Llama's A6b accuracy is 8.3 % overall, falling to 2.9 % at depth 5. With 4 pairs, the bootstrap CI is unbounded in
+    practice.
+- **The pre-registered consequence:** no seed expansion. It is reported as a failed replication at one seed, with the
+  same prominence as a success.
+  - What did replicate: on Llama, the answer σ propagates on A6c (slope 0.785, CI clear of 0 and of 0.5).
+  - What could not be shown: the A6b control.
+  - Tonight's queue had no seed-1 stage either way (D144).
+- **`mc_b_gen_a6b_pairs`** started 05:45:02 (timeout 4,800 s). The loader check is fine: tokenizer matches, 196 bnb-4bit
+  modules.
