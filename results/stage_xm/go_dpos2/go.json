@@ -1,0 +1,23 @@
+{
+ "decision": "D139 (D137's go rule on the Llama D-pos-v2 eval, before B-v2's)",
+ "evaluable": true,
+ "K1": true,
+ "C1": true,
+ "C2": true,
+ "C3": false,
+ "go": false,
+ "a6c_slope": 0.7847628026400775,
+ "a6c_ci90": [
+  0.5952282669932889,
+  0.9740890593957106
+ ],
+ "a6c_p_one_sided": 0.0,
+ "a6c_n_pairs": 505,
+ "a6b_slope": 0.5674761400517804,
+ "a6b_ci90": [
+  -3.552377432658402,
+  843.4151139866752
+ ],
+ "a6b_n_pairs": 4,
+ "n_problems": 2040
+}

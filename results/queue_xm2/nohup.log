@@ -7,3 +7,7 @@
 [02:19:07] start xm_eval_dpos2_a1 (timeout 38455s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_xm eval --arm dpos2 --max-reserved-gib 5.9
 [05:44:35] end xm_eval_dpos2_a1: exit 0
 [05:44:35] xm_eval_dpos2_a1: 3 temperature pauses, 91s paused of 12330s; tonight so far 3 pauses, 91s of 12330s (D143)
+[05:44:38] commit 'XM pilot (D137, D144): dpos2 (Llama, seed 0) greedy eval on the frozen A6c + A6b, attempt 1 (exit 0)': pushed
+[05:44:40] disk: 47 GiB free on MLStorage
+[05:44:40] start xm_go (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.xm_go analyze
+[05:44:58] end xm_go: exit 0
