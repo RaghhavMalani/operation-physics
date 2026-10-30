@@ -550,3 +550,30 @@ Brief (your message, ~10:00 IST):
   - S lines within 10%: out-of-range terms 58–64%, in-range 69–75%.
 - **Docs:** FINDINGS #39; `decision_timeline.md` (D147–D149 → #39; the anchor checked against #38's slug rule); the
   paper outline (status, claims to avoid, ledger); PROGRESS; MORNING.md.
+
+## 2026-10-30 night: the write-up starts (your instruction at ~21:45 IST; D150)
+
+### ~21:50–22:50 paper/ and scripts/paper/
+- **Tooling:** no TeX was installed. tectonic 0.15.0 is the GitHub release binary, in `~/.local/bin` (SHA-256
+  `4df19452…`). Its first compile fetched the packages.
+- **`scripts/paper/`:**
+  - `paperlib.py`: Sources (tracked and unchanged files only, with blob hashes), siunitx formatting, the Unicode map,
+    an ASCII check;
+  - `macros.py`: 114 values;
+  - `tables.py`: 10 tables;
+  - `figures.py`: the headline figure through the same source check;
+  - `build.py`.
+- **Fixed along the way:**
+  - unescaped `_` in table notes;
+  - markdown escapes (`\*`) leaking from the timeline;
+  - `§` in macro comments;
+  - table headers not listing their sources (the artifact name differed from the file name);
+  - siunitx grouping decimals ("0.002,96"): now `group-digits=integer`;
+  - floats drifting past the references: `placeins` [section];
+  - three hand-typed numbers in the prose ("4-bit", "16-bit", "#1"): now a macro or reworded;
+  - one wrong statement: exact givens in mixed-level problems are shown at 5 s.f., not 3 (D113). Rewritten.
+- **The layout check:** pages rendered to PNG with a throwaway PyMuPDF (`uv run --no-project --with pymupdf`; no
+  poppler on the machine).
+  - The result: 16 pages, no overfull boxes, no undefined references.
+  - The build is byte-reproducible: the same md5 for headline.pdf over two builds.
+- **`tests/test_paper.py`:** 11 passed.

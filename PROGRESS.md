@@ -914,3 +914,17 @@ Progress:
   (`e4fd8fa`).
 - [x] **MORNING.md** when the chain ended (19:26).
 - [ ] **Next (D148):** no new experiments; the write-up.
+
+## 2026-10-30 night: the write-up (Phase 15; D150)
+- [x] **1. `paper/`:** an arXiv-ready LaTeX article that compiles with tectonic (installed) or latexmk. Its structure
+  follows `docs/paper_outline.md` and the R5-1 framing.
+- [x] **2. `scripts/paper/`:** every value, table and figure is built from committed results only, and each records its
+  sources. No hand-typed numbers: `\pv{}` macros and included tables.
+  - **Tables:** the pair sets, the deviations, R4-3 confirmatory, J and its subgroups, the Llama pilot, the tail
+    autopsy, the swaps, cost × 2.
+  - **Figure:** the headline.
+- [x] **3. Drafted:** Setup, Methods, Evaluation protocol. Every claim cites a FINDINGS number or a D-entry in a
+  comment.
+- [x] **4. Compiled** (16 pages) and sent; `tests/test_paper.py` 11 passed.
+- [ ] **Next:** Introduction and the three results acts; Related work after the references are verified (R5-10);
+  Discussion, Limitations, appendices.

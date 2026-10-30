@@ -108,3 +108,12 @@ results/stage_r4/*/seed*/r5_6/rollouts.jsonl
 results/stage_r4/*/seed*/r5_6/completions.partial*.jsonl
 results/queue_r5_6/*.pid
 results/queue_r5_6/*.lock
+# The paper (D150): LaTeX build intermediates; main.pdf and paper/generated/ are committed
+paper/*.aux
+paper/*.log
+paper/*.blg
+paper/*.bbl
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz

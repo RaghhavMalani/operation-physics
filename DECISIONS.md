@@ -5555,3 +5555,37 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - Host VRAM 1.4 GiB, so the launch cap is 5.9 GiB.
   - **The first eval** (D-pos-v2 s0) generates at ~2.1 s / problem, so about 1 h per D-pos-v2 eval and ~35 min per
     B-v2 eval. The six should end around 20:30–21:00 IST.
+
+### D150. The write-up starts (Phase 15; your instruction, 2026-10-30 night): paper/ in LaTeX, every number generated from committed results, three sections drafted
+- **The rule, enforced by tests:** the .tex sources contain no hand-typed numbers.
+  - **Values in the prose** are `\pv{key}` macros. `scripts/paper/build.py` writes them to
+    `paper/generated/macros.tex` from committed configs, manifests and results, and an undefined key stops the LaTeX
+    build.
+  - **Tables** are generated `.tex` files. Each starts with the source files and their git blobs.
+  - **The headline figure** is `scripts/figures/headline.py`'s, drawn into `paper/generated/figures/`. Its inputs go
+    through the same check, and `SOURCE_DATE_EPOCH=0` makes the PDF byte-reproducible.
+  - **The check on sources:** `paperlib.Sources` refuses any file git does not track or that has uncommitted changes.
+  - **The record:** `paper/generated/{sources.json, SOURCES.md}`.
+- **`tests/test_paper.py`** (11):
+  - every `\pv` key used is defined;
+  - the drafted sections have no hand-typed numbers (identifiers such as A6c, K1, R4-5 and bf16 are allowed, as are
+    single-digit constants in formulas);
+  - every drafted paragraph cites a D-entry, FINDINGS number, config or spec in a comment;
+  - every generated file names tracked sources;
+  - the generated LaTeX is ASCII (pdflatex / arXiv);
+  - the committed values and tables equal a fresh build.
+- **Tooling:** tectonic 0.15.0 (the release binary from GitHub, SHA-256 `4df19452…`, in `~/.local/bin`). It fetches
+  LaTeX packages on first use. `latexmk -pdf` also works.
+- **Tonight's draft:** Setup (§3), Methods (§4) and the Evaluation protocol (§5).
+  - The other sections are visible stubs: Introduction, Related work (references verified first, R5-10), the three
+    results acts, Discussion, Limitations, appendices.
+  - The generated tables and the headline figure already sit in their results sections.
+- **Generated so far:** the pair sets, the deviations (from `docs/decision_timeline.md`), R4-3's confirmatory table,
+  R5-6 J (tests and the subgroups where clamping matters), the Llama pilot, the tail autopsy, the component swaps,
+  and the two cost tables.
+- **Two notes on content:**
+  - **The swaps table's A6c slopes** use every pair, an unanswered member at the floor (D133's R5-3 convention). So row
+    (a) reads +0.837, while K1's answered-pairs estimate is +0.816. Both notes say so.
+  - **The FINDINGS count** in §5 is the highest number, 39 (#13's header has no period).
+- **References:** only the ones the drafted sections cite, each a well-known paper or software. The related-work list
+  in the outline waits for verification (R5-10).
