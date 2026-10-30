@@ -500,3 +500,9 @@ Brief (your message, ~10:00 IST):
 - **Counts:** J invariance 816 problems, 814 answered, parse fail 0.2%; J sensitivity 816, 816 answered. Truncation 0,
   unit mismatch 0; mean 393 / 404 tokens.
 - The queue's commit was pushed. `r56_eval_b2_s0_a1` started 15:49:00.
+
+### 16:22 J eval 2 of 6 done: B-v2 s0 (operational counts only)
+- b2/seed0/r5_6: gen 1909s, OOM backoffs 0, peak 6.02 GiB device-wide, resume 0+102/102
+-   a6b_pairs: n 816, answered 816, parse fail 0.000, truncation 0.000, unit mismatch 0.000, mean tokens 219
+-   a6c_pairs: n 816, answered 815, parse fail 0.001, truncation 0.000, unit mismatch 0.000, mean tokens 224
+- 15:49:00 → 16:21:47, exit 0, first attempt; fingerprint check passed; 1 pause of 30 s. `r56_eval_dpos2_s1_a1` started 16:21:53.
