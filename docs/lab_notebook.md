@@ -611,3 +611,26 @@ Brief (your message, ~10:00 IST):
   (12 problems) and the native 1.5B on the same problems size a future run.
 - **Memory** fits under the 6.7 GiB cap. The rate is ~6.6 decoding steps / s at batch 8 (bitsandbytes dequantizes on
   every step).
+
+### ~01:38–02:30 the development-only measurements (D153, D154)
+- **7B at 2,048 tokens:**
+  - **A 12-problem attempt was stopped after 1 problem.** It would have reached its 100-min timeout before writing its
+    file.
+  - **The re-run on 3 problems:** 277 / 474 / 852 s per problem. Batch 8 ran out of memory at depths 2–3 (halves 2 × 4,
+    then 2 × 2). Readouts took 0.89 / 0.81 s per answer, and both logit checks passed.
+- **A guard fault (D154):**
+  - **The cause:** `timeout … setsid uv run …` put Python outside the group the temperature and stall guards watched.
+  - **The stall guard would have killed a healthy run,** because backoff halves are silent for ~20 min.
+  - **Fixed at 02:15:** the guard was re-pointed and the stall guard stopped for that run, which I watched directly.
+    The GPU peaked at 84.3 °C.
+- **The native 1.5B:** 23 / 67 / 46 s per problem.
+  - Its first grading said 0 of 24 correct. Its unit sits after the box (`\boxed{9.55}\) seconds.`), so D154 added the
+    after-box rule (tested).
+  - Re-graded: 3 of 24, and the 7B unchanged at 13 of 20.
+
+### ~02:30–03:15 the write-up and the tests
+- **The write-up:** `docs/exploratory/followup_feasibility.md`, PROGRESS and MORNING.md.
+- **The full suite:** 755 passed, 1 failed. `test_paper`'s fresh-build check failed because the D-entry count went from
+  150 to 154.
+- **D155:** the paper's count now skips the follow-up project's section, so the paper stays at 150 and `paper/` is
+  unchanged. test_paper / test_followup / test_disk_guard: 56 passed.

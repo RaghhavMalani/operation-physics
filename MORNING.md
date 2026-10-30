@@ -37,7 +37,8 @@ Written on 2026-10-31 at ~02:50 IST, once the GPU work ended.
      - so about 50 problems per night locally, too few to measure.
    - **A real run needs** a cloud GPU or vLLM-class serving (estimated 1–2.5 h for 1,200 problems; an assumption). The
      code, the tested parser, the readouts and a queue script are ready.
-5. **The tests:** see §5. No experiment needs your decision tonight, but item 3's next step does (§6).
+5. **Tests** (§5): the new tests pass (15). One paper test broke on the decision count, and D155 fixed it with `paper/` untouched.
+   No experiment needs your decision tonight; item 3's next step does (§6).
 
 ## 1. Item 1: uncertainty-guided test-time compute (`results/followup/ttc/`)
 
@@ -105,6 +106,13 @@ Written on 2026-10-31 at ~02:50 IST, once the GPU work ended.
     changed the design after the rule fired.
   - **Instead:** the GPU time went to a development-only measurement for planning.
 - **D154:** the parser fix (development check), and the process fault below.
+- **D155:** the one paper-side change, to tooling only.
+  - **Why:** the full suite failed 1 test, because the paper's macro "The log has N entries" counts every D-entry, and
+    D151–D154 moved it from 150 to 154.
+  - **The change:** `scripts/paper/macros.py` now skips D-entries under a section headed as the follow-up project. The
+    paper's value stays 150, and `paper/` is unchanged.
+  - **The alternatives,** a one-line change either way: count them (rebuild to 154), or move the follow-up log to its
+    own file.
 
 ## 5. Problems, and the state
 
@@ -121,7 +129,8 @@ Written on 2026-10-31 at ~02:50 IST, once the GPU work ended.
     was re-run on 3 problems.
   - Their logs are committed.
 - **BLOCKED:** none.
-- **Tests:** see the suite line in §6 (the full suite ran after the GPU work).
+- **Tests:** the full suite after the GPU work was 755 passed, 1 failed (the paper count, fixed by D155). The re-run
+  is in §5's last line.
 - **The state:**
   - no GPU process;
   - every commit pushed;
