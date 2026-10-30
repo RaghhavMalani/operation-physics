@@ -430,3 +430,60 @@ Brief (your message, ~10:00 IST):
 - **Full suite after the stages** (GPU idle): 705 passed, 0 failed (700 + 3 queue_xm3 + 1 disk-guard case + 1 mc_b).
 - **FINDINGS #38 written.** `docs/decision_timeline.md` (D137–D139 rows, the summary list, the anchor) and
   `docs/paper_outline.md` (status, FINDINGS list) now cite it.
+
+## 2026-10-30 afternoon: R5-6 part J (your decision at ~14:30 IST: J only; D147–D149)
+
+### 14:30 The design, and a generator-only feasibility count (no model)
+- **The training support** is per chain: both R4 arms trained on the same 3,000 R4-1 problems, SFT only.
+  - **The catch:** chains are sparse. At depths 2–4 most chains occur 1–3 times (e.g. dynamics d3: 166 chains in 248
+    rows; 13 with ≥ 3 rows).
+- **Feasibility on development seeds (900,000 + …), per trained-chain draw with 24 / 96 worlds,** of a world with an
+  exceedance ≥ 0.1, magnitudes in range and A6c's ratio ≥ 1.5:
+  - kinematics 40–100%; energy 15–70%; dynamics 1–35%.
+  - **Dynamics at depth 1 is ~4%:** most of its chains are power laws (constant Jacobian).
+- **Two alternative supports, counted and rejected as the primary:**
+  - **per (family, given):** 0–15% per cell;
+  - **per (family, given, target):** dynamics d1 0%. It became the "strict" subgroup.
+- **Invariance:** A6b's power-law chains can never be outside the range (constant Jacobian).
+  - **The design:** dimensional scaling along directions that fix every constant (g):
+    - kinematics: L, T (and M, unused);
+    - dynamics / energy: (L², T), M.
+  - Feasibility matched the sensitivity pairs.
+- **The parameters set from the count:** margin 0.1, 96 candidate worlds. Recorded in D147.
+
+### 14:39 D147 (pre-registration) and D148 (freeze), `8405f0f`, pushed before any J data; outline caveat `e4fd8fa`
+
+### 14:40–14:46 Build
+- **The support:** `jacobian_support build`: 1,149 chains, SHA-256 `eda3c3b2…`.
+- **The smoke** (4 pair seeds × 24 cells, development seeds): every cell produced pairs except dynamics d1 (1–2 of 6),
+  and every pair replays.
+- **The J tests:** 14 at first.
+  - **One fix:** the directions test asserted that every direction scales something. Kinematics' mass direction scales
+    nothing (no mass quantity), so the test now asks for ≥ 2 active directions per family.
+- **The frozen build:** `pairs export j_a6c` / `j_a6b`, 4 workers, nice 19, GPU idle, 18 s + 17 s.
+  - All 24 cells full (34 pairs each). Sensitivity dynamics at d1: 1 / 0 / 3 pairs.
+  - **Replay of all 1,632 problems** (4 workers): 816 / 816 and 816 / 816 identical.
+  - `FROZEN.md` and `ada4ede`.
+- **The distances (generator only):**
+  - median exceedance 0.38 (sensitivity) / 0.34 (invariance); nearest training Jacobian (L∞) 0.41 / 0.38; chain
+    training count 3;
+  - **the clamped ln σ ratio (hi member) only 0.018 / 0.060:** in many pairs the out-of-range term contributes little
+    to σ\*;
+  - strict 27% / 35%; rank flip 11%.
+
+### 14:48 Launch
+- **The eval option** (`stage_r4 eval --r5-6`), the queue (`scripts/queue_r5_6.sh`), the .gitignore lines. `b31ef28`.
+- **Chain 151740** with `GPU_DEADLINE=10:00`.
+  - Host 1.4 GiB, so the cap is 5.9 GiB.
+  - `r56_eval_dpos2_s0_a1` started 14:49:01.
+  - ~2.1 s / problem at the start (longest batches first), 80–81 °C, 6.2 GiB device-wide.
+- **The watcher:** `watch.sh 151740 results/queue_r5_6 8 3600`.
+
+### 14:50 X1 on J (`x1_a6c r5_6`, 1 thread, nice 19, 118 s)
+- Reproduction passed (max abs difference 0.0); development predictions identical; 1,632 predictions. `4fa3c69`.
+
+### 14:55 The analysis (`physcal/eval/r5_6.py`)
+- **The refactor:** `r4_confirm.load_data` factored out. R4-3's three-identical-seeds test passes (66 s).
+- **`tests/test_r5_6.py`** (4): the development A6b / A6c with seed 0's tapes × 3 and injected J metadata.
+  - J1 = R1, J2 = R1 − R4 (1e-12); P_J follows D147 §8; every split runs; 1,020 distance rows.
+- `68449cb`.

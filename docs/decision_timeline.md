@@ -85,6 +85,9 @@ paper's methods section and the reproducibility appendix.
 | 10-28 18:07 | D137 (`7892e89`) | The cross-model pilot (R5-5): D-pos-v2 and B-v2 on Llama-3.2-3B-Instruct, seed 0, frozen A6c + A6b; go rule = R4-3's criterion on D-pos-v2; 3 seeds only on GO | pre-registration | confirmatory (pilot) | [#38][f38]: NO-GO (C3 unmeasurable, 4 pairs) |
 | 10-28 18:46 | D138 (`b50cae1`) | R2-1's fingerprint for the Llama base records at sampling batch 4 | deviation (implementation), before any pilot output | – | [#38][f38] |
 | 10-29 00:13 | D139 (`9296d7b`) | D137's go rule runs as soon as the D-pos-v2 eval exists (same code, same logs); SFT seed 1 only on GO | amendment (timing), before the go rule runs | confirmatory (pilot) | [#38][f38] |
+| 10-30 14:39 | D147 (`8405f0f`) | **R5-6 part J:** Jacobians outside the training range of trained chains; the frozen J set (sensitivity + dimensional-scaling invariance pairs); D-pos-v2 and B-v2 × 3 seeds; P_J = J1 ∧ C2 ∧ C3, Holm over J1–J6 | pre-registration | confirmatory | pending (evals running) |
+| 10-30 14:39 | D148 (`8405f0f`) | Experiment freeze: R5-6 part J is the paper's last experiment; everything else is future work | scope decision | – | – |
+| 10-30 15:00 | D149 | R5-6 J build record: support, constructions, frozen set (all cells full), X1, the analysis checked on development files | build, before any J completion | confirmatory | pending |
 
 ## Summary for the paper
 

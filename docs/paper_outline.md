@@ -193,6 +193,13 @@ A6c + A6b.
   A6c (answer-σ slope +0.785); C3 is unmeasurable (4 computation-correct A6b pairs). Reported as "does not transfer
   at one seed on this model", with that reason, and with the same prominence as a replication.
 
+**Fresh Jacobians (R5-6 part J; D147–D149):** D-pos-v2 and B-v2 × 3 seeds on a frozen J set. Chains are trained ones;
+one given's sensitivity lies outside every value that chain had in training (≥ 0.1); magnitudes stay in range.
+- **P_J = J1 ∧ C2 ∧ C3:** R4-3's criterion on the J sensitivity / J invariance (dimensional-scaling) pairs.
+- **Status: evals running** (2026-10-30/31). Report "not confirmed" with the same prominence as a confirmation.
+- **Scope:** new Jacobians of trained chains only. Not new formulas, compositions or physics (part U, optics, not
+  run; D148).
+
 **FINDINGS:** #17, #23, #27, #28, #29, #30, #31, #32, #33, #34, #35, #36, #37, #38.
 
 **Figures:**
@@ -222,6 +229,7 @@ A6c + A6b.
   - **One model family** until R5-5 passes: Qwen2.5-Math-1.5B-Instruct, 4-bit, LoRA, an 8 GB GPU.
   - **A synthetic domain:** three formula families. The optics family is cut (R5-7). Depth 5 is chain-length
     extrapolation only.
+  - **Fresh Jacobians only (R5-6 part J):** unseen compositions (part U) are not tested; experiment freeze (D148).
 - **The data:**
   - A6c is in-distribution for the R4 arms (D112).
   - Development-set and frozen-set estimates differ at single depths (#34).

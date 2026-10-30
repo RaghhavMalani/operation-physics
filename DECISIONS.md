@@ -5507,3 +5507,51 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - Family H (D141);
   - Kelly / finance metrics (R5-7).
 - **Deviations:** any exception needs your explicit decision and its own D-entry.
+
+### D149. R5-6 J build: what was built and checked before any J completion exists, and tonight's launch (2026-10-30, 14:39–15:00 IST)
+- **Built, as D147 specifies** (CPU; 4 workers for the set while the GPU was idle, then 1 thread):
+  - **The training support** (`physcal/env/jacobian_support.py`; `data/jacobian_support/r4_1.json`, SHA-256
+    `eda3c3b2…`): 3,000 R4-1 problems, 1,149 chains. The SHA-256 of the R4-1 problems file is stored in it, and every
+    J problem's construction stores the support file's SHA-256 (replay refuses another file).
+  - **The constructions** (`physcal/env/pairs_j.py`; `configs/pairs.yaml` `j_*`): `j_allocation` and `j_invariance`,
+    dispatched from `pairs.generate_pair`. The existing A6 / A6b / A6c paths are untouched (tested: development and
+    confirmatory files still regenerate byte-identically).
+  - **The frozen J set** (`data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/`, `ada4ede`):
+    - 408 + 408 pairs, all 24 cells full;
+    - SHA-256 `42f2b3d1…` (sensitivity) and `395f04dc…` (invariance);
+    - all 1,632 problems regenerate byte-identically.
+    - **Thin cell:** dynamics at depth 1 in the sensitivity set (0–3 pairs per level cell), as the feasibility count
+      predicted: most of its chains are power laws.
+  - **The generator-only distances** (`FROZEN.md`, manifests): median exceedance 0.38 / 0.34 (sensitivity /
+    invariance); median training count of the chain 3; strict 27% / 35%; rank flip 11% (sensitivity).
+    - **The clamped σ:** the median ln(σ_δ / σ_δ clamped) for the hi member is only 0.018 / 0.060. In about half the
+      pairs, clamping the sensitivities into the training range changes σ\* little. The clamped comparator's slope
+      (D147 §10) is the measure of how much of the contrast lies outside the range.
+  - **The eval option:** `stage_r4 eval --r5-6`. A test checks that it equals D118's confirmatory eval config except
+    the splits, output dir and run id.
+  - **X1 on the J files** (`x1_a6c r5_6`, `4fa3c69`): D99's reproduction passed (max abs difference 0.0); the
+    development predictions are identical; 1,632 predictions.
+  - **The analysis** (`physcal/eval/r5_6.py`, `configs/r5_6.yaml`, `68449cb`): R4-3's machinery on the J files.
+    - `r4_confirm.load_data` is factored out of `r4_confirm.analyze`; R4-3's reproduction test still passes (every K
+      value to 1e-12).
+    - **The check, D123's:** the development A6b / A6c with seed 0's tapes copied into three seeds, and injected J
+      metadata. J1 equals D113's R1 and J2 equals R1 − R4, both to 1e-12. Every descriptive path runs. The frozen J
+      files were not read for it.
+  - **The queue** (`scripts/queue_r5_6.sh`; 3 dry-run tests):
+    - the six evals in D118's order, resumable;
+    - X1 (skipped: done);
+    - the analysis once all six exist.
+  - **Tests:** `tests/test_pairs_j.py` (16), `tests/test_r5_6.py` (4), `tests/test_queue_r5_6.py` (3).
+- **Three implementation notes (no deviation from D147's design):**
+  - **The J test is applied twice.** At the true givens it selects the world. At the displayed givens of every member
+    it checks the pair: the exceedance ≥ 0.1, and the magnitudes inside the training ranges. A pair that fails at the
+    displayed values goes to the next chain.
+  - **Kinematics' mass direction (D147 §4) is never used:** kinematics has no quantity with a mass dimension, so the
+    direction is listed but scales nothing.
+  - **What the analysis reports beyond D147 §10,** labelled descriptive:
+    - R4-3's K2–K5 on the J files: the line sources' slopes, B-v2's slope, and the expected-score D-pos-v2 − B-v2;
+    - "the out-of-range term" for the S lines is every given outside its range by ≥ 0.1. Usually that is one given.
+- **Launched 14:48 IST:** `GPU_DEADLINE=10:00 setsid nohup scripts/queue_r5_6.sh` (chain PID 151740).
+  - Host VRAM 1.4 GiB, so the launch cap is 5.9 GiB.
+  - **The first eval** (D-pos-v2 s0) generates at ~2.1 s / problem, so about 1 h per D-pos-v2 eval and ~35 min per
+    B-v2 eval. The six should end around 20:30–21:00 IST.

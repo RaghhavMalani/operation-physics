@@ -897,4 +897,18 @@ Progress:
 - [x] **3. The MC-B M5 label** names its set; A6b re-run: results.json identical; 1 test (`f69af81`).
 - [x] **4. FINDINGS #38** (the Llama cross-model pilot), with decision_timeline.md and paper_outline.md updated.
 - [x] **5. The R5-6 estimate** (`docs/r5_6_estimate.md`; nothing built; `efc0a67`): J ~3.2 GPU-h; J + U ~5.6 GPU-h.
-- [ ] **Next:** your decision on R5-6 (J only / J + U / not run).
+- [x] **Next:** your decision on R5-6: **J only** (2026-10-30, ~14:30 IST; D147).
+
+## 2026-10-30/31: R5-6 part J (your decision; D147–D149; GPU_DEADLINE=10:00 IST on 10-31)
+- [x] **1. Pre-registration D147** (`8405f0f`), before any J set or completion: J support per chain, J sensitivity
+  pairs (A6c on J worlds), J invariance pairs (dimensional scaling), P_J = J1 ∧ C2 ∧ C3, Holm over J1–J6.
+- [x] **2. Built, frozen, CPU-tested** (D149): support `eda3c3b2…`; J set 816 + 816 problems, all 24 cells full,
+  every problem replays (`ada4ede`); eval option and queue (`b31ef28`); X1 on J, reproduction passed (`4fa3c69`);
+  the analysis, checked on the development files (`68449cb`).
+- [ ] **The six J evals** (`scripts/queue_r5_6.sh`, chain 151740, started 14:48): D-pos-v2 s0, B-v2 s0, D-pos-v2 s1,
+  B-v2 s1, D-pos-v2 s2, B-v2 s2.
+- [ ] **The one-time analysis** (`physcal.eval.r5_6`), when all six exist.
+- [x] **3. D148: experiment freeze** after R5-6 (`8405f0f`).
+- [x] **4. Paper outline:** the Llama descriptive A6b slope (−0.168) in the limitations and the claims to avoid
+  (`e4fd8fa`).
+- [ ] **MORNING.md** when the chain ends.
