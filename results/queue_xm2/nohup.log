@@ -1,0 +1,9 @@
+[02:18:47] XM night-2 chain start (D144); GPU deadline 13:00 IST (641 min left); chain PID 35695
+[02:19:04] host VRAM readings (MiB): 751 741 747 746 742 742 743 743
+[02:19:05] launch cap 5.9 GiB (max 5.9)
+[02:19:05] eval xm dpos2 attempt 1 of 3: 0 of 340 batches already on disk
+[02:19:05] GPU at 58.20C, memory.used 743 MiB
+[02:19:07] disk: 47 GiB free on MLStorage
+[02:19:07] start xm_eval_dpos2_a1 (timeout 38455s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_xm eval --arm dpos2 --max-reserved-gib 5.9
+[05:44:35] end xm_eval_dpos2_a1: exit 0
+[05:44:35] xm_eval_dpos2_a1: 3 temperature pauses, 91s paused of 12330s; tonight so far 3 pauses, 91s of 12330s (D143)
