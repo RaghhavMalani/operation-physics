@@ -1,0 +1,9 @@
+[14:48:42] R5-6 J chain start (D147); GPU deadline 10:00 IST (1151 min left); chain PID 151740
+[14:48:59] host VRAM readings (MiB): 1447 1432 1478 1452 1486 1518 1448 1481
+[14:48:59] launch cap 5.9 GiB (max 5.9)
+[14:48:59] eval r5_6 dpos2 seed 0 attempt 1 of 3: 0 of 102 batches already on disk
+[14:48:59] GPU at 54.80C, memory.used 1557 MiB
+[14:49:01] disk: 47 GiB free on MLStorage
+[14:49:01] start r56_eval_dpos2_s0_a1 (timeout 69061s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2 --seed 0 --r5-6 --max-reserved-gib 5.9
+[15:48:53] end r56_eval_dpos2_s0_a1: exit 0
+[15:48:53] r56_eval_dpos2_s0_a1: 3 temperature pauses, 90s paused of 3594s; tonight so far 3 pauses, 90s of 3594s (D143)
