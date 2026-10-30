@@ -15,3 +15,5 @@
 [12:12:47] disk: 47 GiB free on MLStorage
 [12:12:47] start xm_pilot (timeout 7200s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.xm_pilot analyze
 [12:13:21] end xm_pilot: exit 0
+[12:13:23] commit 'XM pilot (D137, D146): the pilot analysis, D-pos-v2 and B-v2 on Llama-3.2-3B, seed 0': pushed
+[12:13:23] XM B-v2 eval + pilot chain done: 2 temperature pauses, 60s paused of 7074s GPU-stage time

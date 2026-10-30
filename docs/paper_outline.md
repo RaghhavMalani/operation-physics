@@ -189,9 +189,11 @@ replication and genuine family or formula transfer.
 A6c + A6b.
 - **The go rule:** R4-3's criterion on D-pos-v2. Three seeds only on GO.
 - **Reported separately:** format-following and arithmetic accuracy after SFT, and the R5-2 tail categories.
-- **Status: pending.** The section is written either way (go or no-go).
+- **Status: NO-GO** ([#38](../FINDINGS.md#38-r5-5-cross-model-pilot-on-llama-32-3b-seed-0-frozen-a6c--a6b-the-explicit-propagation-recipes-a6c-result-replicates-k1-c2-d-pos-v2s-answer-σ-slope-0785-but-the-a6b-control-cannot-be-measured-4-computation-correct-pairs-so-the-pre-registered-go-rule-is-no-go-no-seed-expansion-a-failed-replication-at-one-seed-d137--d139--d146-2026-10-30)), accepted as pre-registered (D146): K1 and C2 replicate on
+  A6c (answer-σ slope +0.785); C3 is unmeasurable (4 computation-correct A6b pairs). Reported as "does not transfer
+  at one seed on this model", with that reason, and with the same prominence as a replication.
 
-**FINDINGS:** #17, #23, #27, #28, #29, #30, #31, #32, #33, #34, #35, #36, #37, and the pending pilot.
+**FINDINGS:** #17, #23, #27, #28, #29, #30, #31, #32, #33, #34, #35, #36, #37, #38.
 
 **Figures:**
 - headline panel C;

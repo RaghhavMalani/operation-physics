@@ -2109,3 +2109,144 @@ regret):
   signal.**
 - **Agreement across samples does carry it,** but at about 8× the inference tokens, roughly linear in k.
 - **Any comparison with a single-sample method reports both axes,** discrimination and cost.
+
+## #38. R5-5 cross-model pilot on Llama-3.2-3B (seed 0, frozen A6c + A6b): the explicit-propagation recipe's A6c result replicates (K1, C2: D-pos-v2's answer-σ slope +0.785), but the A6b control cannot be measured (4 computation-correct pairs), so the pre-registered go rule is NO-GO: no seed expansion, a failed replication at one seed (D137 / D139 / D146; 2026-10-30)
+
+**Status:** pre-registered (D137). The go rule ran early, per D139, and the NO-GO is accepted as pre-registered (D146).
+- **Everything below the go rule is descriptive,** as D137 listed it, with no test.
+- **Sources:**
+  - `results/stage_xm/go_dpos2/go.json`;
+  - `results/stage_xm/pilot/{results.json, summary.md}` (`physcal.eval.xm_pilot`, run once);
+  - `results/stage_xm/{dpos2,b2}/seed0/confirmatory/`.
+- **Commits:**
+  - SFT D-pos-v2 `fd8d1fa`, its eval `2f0435f`, the go rule `37d8723`;
+  - SFT B-v2 `f31dcc7`, its eval `2892278`;
+  - the pilot analysis `ffc4ee4`.
+- **The setup (D137):**
+  - **The model:** Llama-3.2-3B-Instruct, Unsloth 4-bit, pinned `bb1d317`. The R4 recipe unchanged: LoRA r 16 on all 7
+    projections, the R4-1 rows (3,000), 750 steps.
+  - **The arms:** D-pos-v2 (explicit propagation: sensitivity lines, then σ) and B-v2 (implicit: σ only), seed 0 each.
+  - **The eval:** greedy, batch 6, prompt v5, on the frozen R4-5 A6c + A6b (2,040 problems). R2-1's reload check
+    passed for both adapters.
+  - **The reference:** Qwen seed 0's same statistics on the same sets, computed by the same code.
+
+**The go rule (K1 ∧ C2 ∧ C3 on D-pos-v2's answer σ (a); `r4_analysis.slope`, pairs bootstrap B = 10,000, seed 0):
+NO-GO.**
+
+| criterion | Llama D-pos-v2 (a) | rule | met | Qwen s0, same statistic |
+|---|---|---|---|---|
+| **K1** (= C1 at one seed): A6c slope, all pairs with both σ parsed | **+0.785 [+0.595, +0.974]** (90 % CI), 505 pairs, one-sided p = 0.0 | p < 0.05 | **yes** | +0.778 [+0.640, +0.904], 505 |
+| **C2:** the same slope | +0.785 | ≥ 0.5 | **yes** | yes |
+| **C3:** A6b slope on Δ ln truth, computation-correct pairs (τ = 10⁻³) | **+0.567 [−3.55, +843]**, **4 pairs** | 90 % CI inside (−0.3, +0.3) | **no** | −0.025 [−0.139, +0.080], 17 pairs |
+
+- **The replication:** on Llama, D-pos-v2's stated σ tracks σ\* within A6c pairs as strongly as on Qwen. The slope is
+  +0.785 against +0.778, with its CI clear of 0 and of 0.5.
+- **The NO-GO, with the same weight:**
+  - **The cause:** C3 failed because it could not be measured. Only 4 A6b pairs have both answers
+    computation-correct, so the bootstrap CI is unbounded in practice.
+  - **What it is not:** evidence that the stated σ responds to the target's magnitude where it should not.
+  - **D137 named this risk in advance:** "A model with weaker arithmetic may have too few for C3 to hold, whatever its
+    propagation. Then the pilot is NO-GO, reported with that reason."
+  - **The consequence, as pre-registered:** no seeds 1–2 and no A6.
+  - **D137's fixed reading for a NO-GO:** "it does not transfer at one seed on this model".
+  - **Not run, by your decision (D146):** a new design to measure C3 on Llama.
+- **The format and arithmetic numbers** (next table), which D137 says decide between mechanism and capability, point to
+  capability:
+  - format-following is ≥ 99 % in both arms;
+  - D-pos-v2 is computation-correct on only 4.9 % of A6b problems (Qwen s0: 9.5 %), and C3 needs both members of a pair.
+
+**Descriptive, labelled as such (D137's list; D146 item 1): the A6b slope on all answered pairs.** It does not change
+the verdict.
+
+| σ source | A6b slope, all pairs with both answers ok [90 % CI] | pairs |
+|---|---|---|
+| Llama D-pos-v2 (a) | **−0.168 [−0.220, −0.119]** | 510 |
+| Llama B-v2 (a) | −0.069 [−0.124, −0.016] | 510 |
+| Qwen s0 D-pos-v2 (a) | +0.010 [−0.005, +0.028] | 509 |
+| Qwen s0 B-v2 (a) | +0.046 [+0.016, +0.077] | 510 |
+
+- **This is not C3's statistic.** It does not select on correctness, so pairs where one or both answers are wrong enter
+  it.
+- **On Llama it lies inside D59's ±0.3 margin but excludes 0.** The sign means the stated relative σ falls slightly as
+  the target grows, where σ\* is constant. That is a small step toward the "fixed absolute σ" pattern (slope −1).
+- **On Qwen the same statistic is about 0.**
+
+**The other σ sources and the implicit arm (descriptive):**
+
+| arm / σ source | A6c slope [90 % CI] (pairs) | A6b slope (pairs) | Theil–Sen by depth 1–5 (fragile, #34) |
+|---|---|---|---|
+| D-pos-v2 (a), the answer's σ | +0.785 [+0.595, +0.974] (505) | +0.567 (4, cc) | +1.02 / +0.87 / +1.01 / +0.95 / +0.47 |
+| D-pos-v2 (b), the line's X | +0.722 [+0.541, +0.889] (510) | +0.006 [+0.001, +0.012] (510) | +1.02 / +0.87 / +0.98 / +0.92 / +0.49 |
+| D-pos-v2 (c), exact from the line's terms | +0.726 [+0.552, +0.881] (510) | +0.005 [+0.001, +0.009] (510) | +0.99 / +0.98 / +0.99 / +0.95 / +0.66 |
+| D-pos-v2 (c_S), its S values with the true levels | +0.797 [+0.648, +0.940] (510) | +0.005 [+0.001, +0.009] (510) | +0.99 / +0.98 / +0.99 / +0.98 / +0.66 |
+| **B-v2 (a), implicit** | **+0.396 [+0.246, +0.544]** (508) | +0.190 [−1.83, +0.39] (6, cc) | +0.05 / +0.00 / +0.00 / +0.02 / +0.25 |
+
+- **The line-based sources (b), (c), (c_S) meet C1–C3.** They are defined on every pair, so their A6b control is
+  measurable, and it is about 0.
+- **Explicit vs implicit on Llama:** D-pos-v2's answer σ propagates about twice as strongly as B-v2's (+0.785 against
+  +0.396; Qwen s0: +0.778 against +0.455).
+  - **B-v2's Theil–Sen slopes are about 0 at every depth.** So its pooled OLS slope rests on a minority of pairs where
+    its σ moves; most of its pairs have y ≈ 0.
+- **Depth 5 is the weakest depth for every D-pos-v2 source** (Theil–Sen +0.47 to +0.66, OLS (a) +0.33). As in #34,
+  per-depth estimates are fragile and are never read as "propagates" or "does not" at a depth.
+
+**Post-SFT format-following and arithmetic (D137, R5-5),** beside the untrained base (D136: 50 development A6c
+problems):
+
+| model, arm | parsed | units ok | σ stated | σ line parsed | truncated | computation-correct (τ = 10⁻³) | within 1 % of truth |
+|---|---|---|---|---|---|---|---|
+| Llama base, untrained (D136) | 86 % | 74 % (units ok and σ stated) | 74 % | – | – | 2 % (lenient: within 1 % of f(x_meas)) | – |
+| **Llama D-pos-v2** | 99.8 % | 99.7 % | 99.7 % | 99.4 % | 0.2 % | **8.0 %** (A6c 11.2 %, A6b 4.9 %) | 9.3 % |
+| **Llama B-v2** | 100.0 % | 100.0 % | 99.8 % | – (no line) | 0.0 % | 8.0 % (A6c 10.7 %, A6b 5.3 %) | 9.8 % |
+| Qwen s0 D-pos-v2 | 99.9 % | 99.7 % | 99.6 % | 100.0 % | 0.0 % | 11.7 % (A6c 13.8 %, A6b 9.5 %) | 12.9 % |
+| Qwen s0 B-v2 | 99.9 % | 99.9 % | 99.9 % | – | 0.0 % | 11.9 % (A6c 14.1 %, A6b 9.6 %) | 14.0 % |
+
+- **By depth, Llama D-pos-v2's computation-correct rate:** 20.8 / 6.9 / 3.4 / 3.7 / 5.4 % (depths 1–5). Qwen s0:
+  29.7 / 12.3 / 6.1 / 6.4 / 3.9 %.
+- **SFT taught Llama the format completely** (86 % → 99.8 % parsed; 74 % → 99.7 % σ stated) and the arithmetic
+  partly.
+  - **The base column is not the same measure.** D136 used 50 development problems and a lenient 1 % match to
+    f(x_meas); the post-SFT column uses τ = 10⁻³. So the gain is not quantified.
+- **Llama's arithmetic stays below Qwen-Math's** at every depth up to 4. On A6b it is about half of Qwen's, and that
+  gap is what empties C3.
+
+**The score (oracle-centred expected crps_log; cluster bootstrap over pairs, 95 % CI; descriptive):**
+
+| difference | Llama | Qwen s0 |
+|---|---|---|
+| D-pos-v2 − RSS | −0.0105 [−0.0203, −0.0027] | −0.0014 [−0.0029, −0.0001] |
+| D-pos-v2 − X1 | −0.0111 [−0.0210, −0.0033] | −0.0020 [−0.0035, −0.0008] |
+| B-v2 − RSS | −0.0017 [−0.0026, −0.0009] | −0.0018 [−0.0023, −0.0013] |
+| **D-pos-v2 − B-v2 (explicit − implicit)** | **−0.0089 [−0.0188, −0.0009]** | +0.0004 [−0.0012, +0.0017] |
+
+- **The means:** σ\* −0.0316, X1 −0.0330, RSS −0.0336; Llama D-pos-v2 −0.0441, Llama B-v2 −0.0352.
+- **On Llama, the explicit arm propagates more but scores worse than the implicit one,** and worse than RSS, by about
+  7× Qwen's shortfall.
+  - The shortfall is its share of the RSS-to-σ\* gap, which is −528 % (Qwen s0: −71 %).
+- **Why** (R5-2's tail categories, D-pos-v2 (a)): the worst 5 % (102 problems) carry 96 % of the regret against σ\*
+  (Qwen s0: 89 %). Among them:
+
+  | cause | Llama | Qwen s0 |
+  |---|---|---|
+  | value-dependent sensitivity formula errors | 28 + 4 without an expression | 35 + 5 |
+  | **decimal shifts when copying a number** (×10^−3 … ×10^3) | **36** | 17 |
+  | substitution of its own wrong intermediates | 11 | 13 |
+  | no parsable σ line | 9 | – |
+  | power-law exponent errors | 6 | 20 |
+
+  - Llama shifts decimals about twice as often as Qwen.
+- **The same pattern as #32 / #35, larger:** propagation is measured, but gross misses in the tail cost more than it
+  gains.
+
+**What it means:**
+- **The mechanism transfers on the statistic that could be measured.** On a second model family, explicit
+  sensitivity lines make the stated σ track σ\* within A6c pairs as on Qwen. The model's own line-based σ values pass
+  the A6b control as well.
+- **The pre-registered go rule is still NO-GO.** The paper reports "does not transfer at one seed on this model", with
+  the reason: the A6b control on the answer's σ was unmeasurable at this model's arithmetic accuracy.
+  - This is not "transfers".
+  - The A6c result is not promoted to a confirmed cross-model claim: one seed, and no confirmatory run.
+- **Capability, not format, is the limit on Llama.** Format-following is complete after SFT. Arithmetic and copying
+  errors (decimal shifts) decide both C3's denominator and the score.
+- **A stronger arithmetic model** is the condition for a measurable answer-σ control on a second family. That is a
+  design question for later, not part of this pilot (D146).

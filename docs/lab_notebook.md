@@ -403,3 +403,29 @@ Brief (your message, ~10:00 IST):
   - Part J (out-of-support Jacobians, a construction filter): ~0.5 day of code, ~3.2 GPU-h.
   - J + U (an optics family): ~1.5–2 days, ~5.6 GPU-h.
   - Both are for Qwen D-pos-v2 + B-v2 × 3 seeds, at the rates of the confirmatory evals.
+
+### 12:13 B-v2 eval done, and the pilot analysis
+
+- **`xm_eval_b2_a1`:** 10:14:48 → 12:12:41, exit 0, first attempt.
+  - Generation 7,028 s (3.4 s / problem). 2 pauses of 30 s (11:42:27 at 87.2 °C; 11:59:59 at 87.4 °C).
+  - The resume block: session 1, 0 read, 340 generated.
+  - Memory: torch max reserved 5.20 GiB. The nvidia-smi peak is 7.46 GiB device-wide, above last night's 6.76; the
+    host's own use was higher during the day. It stayed under 8 GiB.
+  - **The new one-reading guard line in use:** "(GPU at 63.40C <= 75C)".
+  - The queue's commit: `2892278`.
+  - Headline: A6b 9.3 % accurate, A6c 10.3 %; 0 parse fails; median rel σ 0.023 / 0.035.
+- **`xm_pilot`:** 12:12:47 → 12:13:21, exit 0, 34 s at 1 thread. The queue's commit: `ffc4ee4`.
+  - **The go rule matches go.json:** K1 ✓, C2 ✓, C3 ✗ on the same numbers.
+  - **The descriptive A6b slope on all answered pairs** (D146 item 1): Llama D-pos-v2 (a) −0.168 [−0.220, −0.119],
+    510 pairs; Qwen s0 +0.010.
+  - **Explicit vs implicit on Llama:**
+    - A6c slope +0.785 against B-v2's +0.396;
+    - expected crps_log D-pos-v2 − B-v2 = −0.0089 [−0.0188, −0.0009], so the explicit arm scores worse (Qwen s0:
+      +0.0004);
+    - the tail: 36 decimal shifts among the worst 102 (Qwen 17).
+  - **Format:** ≥ 99.4 % on every measure for both arms. Computation-correct: 8.0 % in both arms (A6b 4.9 % for
+    D-pos-v2).
+- **The chain ended at 12:13:23.** No queue process left; the lock is free; no GPU compute process;
+  `HEAD` = `origin/main` = `ffc4ee4`.
+- **FINDINGS #38 written.** `docs/decision_timeline.md` (D137–D139 rows, the summary list, the anchor) and
+  `docs/paper_outline.md` (status, FINDINGS list) now cite it.

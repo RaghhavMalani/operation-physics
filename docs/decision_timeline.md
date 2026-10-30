@@ -82,9 +82,9 @@ paper's methods section and the reproducibility appendix.
 | 10-28 02:52 | D131 (`c9af378`) | D-pos-v2 seed 1's eval hung after a GPU driver reset; rerun on identical code | deviation (operational), before the analysis | – | [#32][f32] |
 | 10-28 10:04 | D133 (`be0d338`) | Review round 5, R5-1–R5-10: framing; tail autopsy (R5-2); hybrid oracle (R5-3); RSS fallback (R5-4); cross-model replication (R5-5); cuts (R5-7); reporting rules (R5-8) | amendment, **after** [#32][f32] / [#33][f33], before anything it asks for | R5-2, R5-8: exploratory (descriptive). R5-3: exploratory (diagnostic) | [#34][f34], [#35][f35], [#37][f37] |
 | 10-28 10:24 | D135 (`bad601f`) | R5-4's RSS-fallback bounds, σ/RSS ∈ [0.333, 5], chosen on the development sets and frozen before one application to the confirmatory logs | analysis plan; grid designed **after** seeing [#35][f35] | exploratory (post-hoc) | [#36][f36] |
-| 10-28 18:07 | D137 (`7892e89`) | The cross-model pilot (R5-5): D-pos-v2 and B-v2 on Llama-3.2-3B-Instruct, seed 0, frozen A6c + A6b; go rule = R4-3's criterion on D-pos-v2; 3 seeds only on GO | pre-registration | confirmatory (pilot) | pending |
-| 10-28 18:46 | D138 (`b50cae1`) | R2-1's fingerprint for the Llama base records at sampling batch 4 | deviation (implementation), before any pilot output | – | pending |
-| 10-29 00:13 | D139 (`9296d7b`) | D137's go rule runs as soon as the D-pos-v2 eval exists (same code, same logs); SFT seed 1 only on GO | amendment (timing), before the go rule runs | confirmatory (pilot) | pending |
+| 10-28 18:07 | D137 (`7892e89`) | The cross-model pilot (R5-5): D-pos-v2 and B-v2 on Llama-3.2-3B-Instruct, seed 0, frozen A6c + A6b; go rule = R4-3's criterion on D-pos-v2; 3 seeds only on GO | pre-registration | confirmatory (pilot) | [#38][f38]: NO-GO (C3 unmeasurable, 4 pairs) |
+| 10-28 18:46 | D138 (`b50cae1`) | R2-1's fingerprint for the Llama base records at sampling batch 4 | deviation (implementation), before any pilot output | – | [#38][f38] |
+| 10-29 00:13 | D139 (`9296d7b`) | D137's go rule runs as soon as the D-pos-v2 eval exists (same code, same logs); SFT seed 1 only on GO | amendment (timing), before the go rule runs | confirmatory (pilot) | [#38][f38] |
 
 ## Summary for the paper
 
@@ -99,7 +99,7 @@ paper's methods section and the reproducibility appendix.
   - E1c / E1d ([#25][f25], stated as exploratory in the paper, R5-7);
   - stage C ([#28][f28]); stage D ([#29][f29]);
   - R4-1's go rule ([#30][f30]) and MC-A ([#31][f31]);
-  - the cross-model pilot (D137, D139; pending).
+  - the cross-model pilot ([#38][f38]: NO-GO, accepted as pre-registered, D146).
 - **Exploratory:**
   - pre-registration-era results ([#1][f1]–[#6][f6]);
   - the rounding audit ([#8][f8]); the A5 baselines ([#10][f10]); the 4-bit exploratory eval ([#15][f15]);
@@ -159,3 +159,4 @@ paper's methods section and the reproducibility appendix.
 [f35]: ../FINDINGS.md#35-r5-2--r5-3-on-the-frozen-d-pos-v2-logs-the-tail-is-wrong-value-dependent-sensitivities-formula-43-substituting-the-models-own-wrong-intermediates-19-with-chain-selection-σ-decimal-shifts-and-missing-answers-behind-most-of-the-rest-making-only-the-sensitivities-exact-closes-51-of-the-rss-to-σ-gap-and-beats-both-rss-and-x1-levels-are-already-right-and-exact-aggregation-alone-makes-it-worse-descriptive-and-diagnostic-d133-2026-10-28
 [f36]: ../FINDINGS.md#36-r5-4s-rss-fallback-post-hoc-exploratory-bounds-σrss--0333-5-chosen-on-the-development-sets-and-frozen-first-d135-it-lifts-the-expected-score-above-rss-and-x1-on-the-frozen-set-but-erases-most-of-the-measured-propagation-a6c-slope-084--014-because-a-fallback-on-one-member-of-a-pair-breaks-the-within-pair-contrast-2026-10-28
 [f37]: ../FINDINGS.md#37-r5-8-reporting-from-existing-logs-mc-b-fails-mostly-at-the-interface-8084-of-the-programs-that-run-97-compute-the-wrong-chain-sample-agreement-is-the-strongest-correctness-signal-but-it-costs-about-8-the-tokens-of-one-answer-010-within-problem-accuracy-self-consistency-and-008-auroc-on-a6c-mc-as-raw-spread-over-the-best-single-sample-or-free-signal-descriptive-d133-item-5-2026-10-28
+[f38]: ../FINDINGS.md#38-r5-5-cross-model-pilot-on-llama-32-3b-seed-0-frozen-a6c--a6b-the-explicit-propagation-recipes-a6c-result-replicates-k1-c2-d-pos-v2s-answer-σ-slope-0785-but-the-a6b-control-cannot-be-measured-4-computation-correct-pairs-so-the-pre-registered-go-rule-is-no-go-no-seed-expansion-a-failed-replication-at-one-seed-d137--d139--d146-2026-10-30

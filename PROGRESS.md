@@ -884,7 +884,17 @@ Progress:
   - [x] **SFT B-v2 (Llama, s0):** 750 / 750, exit 0, loss 0.155 (`f31dcc7`).
   - [x] **Temperature (D143):** 16 pauses, 482 s, 2.2 % of GPU-stage time (28/29: 46 %).
   - [x] **D145:** the projection's lock leak and the guard's log line fixed after the night, with tests.
-- [ ] **Next (your decisions, MORNING.md §4):**
-  - the NO-GO's consequence;
-  - B-v2's Llama eval and `xm_pilot` (~3.4 h of GPU);
-  - the MC-B A6b label fix.
+- [x] **Your decisions on MORNING.md §4** (D146).
+
+## 2026-10-30 day: D146 (your decisions on the 29/30 report; GPU_DEADLINE=13:00 IST)
+- [x] **1. NO-GO accepted** as pre-registered. The descriptive A6b slope on all answered pairs is reported in #38:
+  Llama D-pos-v2 (a) −0.168 [−0.220, −0.119], 510 pairs.
+- [x] **2. `scripts/queue_xm3.sh`** (chain 114795, 10:14:30 → 12:13:23; 3 tests; `2975667`):
+  - [x] **Eval B-v2 (Llama, s0) on frozen A6c + A6b:** 2,040 / 2,040, exit 0, first attempt; 2 pauses, 60 s
+    (`2892278`).
+  - [x] **`xm_pilot analyze`** (CPU, 1 thread): exit 0, 34 s. The go rule reproduces go.json; D-pos-v2 − B-v2
+    = −0.0089 [−0.0188, −0.0009] (`ffc4ee4`).
+- [x] **3. The MC-B M5 label** names its set; A6b re-run: results.json identical; 1 test (`f69af81`).
+- [x] **4. FINDINGS #38** (the Llama cross-model pilot), with decision_timeline.md and paper_outline.md updated.
+- [x] **5. The R5-6 estimate** (`docs/r5_6_estimate.md`; nothing built; `efc0a67`): J ~3.2 GPU-h; J + U ~5.6 GPU-h.
+- [ ] **Next:** your decision on R5-6 (J only / J + U / not run).
