@@ -5878,3 +5878,20 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **The last run (the 1.5B)** was launched without `setsid`, and the guards' group was checked.
 - **There is no further GPU work tonight.** D153 stopped the main stage, the measurement is done, and the brief has no
   other GPU item. `scripts/queue_followup.sh` (tested, unused) is kept for a future run.
+
+### D155. The paper's D-entry count excludes the follow-up project's entries, so the paper stays at 150 and its build test passes (2026-10-31, ~03:15 IST)
+- **What failed:** after the night's work the full suite was 755 passed, 1 failed. The failure was
+  `tests/test_paper.py::test_the_committed_generated_files_are_a_fresh_build`.
+  - `scripts/paper/macros.py` counts every `### D<n>.` header for the paper's sentence "The log has
+    \pv{record.dentries} entries".
+  - D151–D154 moved that count from 150 to 154.
+- **The choice:** the paper should not count another project's decisions, and the paper must stay untouched (your
+  instruction).
+  - **The change:** the macro skips D-entries under a `## …` section whose header names the "follow-up project" (this
+    night's section does).
+  - **The effect:** the value stays 150. `paper/generated/` is unchanged, and the test compares values only.
+- **The alternatives (for your review):**
+  - rebuild `paper/generated/` with 154 (the paper would count follow-up entries);
+  - move the follow-up track's decisions to a separate log.
+  - Either is a one-line change if you prefer it.
+- **This entry sits under the follow-up section**, so it is not counted either.

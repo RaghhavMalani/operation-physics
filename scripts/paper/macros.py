@@ -190,6 +190,9 @@ def build(S: Sources) -> Macros:
     add("stat.margin", num(pc["invariance_analysis"]["equivalence_margin"], 1), "pairs.yaml invariance_analysis.equivalence_margin")
     # ---- the protocol's record
     dec = S.text(A, "DECISIONS.md")
+    # D155: the paper's record only; D-entries under a "## ..." section of the exploratory follow-up project (D151-)
+    # belong to another project and are not counted
+    dec = "".join(s for s in re.split(r"(?m)^(?=## )", dec) if "follow-up project" not in s.split("\n", 1)[0])
     add("record.dentries", integer(len(re.findall(r"^### D\d+\.", dec, flags=re.M))), "DECISIONS.md: '### D<n>.' headers")
     fin = S.text(A, "FINDINGS.md")
     add("record.findings", integer(max(int(n) for n in re.findall(r"^## #(\d+)\.", fin, flags=re.M))),
