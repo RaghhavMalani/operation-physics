@@ -5303,7 +5303,7 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
 - **Not changed** (it is a display problem in analysis code, for your decision): `results/mc_b/a6b_pairs/summary.md`
   labels its M5 row "MC-B's A6c slope", but the value is A6b's.
 
-### D146. Your decisions on the 29/30 report (MORNING.md §4): NO-GO accepted, the B-v2 Llama eval and the pilot analysis now, the MC-B label fix, FINDINGS #38, an R5-6 estimate (2026-10-30, ~09:10 IST; recorded before the B-v2 eval or the pilot analysis runs)
+### D146. Your decisions on the 29/30 report (MORNING.md §4): NO-GO accepted, the B-v2 Llama eval and the pilot analysis now, the MC-B label fix, FINDINGS #38, an R5-6 estimate (2026-10-30, ~10:10 IST; recorded before the B-v2 eval or the pilot analysis runs)
 - **1. The go rule's NO-GO is accepted as pre-registered.**
   - No new design will measure C3 on Llama.
   - **Reported:** D137's pre-specified descriptive A6b slope on all answered pairs, for D-pos-v2's answer σ (a), from

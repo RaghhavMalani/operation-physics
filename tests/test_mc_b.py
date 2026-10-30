@@ -217,3 +217,11 @@ def test_end_to_end_with_a_fake_model(tmp_path):
     assert r2["programs"]["failure_rate"] == 0 and r2["programs"]["exact_program"] == 1
     assert a["expected"][0] == pytest.approx(o["expected"][0], abs=1e-12)
     assert r2["mc_b_minus_mc_a_oracle"]["value"] == pytest.approx(0.0, abs=1e-12)
+
+
+def test_the_m5_row_names_the_set_it_was_computed_on():
+    # D146: A6b's summary read "MC-B's A6c slope"; A6c's text is unchanged
+    res = json.loads((REPO_ROOT / "results" / "mc_b" / "a6c_pairs" / "results.json").read_text())
+    assert "| M5: MC-B's A6c slope > 0 |" in mc_b.render(res)
+    res["set"] = "a6b_pairs"
+    assert "| M5: MC-B's A6b slope > 0 |" in mc_b.render(res) and "A6c slope" not in mc_b.render(res)

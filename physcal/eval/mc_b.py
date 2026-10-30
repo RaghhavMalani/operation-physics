@@ -36,7 +36,7 @@ STEPS_SENTENCE_RE = re.compile(r"[ \t]*[^.\n]*<steps>[^.\n]*\.")
 VARIANTS = ("mc_b", "mc_b_mad")
 TESTS = ("M1", "M2", "M3", "M4", "M5")
 TEST_NAMES = {"M1": "MC-B − RSS > 0", "M2": "MC-B − X1 > 0", "M3": "MC-B − D-pos-v2 (a) > 0",
-              "M4": "MC-B − MC-A robust > 0", "M5": "MC-B's A6c slope > 0"}
+              "M4": "MC-B − MC-A robust > 0", "M5": "MC-B's {set} slope > 0"}  # {set}: the set it is computed on (D146)
 
 
 def _config() -> dict:
@@ -463,16 +463,17 @@ def render(res: dict) -> str:
                  f"| {f(g['epistemic_auroc_own_run0_wrong'])} | {'–' if own is None else f(own[0], '.4f')} "
                  f"| {g['end_to_end_with_mc_b_mu'][0]:.4f} |")
     t = res["tests"]
+    name = lambda kk: TEST_NAMES[kk].format(set=res["set"].split("_")[0].capitalize())  # a6b_pairs -> A6b
     L += ["", "## Tests (A6c only; Holm over M1–M5 at α = 0.05)" if t["applies"] else
           "## The same differences (descriptive on this set)", "",
           "| test | value | 95% CI | p (one-sided) | Holm |", "|---|---|---|---|---|"]
     for kk in TESTS:
         x = t[kk]
         if x.get("missing"):
-            L.append(f"| {kk}: {TEST_NAMES[kk]} | missing | | | |")
+            L.append(f"| {kk}: {name(kk)} | missing | | | |")
             continue
         ci = x.get("ci95") or x.get("ci90")
-        L.append(f"| {kk}: {TEST_NAMES[kk]} | {x['value']:+.4f} | [{ci[0]:+.4f}, {ci[1]:+.4f}] | {x['p_one_sided']:.4g} "
+        L.append(f"| {kk}: {name(kk)} | {x['value']:+.4f} | [{ci[0]:+.4f}, {ci[1]:+.4f}] | {x['p_one_sided']:.4g} "
                  f"| {'rejected' if (x.get('holm') or {}).get('rejected') else '–'} |")
     m = res["mc_b_minus_mc_a_oracle"]
     if not m.get("missing"):
