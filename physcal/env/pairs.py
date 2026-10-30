@@ -16,6 +16,7 @@ it moves σ* most (delta method, ≥ `min_ratio`). The visible percentages are t
 
     nice uv run python -m physcal.env.pairs export [a6|a6b|a6c]  # data/eval_sets/<version>/a6{,b,c}_pairs.jsonl
     nice uv run python -m physcal.env.pairs export a6 --confirmatory  # R4-5 (D113): .../confirmatory/, fresh seeds
+    nice uv run python -m physcal.env.pairs export j_a6c   # R5-6 part J (D147; physcal/env/pairs_j.py): .../confirmatory/r5_6/
 
 Pair members get problem seed 2·pair_seed + member_index (0 = lo, 1 = hi); `noise.pair` stores the pair seed, the
 member and the construction config, so `generator.regenerate` replays them exactly.
@@ -53,6 +54,10 @@ def generate_pair(family: str, depth: int, pair_seed: int, noise: float, env_cfg
         return _invariance_pair(family, depth, pair_seed, noise, env_cfg, construction)
     if construction.get("kind") == "allocation":
         return _allocation_pair(family, depth, pair_seed, noise, env_cfg, construction)
+    if construction.get("kind") in ("j_allocation", "j_invariance"):  # R5-6 part J (D147)
+        from physcal.env import pairs_j
+
+        return pairs_j.generate(family, depth, pair_seed, noise, env_cfg, construction)
     check_split(family, depth, "eval", env_cfg)
     gen = env_cfg["generator"]
     ncfg = gen.get("noise")
@@ -312,16 +317,37 @@ def _member(fam, chain, world, kappa, noise, z, zmc, units, target_unit, env_cfg
 
 
 # ------------------------------------------------------------------------------------------- export
+def j_distances(pairs: list) -> dict:
+    """D147 §10, generator only: how far outside the training range a J set's pairs are (median and quartiles)."""
+    if not pairs:
+        return {}
+    js = [p[0]["noise"]["pair"]["j"] for p in pairs]
+    q = lambda v: [float(x) for x in np.percentile(v, [25, 50, 75])]
+    out = {"exceedance_q25_50_75": q([j["exceedance"] for j in js]),
+           "nearest_training_linf_q25_50_75": q([j["nearest_training_linf"] for j in js]),
+           "n_training_q25_50_75": q([j["n_training"] for j in js]),
+           "clamped_log_ratio_hi_q25_50_75": q([p[1]["noise"]["pair"]["j"]["clamped_log_ratio"] for p in pairs]),
+           "strict_share": float(np.mean([j["strict"] for j in js])),
+           "distinct_chains": len({(p[0]["family"], json.dumps(p[0]["chain"])) for p in pairs})}
+    if pairs[0][0]["noise"]["pair"]["kind"] == "j_allocation":
+        out["rank_flip_share"] = float(np.mean([j["rank_flip"] for j in js]))
+    return out
+
+
 SETS = {"a6": ("construction", "export", "a6_pairs"),
         "a6b": ("invariance_construction", "invariance_export", "a6b_pairs"),
-        "a6c": ("allocation_construction", "allocation_export", "a6c_pairs")}
+        "a6c": ("allocation_construction", "allocation_export", "a6c_pairs"),
+        # R5-6 part J (D147): written as a6c_pairs / a6b_pairs to the version's r5_6 subdir, so the analyses read them
+        "j_a6c": ("j_allocation_construction", "j_allocation_export", "a6c_pairs"),
+        "j_a6b": ("j_invariance_construction", "j_invariance_export", "a6b_pairs")}
+J_SETS = ("j_a6c", "j_a6b")
 
 
 def cell_construction(which: str, level, pcfg: dict) -> tuple[dict, float]:
     """The construction stored in a cell's problems and the `noise` passed to generate_pair. A6c: a cell's level is
     a pair [l, h]; its construction carries them (`levels`) and noise = h (D95)."""
     con = pcfg[SETS[which][0]]
-    if which == "a6c":
+    if which in ("a6c", "j_a6c"):
         return {**con, "levels": [float(level[0]), float(level[1])]}, float(level[1])
     return con, level
 
@@ -341,14 +367,15 @@ def _attempt(args: tuple) -> tuple:
 def _families(which: str, depth: int, pcfg: dict, env: dict) -> list[str]:
     """A6, A6c: every configured family. A6b: only families with power-law templates at this depth."""
     fams = pcfg[SETS[which][1]]["families"]
-    if which in ("a6", "a6c"):
+    if which in ("a6", "a6c", *J_SETS):
         return fams
     return [f for f in fams if power_law_chains(f, depth, pcfg[SETS[which][0]], env["generator"])]
 
 
 def export(which: str = "a6", confirmatory: bool = False) -> dict:
     """The frozen pair set; `confirmatory` (R4-5, D113): the same construction and cells with the configured fresh
-    seed offset and worker count, written to the version's `confirmatory/` directory."""
+    seed offset and worker count, written to the version's `confirmatory/` directory. A J set (D147) is always
+    written once, to `r5_6.subdir`, with its own export's offsets."""
     pcfg = load_config("pairs")
     con_key, ex_key, name = SETS[which]
     ex, env = pcfg[ex_key], load_config(pcfg["env_config"])
@@ -372,7 +399,7 @@ def export(which: str = "a6", confirmatory: bool = False) -> dict:
                                    "families": {f: sum(p[0]["family"] == f for _, _, p in got) for f in ex["families"]},
                                    "mc_ratio_median": float(np.median(ratios)) if ratios else None,
                                    "mc_ratio_min": float(np.min(ratios)) if ratios else None}
-        if which == "a6b":
+        if which in ("a6b", "j_a6b"):
             tr = [p[0]["noise"]["pair"]["target_ratio"] for _, _, p in got]
             lr = [abs(p[0]["noise"]["pair"]["log_sigma_ratio_mc"]) for _, _, p in got]
             report[f"d{d}/s{_level_name(lv)}"].update(
@@ -380,13 +407,19 @@ def export(which: str = "a6", confirmatory: bool = False) -> dict:
                 max_abs_log_sigma_ratio_mc=float(np.max(lr)) if lr else None,
                 mc_rejected=sum(p[0]["noise"]["pair"]["mc_rejected_before"] for _, _, p in got),
                 eligible_families=fams[d])
-        if which == "a6c":
+        if which in ("a6c", "j_a6c"):
             dr = [p[0]["noise"]["pair"]["delta_ratio"] for _, _, p in got]
             report[f"d{d}/s{_level_name(lv)}"].update(delta_ratio_median=float(np.median(dr)) if dr else None,
                                                       delta_ratio_min=float(np.min(dr)) if dr else None)
+        if which in J_SETS:
+            report[f"d{d}/s{_level_name(lv)}"].update(j_distances([p for _, _, p in got]))
     version = generator_version(env)
     out = REPO_ROOT / "data" / "eval_sets" / version
-    if confirmatory:
+    if which in J_SETS:
+        out = out / pcfg["r5_6"]["subdir"]
+        if (out / f"{name}.jsonl").exists():
+            raise FileExistsError(f"{out / name}.jsonl exists: the J set is frozen (D147)")
+    elif confirmatory:
         out = out / pcfg["confirmatory"]["subdir"]
         if (out / f"{name}.jsonl").exists():
             raise FileExistsError(f"{out / name}.jsonl exists: the confirmatory set is frozen (D113)")
@@ -396,7 +429,10 @@ def export(which: str = "a6", confirmatory: bool = False) -> dict:
     manifest = {"generator_version": version, "pair_version": pair_version(pcfg[con_key]),  # A6c: + levels per cell
                 "construction": pcfg[con_key], "export": ex, "n_pairs": len(pairs), "n_problems": 2 * len(pairs),
                 "sha256": hashlib.sha256(blob.encode()).hexdigest(), "cells": report}
-    if confirmatory:
+    if which in J_SETS:
+        manifest["frozen"] = "R5-6 part J (D147): evaluated only by D147's six evals; analysed once (D147 §11)"
+        manifest["distances"] = j_distances(pairs)
+    elif confirmatory:
         manifest["frozen"] = "R4-5 (D113): untouched until a 3-seed confirmatory run with its own entry"
     (out / f"{name}_manifest.json").write_text(json.dumps(manifest, indent=2))
     return manifest
@@ -407,7 +443,7 @@ if __name__ == "__main__":
 
     args = [a for a in sys.argv[1:] if a != "--confirmatory"]
     if not args or args[0] != "export" or (args[1:] and args[1] not in SETS):
-        raise SystemExit("usage: python -m physcal.env.pairs export [a6|a6b|a6c] [--confirmatory]")
+        raise SystemExit("usage: python -m physcal.env.pairs export [a6|a6b|a6c|j_a6c|j_a6b] [--confirmatory]")
     from physcal.env import pairs as _pairs  # through the package, so worker processes import the same module
 
     print(json.dumps(_pairs.export(args[1] if args[1:] else "a6", "--confirmatory" in sys.argv), indent=2))

@@ -1,0 +1,523 @@
+{
+  "generator_version": "2.0.0+bdbb2279",
+  "pair_version": "1.0.0+dca67b2a",
+  "construction": {
+    "version": "1.0.0",
+    "kind": "j_allocation",
+    "candidate_worlds": 96,
+    "min_ratio": 1.5,
+    "max_chains": 20,
+    "jacobian": {
+      "support_file": "data/jacobian_support/r4_1.json",
+      "support_sha256": "eda3c3b216ad66c1afb424f9f61df38c0284f8eaf0f315c16616e253a3a97004",
+      "margin": 0.1
+    }
+  },
+  "export": {
+    "families": [
+      "kinematics",
+      "dynamics",
+      "energy"
+    ],
+    "depths": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "levels": [
+      [
+        0.01,
+        0.05
+      ],
+      [
+        0.02,
+        0.05
+      ],
+      [
+        0.01,
+        0.02
+      ]
+    ],
+    "pairs_per_cell": 34,
+    "max_seeds_per_cell": 136,
+    "seed_offset": 2400000000,
+    "cell_seed_stride": 100000,
+    "n_jobs": 4
+  },
+  "n_pairs": 408,
+  "n_problems": 816,
+  "sha256": "42f2b3d1ffc7e8d118a92c0201e529ae6ee40c4ba6f270b089d05ee0773a8222",
+  "cells": {
+    "d1/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 58,
+      "seeds_without_pair": 24,
+      "families": {
+        "kinematics": 20,
+        "dynamics": 1,
+        "energy": 13
+      },
+      "mc_ratio_median": 3.050653096826707,
+      "mc_ratio_min": 1.528727928038956,
+      "delta_ratio_median": 3.083845765068257,
+      "delta_ratio_min": 1.57202457976071,
+      "exceedance_q25_50_75": [
+        0.2773257151144255,
+        0.4745644283653066,
+        0.9205771572675919
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.2773257151144255,
+        0.5606064069627954,
+        0.9338717038839478
+      ],
+      "n_training_q25_50_75": [
+        3.0,
+        5.0,
+        8.75
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.09241778077359156,
+        0.180070010867259,
+        0.40856219621005846
+      ],
+      "strict_share": 0.23529411764705882,
+      "distinct_chains": 18,
+      "rank_flip_share": 0.029411764705882353
+    },
+    "d1/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 61,
+      "seeds_without_pair": 27,
+      "families": {
+        "kinematics": 21,
+        "dynamics": 0,
+        "energy": 13
+      },
+      "mc_ratio_median": 1.9253549060168602,
+      "mc_ratio_min": 1.504308334482708,
+      "delta_ratio_median": 1.9372477570798434,
+      "delta_ratio_min": 1.5220967988919496,
+      "exceedance_q25_50_75": [
+        0.15522058636330635,
+        0.34906642915044106,
+        0.5052579962748196
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.1731075718879849,
+        0.34906642915044106,
+        0.5052579962748196
+      ],
+      "n_training_q25_50_75": [
+        3.0,
+        6.5,
+        9.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.09015366207151351,
+        0.10146612567180013,
+        0.2559160901270345
+      ],
+      "strict_share": 0.17647058823529413,
+      "distinct_chains": 16,
+      "rank_flip_share": 0.058823529411764705
+    },
+    "d1/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 52,
+      "seeds_without_pair": 18,
+      "families": {
+        "kinematics": 18,
+        "dynamics": 3,
+        "energy": 13
+      },
+      "mc_ratio_median": 1.7234613980228184,
+      "mc_ratio_min": 1.4924505049906336,
+      "delta_ratio_median": 1.7206072321295895,
+      "delta_ratio_min": 1.5185270785695548,
+      "exceedance_q25_50_75": [
+        0.19043555998792563,
+        0.43666620622147956,
+        0.766695052001076
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.19043555998792563,
+        0.48683265216326455,
+        0.766695052001076
+      ],
+      "n_training_q25_50_75": [
+        4.0,
+        8.0,
+        9.75
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.12531138967247002,
+        0.014104644520853998,
+        0.25717488281983697
+      ],
+      "strict_share": 0.2647058823529412,
+      "distinct_chains": 16,
+      "rank_flip_share": 0.0
+    },
+    "d2/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 36,
+      "seeds_without_pair": 2,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 10,
+        "energy": 12
+      },
+      "mc_ratio_median": 2.8271734872472445,
+      "mc_ratio_min": 1.4347597426378338,
+      "delta_ratio_median": 2.858657658701885,
+      "delta_ratio_min": 1.502779154327027,
+      "exceedance_q25_50_75": [
+        0.17407962493714868,
+        0.386205113000897,
+        0.6206137056483805
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.20338638259669184,
+        0.4051582893625819,
+        0.6432644638896332
+      ],
+      "n_training_q25_50_75": [
+        2.0,
+        3.0,
+        3.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.16399651487987024,
+        0.0019742646510764444,
+        0.24008927896896004
+      ],
+      "strict_share": 0.17647058823529413,
+      "distinct_chains": 25,
+      "rank_flip_share": 0.14705882352941177
+    },
+    "d2/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 38,
+      "seeds_without_pair": 4,
+      "families": {
+        "kinematics": 13,
+        "dynamics": 9,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.9075914133552514,
+      "mc_ratio_min": 1.487290758029331,
+      "delta_ratio_median": 1.9115097263780227,
+      "delta_ratio_min": 1.5129478843940123,
+      "exceedance_q25_50_75": [
+        0.1507586888937537,
+        0.2372746109035359,
+        0.5227916533843611
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.15930483798770834,
+        0.2494668970286774,
+        0.5511010801871156
+      ],
+      "n_training_q25_50_75": [
+        1.0,
+        3.0,
+        3.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.09127338610021851,
+        0.06563828993651671,
+        0.17730580074600633
+      ],
+      "strict_share": 0.2647058823529412,
+      "distinct_chains": 27,
+      "rank_flip_share": 0.058823529411764705
+    },
+    "d2/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 37,
+      "seeds_without_pair": 3,
+      "families": {
+        "kinematics": 13,
+        "dynamics": 9,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.6290833968150005,
+      "mc_ratio_min": 1.4865896432498387,
+      "delta_ratio_median": 1.6215322472331692,
+      "delta_ratio_min": 1.5022179497573291,
+      "exceedance_q25_50_75": [
+        0.1764426867944502,
+        0.24477292251404328,
+        0.7380550997024601
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.1764426867944502,
+        0.2452599516810387,
+        0.7380550997024601
+      ],
+      "n_training_q25_50_75": [
+        1.0,
+        2.0,
+        3.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.16389598873554162,
+        0.019301327724108776,
+        0.11824193759162169
+      ],
+      "strict_share": 0.2647058823529412,
+      "distinct_chains": 26,
+      "rank_flip_share": 0.0
+    },
+    "d3/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.793327517567624,
+      "mc_ratio_min": 1.6096346541368003,
+      "delta_ratio_median": 2.7780332605545572,
+      "delta_ratio_min": 1.6658360078944876,
+      "exceedance_q25_50_75": [
+        0.21438318810108667,
+        0.3448906624735587,
+        0.5399214660152116
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.2788503644656397,
+        0.36906503447774375,
+        0.5399214660152116
+      ],
+      "n_training_q25_50_75": [
+        1.0,
+        2.0,
+        3.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.0019489484038064514,
+        0.08590212982054116,
+        0.23061846276501777
+      ],
+      "strict_share": 0.23529411764705882,
+      "distinct_chains": 33,
+      "rank_flip_share": 0.20588235294117646
+    },
+    "d3/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 35,
+      "seeds_without_pair": 1,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.8234256079655622,
+      "mc_ratio_min": 1.5400958108980902,
+      "delta_ratio_median": 1.7976837932190404,
+      "delta_ratio_min": 1.5159440118244671,
+      "exceedance_q25_50_75": [
+        0.21524454464620404,
+        0.43679234384960003,
+        0.8551850051716139
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.30881683327200454,
+        0.5400155100863533,
+        0.9979299467052232
+      ],
+      "n_training_q25_50_75": [
+        1.0,
+        1.5,
+        2.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.09277988412648676,
+        0.08095729714348135,
+        0.22544530978165717
+      ],
+      "strict_share": 0.17647058823529413,
+      "distinct_chains": 29,
+      "rank_flip_share": 0.14705882352941177
+    },
+    "d3/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 42,
+      "seeds_without_pair": 8,
+      "families": {
+        "kinematics": 14,
+        "dynamics": 6,
+        "energy": 14
+      },
+      "mc_ratio_median": 1.6476701418037174,
+      "mc_ratio_min": 1.497631035867725,
+      "delta_ratio_median": 1.6420924973729374,
+      "delta_ratio_min": 1.5175648360492362,
+      "exceedance_q25_50_75": [
+        0.23786721040078673,
+        0.4806558514812213,
+        0.7174644891525356
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.23786721040078673,
+        0.4896194505386619,
+        0.7236883002301548
+      ],
+      "n_training_q25_50_75": [
+        1.0,
+        2.0,
+        2.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.18838218426791514,
+        0.009285104074547239,
+        0.1575312805670011
+      ],
+      "strict_share": 0.23529411764705882,
+      "distinct_chains": 30,
+      "rank_flip_share": 0.08823529411764706
+    },
+    "d4/s0.01-0.05": {
+      "pairs": 34,
+      "seeds_tried": 35,
+      "seeds_without_pair": 1,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 2.8288773171042867,
+      "mc_ratio_min": 1.7800157580697538,
+      "delta_ratio_median": 2.785132173560012,
+      "delta_ratio_min": 1.783090563262447,
+      "exceedance_q25_50_75": [
+        0.1473384220323567,
+        0.47407630232571835,
+        1.0642264621492985
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.1473384220323567,
+        0.6119090626419866,
+        1.0915557777653986
+      ],
+      "n_training_q25_50_75": [
+        1.0,
+        2.0,
+        4.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.013658759918958261,
+        0.006333419840043631,
+        0.1972056646870805
+      ],
+      "strict_share": 0.6176470588235294,
+      "distinct_chains": 31,
+      "rank_flip_share": 0.17647058823529413
+    },
+    "d4/s0.02-0.05": {
+      "pairs": 34,
+      "seeds_tried": 34,
+      "seeds_without_pair": 0,
+      "families": {
+        "kinematics": 12,
+        "dynamics": 11,
+        "energy": 11
+      },
+      "mc_ratio_median": 1.8468865152888605,
+      "mc_ratio_min": 1.518082878708575,
+      "delta_ratio_median": 1.8111163629959754,
+      "delta_ratio_min": 1.523812012559413,
+      "exceedance_q25_50_75": [
+        0.21189489093901986,
+        0.4316577785211332,
+        1.055868629735302
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.22278262701284424,
+        0.4316577785211332,
+        1.1049198463532675
+      ],
+      "n_training_q25_50_75": [
+        1.25,
+        2.0,
+        4.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.11912226293401651,
+        0.03448939738838942,
+        0.3532381201362267
+      ],
+      "strict_share": 0.29411764705882354,
+      "distinct_chains": 32,
+      "rank_flip_share": 0.17647058823529413
+    },
+    "d4/s0.01-0.02": {
+      "pairs": 34,
+      "seeds_tried": 37,
+      "seeds_without_pair": 3,
+      "families": {
+        "kinematics": 13,
+        "dynamics": 9,
+        "energy": 12
+      },
+      "mc_ratio_median": 1.5714285947260862,
+      "mc_ratio_min": 1.490416371927292,
+      "delta_ratio_median": 1.5630035979187096,
+      "delta_ratio_min": 1.5024594335418966,
+      "exceedance_q25_50_75": [
+        0.2145302763766738,
+        0.4670564659191131,
+        1.097225381468581
+      ],
+      "nearest_training_linf_q25_50_75": [
+        0.2145302763766738,
+        0.5063710474815774,
+        1.097225381468581
+      ],
+      "n_training_q25_50_75": [
+        2.0,
+        3.0,
+        5.0
+      ],
+      "clamped_log_ratio_hi_q25_50_75": [
+        -0.10301460154477676,
+        0.012056331223628345,
+        0.29028971421070077
+      ],
+      "strict_share": 0.3235294117647059,
+      "distinct_chains": 26,
+      "rank_flip_share": 0.17647058823529413
+    }
+  },
+  "frozen": "R5-6 part J (D147): evaluated only by D147's six evals; analysed once (D147 \u00a711)",
+  "distances": {
+    "exceedance_q25_50_75": [
+      0.17451065983936367,
+      0.38317516298778653,
+      0.7734871903250702
+    ],
+    "nearest_training_linf_q25_50_75": [
+      0.1902923080775918,
+      0.4063116353368623,
+      0.8397567261769742
+    ],
+    "n_training_q25_50_75": [
+      1.0,
+      3.0,
+      5.0
+    ],
+    "clamped_log_ratio_hi_q25_50_75": [
+      -0.11147140489054219,
+      0.018260334260015103,
+      0.23132261087879336
+    ],
+    "strict_share": 0.27205882352941174,
+    "distinct_chains": 238,
+    "rank_flip_share": 0.1053921568627451
+  }
+}

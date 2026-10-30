@@ -77,3 +77,53 @@ confirmatory:
   subdir: confirmatory
   seed_offsets: {a6: 2100000000, a6b: 2200000000, a6c: 2300000000}   # disjoint from 1.8e9 / 1.9e9 / 2.0e9 (+1.5e6 each)
   n_jobs: 1                         # built while the GPU queue runs (heat, D97)
+
+# R5-6 part J (D147): Jacobians outside the training range of trained chains (physcal/env/pairs_j.py). Eval only; the
+# frozen J set: data/eval_sets/<version>/confirmatory/r5_6/{a6c,a6b}_pairs.jsonl (run_eval needs PHYSCAL_CONFIRMATORY=1).
+r5_6:
+  subdir: confirmatory/r5_6
+  support:                          # physcal.env.jacobian_support build (D147 §1)
+    training_problems: results/phase12_sft_data_r4/problems.jsonl   # the R4-1 problems: both arms' training data
+    file: data/jacobian_support/r4_1.json
+j_jacobian: &j_jacobian             # D147 §2, shared by both J constructions
+  support_file: data/jacobian_support/r4_1.json
+  support_sha256: eda3c3b216ad66c1afb424f9f61df38c0284f8eaf0f315c16616e253a3a97004   # the support file's SHA-256 (replay refuses another file)
+  margin: 0.1                       # one given's d ln f / d ln x outside its chain's training range by >= this
+j_allocation_construction:          # D147 §3: A6c's construction on J worlds
+  version: "1.0.0"
+  kind: j_allocation
+  candidate_worlds: 96              # world draws per chain; the first J world is used (A6c: 24)
+  min_ratio: 1.5                    # as A6c (D95)
+  max_chains: 20
+  jacobian: *j_jacobian
+j_allocation_export:
+  families: [kinematics, dynamics, energy]   # round-robin over pair seeds
+  depths: [1, 2, 3, 4]              # the trained depths
+  levels: [[0.01, 0.05], [0.02, 0.05], [0.01, 0.02]]   # A6c's (l, h)
+  pairs_per_cell: 34                # 12 cells x 34 = 408 pairs = 816 problems
+  max_seeds_per_cell: 136
+  seed_offset: 2400000000           # fresh (D147 §5)
+  cell_seed_stride: 100000
+  n_jobs: 4                         # built with the GPU idle
+j_invariance_construction:          # D147 §4: a J world and its dimensionally scaled copy
+  version: "1.0.0"
+  kind: j_invariance
+  candidate_worlds: 96
+  min_target_ratio: 2.0             # as A6b
+  max_chains: 20
+  max_log_sigma_ratio: 1.0e-3       # MC check, as A6b
+  scale_factors: [2.0, 0.5, 3.0, 0.3333333333333333, 4.0, 0.25, 6.0, 0.16666666666666666, 8.0, 0.125]   # tried in order
+  directions:                       # exponents of (length, mass, time); each leaves every constant of the family unchanged
+    kinematics: [[1, 0, 0], [0, 0, 1], [0, 1, 0]]   # no constants
+    dynamics: [[2, 0, 1], [0, 1, 0]]                # g = 9.81 m/s^2 fixed: length^2 per time
+    energy: [[2, 0, 1], [0, 1, 0]]
+  jacobian: *j_jacobian
+j_invariance_export:
+  families: [kinematics, dynamics, energy]
+  depths: [1, 2, 3, 4]
+  levels: [0.01, 0.02, 0.05]        # A6b's
+  pairs_per_cell: 34
+  max_seeds_per_cell: 136
+  seed_offset: 2500000000
+  cell_seed_stride: 100000
+  n_jobs: 4
