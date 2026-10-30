@@ -245,3 +245,44 @@ GPU_DEADLINE=13:00 setsid nohup scripts/queue_xm2.sh >> results/queue_xm2/nohup.
   - Tonight's queue had no seed-1 stage either way (D144).
 - **`mc_b_gen_a6b_pairs`** started 05:45:02 (timeout 4,800 s). The loader check is fine: tokenizer matches, 196 bnb-4bit
   modules.
+
+### 06:18 MC-B A6b (D132, descriptive) done, and B-v2 SFT started
+
+- **The stages** (MC-B uses Qwen2.5-Math-1.5B-Instruct 4-bit, as on A6c):
+  - `mc_b_gen_a6b_pairs`: 05:45:02 → 06:18:02, exit 0, 1,982 s. 2 temperature pauses of 30 s (05:54 at 87.6 °C;
+    06:10 at 87.2 °C). Commit `023bcfa`.
+  - `mc_b_exec_a6b_pairs`: 10 s, exit 0, CPU, 1 thread, nice 19.
+  - `mc_b_analyze_a6b_pairs`: 21 s, exit 0. Commit `876f4ef` (`results/mc_b/a6b_pairs/{executions.jsonl, results.json,
+    summary.md}`).
+- **The programs** (A6b, 1,020 problems, all used):
+  - failure rate 87.7 %: no_program 16.5 %, signature 69.1 %, exception 1.7 %, rejected 0.4 %, bad_output 0.1 %;
+  - truncated 11.1 %;
+  - run 0 computation-correct 1.3 %;
+  - by depth, failure runs from 83.8 % at depth 1 to 98.5 % at depth 5.
+  - A6c had 84.8 % failure and 0.5 % correct, so it is the same picture.
+- **MC-B's σ is collapsed:** median ln(σ/σ\*) = −10.4, 1σ / 2σ coverage 6.5 % / 8.9 % (k = 2). The σ reference points:
+
+  | σ source | expected crps_log | 1σ / 2σ cov | A6b slope [90 % CI] |
+  |---|---|---|---|
+  | mc_b_k8 | −0.0402 | 7.9 % / 10.1 % | −0.018 [−0.13, +0.09] |
+  | mc_a_robust | −0.0512 | 67.0 % / 86.0 % | +0.103 [+0.01, +0.19] |
+  | dpos2_a (Qwen) | −0.0327 | 68.7 % / 95.1 % | +0.010 [−0.02, +0.05] |
+  | rss | −0.0300 | 65.9 % / 90.6 % | 0 |
+  | sigma_star | −0.0292 | 68.0 % / 95.1 % | 0 |
+
+- **The differences** (descriptive on A6b, no Holm; A6c holds the tests):
+  - M1, MC-B − RSS: −0.0102 [−0.0109, −0.0094].
+  - M2, MC-B − X1: −0.0105.
+  - M3, MC-B − D-pos-v2 (a): −0.0075 [−0.0091, −0.0056].
+  - **M4, MC-B − MC-A robust: +0.0110 [+0.0058, +0.0168].** This is the opposite sign to A6c (−0.0037).
+    - The likely reason: MC-A robust has a non-zero A6b slope (+0.103, CI clear of 0) on a set where the right slope is
+      0.
+  - **M5:** the A6b slope is −0.018 [−0.15, +0.11]. The summary labels this row "MC-B's A6c slope". That is a label
+    bug in the summary text; the number is A6b's. To fix after the night; no analysis code is touched tonight.
+- **The per-depth slope table on A6b is degenerate** (values in the millions, CIs of ±10¹⁰, and sigma_star at +1.000
+  per depth against 0.000 pooled). Within a depth, A6b pairs barely differ in ln truth. Do not read it.
+- **The conclusion:** A6b agrees with FINDINGS #33. MC-B fails as a σ source because its programs fail, not because of
+  its σ rule.
+- **`xm_train_b2`** started 06:18:42 with `--stop-at 12:45`. Timeout 23,779 s.
+  - The start gate's estimate: 148 min = 8,800 s / (1 − 0.011). The paused share tonight is 1.1 %. The projection check
+    starts 30 min in.
