@@ -286,3 +286,57 @@ GPU_DEADLINE=13:00 setsid nohup scripts/queue_xm2.sh >> results/queue_xm2/nohup.
 - **`xm_train_b2`** started 06:18:42 with `--stop-at 12:45`. Timeout 23,779 s.
   - The start gate's estimate: 148 min = 8,800 s / (1 − 0.011). The paused share tonight is 1.1 %. The projection check
     starts 30 min in.
+
+### 06:49 B-v2 projection 1: ends ~08:36
+
+- **The projection:** 171 / 750 steps in 28:51, pauses included, which projects an end at 08:36 IST. That is before
+  12:45, so the run continues. The pace is ~10.1 s / step wall; 28/29's estimate was 11.0 s.
+- **Temperature:** 2 pauses in B-v2 so far, 30 s each (06:24:43 at 87.4 °C; 06:48:15 at 87.2 °C). Tonight's total is
+  7 pauses, 211 s.
+- **GPU:** 82.6 °C, 5,145 MiB, 100 % utilization.
+
+### 08:04 Heartbeat: B-v2 at 82 %, still projecting ~08:37
+
+- **The projections** (15-min interval), each ending well before 12:45:
+
+  | time | steps | wall | projected end |
+  |---|---|---|---|
+  | 07:03 | 257 | 44:24 | 08:38 |
+  | 07:18 | 346 | 59:22 | 08:38 |
+  | 07:33 | 434 | 1:14:17 | 08:37 |
+  | 07:48 | 520 | 1:29:19 | 08:38 |
+  | 08:03 | 612 | 1:44:23 | 08:37 |
+
+- **Temperature:**
+  - **B-v2 so far:** 9 pauses, 30–31 s each, all at 87.1–87.9 °C, continued at 60.3–61.6 °C. The GPU trips roughly
+    every 10–15 min under SFT load.
+  - **Tonight:** 14 pauses, 422 s.
+- **GPU:** 83.7 °C, 5,515 MiB. Free space: 47.2 GiB.
+- **The watcher change** (scratchpad `watch.sh`): it no longer wakes on "B-v2 projection … before 12:45" lines. It
+  still wakes on "cannot finish", a stage end, BLOCKED, a stall, the chain's exit, and the hourly heartbeat.
+
+### 08:31 Chain done; post-run checks and two fixes (D145)
+
+- **`xm_train_b2`:** ended 08:31:25, exit 0.
+  - 750 / 750 steps, 132 min wall; 11 pauses, 331 s. Train loss 0.155. Peak reserved 4.48 GiB.
+  - The fingerprint is recorded. The queue's commit is `f31dcc7`, pushed.
+  - The last projections (08:18: 698 / 750) said 08:37; it ended 08:31.
+- **Chain 35695 exited at 08:31:28:** "tonight 16 temperature pauses, 482s paused of 22276s GPU-stage time".
+- **Post-run checks:**
+  - **Clean:** no queue process, no GPU compute process (785 MiB device-wide, i.e. the host); 47.17 GiB free;
+    `HEAD` = `origin/main` = `f31dcc7`.
+  - **The integrity check** on the 64 files written since 20:48 UTC: 0 problems. It parsed both JSONL tapes and the gzip
+    (2,040 lines = its sibling), and the B-v2 safetensors is structurally ok (392 tensors, 0 all-zero).
+  - **The queue lock was still held at 08:32** by PID 93166, a `sleep 900` in the chain's process group, child of init,
+    started 08:18:45. It was the B-v2 projection's sleep.
+    - `kill "$proj"` had ended the subshell but not the sleep, and the sleep inherited fd 8 (the lock).
+    - It exited by itself at 08:33:45, and the lock was then free.
+- **D145, the fixes:**
+  - `scripts/queue_xm2.sh`: `b2_projection … 8>&- &`, and `stop_projection` (SIGSTOP, kill children, SIGTERM,
+    SIGCONT, wait).
+  - `scripts/gpu_temp_guard.sh`: one reading on the cooled-pause line.
+  - **The tests:** 1 new in `tests/test_queue_xm2.py`, 2 tightened in `tests/test_temp_guard.py`. Both files: 13 passed.
+  - **The old stop pattern, re-run in a scratch test:** the orphan `sleep 900` survived and held the harness's pipes
+    until its 120 s timeout. That confirms the bug and that the test catches it.
+- **The full suite after the night** (08:40–08:51, GPU idle, with the D145 fixes): 700 passed, 0 failed, 0 skipped.
+- **MORNING.md** for 29/30 is written, and PROGRESS.md is updated.

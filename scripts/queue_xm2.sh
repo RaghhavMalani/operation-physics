@@ -58,6 +58,11 @@ partial_batches() {  # batches of the eval's partial file (D142); 0 without one
   else echo 0; fi
 }
 
+stop_projection() {  # stop_projection PID: end the projection and its sleep (an orphaned sleep held the queue lock; D145)
+  kill -STOP "$1" 2>/dev/null || return 0  # frozen, it cannot start another sleep
+  pkill -TERM -P "$1" 2>/dev/null; kill -TERM "$1" 2>/dev/null; kill -CONT "$1" 2>/dev/null; wait "$1" 2>/dev/null
+  return 0
+}
 b2_projection() {  # b2_projection T0: while xm_train_b2 runs, project its end from its own rate; stop it if too late
   local t0=$1 pid line n el s rem end
   for _ in $(seq 120); do [ -f "$LOG/xm_train_b2.pid" ] && [ "$(stat -c %Y "$LOG/xm_train_b2.pid")" -ge "$t0" ] && break; sleep 5; done
@@ -175,10 +180,10 @@ else
   log "train xm b2: estimate $(( est / 60 )) min ($B2_ACTIVE_S s active / (1 - $share paused tonight)); the projection check decides from its own rate (D144)"
   t0=$(date +%s)
   proj=
-  if [ "$DRY_RUN" != 1 ]; then b2_projection "$t0" & proj=$!; fi
+  if [ "$DRY_RUN" != 1 ]; then b2_projection "$t0" 8>&- & proj=$!; fi  # 8: the queue lock, not inherited (D145)
   gpu_stage xm_train_b2 $(( $(left) - 300 )) $PY -m physcal.train.stage_xm train --arm b2 \
     --stop-at "$(iso $((DEADLINE - SLACK_S)))" --max-reserved-gib "$CAP"; rc=$?
-  [ -n "$proj" ] && { kill "$proj" 2>/dev/null; wait "$proj" 2>/dev/null; }
+  [ -n "$proj" ] && stop_projection "$proj"
   if [ "$DRY_RUN" != 1 ]; then
     if complete_adapter "$dir"; then
       log "train xm b2: $(json_get "$dir/summary.json" "['steps']") steps of $(json_get "$dir/summary.json" "['steps_planned']"), $(( ($(date +%s) - t0) / 60 )) min"

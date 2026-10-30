@@ -5267,3 +5267,38 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
     - Its stages go through `run_stage`.
     - The check on scripts with their own launchers is unchanged.
   - **After the fix:** 27 / 27 in `test_disk_guard.py`. The suite is 699 passed, 0 failed, 0 skipped.
+
+### D145. Night 2026-10-29/30's outcome, and two fixes to tonight's scripts after the chain ended (2026-10-30, ~08:50 IST; the chain had exited, so no stage was running)
+- **The night** (`results/queue_xm2/chain.log`, MORNING.md):
+  - Every stage ended with exit 0 on its first attempt: the D-pos-v2 Llama eval, the go rule, MC-B A6b
+    (generate / execute / analyze), and SFT B-v2.
+  - The chain ran 02:18:47 → 08:31:28. Temperature took 16 pauses and 482 s, 2.2 % of 22,276 s of GPU-stage time.
+- **The go rule (D137 / D139): NO-GO.**
+  - **The criteria:** K1 ✓ and C2 ✓ (A6c slope +0.785, 90 % CI [+0.595, +0.974], 505 pairs). C3 ✗ (4
+    computation-correct A6b pairs; CI [−3.55, +843]).
+  - **The consequence, as pre-registered:** no seed expansion, reported as a failed replication at one seed.
+  - **The reason:** the one D137 named in advance, too few computation-correct A6b pairs for C3. No slope was shown
+    to be away from 0.
+- **Fix 1: the B-v2 projection's sleep held the queue lock** (`scripts/queue_xm2.sh`).
+  - **What happened:** `kill "$proj"` ended the projection subshell while it waited in `sleep 900`. The sleep was
+    orphaned with the queue lock's descriptor (fd 8), so `results/queue_xm2/queue.lock` was held from the chain's end
+    (08:31:28) until 08:33:45.
+  - **The effect:** none tonight. A queue started in that window would have exited with "already running".
+  - **The fix:**
+    - The projection starts with `8>&-`, so it never holds the lock.
+    - `stop_projection PID` ends it in three steps: SIGSTOP the subshell so it cannot start another sleep, SIGTERM its
+      children and itself, then SIGCONT and wait.
+  - **The test:** `tests/test_queue_xm2.py::test_stopping_the_projection_leaves_nothing_holding_the_queue_lock` checks
+    three things after a stop: the lock is free, the projection is gone, and no `sleep 900` is left.
+    - **Against the old pattern:** the orphan survived and kept the test's pipes open until the 120 s timeout, which
+      reproduces the bug.
+- **Fix 2: the guard's continue line named the same reading twice** (`scripts/gpu_temp_guard.sh`).
+  - **Before:** "(GPU at 64.40C <= 75C; GPU at 64.40C)".
+  - **After:**
+    - a pause that ended by cooling names its one reading;
+    - a pause that hit the maximum, or whose stage ended, still adds the reading at its end.
+  - The pause logic is unchanged.
+  - **The tests:** `tests/test_temp_guard.py` checks both forms.
+  - **Unaffected:** the chain's pause accounting reads only "stage continued after Ns".
+- **Not changed** (it is a display problem in analysis code, for your decision): `results/mc_b/a6b_pairs/summary.md`
+  labels its M5 row "MC-B's A6c slope", but the value is A6b's.

@@ -50,7 +50,7 @@ def _paused_s(log: str) -> list[int]:
 def test_a_pause_ends_at_the_first_reading_at_or_below_75_c(tmp_path):
     log, states = _guard(tmp_path, [(0, "88.10"), (2.5, "80.00"), (3.5, "75.00")], pause_s=30)
     assert "GPU at 88.10C > 87C: stage stopped (continues at <= 75C, after 30s at most)" in log
-    assert "GPU at 75.00C <= 75C" in log
+    assert re.search(r"stage continued after \d+s paused \(GPU at 75.00C <= 75C\)\n", log)  # one reading (D145)
     (paused,) = _paused_s(log)
     assert 1 <= paused <= 5  # not 30: 75.00 counts as cool
     assert any(s.startswith("T") for _, s in states)  # the group really was stopped
@@ -58,7 +58,7 @@ def test_a_pause_ends_at_the_first_reading_at_or_below_75_c(tmp_path):
 
 def test_a_pause_that_never_cools_lasts_the_maximum(tmp_path):
     log, _ = _guard(tmp_path, [(0, "88.10"), (2.0, "80.00")], pause_s=3, stage_s=6)
-    assert "the 3s maximum" in log
+    assert re.search(r"\(the 3s maximum; GPU at [0-9.]+C\)", log)  # the reading at the end of a pause that never cooled
     assert _paused_s(log)[0] == 3
 
 

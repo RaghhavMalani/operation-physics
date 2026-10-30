@@ -876,4 +876,15 @@ Progress:
 - [x] **Full test suite** (CPU, GPU idle): 696 passed, 3 failed.
   - **The 3 failures:** one structural disk-guard test on the library-mode queue scripts; 2 of them have failed since 28 Oct.
   - **After the test fix:** 699 passed, 0 failed (D144).
-- [ ] **Launch** `GPU_DEADLINE=13:00 scripts/queue_xm2.sh`; watch it; MORNING.md at the end.
+- [x] **Launch** `GPU_DEADLINE=13:00 scripts/queue_xm2.sh` (chain 35695, 02:18:47 → 08:31:28); watched; MORNING.md.
+  - [x] **Eval D-pos-v2 (Llama, s0) on frozen A6c + A6b:** 2,040 / 2,040, exit 0, first attempt (`2f0435f`).
+  - [x] **The go rule (D137 / D139): NO-GO.** K1 ✓, C2 ✓ (A6c slope +0.785 [+0.595, +0.974]); C3 ✗ (4 A6b pairs)
+    (`37d8723`).
+  - [x] **MC-B A6b (D132):** 87.7 % of programs fail; σ collapsed; it repeats A6c (`023bcfa`, `876f4ef`).
+  - [x] **SFT B-v2 (Llama, s0):** 750 / 750, exit 0, loss 0.155 (`f31dcc7`).
+  - [x] **Temperature (D143):** 16 pauses, 482 s, 2.2 % of GPU-stage time (28/29: 46 %).
+  - [x] **D145:** the projection's lock leak and the guard's log line fixed after the night, with tests.
+- [ ] **Next (your decisions, MORNING.md §4):**
+  - the NO-GO's consequence;
+  - B-v2's Llama eval and `xm_pilot` (~3.4 h of GPU);
+  - the MC-B A6b label fix.

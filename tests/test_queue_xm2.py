@@ -104,5 +104,25 @@ def test_the_projection_leaves_a_b2_run_that_can_finish(tmp_path):
     assert "B-v2 projection: 40 / 750 steps in 10:00" in log and "cannot finish" not in log
 
 
+def test_stopping_the_projection_leaves_nothing_holding_the_queue_lock(tmp_path):
+    # D145: the stopped projection's `sleep 900` lived on, holding the queue lock for minutes after the chain ended
+    q = tmp_path / "q"
+    q.mkdir()
+    stage = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    (q / "xm_train_b2.pid").write_text(str(stage.pid))
+    (q / "xm_train_b2.log").write_text("\r  5%|▌  | 40/750 [10:00<1:50:00]")
+    script = (f'exec 8>>"{q}/queue.lock"; flock -n 8 || exit 3; DEADLINE=$(( $(date +%s) + 5 * 3600 )); '
+              f'b2_projection {int(time.time()) - 1} 8>&- & proj=$!; sleep 3; stop_projection "$proj"; '
+              f'kill -0 "$proj" 2>/dev/null && echo ALIVE; exec 8>&-; '
+              f'flock -n "{q}/queue.lock" true && echo FREE; pgrep -f "^sleep 900$" >/dev/null && echo SLEEP_LEFT; true')
+    try:
+        r = _lib(tmp_path, script, PROJ_FIRST_S="0", PROJ_EVERY_S="900", SLACK_S="0", B2_TAIL_S="600")
+    finally:
+        stage.kill()
+        stage.wait()
+    assert "B-v2 projection: 40 / 750 steps" in (q / "chain.log").read_text()  # it ran, then slept 900 s
+    assert "FREE" in r.stdout and "ALIVE" not in r.stdout and "SLEEP_LEFT" not in r.stdout, r.stdout + r.stderr
+
+
 def test_the_queue_is_executable():
     assert os.access(SCRIPTS / "queue_xm2.sh", os.X_OK)

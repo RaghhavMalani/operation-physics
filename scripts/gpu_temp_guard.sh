@@ -36,7 +36,8 @@ while kill -0 "$pg" 2>/dev/null; do
         if cooled "$r"; then why="GPU at ${r}C <= ${RESUME_C}C"; break; fi
       done
       kill -CONT -- "-$pg" 2>/dev/null
-      glog "stage continued after $(( $(date +%s) - t0 ))s paused ($why; GPU at $(temp)C)"
+      case $why in GPU*) ;; *) why="$why; GPU at $(temp)C" ;; esac  # a cooled pause already names its reading (D145)
+      glog "stage continued after $(( $(date +%s) - t0 ))s paused ($why)"
     else
       glog "GPU at ${t}C > ${MAX_C}C, but process group $pg could not be stopped"
     fi
