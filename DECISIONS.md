@@ -5589,3 +5589,193 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **The FINDINGS count** in §5 is the highest number, 39 (#13's header has no period).
 - **References:** only the ones the drafted sections cite, each a well-known paper or software. The related-work list
   in the outline waits for verification (R5-10).
+
+## 2026-10-31 night: an exploratory track for a follow-up project, not this paper (your instructions at ~01:00 IST; GPU deadline 11:00 IST)
+
+### D151. Plan and analysis rules of the follow-up feasibility track (three items), recorded before any of its data exists. EXPLORATORY (2026-10-31, ~01:40 IST)
+- **Status.** Exploratory, for a follow-up project. No hypothesis is pre-registered and nothing here is confirmatory.
+  - **D148's freeze applies to the paper.** No result from this track enters `paper/`, FINDINGS.md or the paper's
+    tables. The frozen sets and the confirmatory logs are read and never written.
+  - **Outputs:** `results/followup/<item>/` and `docs/exploratory/followup_feasibility.md`.
+  - **Rules stated here before any data.** Every later change gets its own D-entry, with the reason.
+- **Resources.**
+  - **CPU (items 1, 2):** 1 thread (OMP/OPENBLAS/MKL = 1), nice 19, while the GPU runs (D97).
+  - **GPU (item 3):** `scripts/queue_followup.sh`, deadline 11:00 IST. It has:
+    - D142-style resumable stages: every finished chunk is on disk, and a restart does only the missing ones;
+    - the temperature guard (D143), the stall watchdog (D132) and the free-space guard (D111);
+    - a launch cap of total − host − 0.5 GiB;
+    - a commit + push after every stage.
+- **Item 1: uncertainty-guided test-time compute** (offline, `physcal/eval/followup_ttc.py`; CPU).
+  - **Data:** X2's k = 8 sampled completions (`results/x2/sft_k8/chunk_*`: 1,200 candidates, the corrected SFT 1.5B,
+    T = 1). There is no new generation.
+  - **Answers** are X2's (`x2_pairs.answer`): a parse failure or unit mismatch is not an answer. Correct means
+    |relative error| ≤ 1%.
+  - **Agreement:** |μ_j / μ_i − 1| ≤ 1% in SI. For μ_i = 0 it means μ_j = 0 exactly.
+  - **The majority answer** of the drawn samples:
+    - the parsed answer with the most agreeing parsed answers among those drawn, itself included;
+    - ties go to the earliest drawn;
+    - no parsed answer means no answer, which is scored wrong.
+  - **Cost:** completion tokens of the drawn samples (`n_tokens`). The prompt is shared and is not counted. The mean
+    number of samples is reported beside it.
+  - **Draw order:** the k samples are exchangeable. Every quantity is the mean over R = 200 random orders per problem
+    (numpy default_rng, seed 0 + pool index). The fixed order 0..7 is reported as a check.
+  - **Fixed-k majority voting:** k = 1..8 on the same orders. That is the baseline curve.
+  - **Adaptive policies** (the whole grid, fixed now):
+    - **A** (your example): draw 2. If both parse and agree, stop with that answer. Otherwise draw the other 6 and take
+      the majority of 8.
+    - **B_c**, c ∈ {2, 3, 4}: draw 2, then one at a time, and stop as soon as some answer has ≥ c votes, or at 8. The
+      answer is the majority.
+    - **C** (no-loss stop, adaptive-consistency style): draw one at a time from 1. Stop once the leading answer's votes
+      exceed the runner-up's votes plus the samples left (8 − drawn). The answer is the majority.
+    - **D_q**, q ∈ {0.25, 0.5, 0.75}, the stated-σ gate:
+      - draw 1, and stop if its stated relative σ ≤ the q-quantile of first-sample stated σ on the selection half;
+      - otherwise continue as B_2;
+      - a sample with no stated σ continues.
+  - **The primary quantity:** the matched-accuracy token saving S_P = 1 − T_P / T_fix(acc_P).
+    - T_fix(a) is the token cost at which the fixed-k curve reaches accuracy a.
+      - The curve is made monotone first: the running maximum of accuracy over k.
+      - T_fix is then a linear interpolation in (tokens, accuracy).
+    - If acc_P is above the curve's maximum, T_fix is the cost of the first k that reaches the maximum. S_P is then
+      flagged as a lower bound.
+    - If acc_P is below acc(k = 1), S_P = 1 − T_P / T_1, flagged.
+  - **Selection vs evaluation (one split, fixed now):** problem i is in the selection half iff the first byte of
+    SHA-256("followup-ttc|" + seed) is even.
+    - The headline is the policy with the largest S_P on the selection half.
+    - It is reported on the evaluation half: S_P, accuracy minus majority@8, and tokens relative to majority@8.
+    - The CIs are a bootstrap over the evaluation half's problems (B = 10,000, seed 0). Each replicate recomputes the
+      fixed-k curve.
+  - **Every policy is also reported on all 1,200 problems**, labelled in-sample: accuracy, tokens, samples, Δ accuracy
+    and token ratio vs majority@8, and S_P. Bootstrap CIs are over problems.
+  - **MC-A's raw spread as a stopping rule** (secondary, descriptive; the only sets where it exists):
+    - **Data:** `results/mc_a/{a6c,a6,a6b}_pairs` (B-v2 seed 0; run 0 = its eval completion; re-asks j = 1..8 on
+      perturbed inputs).
+    - **There is no "majority answer" here:** each re-ask answers a perturbed problem. So the policy delivers run 0's μ
+      and the raw spread as its uncertainty.
+    - **The quantity:** MC-A's AUROC for "run 0 not computation-correct" (τ = 10⁻³, `mc_a.auroc`), against the mean
+      re-ask tokens. The raw spread is SD (ddof 1) of ln μ over the valid re-asks drawn, and 0 (the floor) below 2.
+    - **The baseline:** fixed k = 2..8 re-asks.
+    - **The rule:** draw 2 re-asks. Stop if their raw spread ≤ θ, otherwise draw all 8. θ ∈ the {0.25, 0.5, 0.75}
+      quantiles of the k = 2 spread on the selection half (the same hash split).
+    - **Reported:** the matched-AUROC saving, as S_P with AUROC in place of accuracy.
+    - **Sets:** A6c is the set the rule is selected and reported on; A6 and A6b get the same θ, descriptively.
+    - **CIs:** a cluster bootstrap over pairs (B = 10,000, seed 0); the AUROC is recomputed in each replicate.
+- **Item 2: exact arithmetic on the model's own lines** (offline, `physcal/eval/followup_arith.py`; CPU).
+  - **Data:** D-pos-v2 seeds 0–2 on the frozen R4-5 set (`results/stage_r4/dpos2/seed*/confirmatory/`), read with
+    `PHYSCAL_CONFIRMATORY=1`, and nothing written there.
+  - **Kept apart from FINDINGS #35:** those were oracle swaps (the builder's exact values). Here nothing comes from the
+    builder. It is a calculator on the model's own text.
+  - **The model's values:** from the completion before `<steps>`.
+    - Every `name = … = v unit` line counts: each `;`-part of the "SI values:" line and every derivation line. S_* and
+      sigma_rel lines do not.
+    - v is the leading number of the last `=`-part.
+    - A later definition overrides an earlier one.
+  - **Re-evaluation:**
+    - **The formula:** each S line's formula (its first `=`-part) is evaluated with `r5_diag.safe_eval` (a restricted
+      arithmetic AST, never Python eval; exponents ≤ 12) at the model's values.
+    - **A constant S line** (one part) keeps its value.
+    - **A formula that does not evaluate** (unknown name, syntax) keeps the model's written S value, and is counted.
+    - **Matching:** the σ line's j-th term is matched to the j-th S line in order of appearance. If the counts
+      differ, the problem keeps (a).
+    - **Levels** are the σ line's own (exact levels change nothing, #35).
+  - **Variants:**
+    - **(a)** as stated. The anchor: it must reproduce #35's −0.0397.
+    - **(c)** the model's written terms, exact aggregation and copy. The anchor: it must reproduce #35's −0.0417.
+    - **E (primary):** re-evaluated S values, exact root-sum-square, exact copy: σ_rel = X′.
+    - **E_S (secondary):** re-evaluated S values, with the model's own aggregation and copy factors kept:
+      σ = σ_a · rss(S′) / rss(own).
+    - **E_chain (secondary):**
+      - the intermediates are also re-derived exactly, from the model's own derivation formulas in order, starting at
+        its SI values of the givens;
+      - then the S formulas are evaluated at those values;
+      - aggregation and copy are exact.
+  - **Problems that do not decompose** (no parsable σ line, zero line, no answer σ) keep (a) in every variant.
+  - **Scores, as #35:**
+    - the oracle-centred expected crps_log (problems with predictive draws), seed mean;
+    - differences vs (a), RSS and X1, by `RC.seed_mean_diff` (the cluster bootstrap over pairs, B = 10,000);
+    - the A6c slope by `RC.seed_mean_slope` (every pair, unanswered at the floor: R5-3's convention);
+    - by depth;
+    - the share of terms re-evaluated, and the share of problems whose σ moves by more than 25%.
+  - **Reading (descriptive):**
+    - "exact arithmetic helps" if E − (a) has a 95% CI above 0;
+    - "beats RSS / X1" likewise for E − RSS and E − X1;
+    - no Holm, and every variant is reported.
+- **Item 3: scale check of the epistemic wall** (GPU, `physcal/eval/followup_scale.py`; inference only).
+  - **The model:** `unsloth/Qwen2.5-Math-7B-Instruct-bnb-4bit` at revision `2ab7fb373c247ef5933d034f016efefc66608458`,
+    in the repo-local HF cache, loaded offline.
+    - The content hash of its weights (`fingerprint._dir_content_hash`) is recorded at the first load.
+    - Nothing is trained.
+  - **The native format:**
+    - **System:** "Please reason step by step, and put your final answer within \\boxed{}." (Qwen2.5-Math's documented
+      chain-of-thought prompt).
+    - **User:** the X2 problem text with its `<steps>` sentence removed (`render.STEPS_TEMPLATES` /
+      `NO_STEPS_TEMPLATES`). The question sentence, with its unit, stays.
+    - **The model's chat template.**
+  - **Decoding:** X2's (T = 1.0, top_p = 1.0, top_k = 0, k = 8 per problem), max_new_tokens 1,024 (native
+    chain-of-thought is longer than our format), torch seed 0 + chunk index.
+  - **a. Feasibility first** (`feasibility`):
+    - **Problems:** the pool's last 12 candidates (indices 1,188–1,199, one per cell). They are used only for
+      feasibility and for checking the parser, and are never analyzed.
+    - **Measured:** peak reserved memory under the cap, a batch that fits (k = 8 sequences of one problem; 2 problems
+      if it fits), and s / problem.
+    - **If the model cannot run under the cap** (OOM at k = 8 with embeddings on the GPU and with them on the CPU), or
+      a problem takes more than 120 s: stop and report. No main stage then.
+  - **b. Sampling** (`sample`):
+    - **The order:** X2's frozen pool, in chunks of 24 candidates (2 per cell), each chunk its own file.
+    - **The subset** is the completed prefix, so it is stratified at chunk granularity.
+    - **When sampling stops:** at T_stop = deadline − (estimated 7B readout time for the expected mixed answers × 1.5)
+      − (the 1.5B control's estimate) − 20 min. The estimates come from feasibility and are logged.
+  - **The answer:**
+    - **What is read:** the content of the last `\boxed{…}` (balanced braces). A missing box or a truncation means no
+      answer.
+    - **The number:**
+      - the first number, with an optional `\times 10^{n}` / `e` exponent;
+      - `,` thousands separators are removed;
+      - a bare `\frac{a}{b}` of numbers is evaluated.
+    - **The unit:**
+      - any remaining unit text that pint parses is converted to the requested unit;
+      - a dimension mismatch means no answer;
+      - with no unit, the requested unit is assumed.
+    - **Correct:** within 1% of `target_value` in the requested unit.
+    - **Before the main run:** the parser is checked only on the 12 feasibility problems' completions. Any fix gets a
+      D-entry before the main stage starts.
+  - **Kept:** problems with ≥ 1 correct and ≥ 1 incorrect answer (X2's rule).
+  - **c. Readouts on the kept answers** (`readout`):
+    - **(i) Self-consistency:** the share of the other 7 samples within 1% (`x2_robustness` definition). CPU.
+    - **(ii) Direct P(yes),** X4's `direct` arm:
+      - the conversation is system, problem, the answer's completion as the assistant turn, then a user turn;
+      - the user turn is X4's `x4_v1` with "your <answer>" replaced by "your \\boxed{}" (SHA-256 recorded);
+      - then the generation prompt + "Verdict:", with no generation;
+      - the confidence is the yes-vs-no log-odds of the next token, from X4's token lists through a float32 head.
+    - **(iii) Hidden-state probe, cross-fitted as X2's secondary probe:**
+      - **The state:** every layer at the token holding the closing brace of the last `\boxed{}`. Its input holds the
+        whole answer, the analogue of X2's "±" position.
+      - **The fit:** 5 folds grouped by problem; (layer, C ∈ {0.001, 0.01, 0.1, 1}) chosen by inner grouped CV on the
+        training part, then refit (`x2_analysis.crossfit_confidence`).
+      - **When:** CPU, after the GPU queue, with X2's settings (4 jobs).
+      - **If all 29 layers cannot finish by the report,** the even layers are used, and that is stated.
+      - **No random-init control** (GPU time). This is a stated limit: on X2 the random-init probe was within noise of
+        the real one.
+    - **Length only** (shorter = more confident) as the surface reference (#22).
+  - **The metric:** X2's within-problem pairwise accuracy (ties 0.5), mean over kept problems, with a bootstrap over
+    problems (B = 10,000, seed 0).
+  - **The 1.5B comparison:**
+    - **(1) The published X2 / #22 numbers:** SC 0.643, X4 direct 0.526, cross-fitted probe 0.540, length 0.535. These
+      are the SFT 1.5B in our format on its 516 kept problems.
+    - **(2) The same, restricted to the same pool prefix:** SC, X4 direct and length are recomputed from the existing
+      rows. The probe's per-answer values come from a re-run of X2's cross-fit, if X2's settings reproduce 0.540;
+      otherwise the probe is missing.
+    - **(3) The control (if time allows after the 7B stages):** the untrained Qwen2.5-Math-1.5B-Instruct (D78's pinned
+      4-bit base) in the same native format, on the same prefix, with the same three readouts. It separates scale
+      from format and SFT.
+  - **Differences:**
+    - 7B − 1.5B by an independent bootstrap over each model's kept problems (unpaired; the kept sets differ);
+    - on the problems kept by both, a paired bootstrap (secondary).
+  - **Reading (descriptive):**
+    - **"The wall moves with scale"** if a single-sample readout of the 7B ((ii) or (iii)) exceeds the native 1.5B's,
+      or failing that the SFT 1.5B's, with a CI excluding 0.
+    - **Whether self-consistency still leads** is reported either way.
+- **The write-up:** `docs/exploratory/followup_feasibility.md`, with honest caveats:
+  - item 1 is in-sample on the full set, with prior art (adaptive-consistency / early-stopping self-consistency);
+  - item 2 is one model;
+  - item 3 has one prompt, no random-init control, a subset, and a different format from X2.
+  - **MORNING.md** comes at the end.
