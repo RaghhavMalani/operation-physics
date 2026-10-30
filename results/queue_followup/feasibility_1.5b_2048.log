@@ -1,0 +1,172 @@
+W1030 20:50:49.307000 258241 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1030 20:50:49.360000 258241 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  14%|█▍        | 47/338 [00:00<00:00, 465.43it/s]Loading weights:  28%|██▊       | 94/338 [00:00<00:00, 377.81it/s]Loading weights:  41%|████▏     | 140/338 [00:00<00:00, 407.35it/s]Loading weights:  61%|██████    | 205/338 [00:00<00:00, 491.48it/s]Loading weights:  80%|████████  | 272/338 [00:00<00:00, 549.55it/s]Loading weights:  97%|█████████▋| 328/338 [00:00<00:00, 434.51it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 455.34it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+Both `max_new_tokens` (=2048) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 8/8  (23s)
+  dev 1188 (kinematics d1): 23.4s, tokens [422, 356, 310, 630, 517, 420, 423, 337], correct [False, False, False, False, False, False, False, False]
+Both `max_new_tokens` (=2048) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 8/8  (67s)
+  dev 1189 (kinematics d2): 67.1s, tokens [1766, 1776, 1298, 1578, 1015, 1203, 1301, 1859], correct [False, False, False, False, False, False, False, False]
+Both `max_new_tokens` (=2048) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 8/8  (46s)
+  dev 1190 (kinematics d3): 46.2s, tokens [808, 1062, 830, 480, 1236, 1003, 1045, 560], correct [False, False, False, False, False, False, False, False]
+{
+ "decision": "D151 item 3a (exploratory); D153 (2048)",
+ "identity": {
+  "model": "1.5b",
+  "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+  "revision": "e24e9530845f4e3a6648343796883cb509935039",
+  "content_sha256": "9939448b3a0fbe45"
+ },
+ "cap_gib": 6.7,
+ "dev_indices": [
+  1188,
+  1200
+ ],
+ "generation": {
+  "k": 8,
+  "temperature": 0.7,
+  "top_p": 0.8,
+  "top_k": 20,
+  "repetition_penalty": 1.0,
+  "max_new_tokens": 2048,
+  "seed": 0,
+  "batch_size": 8
+ },
+ "n_problems": 3,
+ "load_s": 19.177236557006836,
+ "after_load_reserved_gib": 1.115234375,
+ "peak_reserved_gib_batch8": 2.328125,
+ "oom_backoffs_batch8": 0,
+ "by_problem": [
+  {
+   "index": 1188,
+   "family": "kinematics",
+   "depth": 1,
+   "seconds": 23.387558937072754,
+   "tokens": [
+    422,
+    356,
+    310,
+    630,
+    517,
+    420,
+    423,
+    337
+   ],
+   "correct": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "index": 1189,
+   "family": "kinematics",
+   "depth": 2,
+   "seconds": 67.0733323097229,
+   "tokens": [
+    1766,
+    1776,
+    1298,
+    1578,
+    1015,
+    1203,
+    1301,
+    1859
+   ],
+   "correct": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "index": 1190,
+   "family": "kinematics",
+   "depth": 3,
+   "seconds": 46.17209553718567,
+   "tokens": [
+    808,
+    1062,
+    830,
+    480,
+    1236,
+    1003,
+    1045,
+    560
+   ],
+   "correct": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  }
+ ],
+ "dev_summary": {
+  "n": 24,
+  "answered": 24,
+  "correct": 0,
+  "truncated": 0,
+  "reasons": {
+   "ok_no_unit": 24
+  },
+  "tokens_mean": 926.4583333333334,
+  "tokens_max": 1859
+ },
+ "yes_s_per_answer": 0.14488831162452698,
+ "yes_check": {
+  "path": "float32_head",
+  "relative_gap": 0.0024022883735597134,
+  "argmax_agree": true,
+  "vocab": 151936,
+  "verify_sha256": "e2e0063bef8e59b5ec3caee0906d7d30a6a9217dd8dff5940c4319d4f5fd396d"
+ },
+ "yes_sample": [
+  3.402,
+  3.66,
+  3.526,
+  3.389,
+  3.887,
+  4.127,
+  3.712,
+  3.744
+ ],
+ "hidden_s_per_answer": 0.1229134202003479,
+ "hidden_check": {
+  "returned_states": true,
+  "n_states": 29,
+  "relative_gap": {
+   "as_returned": 0.000722543352601156,
+   "normed": 0.1791907514450867
+  },
+  "best": "as_returned",
+  "argmax_agree": true
+ },
+ "hidden_layers": 29,
+ "peak_reserved_gib_readouts": 2.541015625,
+ "seconds": 157.9540913105011
+}

@@ -1,0 +1,157 @@
+{
+ "decision": "D151 item 3a (exploratory); D153 (2048)",
+ "identity": {
+  "model": "1.5b",
+  "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+  "revision": "e24e9530845f4e3a6648343796883cb509935039",
+  "content_sha256": "9939448b3a0fbe45"
+ },
+ "cap_gib": 6.7,
+ "dev_indices": [
+  1188,
+  1200
+ ],
+ "generation": {
+  "k": 8,
+  "temperature": 0.7,
+  "top_p": 0.8,
+  "top_k": 20,
+  "repetition_penalty": 1.0,
+  "max_new_tokens": 2048,
+  "seed": 0,
+  "batch_size": 8
+ },
+ "n_problems": 3,
+ "load_s": 19.177236557006836,
+ "after_load_reserved_gib": 1.115234375,
+ "s_per_problem_batch8": [
+  23.387558937072754,
+  67.0733323097229,
+  46.17209553718567
+ ],
+ "peak_reserved_gib_batch8": 2.328125,
+ "oom_backoffs_batch8": 0,
+ "by_problem": [
+  {
+   "index": 1188,
+   "family": "kinematics",
+   "depth": 1,
+   "seconds": 23.387558937072754,
+   "tokens": [
+    422,
+    356,
+    310,
+    630,
+    517,
+    420,
+    423,
+    337
+   ],
+   "correct": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "index": 1189,
+   "family": "kinematics",
+   "depth": 2,
+   "seconds": 67.0733323097229,
+   "tokens": [
+    1766,
+    1776,
+    1298,
+    1578,
+    1015,
+    1203,
+    1301,
+    1859
+   ],
+   "correct": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  },
+  {
+   "index": 1190,
+   "family": "kinematics",
+   "depth": 3,
+   "seconds": 46.17209553718567,
+   "tokens": [
+    808,
+    1062,
+    830,
+    480,
+    1236,
+    1003,
+    1045,
+    560
+   ],
+   "correct": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ]
+  }
+ ],
+ "dev_summary": {
+  "n": 24,
+  "answered": 24,
+  "correct": 0,
+  "truncated": 0,
+  "reasons": {
+   "ok_no_unit": 24
+  },
+  "tokens_mean": 926.4583333333334,
+  "tokens_max": 1859
+ },
+ "yes_s_per_answer": 0.14488831162452698,
+ "yes_check": {
+  "path": "float32_head",
+  "relative_gap": 0.0024022883735597134,
+  "argmax_agree": true,
+  "vocab": 151936,
+  "verify_sha256": "e2e0063bef8e59b5ec3caee0906d7d30a6a9217dd8dff5940c4319d4f5fd396d"
+ },
+ "yes_sample": [
+  3.402,
+  3.66,
+  3.526,
+  3.389,
+  3.887,
+  4.127,
+  3.712,
+  3.744
+ ],
+ "hidden_s_per_answer": 0.1229134202003479,
+ "hidden_check": {
+  "returned_states": true,
+  "n_states": 29,
+  "relative_gap": {
+   "as_returned": 0.000722543352601156,
+   "normed": 0.1791907514450867
+  },
+  "best": "as_returned",
+  "argmax_agree": true
+ },
+ "hidden_layers": 29,
+ "peak_reserved_gib_readouts": 2.541015625,
+ "seconds": 157.9540913105011
+}

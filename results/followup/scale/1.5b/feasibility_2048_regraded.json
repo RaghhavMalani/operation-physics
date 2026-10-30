@@ -1,0 +1,27 @@
+{
+ "decision": "D154: dev completions re-graded with the after-box unit rule (dev only, never analyzed)",
+ "n": 24,
+ "answered": 24,
+ "correct": 3,
+ "reasons": {
+  "ok_no_unit": 17,
+  "ok_unit_after_box": 7
+ },
+ "by_problem": {
+  "1188": {
+   "correct": 3,
+   "answered": 8,
+   "mixed": true
+  },
+  "1189": {
+   "correct": 0,
+   "answered": 8,
+   "mixed": false
+  },
+  "1190": {
+   "correct": 0,
+   "answered": 8,
+   "mixed": false
+  }
+ }
+}

@@ -41,6 +41,16 @@ def test_grade_counts_truncation_and_missing_box_as_no_answer():
     assert FS.grade(p, "10 m", False, 0.01)["reason"] == "no_box"
 
 
+def test_grade_reads_a_unit_right_after_the_box():
+    p = {"target_value": 9574.4, "target_unit": "ms"}
+    g = FS.grade(p, r"Thus \(\boxed{9.55}\) seconds.", False, 0.01)
+    assert g["reason"] == "ok_unit_after_box" and math.isclose(g["value"], 9550.0) and g["correct"] is True
+    assert FS.grade(p, "\\boxed{9.55} \\]\nThe answer is in seconds.", False, 0.01)["reason"] == "ok_no_unit"
+    assert FS.grade(p, r"\boxed{9570} and so on", False, 0.01)["reason"] == "ok_no_unit"
+    km = {"target_value": 0.2295, "target_unit": "km"}
+    assert math.isclose(FS.grade(km, r"\boxed{237.0} \, \text{m} \]", False, 0.01)["value"], 0.237)
+
+
 def test_native_text_drops_every_steps_sentence():
     for t in ("What is v? Give your answer in m/s. Your <steps> must include the intermediate values t1, t3.",
               "What is v? Give your answer in m/s. Show your calculation first; no intermediate values need to be "

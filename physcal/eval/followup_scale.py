@@ -147,12 +147,33 @@ def parse_boxed(content: str, target_unit: str) -> dict:
     return {"value": conv, "reason": "ok_converted", "unit_text": rest}
 
 
+def unit_after_box(completion: str, brace: int, target_unit: str) -> tuple[float, str] | None:
+    """D154: a unit written right after the box on the same line (`\\boxed{9.55}\\) seconds.`): the factor to the
+    requested unit and the text, if pint parses it with the right dimensions; anything else is ignored (None)."""
+    from physcal.env.units import ureg
+
+    tail = _clean(completion[brace + 1:].split("\n", 1)[0].replace("\\)", " ").replace("\\]", " "))
+    tail = tail.replace("{", "").replace("}", "").replace("\\", "").strip().rstrip(".,;:").strip()
+    if not tail:
+        return None
+    tu = ureg.parse_units(target_unit) if target_unit else ureg.dimensionless
+    for cand in (tail, tail.split()[0]):
+        try:
+            return float((1.0 * ureg.parse_units(cand.replace(" ", ""))).to(tu).magnitude), cand
+        except Exception:
+            continue
+    return None
+
+
 def grade(problem: dict, completion: str, truncated: bool, tol: float) -> dict:
-    """One completion: the parsed value in the requested unit, correctness (within `tol`), the box's closing brace."""
+    """One completion: the parsed value in the requested unit, correctness (within `tol`), the box's closing brace.
+    D154: with no unit inside the box, a unit right after it (same line) is used."""
     box = last_boxed(completion)
     if truncated or box is None:
         return {"value": None, "reason": "truncated" if truncated else "no_box", "correct": None, "brace": None}
     p = parse_boxed(box[0], problem["target_unit"])
+    if p["reason"] == "ok_no_unit" and (after := unit_after_box(completion, box[1], problem["target_unit"])):
+        p = {"value": p["value"] * after[0], "reason": "ok_unit_after_box", "unit_text": after[1]}
     if p["value"] is None:
         return {**p, "correct": None, "brace": box[1]}
     t = problem["target_value"]
@@ -273,6 +294,29 @@ def feasibility(model: str, cap: float, cfg: dict | None = None, max_new_tokens:
     res["seconds"] = time.time() - t0
     (out / f"feasibility{tag and '_' + tag}.json").write_text(json.dumps(res, indent=1, default=str))
     print(json.dumps({k: v for k, v in res.items() if k not in ("s_per_problem_batch8",)}, indent=1, default=str))
+    return res
+
+
+def regrade_feasibility(model: str, tag: str, cfg: dict | None = None) -> dict:
+    """D154: the dev completions of a feasibility run graded again with the current parser (dev only, descriptive)."""
+    cfg = cfg or _config()
+    probs = pool(cfg)
+    out = out_dir(model, cfg)
+    rows = [json.loads(line) for line in (out / f"feasibility{tag and '_' + tag}_completions.jsonl").open()]
+    for r in rows:
+        r.update(grade(probs[r["index"]], r["completion"], r["truncated"], cfg["scale"]["tolerance"]))
+    by = {}
+    for r in rows:
+        by.setdefault(r["index"], []).append(r)
+    res = {"decision": "D154: dev completions re-graded with the after-box unit rule (dev only, never analyzed)",
+           "n": len(rows), "answered": sum(r["value"] is not None for r in rows),
+           "correct": sum(bool(r["correct"]) for r in rows),
+           "reasons": {k: sum(r["reason"] == k for r in rows) for k in sorted({r["reason"] for r in rows})},
+           "by_problem": {str(i): {"correct": sum(bool(r["correct"]) for r in rs),
+                                   "answered": sum(r["value"] is not None for r in rs),
+                                   "mixed": any(r["correct"] is True for r in rs) and any(r["correct"] is False for r in rs)}
+                          for i, rs in by.items()}}
+    (out / f"feasibility{tag and '_' + tag}_regraded.json").write_text(json.dumps(res, indent=1))
     return res
 
 

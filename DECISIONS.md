@@ -5842,3 +5842,39 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - a cloud GPU or a faster inference stack (e.g. vLLM with AWQ / GPTQ kernels instead of bitsandbytes);
   - or a format with short answers (which would need SFT);
   - and the N reachable per night on the 4060.
+
+### D154. Item 3's answer parser reads a unit written right after the box; found by D151's development-only parser check. Plus the night's GPU outcome and one process fault (2026-10-31, ~02:30 IST)
+- **The gap:** the native 1.5B writes its unit after the box, e.g. `\(\boxed{9.55}\) seconds.`, often in another unit
+  than the one requested. D151's rule only read units inside the box, so it assumed the requested unit (ms here).
+  The 7B does the same occasionally (`\boxed{27.0} \text{ s} \]`, `\boxed{0.24} \] km.`).
+- **The fix (`grade` → `unit_after_box`):**
+  - with no unit inside the box, the text after it on the same line is cleaned (`\)`, `\]`, `\text{}`, trailing
+    punctuation) and parsed by pint, whole or by its first word;
+  - with matching dimensions, the value is converted;
+  - anything else after the box is ignored, i.e. it never rejects an answer.
+- **Tests:** `tests/test_followup.py` (15).
+- **Re-graded development completions** (`feasibility_2048_regraded.json`; development only, never analyzed):
+  - **7B:** unchanged. 13 of 20 answered correct; 4 answers had their unit after the box. All 3 development problems
+    have right and wrong answers.
+  - **Native 1.5B:** 0 → 3 of 24 correct. Its other answers are wrong in value, or a bare number in the wrong unit.
+- **The night's GPU outcome** (D153's development-only measurement, 3 problems: kinematics at depths 1–3):
+  - **7B at 2,048 tokens:**
+    - 277 / 474 / 852 s per problem;
+    - batch 8 runs out of memory at the full budget: at depth 2 it halves to 2 × 4, and at depth 3 the first half
+      splits again into 2 × 2;
+    - the peak reserved is 6.70 GiB at the 6.7 cap;
+    - complete answers take 347–808 / 1,117–1,559 / 1,050–1,862 tokens, and 4 of 24 samples run to 2,048;
+    - readouts take 0.89 s (P(yes)) and 0.81 s (29 layers) per answer;
+    - both logit checks pass (gaps 0.0024, 0.0008).
+  - **Native 1.5B at 2,048 tokens:** 23 / 67 / 46 s per problem, with no OOM (peak 2.33 GiB). Readouts take 0.14 /
+    0.12 s per answer.
+- **A process fault of mine (no consequence tonight):**
+  - **The cause:** the hand-launched feasibility runs used `timeout … setsid uv run …`. `setsid` put Python in its
+    own process group, while `gpu_temp_guard.sh` and `stall_guard.sh` watched `timeout`'s group. A pause would have
+    stopped only `timeout`.
+  - **Found** at 02:15 IST during the third 7B run; the guard was re-pointed at Python's group.
+  - **The effect:** the GPU peaked at 84.3 °C, below 87 °C, so no pause was ever due.
+  - **The queue scripts are not affected:** `run_stage` runs `timeout CMD`, which leads the group the guards watch.
+  - **The last run (the 1.5B)** was launched without `setsid`, and the guards' group was checked.
+- **There is no further GPU work tonight.** D153 stopped the main stage, the measurement is done, and the brief has no
+  other GPU item. `scripts/queue_followup.sh` (tested, unused) is kept for a future run.

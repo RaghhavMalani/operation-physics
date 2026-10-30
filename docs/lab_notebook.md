@@ -577,3 +577,37 @@ Brief (your message, ~10:00 IST):
   - The result: 16 pages, no overfull boxes, no undefined references.
   - The build is byte-reproducible: the same md5 for headline.pdf over two builds.
 - **`tests/test_paper.py`:** 11 passed.
+
+## 2026-10-31 night: the exploratory follow-up track (your instructions at ~01:00 IST; D151–D153; not the paper)
+
+### ~01:00–01:15 the plan before any data
+- **The pinned 7B mirror:** `unsloth/Qwen2.5-Math-7B-Instruct-bnb-4bit` @ `2ab7fb37…`, 5.55 GB. It was downloaded into
+  the repo-local HF cache in 6 min. A download is not data.
+- **D151** (the plan and every analysis rule for the three items) was pushed as `a8938c7` before anything ran.
+
+### ~01:15–01:35 item 1 and item 2 (CPU, 1 thread, nice 19)
+- **Item 1, X2 adaptive sampling** (`followup_ttc x2`, ~5 min):
+  - majority@8 0.382 vs one sample 0.339;
+  - D75 (the stated-σ gate) is the selection-half winner. Evaluation half: matched saving +0.21 [+0.12, +0.30], at
+    −3.6 points vs majority@8.
+- **Item 1, MC-A two-stage spread** (`followup_ttc mc_a`): it reproduces #37's 0.638 / 0.710 / 0.745. The two-stage
+  rule loses AUROC on all sets.
+- **Item 2** (`followup_arith`, ~6 min):
+  - the anchors (a) and (c) reproduce #35 to 4 decimals;
+  - E − (a) = −0.0016 [−0.0034, −0.0003];
+  - E_chain ≈ (a).
+
+### ~01:20–01:40 item 3 on the GPU
+- **First feasibility, X2's decoding (T = 1):** dev 1188 took 140 s, with 7 of 8 samples at the 1,024 cap and a sample
+  that switched to Chinese mid-solution. Stopped.
+  - **A false alarm on the way:** display math looked missing from the decoded text. It was my own `grep -v '^ *\\'`
+    filter on the debug output; the raw ids decode correctly.
+- **D152:** the decoding becomes Qwen's documented sampling (T 0.7, top_p 0.8, top_k 20) for the 7B and the control.
+- **Second feasibility:**
+  - dev 1188: 139 s (one sample at the cap);
+  - dev 1189: 155 s (7 of 8 at the cap);
+  - a 2-sample check shows legitimate long derivations, still in phase 3 of 4 at 1,024 tokens.
+- **D153:** D151's 120 s / problem rule fires, so there is no main stage. A development-only run at 2,048 tokens
+  (12 problems) and the native 1.5B on the same problems size a future run.
+- **Memory** fits under the 6.7 GiB cap. The rate is ~6.6 decoding steps / s at batch 8 (bitsandbytes dequantizes on
+  every step).
