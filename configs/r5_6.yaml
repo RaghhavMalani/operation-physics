@@ -1,0 +1,13 @@
+# R5-6 part J (DECISIONS.md D147, pre-registered): the one-time analysis of D-pos-v2 and B-v2 (seeds 0-2) on the
+# frozen J set (physcal/eval/r5_6.py; CPU only). The estimators, bootstrap and criteria are R4-3's (stage_r4.yaml's
+# `analysis`); the arms, seeds and eval subdir are stage_r4.yaml's `r5_6`.
+stage_r4_config: stage_r4
+set_subdir: confirmatory/r5_6          # data/eval_sets/<generator_version>/<this>/{a6b,a6c}_pairs.jsonl
+pair_sets: [a6b_pairs, a6c_pairs]      # J invariance (A6b's place), J sensitivity (A6c's place)
+x1_predictions: results/x1_text_sigma/r5_6/predictions.jsonl   # D147 §7 (x1_a6c r5_6, D99's refit)
+x1_reproduction: results/x1_text_sigma/r5_6/reproduction.json
+r4_context: results/stage_r4/confirmatory/results.json         # D147 §10: R4-3's depths 1-4 slopes, context only
+output_dir: results/r5_6               # results.json, summary.md, pair_distances.jsonl
+primary_criteria: [J1, C2, C3]         # D147 §8 (R4-3's criterion, as D125)
+splits:                                # D147 §10, outside the Holm family
+  training_count_min: 3                # the chain's training problems: 1-2 vs >= this

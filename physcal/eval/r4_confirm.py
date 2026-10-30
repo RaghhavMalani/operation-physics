@@ -170,6 +170,33 @@ def regret(data: dict, arm: str = "dpos2", top: float = 0.05) -> dict:
 
 
 # ------------------------------------------------------------------------------------------- the analysis
+def load_data(problems: list[dict], recs: dict, sa: dict, ac: dict, pc: dict, dcfg: dict, sc: dict) -> tuple:
+    """Every seed's σ sources and expected scores, the comparators' expected scores, the per-seed descriptives, the
+    builder's references and stage A's sources note. Shared with R5-6's analysis (D147), which reads other files."""
+    terms = [oc.problem_terms(p, sa["mc"]["n_draws"], sa["mc"]["seed_tag"]) for p in problems]
+    refs = R.references(problems, dcfg)
+    src, note = stage_a.sources(problems, sa)
+    bcfg = load_config(ac["stage_b_config"])["analysis"]
+    comps = {"sigma_star": src[stage_a.STAR], "rss": src[bcfg["rss_source"]]}
+    if bcfg["x1_source"] in src:
+        comps["x1"] = src[bcfg["x1_source"]]
+    data = {"problems": problems, "terms": terms, "arms": {}, "comparator_sigma": comps,
+            "comparator_expected": {n: oc.score_source(terms, s, sc)["expected"] for n, s in comps.items()}}
+    per_seed_desc: dict = {}
+    for arm in ARMS:
+        data["arms"][arm] = {}
+        for s, r in recs[arm].items():
+            if r is None:
+                continue
+            d = seed_sources(problems, r, arm, refs, dcfg, ac)
+            d["expected"] = {k: oc.score_source(terms, v, sc)["expected"] for k, v in d["sigma"].items()}
+            data["arms"][arm][s] = d
+            per_seed_desc.setdefault(arm, {})[s] = {
+                "tape": B.describe_tape(problems, r, d["bds"], pc["analysis"]["tau"], dcfg["confidence"]["bins"]),
+                **({"lines": d["lines"], "s_lines": d["s_lines"]} if arm == "dpos2" else {})}
+    return data, per_seed_desc, refs, note
+
+
 def analyze(cfg: dict | None = None, root=None, allow_incomplete: bool = False) -> dict:
     _guard()
     cfg = cfg or _config()
@@ -185,28 +212,8 @@ def analyze(cfg: dict | None = None, root=None, allow_incomplete: bool = False) 
     missing = [f"{arm} seed {s}" for arm in ARMS for s in cc["seeds"] if recs[arm][s] is None]
     if missing and not allow_incomplete:
         raise RuntimeError(f"D118 §10: the analysis runs once all six evals exist; missing {missing}")
-    terms = [oc.problem_terms(p, sa["mc"]["n_draws"], sa["mc"]["seed_tag"]) for p in problems]
-    refs = R.references(problems, dcfg)
+    data, per_seed_desc, refs, note = load_data(problems, recs, sa, ac, pc, dcfg, sc)
     types = R.pair_types(problems, refs)
-    src, note = stage_a.sources(problems, sa)
-    bcfg = load_config(ac["stage_b_config"])["analysis"]
-    comps = {"sigma_star": src[stage_a.STAR], "rss": src[bcfg["rss_source"]]}
-    if bcfg["x1_source"] in src:
-        comps["x1"] = src[bcfg["x1_source"]]
-    data = {"problems": problems, "terms": terms, "arms": {},
-            "comparator_expected": {n: oc.score_source(terms, s, sc)["expected"] for n, s in comps.items()}}
-    per_seed_desc: dict = {}
-    for arm in ARMS:
-        data["arms"][arm] = {}
-        for s, r in recs[arm].items():
-            if r is None:
-                continue
-            d = seed_sources(problems, r, arm, refs, dcfg, ac)
-            d["expected"] = {k: oc.score_source(terms, v, sc)["expected"] for k, v in d["sigma"].items()}
-            data["arms"][arm][s] = d
-            per_seed_desc.setdefault(arm, {})[s] = {
-                "tape": B.describe_tape(problems, r, d["bds"], pc["analysis"]["tau"], dcfg["confidence"]["bins"]),
-                **({"lines": d["lines"], "s_lines": d["s_lines"]} if arm == "dpos2" else {})}
     n_seeds = {arm: len(data["arms"][arm]) for arm in ARMS}
     all_idx = np.arange(len(problems))
     res: dict = {"decision": "D118 (R4-3 confirmatory run, pre-registered)", "n_problems": len(problems),
