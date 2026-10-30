@@ -225,6 +225,13 @@ A6c + A6b.
 - **The data:**
   - A6c is in-distribution for the R4 arms (D112).
   - Development-set and frozen-set estimates differ at single depths (#34).
+- **Cross-model (#38):**
+  - **The caveat:** the Llama pilot's descriptive A6b slope on all answered pairs is −0.168 [−0.220, −0.119] (510 pairs;
+    D137's descriptive item, not the go rule; D146 item 1).
+    - It lies inside ±0.3 but excludes 0: the stated relative σ shrinks slightly as the target grows, where it should
+      stay flat.
+    - Qwen seed 0's is +0.010.
+    - It does not change the NO-GO, and the paper does not claim scale invariance on Llama.
 - **Seeds:**
   - **One seed** for the pilots: E1, X3, E1c / E1d, C, D, R4-1, the cross-model pilot.
   - **Three seeds:** S, uniform credit, stage B, R4-3.
@@ -283,5 +290,6 @@ D54, D57, D92, D135).
 | "CRPS as an RL reward is our contribution" | DAR uses CRPS over rollouts; ours is a stated σ against a known σ\* | CLAUDE.md prior work |
 | silent GRPO groups (#1) as a finding | known (Dr.GRPO / DAPO); motivation only | CLAUDE.md prior work |
 | any statistic treating 5,390 pairs or 3 seeds as independent | clustered over problems / pairs; seed means | R5-8, R3-7 |
+| "the Llama model is scale-invariant" / "passes the A6b control" | C3 was unmeasurable (4 pairs); the descriptive all-answered A6b slope is −0.168, excluding 0 | #38, D146 |
 | cross-model claims before R5-5 passes | "on Qwen2.5-Math-1.5B"; the Llama pilot is reported as a pilot, go or no-go | R5-5, D137 |
 | "the generator's σ\* was validated" without the history | the gate failed twice and passed under the amended FINAL rule (D54, D57) | #9, #11, #12 |
