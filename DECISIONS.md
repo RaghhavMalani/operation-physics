@@ -5779,3 +5779,28 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - item 2 is one model;
   - item 3 has one prompt, no random-init control, a subset, and a different format from X2.
   - **MORNING.md** comes at the end.
+
+### D152. Item 3: the 7B cannot use X2's decoding; it samples at Qwen2.5-Math's documented settings, and so does the 1.5B control. Feasibility uses 6 dev problems (2026-10-31, ~02:25 IST; recorded before the feasibility rerun, and before any non-development 7B completion exists)
+- **What happened (development problems only, pool index 1188):**
+  - **Under X2's decoding** (T = 1.0, top_p = 1.0, top_k = 0), 7 of 8 samples ran to the 1,024-token cap: 140 s for the
+    problem, above D151's 120 s stop rule.
+  - **A T = 1 sample degenerates mid-solution:** it switches to Chinese, then rambles without boxing.
+  - **At T = 0.7, top_p = 0.8** (a 2-sample check), both samples finished in 576 and 671 tokens, boxed.
+  - **Generation is memory-bound:** about 7 decoding steps / s at batch 8 (bitsandbytes dequantizes every weight on
+    every step). So the cost per problem is set by the longest of its 8 samples.
+- **The change (alternatives: keep T = 1 and stop per D151; or T = 1 with a top-p truncation):**
+  - **Decoding** is T = 0.7, top_p = 0.8, top_k = 20 (Qwen2.5's documented sampling defaults).
+  - **repetition_penalty stays 1.0,** as in X2: a penalty distorts repeated digits.
+  - **The control is the same.** The native 1.5B control uses the identical decoding, so the scale comparison (7B vs
+    native 1.5B) changes one variable.
+  - **The comparison with X2's SFT 1.5B (T = 1) changes three:** model, format and decoding. That is a stated caveat. A
+    lower temperature raises agreement among samples, so self-consistency and the mixed-problem rate are not directly
+    comparable to X2's.
+- **Why not stop:**
+  - **The 120 s rule** was written for X2's decoding. Under it the model degenerates, which is a fact about T = 1, not
+    about whether the 7B can be measured.
+  - **The rule still applies under the new decoding:** above 120 s / problem, stop.
+- **Feasibility:**
+  - **Problems:** the first 6 dev problems (1188–1193), not 12. That keeps about 10 min of GPU time.
+  - **Parser checks:** they use those 6 × 8 completions and the 2-problem batch-16 test.
+  - **Analysis:** dev problems are still never analyzed.

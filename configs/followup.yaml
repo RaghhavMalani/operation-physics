@@ -1,0 +1,94 @@
+# D151 (EXPLORATORY, a follow-up project; NOT the paper, D148): three feasibility items. Every rule here is D151's.
+output_dir: results/followup
+
+ttc:                                   # item 1: uncertainty-guided test-time compute, offline on X2's k = 8 samples
+  x2_config: x2                        # the samples (configs/x2.yaml sampling.output_dir) and X2's answer rule
+  agree_tolerance: 0.01                # |mu_j / mu_i - 1| <= 1% (SI); mu_i = 0 agrees only with mu_j = 0
+  k_max: 8
+  n_orders: 200                        # random draw orders per problem (default_rng(seed + pool index))
+  seed: 0
+  split_salt: "followup-ttc|"          # selection half iff SHA-256(salt + seed)[0] is even
+  policies:                            # the whole grid (D151)
+    - {name: A, kind: two_then_all, first: 2}
+    - {name: B2, kind: sequential, first: 2, votes: 2}
+    - {name: B3, kind: sequential, first: 2, votes: 3}
+    - {name: B4, kind: sequential, first: 2, votes: 4}
+    - {name: C, kind: no_loss}
+    - {name: D25, kind: sigma_gate, quantile: 0.25, then_votes: 2}
+    - {name: D50, kind: sigma_gate, quantile: 0.50, then_votes: 2}
+    - {name: D75, kind: sigma_gate, quantile: 0.75, then_votes: 2}
+  bootstrap: 10000
+  mc_a:                                # secondary: MC-A's raw spread as a two-stage stopping rule (B-v2 seed 0)
+    config: mc_a
+    sets: [a6c_pairs, a6_pairs, a6b_pairs]
+    select_set: a6c_pairs              # θ is chosen here (selection half) and applied unchanged to A6 and A6b
+    first: 2                           # re-asks drawn first
+    k_max: 8
+    quantiles: [0.25, 0.5, 0.75]       # θ grid: quantiles of the k = 2 raw spread on the selection half
+    tau: 1.0e-3                        # run 0 computation-correct: |ln(mu / f(x_meas))| <= tau (MC-A's)
+
+arith:                                 # item 2: exact arithmetic on D-pos-v2's own lines (frozen R4-5 logs, read only)
+  arm: dpos2
+  seeds: [0, 1, 2]
+  max_pow: 12                          # r5_diag.safe_eval's exponent limit
+  material_factor: 1.25                # "σ moved materially": more than 25%
+  anchors:                             # FINDINGS #35's seed means; the variants (a) and (c) must reproduce them
+    a: -0.0397
+    c: -0.0417
+  anchor_atol: 5.0e-5                  # #35 prints 4 decimals
+
+scale:                                 # item 3: Qwen2.5-Math-7B-Instruct (4-bit), inference only
+  models:
+    7b:
+      dir: .cache/huggingface/hub/models--unsloth--Qwen2.5-Math-7B-Instruct-bnb-4bit/snapshots/2ab7fb373c247ef5933d034f016efefc66608458
+      repo_id: unsloth/Qwen2.5-Math-7B-Instruct-bnb-4bit
+      revision: 2ab7fb373c247ef5933d034f016efefc66608458
+    1.5b:                              # the control (D151 (3)): D78's pinned 4-bit base, untrained, the same native format
+      dir: .cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039
+      repo_id: unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit
+      revision: e24e9530845f4e3a6648343796883cb509935039
+  system_prompt: "Please reason step by step, and put your final answer within \\boxed{}."
+  verify_from: x4_v1                   # X4's prompt with "<answer>" -> "\boxed{}" (D151)
+  verify_replace: ["<answer>", "\\boxed{}"]
+  pool_config: x2                      # X2's frozen candidate pool (1,200, round-robin over 12 cells)
+  dev_indices: [1188, 1200]            # feasibility + parser checks only; never analyzed
+  feasibility_n: 6                     # D152: the first 6 dev problems (GPU time)
+  chunk_size: 24                       # 2 per cell; the subset is the completed prefix
+  generation:                          # D152: Qwen2.5's documented sampling (X2's T = 1 degenerates on the 7B)
+    k: 8
+    temperature: 0.7
+    top_p: 0.8
+    top_k: 20
+    repetition_penalty: 1.0
+    max_new_tokens: 1024
+    seed: 0                            # chunk i: torch seed + i
+    batch_size: 8                      # sequences per generate call (a multiple of k); feasibility may raise it
+  max_seq_length: 3072
+  tolerance: 0.01                      # correct = within 1% of the target in the requested unit
+  max_s_per_problem: 120               # feasibility: slower than this -> stop and report (D151)
+  stop_slack_s: 1200                   # T_stop = deadline - readout estimate x 1.5 - control estimate - 20 min
+  readout_margin: 1.5
+  expected_mixed_share: 0.45           # X2's 43% at k = 8 (the readout estimate before any 7B data)
+  reading:                             # X4's direct arm (configs/x4.yaml reading), smaller vocabulary chunks for 7B
+    marker: "Verdict:"
+    yes_tokens: ["yes", " yes", "Yes", " Yes", "YES", " YES"]
+    no_tokens: ["no", " no", "No", " No", "NO", " NO"]
+    score_batch_size: 2
+    logit_check_rtol: 0.02
+    head_chunk: 8192
+  hidden_batch_size: 2
+  hidden_part_size: 64                 # answers per saved part (resumable)
+  logit_check_rtol: 0.02               # x2_hidden's check
+  probe:                               # x2_analysis.crossfit_confidence (configs/x2.yaml analysis.probe)
+    C: [0.001, 0.01, 0.1, 1.0]
+    folds: 5
+    max_iter: 2000
+    n_jobs: 4                          # after the GPU queue (D97); X2's setting
+    even_layers_only: false            # D151: true only if all 29 layers cannot finish by the report
+  bootstrap: 10000
+  seed: 0
+  x2_published:                        # FINDINGS #19 / #22 (SFT 1.5B, our format, 516 kept problems)
+    self_consistency: 0.643
+    x4_direct: 0.526
+    probe_crossfit: 0.540
+    length: 0.535
