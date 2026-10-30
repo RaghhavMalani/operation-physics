@@ -5302,3 +5302,37 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
   - **Unaffected:** the chain's pause accounting reads only "stage continued after Ns".
 - **Not changed** (it is a display problem in analysis code, for your decision): `results/mc_b/a6b_pairs/summary.md`
   labels its M5 row "MC-B's A6c slope", but the value is A6b's.
+
+### D146. Your decisions on the 29/30 report (MORNING.md §4): NO-GO accepted, the B-v2 Llama eval and the pilot analysis now, the MC-B label fix, FINDINGS #38, an R5-6 estimate (2026-10-30, ~09:10 IST; recorded before the B-v2 eval or the pilot analysis runs)
+- **1. The go rule's NO-GO is accepted as pre-registered.**
+  - No new design will measure C3 on Llama.
+  - **Reported:** D137's pre-specified descriptive A6b slope on all answered pairs, for D-pos-v2's answer σ (a), from
+    `xm_pilot`'s `a6b_answered_pairs_slope`. It is labelled descriptive and does not change the verdict.
+- **2. Launch now** (`scripts/queue_xm3.sh`, `GPU_DEADLINE=13:00` IST):
+  1. **The B-v2 Llama eval** (seed 0) on the frozen A6c + A6b.
+     - It is resumable (D142), with up to 3 attempts while time is left.
+     - If it does not finish by 13:00, it stays BLOCKED-but-resumable for tonight.
+  2. **`xm_pilot analyze`** (D137's descriptive items), once, when both Llama evals are complete.
+     - It runs on the CPU at 1 thread, nice 19.
+     - It includes the explicit (D-pos-v2) vs implicit (B-v2) comparison on Llama: `dpos2_minus_b2` and B-v2's own
+       slopes.
+  - **The guards, as always:**
+    - launch cap;
+    - free space;
+    - temperature (D143);
+    - stall watchdog (D132);
+    - single-instance lock;
+    - commit and push after every stage.
+  - **The eval loop is now one function,** `eval_xm ARM` in `scripts/queue_xm2.sh`'s library part. Both queues call it,
+    so the B-v2 eval runs through the same tested path as tonight's D-pos-v2 eval.
+- **3. The MC-B label fix:**
+  - The M5 row of `mc_b`'s summary names the set it was computed on.
+  - Then the A6b analysis is re-run (CPU, 1 thread, nice 19). Its numbers must not change: results.json is compared
+    before and after.
+- **4. FINDINGS #38,** the Llama cross-model pilot:
+  - K1 and C2 replicated on A6c;
+  - C3 unmeasurable with 4 pairs, and why;
+  - the NO-GO, with the same prominence as the replication;
+  - post-SFT accuracy and format numbers.
+- **5. An estimate for R5-6** (fresh counterfactual generalization): generator changes, frozen set, GPU hours.
+  - Nothing is built; you decide whether it runs.

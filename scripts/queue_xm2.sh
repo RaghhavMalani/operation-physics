@@ -58,6 +58,32 @@ partial_batches() {  # batches of the eval's partial file (D142); 0 without one
   else echo 0; fi
 }
 
+eval_xm() {  # eval_xm ARM TAG: the arm's resumable eval on the frozen A6c + A6b (D142), up to EVAL_ATTEMPTS attempts (D146)
+  local arm=$1 tag=$2 dir=$XM_OUT/$1/seed0 ev=$XM_OUT/$1/seed0/confirmatory attempt=0 rc
+  if [ -f "$ev/metrics.json" ]; then log "SKIP eval xm $arm: already evaluated ($ev/metrics.json)"; fi
+  while [ ! -f "$ev/metrics.json" ] && [ "$attempt" -lt "$EVAL_ATTEMPTS" ]; do
+    attempt=$((attempt + 1))
+    if [ "$DRY_RUN" != 1 ] && ! complete_adapter "$dir"; then log "BLOCKED eval xm $arm: no complete adapter in $dir"; break; fi
+    if [ "$(left)" -lt "$EVAL_MIN_S" ] && [ "$DRY_RUN" != 1 ]; then
+      log "SKIP eval xm $arm attempt $attempt: $(( $(left) / 60 )) min left, needs $(( EVAL_MIN_S / 60 ))"; break
+    fi
+    log "eval xm $arm attempt $attempt of $EVAL_ATTEMPTS: $(partial_batches "$ev") of $EVAL_BATCHES batches already on disk"
+    cool
+    gpu_stage "xm_eval_${arm}_a$attempt" "$(left)" env PHYSCAL_CONFIRMATORY=1 $PY -m physcal.train.stage_xm eval \
+      --arm "$arm" --max-reserved-gib "$CAP"; rc=$?
+    [ "$DRY_RUN" = 1 ] && break
+    if [ -f "$ev/metrics.json" ]; then
+      gzip -kfc "$ev/rollouts.jsonl" > "$ev/rollouts.jsonl.gz"
+      commit_stage "XM pilot (D137, $tag): $arm (Llama, seed 0) greedy eval on the frozen A6c + A6b, attempt $attempt (exit $rc)" \
+        "$ev/rollouts.jsonl.gz" "$ev/rollouts.meta.json" "$ev/metrics.json" "$ev/summary.md" "$ev"/*.png
+    else
+      log "BLOCKED-resumable xm_eval_${arm} attempt $attempt (exit $rc): $(partial_batches "$ev") of $EVAL_BATCHES batches on disk; the next attempt or run continues it (D142)"
+      commit_stage "XM pilot ($tag): $arm (Llama, seed 0) eval attempt $attempt cut off (exit $rc), $(partial_batches "$ev") of $EVAL_BATCHES batches on disk, resumable"
+    fi
+  done
+  return 0
+}
+
 stop_projection() {  # stop_projection PID: end the projection and its sleep (an orphaned sleep held the queue lock; D145)
   kill -STOP "$1" 2>/dev/null || return 0  # frozen, it cannot start another sleep
   pkill -TERM -P "$1" 2>/dev/null; kill -TERM "$1" 2>/dev/null; kill -CONT "$1" 2>/dev/null; wait "$1" 2>/dev/null
@@ -103,30 +129,8 @@ CAP=$(launch_cap)
 log "launch cap ${CAP} GiB (max ${CAP_MAX})"
 
 # ---- 1. eval D-pos-v2 (Llama, seed 0), resumable (D142) ---------------------------------------------------------------
-dir=$XM_OUT/dpos2/seed0
-ev=$dir/confirmatory
-attempt=0
-if [ -f "$ev/metrics.json" ]; then log "SKIP eval xm dpos2: already evaluated ($ev/metrics.json)"; fi
-while [ ! -f "$ev/metrics.json" ] && [ "$attempt" -lt "$EVAL_ATTEMPTS" ]; do
-  attempt=$((attempt + 1))
-  if [ "$DRY_RUN" != 1 ] && ! complete_adapter "$dir"; then log "BLOCKED eval xm dpos2: no complete adapter in $dir"; break; fi
-  if [ "$(left)" -lt "$EVAL_MIN_S" ] && [ "$DRY_RUN" != 1 ]; then
-    log "SKIP eval xm dpos2 attempt $attempt: $(( $(left) / 60 )) min left, needs $(( EVAL_MIN_S / 60 ))"; break
-  fi
-  log "eval xm dpos2 attempt $attempt of $EVAL_ATTEMPTS: $(partial_batches "$ev") of $EVAL_BATCHES batches already on disk"
-  cool
-  gpu_stage "xm_eval_dpos2_a$attempt" "$(left)" env PHYSCAL_CONFIRMATORY=1 $PY -m physcal.train.stage_xm eval \
-    --arm dpos2 --max-reserved-gib "$CAP"; rc=$?
-  [ "$DRY_RUN" = 1 ] && break
-  if [ -f "$ev/metrics.json" ]; then
-    gzip -kfc "$ev/rollouts.jsonl" > "$ev/rollouts.jsonl.gz"
-    commit_stage "XM pilot (D137, D144): dpos2 (Llama, seed 0) greedy eval on the frozen A6c + A6b, attempt $attempt (exit $rc)" \
-      "$ev/rollouts.jsonl.gz" "$ev/rollouts.meta.json" "$ev/metrics.json" "$ev/summary.md" "$ev"/*.png
-  else
-    log "BLOCKED-resumable xm_eval_dpos2 attempt $attempt (exit $rc): $(partial_batches "$ev") of $EVAL_BATCHES batches on disk; the next attempt or run continues it (D142)"
-    commit_stage "XM pilot (D144): dpos2 (Llama, seed 0) eval attempt $attempt cut off (exit $rc), $(partial_batches "$ev") of $EVAL_BATCHES batches on disk, resumable"
-  fi
-done
+eval_xm dpos2 D144
+ev=$XM_OUT/dpos2/seed0/confirmatory
 
 # ---- 2. the go rule on D-pos-v2 (D137, run early per D139), once, when its eval is complete -----------------------------
 GO=$XM_OUT/go_dpos2/go.json
