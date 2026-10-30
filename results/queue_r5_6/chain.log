@@ -52,3 +52,8 @@
 [18:52:44] start r56_eval_b2_s2_a1 (timeout 54438s): env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm b2 --seed 2 --r5-6 --max-reserved-gib 5.9
 [19:25:12] end r56_eval_b2_s2_a1: exit 0
 [19:25:12] r56_eval_b2_s2_a1: 0 temperature pauses, 0s paused of 1950s; tonight so far 5 pauses, 150s of 16552s (D143)
+[19:25:21] commit 'R5-6 J (D147): b2 seed 2 greedy eval on the frozen J set, attempt 1 (exit 0)': pushed
+[19:25:21] SKIP x1_r5_6: results/x1_text_sigma/r5_6/predictions.jsonl exists
+[19:25:24] disk: 47 GiB free on MLStorage
+[19:25:24] start r5_6_analysis (timeout 7200s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 env PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.eval.r5_6 analyze
+[19:26:10] end r5_6_analysis: exit 0
