@@ -74,3 +74,13 @@ confirmatory:                          # D118: the 3-seed confirmatory run on th
     a6c_pairs:
       file: data/eval_sets/2.0.0+bdbb2279/confirmatory/a6c_pairs.jsonl
       verify_regenerate: -1
+r5_6:                                  # D147 (R5-6 part J): D118's confirmatory eval exactly, on the frozen J files
+  seeds: [0, 1, 2]                     # the existing adapters; nothing is trained
+  output_subdir: r5_6                  # <arm>/seed<s>/r5_6/ (rollouts, metrics)
+  splits:                              # run_eval needs PHYSCAL_CONFIRMATORY=1 (the files are under confirmatory/)
+    a6b_pairs:                         # J invariance pairs (dimensional scaling)
+      file: data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6b_pairs.jsonl
+      verify_regenerate: -1
+    a6c_pairs:                         # J sensitivity pairs (A6c on J worlds)
+      file: data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6c_pairs.jsonl
+      verify_regenerate: -1

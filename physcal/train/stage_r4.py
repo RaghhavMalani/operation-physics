@@ -6,6 +6,7 @@
     uv run python -m physcal.eval.r4_analysis analyze                               # CPU: D113's criteria and tests
     uv run python -m physcal.train.stage_r4 train --arm dpos2|b2 --seed 1|2         # D118: the confirmatory seeds
     PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2|b2 --seed S --confirmatory
+    PHYSCAL_CONFIRMATORY=1 uv run python -m physcal.train.stage_r4 eval --arm dpos2|b2 --seed S --r5-6   # D147
 
 D-pos's procedure exactly (stage_d.train = stage_b's: the pinned 4-bit base checked before and after loading, a
 fresh LoRA, D103's cap and OOM check, 2 epochs, the R2-1 fingerprint), on the R4-1 data (configs/sft_r4.yaml):
@@ -155,30 +156,34 @@ def train(arm: str, deadline: float | None = None, max_steps: int | None = None,
 
 # ------------------------------------------------------------------------------------------- eval
 def eval_config(arm: str, cfg: dict | None = None, seed: int | None = None, confirmatory: bool = False,
-                cap_gib: float | None = None) -> dict:
+                cap_gib: float | None = None, r5_6: bool = False) -> dict:
     """Stage B's eval config with the arm's adapter, output dir and D113's token budget. `confirmatory` (D118): the
-    frozen R4-5 files replace the development sets, everything else unchanged."""
+    frozen R4-5 files replace the development sets, everything else unchanged. `r5_6` (D147 §6): the same, with the
+    frozen J files instead, into `<arm>/seed<s>/r5_6/`."""
     cfg = cfg or _config()
     seed = cfg["seed"] if seed is None else seed
     ev = stage_b.eval_config(seed, arm_config(arm, cfg, seed))
     ev["run_id"] = f"stage-r4-{arm}-seed{seed}-a6-sets"
     ev["generation"]["max_new_tokens"] = token_budget(cfg)["max_new_tokens"]
-    if confirmatory:
-        cc = cfg["confirmatory"]
+    if confirmatory and r5_6:
+        raise ValueError("--confirmatory and --r5-6 name different frozen sets")
+    if confirmatory or r5_6:
+        cc = cfg["r5_6" if r5_6 else "confirmatory"]
         if seed not in cc["seeds"]:
-            raise ValueError(f"seed {seed} is not one of D118's confirmatory seeds {cc['seeds']}")
+            raise ValueError(f"seed {seed} is not one of the seeds {cc['seeds']} (D118 / D147)")
         ev["splits"] = copy.deepcopy(cc["splits"])
         ev["output_dir"] = str(Path(ev["output_dir"]).parent / cc["output_subdir"])
-        ev["run_id"] = f"stage-r4-{arm}-seed{seed}-confirmatory"
+        ev["run_id"] = f"stage-r4-{arm}-seed{seed}-" + ("r5-6" if r5_6 else "confirmatory")
     if cap_gib is not None:
         ev["model"]["max_reserved_gib"] = cap_gib
     return ev
 
 
-def evaluate(arm: str, seed: int | None = None, confirmatory: bool = False, cap_gib: float | None = None) -> dict:
+def evaluate(arm: str, seed: int | None = None, confirmatory: bool = False, cap_gib: float | None = None,
+             r5_6: bool = False) -> dict:
     from physcal.eval.run_eval import run
 
-    ev = eval_config(arm, seed=seed, confirmatory=confirmatory, cap_gib=cap_gib)
+    ev = eval_config(arm, seed=seed, confirmatory=confirmatory, cap_gib=cap_gib, r5_6=r5_6)
     if not Path(ev["model"]["lora"]).exists():
         raise FileNotFoundError(f"no adapter for arm {arm}: {ev['model']['lora']}")
     return run(ev)
@@ -194,6 +199,7 @@ def main() -> None:
     ap.add_argument("--max-steps", type=int, default=None, help="train: override the 2-epoch budget (smoke tests)")
     ap.add_argument("--seed", type=int, default=None, help="D118: the seed (default: the config's, 0)")
     ap.add_argument("--confirmatory", action="store_true", help="eval: the frozen R4-5 files (D118)")
+    ap.add_argument("--r5-6", action="store_true", help="eval: the frozen J files (R5-6 part J, D147)")
     ap.add_argument("--max-reserved-gib", type=float, default=None, help="the launch cap, if lower than the config's")
     args = ap.parse_args()
     cap = args.max_reserved_gib
@@ -205,7 +211,7 @@ def main() -> None:
         s = train(args.arm, parse_deadline(args.stop_at) if args.stop_at else None, args.max_steps, args.seed, cap)
         print(json.dumps({k: s.get(k) for k in ("steps", "train_loss", "seconds", "peak_vram")}, indent=1, default=str))
     else:
-        m = evaluate(args.arm, args.seed, args.confirmatory, cap)
+        m = evaluate(args.arm, args.seed, args.confirmatory, cap, args.r5_6)
         print(json.dumps({k: m.get(k) for k in ("run_id", "gen_seconds", "oom_backoffs")}, indent=1, default=str))
 
 

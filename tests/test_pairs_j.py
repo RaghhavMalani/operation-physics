@@ -183,3 +183,37 @@ def test_the_frozen_j_set_regenerates_and_is_checksummed():
         assert {json.loads(x)["depth"] for x in lines} <= {1, 2, 3, 4}
         for line in lines[::53]:
             assert json.dumps(regenerate(json.loads(line), ENV).to_dict(), sort_keys=True) == line
+
+
+# ------------------------------------------------------------------------------------------- the eval (D147 §6)
+def test_the_j_eval_is_the_confirmatory_eval_on_the_j_files():
+    from physcal.train import stage_r4
+
+    for arm in ("dpos2", "b2"):
+        for seed in (0, 1, 2):
+            conf = stage_r4.eval_config(arm, seed=seed, confirmatory=True)
+            j = stage_r4.eval_config(arm, seed=seed, r5_6=True)
+            assert j["run_id"] == f"stage-r4-{arm}-seed{seed}-r5-6"
+            assert j["output_dir"].endswith(f"results/stage_r4/{arm}/seed{seed}/r5_6")
+            assert sorted(j["splits"]) == ["a6b_pairs", "a6c_pairs"]
+            for name, sp in j["splits"].items():
+                assert sp == {"file": f"data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/{name}.jsonl",
+                              "verify_regenerate": -1}
+            for k in ("run_id", "output_dir", "splits"):
+                conf.pop(k), j.pop(k)
+            assert j == conf  # everything else is D118's confirmatory eval
+    assert j["generation"]["max_new_tokens"] == 1280 and j["generation"]["batch_size"] == 16
+    assert not j["generation"]["do_sample"]  # greedy, so resumable (D142)
+    with pytest.raises(ValueError):
+        stage_r4.eval_config("dpos2", seed=3, r5_6=True)
+    with pytest.raises(ValueError):
+        stage_r4.eval_config("dpos2", seed=0, confirmatory=True, r5_6=True)
+
+
+def test_run_eval_refuses_the_j_files_without_the_flag(monkeypatch):
+    from physcal.eval.run_eval import CONFIRMATORY_ENV, load_frozen_split
+
+    monkeypatch.delenv(CONFIRMATORY_ENV, raising=False)
+    sp = load_config("stage_r4")["r5_6"]["splits"]["a6c_pairs"]
+    with pytest.raises(PermissionError):
+        load_frozen_split(sp, ENV, 2)

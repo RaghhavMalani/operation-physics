@@ -103,3 +103,8 @@ results/queue_xm*/*.pid
 results/queue_xm*/*.lock
 results/queue_xm*/*/*.pid
 results/queue_xm*/*/*.lock
+# R5-6 part J (D147): the J evals' raw tapes and partial files (gzipped tapes committed), queue PID and lock files
+results/stage_r4/*/seed*/r5_6/rollouts.jsonl
+results/stage_r4/*/seed*/r5_6/completions.partial*.jsonl
+results/queue_r5_6/*.pid
+results/queue_r5_6/*.lock
