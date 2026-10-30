@@ -25,3 +25,18 @@
 [06:18:17] disk: 47 GiB free on MLStorage
 [06:18:17] start mc_b_analyze_a6b_pairs (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.mc_b analyze --set a6b_pairs
 [06:18:38] end mc_b_analyze_a6b_pairs: exit 0
+[06:18:40] commit 'MC-B (D119, D132, D144): a6b_pairs executed in the sandbox and analyzed': pushed
+[06:18:41] GPU at 60.10C, memory.used 786 MiB
+[06:18:41] train xm b2: estimate 148 min (8800 s active / (1 - 0.011 paused tonight)); the projection check decides from its own rate (D144)
+[06:18:42] disk: 47 GiB free on MLStorage
+[06:18:42] start xm_train_b2 (timeout 23779s): uv run python -m physcal.train.stage_xm train --arm b2 --stop-at 2026-10-30T12:45:00+05:30 --max-reserved-gib 5.9
+[06:48:46] B-v2 projection: 171 / 750 steps in 28:51 (pauses included) projects 08:36 IST, before 12:45 (D144)
+[07:03:46] B-v2 projection: 257 / 750 steps in 44:24 (pauses included) projects 08:38 IST, before 12:45 (D144)
+[07:18:46] B-v2 projection: 346 / 750 steps in 59:22 (pauses included) projects 08:38 IST, before 12:45 (D144)
+[07:33:46] B-v2 projection: 434 / 750 steps in 1:14:17 (pauses included) projects 08:37 IST, before 12:45 (D144)
+[07:48:46] B-v2 projection: 520 / 750 steps in 1:29:19 (pauses included) projects 08:38 IST, before 12:45 (D144)
+[08:03:46] B-v2 projection: 612 / 750 steps in 1:44:23 (pauses included) projects 08:37 IST, before 12:45 (D144)
+[08:18:46] B-v2 projection: 698 / 750 steps in 1:59:22 (pauses included) projects 08:37 IST, before 12:45 (D144)
+[08:31:25] end xm_train_b2: exit 0
+[08:31:25] xm_train_b2: 11 temperature pauses, 331s paused of 7964s; tonight so far 16 pauses, 482s of 22276s (D143)
+[08:31:25] train xm b2: 750 steps of 750, 132 min
