@@ -1,0 +1,18 @@
+W1030 19:58:03.672000 251393 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1030 19:58:03.728000 251393 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:00<01:20,  4.21it/s]Loading weights:  13%|█▎        | 45/339 [00:00<00:01, 167.72it/s]Loading weights:  26%|██▌       | 88/339 [00:00<00:00, 259.15it/s]Loading weights:  40%|████      | 136/339 [00:00<00:00, 326.09it/s]Loading weights:  54%|█████▎    | 182/339 [00:00<00:00, 363.95it/s]Loading weights:  67%|██████▋   | 228/339 [00:00<00:00, 387.57it/s]Loading weights:  81%|████████  | 274/339 [00:00<00:00, 406.84it/s]Loading weights:  94%|█████████▎| 317/339 [00:00<00:00, 410.97it/s]Loading weights: 100%|██████████| 339/339 [00:00<00:00, 340.56it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+Both `max_new_tokens` (=1024) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 8/8  (139s)
+  dev 1188 (kinematics d1): 139.1s, tokens [520, 708, 539, 1024, 710, 653, 347, 808], correct [True, True, True, None, True, True, False, True]
+Both `max_new_tokens` (=1024) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
+  generated 8/8  (155s)
+  dev 1189 (kinematics d2): 154.7s, tokens [1024, 1023, 1024, 1024, 1024, 1024, 1024, 1024], correct [None, True, None, None, None, None, None, None]
+Both `max_new_tokens` (=1024) and `max_length`(=4096) seem to have been set. `max_new_tokens` will take precedence. Please refer to the documentation for more information. (https://huggingface.co/docs/transformers/main/en/main_classes/text_generation)
