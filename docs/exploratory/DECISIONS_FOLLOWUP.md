@@ -340,7 +340,8 @@ appended here.
     recorded in the notebook and in every session's meta.
   - **Locally:** `scripts/queue_followup_kaggle.sh` runs `ingest`, then followup_scale's `yes`, `hidden` and
     `analyze`.
-  - **Tests:** `tests/test_followup_kaggle.py` (11), with a fake engine, clock and tokenizer.
+  - **Tests:** `tests/test_followup_kaggle.py` (12), with a fake engine, clock and tokenizer. One test checks
+    that the notebook's pinned commit holds the working tree's sampler, scale module and configs.
 - **Unchanged from D151–D154:**
   - X2's frozen pool, in order; the development indices 1188–1199 are never sampled;
   - chunks of 24 candidates (2 per cell); the subset is the completed prefix;

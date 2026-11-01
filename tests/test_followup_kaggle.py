@@ -1,5 +1,5 @@
-"""D157 (exploratory follow-up track): item 3's Kaggle sampler (chunks, timing, health gate, resume), the zip and
-its local ingest. A fake engine, clock and tokenizer stand in for vLLM; CPU only."""
+"""D157 (exploratory follow-up track): item 3's Kaggle sampler (chunks, timing, health gate, resume), the zip, its
+local ingest, and the notebook's pinned commit. A fake engine, clock and tokenizer stand in for vLLM; CPU only."""
 
 import copy
 import json
@@ -192,3 +192,25 @@ def test_restore_copies_the_prefix_and_refuses_other_settings(cfg, tmp_path):
     with pytest.raises(SystemExit, match="other settings"):
         K.restore(tmp_path / "w2", tmp_path / "input", other)
     assert K.restore(tmp_path / "w3", tmp_path / "nothing-here", cfg) == {"restored_rows": 0}
+
+
+# ------------------------------------------------------------------------------------------- the notebook
+def test_the_notebook_parses_and_its_pinned_commit_holds_this_code():
+    """The Kaggle notebook's cells are valid Python, and COMMIT holds the same sampler, scale module and config as the
+    working tree (a change to any of them needs a re-pinned notebook and a D-entry)."""
+    import ast
+    import re
+    import subprocess
+
+    from physcal.config import REPO_ROOT
+
+    nb = json.loads((REPO_ROOT / "notebooks" / "kaggle_7b_scale.ipynb").read_text())
+    code = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
+    for src in code:
+        ast.parse(src)
+    commit = re.search(r'^COMMIT = "([0-9a-f]{40})"$', code[0], flags=re.M).group(1)
+    for path in ("physcal/eval/followup_kaggle.py", "physcal/eval/followup_scale.py", "configs/followup.yaml",
+                 "configs/x2.yaml", "physcal/env/render.py", "physcal/env/units.py"):
+        pinned = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{commit}:{path}"], capture_output=True,
+                                text=True, check=True).stdout
+        assert pinned == (REPO_ROOT / path).read_text(), f"{path} changed since the notebook's commit {commit[:12]}"
