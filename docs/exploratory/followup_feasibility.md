@@ -1,8 +1,8 @@
 # Follow-up feasibility: three exploratory items (night of 2026-10-30/31)
 
 **Status: EXPLORATORY, for a follow-up project. Not part of the paper (D148's freeze applies to it).** Nothing here is
-pre-registered as a hypothesis or confirmatory. The plan and every analysis rule were written in DECISIONS.md D151 and
-pushed (`a8938c7`) before any of this track's data existed. Two later changes each have their own entry, written
+pre-registered as a hypothesis or confirmatory. The plan and every analysis rule were written in D151 (now in
+`docs/exploratory/DECISIONS_FOLLOWUP.md`, D156) and pushed (`a8938c7`) before any of this track's data existed. Two later changes each have their own entry, written
 before the data they affect: D152 (item 3's decoding) and D153 (item 3's stop).
 
 | item | code | config | results |

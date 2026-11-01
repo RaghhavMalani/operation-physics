@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GPU chain, 2026-10-31 night (DECISIONS.md D151 / D152; EXPLORATORY, a follow-up project, not the paper): item 3,
+# GPU chain, 2026-10-31 night (docs/exploratory/DECISIONS_FOLLOWUP.md D151 / D152; EXPLORATORY, a follow-up project, not the paper): item 3,
 # the scale check of the epistemic wall. The feasibility runs (7B and the native 1.5B control) are done by hand first.
 #   1. plan: D151's stop time for 7B sampling (physcal.eval.followup_scale plan; written to the scale dir's plan.json).
 #   2. 7B sampling: chunks of X2's pool until the stop time, resumable (one file per chunk).
