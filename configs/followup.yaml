@@ -63,7 +63,7 @@ scale:                                 # item 3: Qwen2.5-Math-7B-Instruct (4-bit
     max_new_tokens: 1024
     seed: 0                            # chunk i: torch seed + i
     batch_size: 8                      # sequences per generate call (a multiple of k); feasibility may raise it
-  max_seq_length: 3072
+  max_seq_length: 4096                 # D157: the model's context (was 3,072); the readouts read up to ~3,530 tokens
   tolerance: 0.01                      # correct = within 1% of the target in the requested unit
   max_s_per_problem: 120               # feasibility: slower than this -> stop and report (D151)
   stop_slack_s: 1200                   # T_stop = deadline - readout estimate x 1.5 - control estimate - 20 min
@@ -88,6 +88,38 @@ scale:                                 # item 3: Qwen2.5-Math-7B-Instruct (4-bit
     even_layers_only: false            # D151: true only if all 29 layers cannot finish by the report
   bootstrap: 10000
   seed: 0
+  kaggle:                              # D157: item 3's 7B sampling on Kaggle "GPU T4 x2" with vLLM (readouts stay local)
+    repo_id: Qwen/Qwen2.5-Math-7B-Instruct
+    revision: ef9926d75ab1d54532f6a30dd5e760355eb9aa4d
+    download_patterns: ["*.json", "*.safetensors", "merges.txt", "vocab.json"]
+    weights_sha256:                    # HF's LFS sha256 at the revision; checked after the download
+      model-00001-of-00004.safetensors: 11f73294487dca1614bd7495e2c4e50372f5794f4cd175ce62d9ec2a8e97873a
+      model-00002-of-00004.safetensors: 2b992a00b09340ac3f8e54db70509b709e2eef9f601e679682e3a50b496a7b08
+      model-00003-of-00004.safetensors: 2460a589b1d606998574e0d84162e94307a15e2eea2aac6f4ea35f0361657660
+      model-00004-of-00004.safetensors: 9e7925045deba3bb6ac461f1c2e7eabbe2a189549156dff1ec08b6c750a82bc5
+    candidates_sha256: cd703f0d15cd69e4514b8bf04b6c7113c33c34cd6a8540824dee4cef481fff07  # X2's manifest
+    python: "3.11"                     # the venv (uv), isolated from Kaggle's preinstalled stack
+    uv: 0.13.1
+    packages: [vllm==0.29.0, pint==0.25.3, pyyaml==6.0.3, sympy==1.14.0]  # vLLM pins torch 2.13.0 (CUDA 13)
+    min_driver: 580                    # CUDA 13 needs driver >= 580
+    gpus: 2
+    dtype: half                        # T4 (sm75) has no bf16; the bf16 checkpoint is cast to fp16
+    tensor_parallel_size: 2
+    max_model_len: 4096                # the model's max_position_embeddings
+    gpu_memory_utilization: 0.90
+    disable_custom_all_reduce: true    # no P2P between Kaggle's two T4s
+    attention_backend: TRITON_ATTN     # what v0.29 auto-selects on sm75 (FlashInfer is off below sm80); pinned
+    max_new_tokens: 3072               # D153: > 2,048 needed; longest prompt 363 tokens, 363 + 3,072 < 4,096
+    seed: 0                            # request (pool index i, sample s): seed + k * i + s; one request per sample
+    throughput_n: 20                   # the first candidates of the first missing chunk time the run
+    sampling_hours: 9.5                # no chunk may end after session start + 9.5 h (Kaggle stops at 12 h)
+    rate_margin: 1.25                  # planned and projected times = 1.25 x the measured ones
+    min_answered_share: 0.5            # health gate on the timed candidates: boxed, parsed, not truncated
+    zip_name: followup_7b_scale.zip
+    stall_minutes: 45                  # the notebook kills a sampler silent this long (a chunk is ~3-10 min)
+    attempts: 2                        # the second with enforce_eager and NCCL_P2P_DISABLE=1
+    min_free_gb: 35                    # /tmp: weights 15.2 GB + the venv (~10 GB)
+    max_file_mb: 64                    # ingest: a larger file in the zip is refused
   x2_published:                        # FINDINGS #19 / #22 (SFT 1.5B, our format, 516 kept problems)
     self_consistency: 0.643
     x4_direct: 0.526

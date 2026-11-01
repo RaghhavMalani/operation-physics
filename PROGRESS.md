@@ -948,5 +948,16 @@ Progress:
     - the native 1.5B takes ~45 s per problem.
   - **D152:** Qwen's decoding (X2's T = 1 degenerates). **D154:** the after-box unit parser.
 - [x] **The write-up:** `docs/exploratory/followup_feasibility.md`; MORNING.md.
-- [ ] **For your decision:** a cloud or vLLM run of item 3 (the code and queue are ready), or one of D153's
-  alternatives.
+- [x] **Decided (2026-11-01):** item 3 runs on Kaggle (below).
+
+## 2026-11-01: item 3 moves to Kaggle (your instructions; D156–D157 in `docs/exploratory/DECISIONS_FOLLOWUP.md`)
+- [x] **D156:** the follow-up log moved to its own file (D151–D155 verbatim); D155's macro special case reverted; the
+  paper's count stays 150; D152 accepted.
+- [x] **D157:** the Kaggle plan and every difference from D151's local plan, recorded before any run.
+- [x] **The code:**
+  - `physcal/eval/followup_kaggle.py`: download, restore, sample (vLLM), pack, and the local ingest;
+  - `tests/test_followup_kaggle.py`;
+  - `notebooks/kaggle_7b_scale.ipynb`, pinned to a commit;
+  - `scripts/queue_followup_kaggle.sh`: the local ingest → P(yes) → hidden states → analysis (not run yet);
+  - the steps for you: `docs/exploratory/kaggle_instructions.md`.
+- [ ] **You:** the Kaggle run (instructions §1–5), then bring the zip back (§7).

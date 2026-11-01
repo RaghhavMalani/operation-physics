@@ -329,3 +329,132 @@ appended here.
   item 3.
 - **Pointers updated:** `scripts/queue_followup.sh` and `docs/exploratory/followup_feasibility.md` now name this file.
   MORNING.md and the lab notebook are records of their nights and keep saying "DECISIONS.md".
+
+### D157. Item 3 runs on Kaggle "GPU T4 x2" with vLLM: the official Qwen2.5-Math-7B-Instruct in fp16, D152's decoding, D151's prompts, parser and analysis; the readouts stay local. Every difference from D151's local plan (2026-11-01, ~23:00 IST; recorded before any Kaggle run, and before any non-development 7B completion exists)
+- **Why:** D153 stopped the local run (139–155 s per problem at 1,024 tokens, against the 120 s rule). D153's
+  development measurement put a sufficient budget at about 50 problems per night on the 4060. Your instruction is to
+  sample on Kaggle and keep the readouts local.
+- **What runs where:**
+  - **On Kaggle:** `notebooks/kaggle_7b_scale.ipynb` → `physcal.eval.followup_kaggle` (`download`, `restore`,
+    `sample`, `pack`). The repo is cloned at a pinned commit, the one that holds this entry's code. The commit is
+    recorded in the notebook and in every session's meta.
+  - **Locally:** `scripts/queue_followup_kaggle.sh` runs `ingest`, then followup_scale's `yes`, `hidden` and
+    `analyze`.
+  - **Tests:** `tests/test_followup_kaggle.py` (11), with a fake engine, clock and tokenizer.
+- **Unchanged from D151–D154:**
+  - X2's frozen pool, in order; the development indices 1188–1199 are never sampled;
+  - chunks of 24 candidates (2 per cell); the subset is the completed prefix;
+  - k = 8;
+  - the native prompt (Qwen2.5-Math's chain-of-thought system prompt; the problem text without its `<steps>`
+    sentence; the model's chat template);
+  - the parser (D151 + D154) and the 1% tolerance;
+  - the kept rule (≥ 1 correct and ≥ 1 incorrect answer);
+  - the readouts:
+    - self-consistency;
+    - X4-style direct P(yes) with the same verification turn;
+    - the cross-fitted probe at the token of the last box's closing brace;
+    - length;
+  - the metric (X2's within-problem pairwise accuracy, bootstrap B = 10,000, seed 0);
+  - the comparisons and reading rules;
+  - no random-init control;
+  - D148's freeze.
+- **Differences from D151's local plan:**
+  1. **Hardware and stack.**
+     - **Kaggle:** "GPU T4 x2" (2 × T4, 15 GiB each, sm75), vLLM 0.29.0 (which pins torch 2.13.0, CUDA 13), in a uv
+       0.13.1 venv with Python 3.11, isolated from Kaggle's preinstalled packages. pint 0.25.3, PyYAML 6.0.3 and sympy
+       1.14.0 (the repo's lock) are added for the prompt and the parser.
+     - **The notebook checks** for 2 GPUs and a driver ≥ 580 before installing. A public report has vLLM 0.29.0
+       running in fp16 on one T4; tensor-parallel 2 on Kaggle is not verified beforehand.
+     - **D151's plan:** the local 4060 with transformers + Unsloth + bitsandbytes (`HFBackend`).
+  2. **Weights.**
+     - **The model:** the official `Qwen/Qwen2.5-Math-7B-Instruct` at revision
+       `ef9926d75ab1d54532f6a30dd5e760355eb9aa4d`.
+     - **Precision:** `dtype half`, because T4 has no bf16; the bf16 checkpoint is cast to fp16. `tensor_parallel_size`
+       is 2, and custom all-reduce is off (no P2P between the two T4s).
+     - **Kernels:**
+       - attention is vLLM's Triton backend, pinned (`attention_backend TRITON_ATTN`). This is what v0.29
+         auto-selects on sm75, since its FlashInfer backend is disabled below sm80 (checked in the v0.29.0 source),
+         and a public report runs it on a T4;
+       - FlashInfer's sampler is off (`VLLM_USE_FLASHINFER_SAMPLER=0`), so nothing is compiled for the T4.
+     - **Integrity:** each of the four safetensors files must match HF's LFS sha256 at that revision (in the config).
+     - **D151's plan:** `unsloth/Qwen2.5-Math-7B-Instruct-bnb-4bit` at `2ab7fb37…`.
+     - **The fp16 risk:** fp16's range is 65,504, against bf16's. Overflow is possible; the health gate (difference 7)
+       is the guard.
+  3. **The readouts read another copy than the sampler.**
+     - **Where:** P(yes) and the hidden states run locally on the 4-bit copy, the only 7B that fits 8 GB. They read the
+       fp16 model's answers through a 4-bit quantization of the same weights. In X2 the same model sampled and read.
+       This is a stated caveat.
+     - **Checked (2026-11-01):** the official and the 4-bit copies have the same chat template, vocabulary and merges.
+       Unsloth adds one pad token, which is never in a prompt.
+     - **At ingest:** every prompt is re-rendered with the local tokenizer and must match the Kaggle prompt's sha256
+       and token count.
+  4. **The sampler and its seeds.**
+     - **The parameters** are D152's (accepted in D156): T 0.7, top_p 0.8, top_k 20, repetition penalty 1.0. The stop
+       ids are the model's `generation_config` end tokens.
+     - **One request per sample** (n = 1), with seed 0 + 8 × pool index + sample. D151 used one torch seed per chunk.
+     - **Reproducibility:** a sample's random numbers do not depend on the batch. The numerics of batched kernels
+       still can, so a rerun is reproducible in distribution, not bit for bit. vLLM's sampler is not HF's.
+  5. **The budget.**
+     - **max_new_tokens is 3,072**, against D151's 1,024. D153 found that more than 1,024 is needed from depth 2 up.
+       At 2,048, 4 of 24 development samples at depths 1–3 still ran out, and complete depth-3 answers took up to
+       1,862 tokens.
+     - **The context:** the longest prompt among the 1,188 candidates is 363 tokens (measured on 2026-11-01), so a
+       prompt plus its completion stays within `max_model_len` 4,096, the model's context.
+     - **A truncated sample** is still no answer (D151).
+  6. **The stop rule.** D151's 120 s / problem feasibility rule and its deadline-derived T_stop are replaced by:
+     - **Timing:** the first 20 candidates (indices 0–19, part of chunk 0 and analyzed like the rest) are generated
+       on their own and timed. N is sized from their timing only, never from correctness:
+       - N = done + 24 × floor((session start + 9.5 h − now) / (1.25 × s per problem × 24));
+       - capped at 1,176, the full chunks below the development indices.
+     - **The chunk rule:** a chunk starts only if its projected end (1.25 × the session's mean chunk time) is before
+       session start + 9.5 h. That leaves ≥ 2.5 h inside Kaggle's 12 h for the install, the 15 GB download, the load
+       and the zip.
+     - **A resumed session** re-plans with its own deadline and the stored timing.
+  7. **The health gate (new; stated before any data).**
+     - **The rule:** if fewer than 50% of the 160 timed samples are answered (boxed, parsed, not truncated), sampling
+       stops and nothing more is drawn in any session. The result is reported.
+     - **Why:** it guards against fp16 degeneration. The gate reads only the format, not correctness. For scale, the
+       4-bit 7B answered 20 of 24 development samples at 2,048 tokens.
+  8. **No development feasibility on Kaggle.**
+     - The parser was checked on development answers (D154) and is unchanged.
+     - **Failures are handled by the notebook:**
+       - the sampler is killed if it prints nothing for 45 min (a chunk is ~3–10 min);
+       - after any failure (the engine does not start, a crash, a stall) it is retried once with `enforce_eager` (no
+         CUDA graphs) and `NCCL_P2P_DISABLE=1`. These change speed only, and are recorded in the meta;
+       - the retry resumes from the chunks on disk.
+  9. **The output format.**
+     - **Each chunk row carries:**
+       - the tape fields (`run_id … breakdown`); `reward` is null, because the native `\boxed{}` format has no
+         verifier reward, and `breakdown` is the D151 / D154 grade;
+       - item 3's chunk fields (index, key, sample, completion, n_tokens, truncated, the grade);
+       - `sample_seed`, `finish_reason`, `prompt_sha256` and `prompt_tokens`.
+     - **The reader:** `followup_scale.sampled_prefix` reads the rows unchanged.
+     - **n_tokens** is vLLM's completion token count. Only differences within a problem enter the length readout.
+     - **The meta records** the commit, the config sha256, the package versions, the GPUs and driver, the engine
+       arguments, and the chat-template and tokenizer hashes.
+  10. **Resuming.**
+      - **Within a session:** chunks are written atomically, so a cutoff loses at most one chunk.
+      - **Across sessions:** a Kaggle session starts empty. A re-run resumes from a previous version's output attached
+        as input; `restore` copies its chunk prefix after `sampled_prefix`'s check and refuses another revision or
+        decoding.
+  11. **Grading.**
+      - **On Kaggle** it is for progress only.
+      - **At ingest** every row is re-graded with the local parser, which is authoritative (D151's analysis
+        re-grades anyway). Any change is counted in `ingest.json`.
+      - **Ingest also checks:**
+        - the zip (allowed names only, sizes, the manifest's sha256);
+        - every row's problem against the frozen pool;
+        - the seeds;
+        - every segment's revision and decoding.
+  12. **The local readout context:** `scale.max_seq_length` goes from 3,072 to 4,096. A kept answer's P(yes) context
+      is up to ~3,530 tokens: prompt + completion + verification turn.
+  13. **The native 1.5B control is not in this run** (D151 (3): "if time allows").
+      - Its columns stay missing unless a later entry adds it.
+      - The 7B is compared with the SFT 1.5B's published X2 numbers, and with X2 restricted to the same prefix. Both
+        comparisons change model, format and decoding at once (D152's caveat).
+- **Expected cost (an assumption, not a measurement):**
+  - a chunk is set by its longest sample: at ~15 decoding steps / s, up to 3,072 tokens is ~3.5 min;
+  - so 1,176 candidates would take ~3–4 h;
+  - the measured rate decides N.
+  - **The local readouts:** about 0.45 × N × 8 kept answers at ~2–3 s each (D154's 0.9 + 0.8 s at ≤ 2,048 tokens,
+    longer contexts here). At N = 1,176 that is ~3 h. The stages are resumable.

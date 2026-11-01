@@ -320,22 +320,24 @@ def regrade_feasibility(model: str, tag: str, cfg: dict | None = None) -> dict:
     return res
 
 
-def chunk_path(model: str, start: int, cfg: dict) -> Path:
-    return out_dir(model, cfg) / "samples" / f"chunk_{start:05d}.jsonl"
+def chunk_path(model: str, start: int, cfg: dict, samples: Path | None = None) -> Path:
+    return (samples or out_dir(model, cfg) / "samples") / f"chunk_{start:05d}.jsonl"
 
 
-def sampled_prefix(model: str, cfg: dict | None = None) -> list[dict]:
-    """Every row of the completed chunks, which must form a prefix of the pool (checked)."""
+def sampled_prefix(model: str, cfg: dict | None = None, samples: Path | None = None) -> list[dict]:
+    """Every row of the completed chunks, which must form a prefix of the pool (checked). `samples`: another
+    directory of chunks (D157: a Kaggle session's output)."""
     cfg = cfg or _config()
     cs, k = cfg["scale"]["chunk_size"], cfg["scale"]["generation"]["k"]
+    samples = samples or out_dir(model, cfg) / "samples"
     rows, start = [], 0
-    while (f := chunk_path(model, start, cfg)).exists():
+    while (f := chunk_path(model, start, cfg, samples)).exists():
         r = [json.loads(line) for line in f.open()]
         if len(r) != cs * k or sorted({x["index"] for x in r}) != list(range(start, start + cs)):
             raise ValueError(f"{f} is not a complete chunk")
         rows += r
         start += cs
-    extra = [p for p in (out_dir(model, cfg) / "samples").glob("chunk_*.jsonl") if int(p.stem.split("_")[1]) >= start]
+    extra = [p for p in samples.glob("chunk_*.jsonl") if int(p.stem.split("_")[1]) >= start]
     if extra:
         raise ValueError(f"chunks beyond the prefix: {extra}")
     return rows
