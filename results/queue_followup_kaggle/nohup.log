@@ -292,3 +292,10 @@
 [18:39:58] disk: 22 GiB free on MLStorage
 [18:39:58] start fs_analyze (timeout 21600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_scale analyze
 [20:42:41] end fs_analyze: exit 0
+[20:42:45] commit 'Follow-up (D157/D160, exploratory): item 3's analysis (7b readouts)': pushed
+[20:42:45] follow-up Kaggle chain done: 18 temperature pauses, 540s paused of 5348s GPU-stage time
+[20:42:49] follow-up Kaggle chain start (D157/D160, exploratory): MODEL=1.5b, GPU_STAGES='yes hidden hidden_random'; GPU deadline 09:00 IST (737 min left); chain PID 90961
+[20:42:51] disk: 22 GiB free on MLStorage
+[20:42:51] start fk_ingest_1.5b (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_kaggle ingest --model 1.5b --zip /home/flash2404/kaggle_downloads/followup_1.5b_scale.zip
+[20:42:58] end fk_ingest_1.5b: exit 0
+[20:42:58] ingest: 1176 candidates, 0 rows re-graded differently

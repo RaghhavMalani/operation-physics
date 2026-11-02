@@ -1,0 +1,65 @@
+{
+ "decision": "D157 / D160: item 3's 1.5b samples on Kaggle (exploratory, follow-up project; not the paper)",
+ "run_id": "followup-scale-1.5b-kaggle-aafeb0fc",
+ "segments": [
+  {
+   "session_start": 1793619005.2284636,
+   "started": "2026-11-02T11:31:54+0000",
+   "first_chunk": 0,
+   "repo_id": "Qwen/Qwen2.5-Math-1.5B-Instruct",
+   "revision": "aafeb0fc6f22cbf0eaeed126eff8be45b0360a35",
+   "decoding": {
+    "k": 8,
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "top_k": 20,
+    "repetition_penalty": 1.0,
+    "max_new_tokens": 3072,
+    "seed": 0
+   },
+   "python": "3.11.17",
+   "packages": {
+    "vllm": "0.29.0",
+    "torch": "2.13.0",
+    "transformers": "5.22.1",
+    "pint": "0.25.3"
+   },
+   "gpus": "Tesla T4, 15360 MiB, 580.178.04\nTesla T4, 15360 MiB, 580.178.04",
+   "commit": "4039888c32bbd65a6d1700e2a3f3f73c53655e5d",
+   "config_sha256": "1a540818026ecd5d543356de51c64c6dbcf6b318c34a53620f29f1c953ecf3d3",
+   "chat_template_sha256": "c564d12c9977b8942423753b0c409a11f50142508ced170e9fe1c2f5b803cf70",
+   "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+   "enforce_eager": false,
+   "env": {
+    "NCCL_P2P_DISABLE": null,
+    "VLLM_USE_FLASHINFER_SAMPLER": "0"
+   },
+   "engine_args": {
+    "model": "/tmp/physcal/qwen2.5-math-1.5b-instruct",
+    "tokenizer": "/tmp/physcal/qwen2.5-math-1.5b-instruct",
+    "dtype": "half",
+    "tensor_parallel_size": 2,
+    "max_model_len": 4096,
+    "gpu_memory_utilization": 0.9,
+    "disable_custom_all_reduce": true,
+    "attention_backend": "TRITON_ATTN",
+    "enforce_eager": false,
+    "seed": 0
+   },
+   "plan": {
+    "session_start": 1793619005.2284636,
+    "t_end": 1793653205.2284636,
+    "planned_at": 1793619387.8328469,
+    "done_at_plan": 24,
+    "s_per_problem": 6.235690939426422,
+    "rate_margin": 1.25,
+    "n_planned": 1176
+   },
+   "chunks": 49,
+   "seconds": 5580.371408462524,
+   "last_chunk_end": 1176,
+   "stop": "planned candidates done",
+   "ended": "2026-11-02T13:06:54+0000"
+  }
+ ]
+}

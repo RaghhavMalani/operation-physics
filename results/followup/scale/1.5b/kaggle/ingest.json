@@ -1,0 +1,32 @@
+{
+ "decision": "D157: the Kaggle samples ingested (exploratory)",
+ "model": "1.5b",
+ "zip_sha256": "9d73488b218ddb546657fcda9b867e4a4970628e1b12850380a3f347be866e0a",
+ "n_candidates": 1176,
+ "n_rows": 9408,
+ "chunks_written": 49,
+ "prompts_checked": 1176,
+ "regraded_changed_rows": 0,
+ "answered_share": 0.9764030612244898,
+ "accuracy_per_sample": 0.4135841836734694,
+ "segments": [
+  {
+   "session_start": 1793619005.2284636,
+   "commit": "4039888c32bbd65a6d1700e2a3f3f73c53655e5d",
+   "packages": {
+    "vllm": "0.29.0",
+    "torch": "2.13.0",
+    "transformers": "5.22.1",
+    "pint": "0.25.3"
+   },
+   "gpus": "Tesla T4, 15360 MiB, 580.178.04\nTesla T4, 15360 MiB, 580.178.04",
+   "enforce_eager": false,
+   "env": {
+    "NCCL_P2P_DISABLE": null,
+    "VLLM_USE_FLASHINFER_SAMPLER": "0"
+   },
+   "chunks": 49,
+   "stop": "planned candidates done"
+  }
+ ]
+}
