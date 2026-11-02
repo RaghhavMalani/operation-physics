@@ -1,0 +1,230 @@
+[07:20:40] follow-up Kaggle chain start (D157, exploratory); GPU deadline 13:00 IST (339 min left); chain PID 11204
+[07:21:25] host VRAM readings (MiB): 1912 1912 1912 1912 1912 1912 1911 1912
+[07:21:25] host use 1912 MiB gives 5.6 GiB < 7.5: re-reading in 60 s
+[07:22:50] host VRAM readings (MiB): 1908 1908 1908 1909 1909 1908 1908 1908
+[07:22:50] host use 1908 MiB gives 5.6 GiB < 7.5: re-reading in 60 s
+[07:24:34] host VRAM readings (MiB): 1881 1881 1881 1881 1881 1881 1881 1881
+[07:24:34] host use 1881 MiB gives 5.6 GiB < 7.5: re-reading in 60 s
+[07:25:54] host VRAM readings (MiB): 1873 1873 1873 1873 1873 1873 1873 1873
+[07:25:54] host use 1873 MiB gives 5.6 GiB < 7.5: re-reading in 60 s
+[07:27:28] host VRAM readings (MiB): 1874 1874 1873 1873 1873 1873 1873 1873
+[07:27:28] launch cap 5.6 GiB (max 7.5, needed 6.5)
+[07:27:29] launch cap 5.6 GiB < 6.5: Windows holds 1873 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:29:01] host VRAM readings (MiB): 1873 1873 1873 1873 1873 1873 1873 1873
+[07:29:02] launch cap 5.6 GiB < 6.5: Windows holds 1873 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:30:39] host VRAM readings (MiB): 1873 1873 1873 1873 1873 1873 1874 1874
+[07:30:40] launch cap 5.6 GiB < 6.5: Windows holds 1874 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:32:07] host VRAM readings (MiB): 1873 1873 1873 1873 1873 1873 1873 1873
+[07:32:07] launch cap 5.6 GiB < 6.5: Windows holds 1873 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:33:37] host VRAM readings (MiB): 1870 1871 1871 1871 1871 1871 1871 1871
+[07:33:37] launch cap 5.6 GiB < 6.5: Windows holds 1870 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:35:10] host VRAM readings (MiB): 1870 1870 1870 1870 1870 1870 1870 1631
+[07:35:11] launch cap 5.6 GiB < 6.5: Windows holds 1631 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:36:40] host VRAM readings (MiB): 1871 1870 1870 1870 1870 1870 1870 1870
+[07:36:40] launch cap 5.6 GiB < 6.5: Windows holds 1870 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:38:15] host VRAM readings (MiB): 1871 1871 1871 1871 1871 1871 1871 1871
+[07:38:18] launch cap 5.6 GiB < 6.5: Windows holds 1871 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:39:51] host VRAM readings (MiB): 1870 1870 1870 1870 1870 1870 1872 1871
+[07:39:53] launch cap 5.6 GiB < 6.5: Windows holds 1871 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:41:21] host VRAM readings (MiB): 1871 1871 1871 1871 1871 1871 1871 1871
+[07:41:22] launch cap 5.6 GiB < 6.5: Windows holds 1871 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:42:51] host VRAM readings (MiB): 1871 1870 1870 1870 1870 1870 1870 1870
+[07:42:53] launch cap 5.6 GiB < 6.5: Windows holds 1870 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:44:17] host VRAM readings (MiB): 1870 1870 1870 1872 1871 1871 1871 1871
+[07:44:18] launch cap 5.6 GiB < 6.5: Windows holds 1871 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:45:51] host VRAM readings (MiB): 1870 1870 1872 1872 1872 1872 1872 1872
+[07:45:52] launch cap 5.6 GiB < 6.5: Windows holds 1872 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:47:33] host VRAM readings (MiB): 1872 1872 1872 1872 1872 1872 1872 1872
+[07:47:34] launch cap 5.6 GiB < 6.5: Windows holds 1872 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:49:07] host VRAM readings (MiB): 1873 1873 1872 1872 1872 1872 1872 1872
+[07:49:09] launch cap 5.6 GiB < 6.5: Windows holds 1872 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:50:39] host VRAM readings (MiB): 1872 1872 1872 1872 1879 1879 1879 1908
+[07:50:42] launch cap 5.6 GiB < 6.5: Windows holds 1914 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:52:18] host VRAM readings (MiB): 1963 1946 1951 1964 1949 1953 1951 1965
+[07:52:18] launch cap 5.5 GiB < 6.5: Windows holds 1967 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:54:00] host VRAM readings (MiB): 1727 1948 1963 1955 1985 2068 2030 2034
+[07:54:02] launch cap 5.5 GiB < 6.5: Windows holds 2067 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:55:36] host VRAM readings (MiB): 1952 1952 1952 1952 1953 1952 1952 1952
+[07:55:37] launch cap 5.5 GiB < 6.5: Windows holds 1952 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:57:12] host VRAM readings (MiB): 1952 1952 1952 1954 1952 1952 1952 1952
+[07:57:14] launch cap 5.5 GiB < 6.5: Windows holds 1952 MiB of VRAM; close GPU apps; re-reading in 60 s
+[07:58:46] host VRAM readings (MiB): 1952 1952 1952 1952 1952 1952 1952 1952
+[07:58:46] launch cap 5.5 GiB < 6.5: Windows holds 1952 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:00:24] host VRAM readings (MiB): 1952 1952 1952 1952 1952 1952 1952 1952
+[08:00:24] launch cap 5.5 GiB < 6.5: Windows holds 1952 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:01:51] host VRAM readings (MiB): 1952 1952 1952 1952 1952 1952 1952 1952
+[08:01:54] launch cap 5.5 GiB < 6.5: Windows holds 1952 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:03:25] host VRAM readings (MiB): 1961 1961 1961 1961 1961 1987 1987 1980
+[08:03:28] launch cap 5.5 GiB < 6.5: Windows holds 1994 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:04:54] host VRAM readings (MiB): 1955 1955 1955 1955 1955 1955 1955 1955
+[08:04:58] launch cap 5.5 GiB < 6.5: Windows holds 1955 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:06:29] host VRAM readings (MiB): 1948 1948 1948 1948 1948 1948 1948 1948
+[08:06:29] launch cap 5.5 GiB < 6.5: Windows holds 1948 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:07:48] host VRAM readings (MiB): 1948 1948 1948 1948 1948 1948 1948 1948
+[08:07:49] launch cap 5.5 GiB < 6.5: Windows holds 1948 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:09:07] host VRAM readings (MiB): 1948 1948 1948 1948 1948 1948 1948 1948
+[08:09:07] launch cap 5.5 GiB < 6.5: Windows holds 1948 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:10:26] host VRAM readings (MiB): 1946 1946 1946 1946 1946 1946 1946 1946
+[08:10:26] launch cap 5.5 GiB < 6.5: Windows holds 1946 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:11:45] host VRAM readings (MiB): 1946 1946 1948 1946 1946 1946 1946 1946
+[08:11:45] launch cap 5.5 GiB < 6.5: Windows holds 1946 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:13:05] host VRAM readings (MiB): 1946 1946 1946 1946 1946 1946 1946 1946
+[08:13:06] launch cap 5.5 GiB < 6.5: Windows holds 1946 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:14:24] host VRAM readings (MiB): 1946 1946 1946 1946 1946 1946 1946 1946
+[08:14:25] launch cap 5.5 GiB < 6.5: Windows holds 1948 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:15:45] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1944 1944 1944
+[08:15:45] launch cap 5.5 GiB < 6.5: Windows holds 1944 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:17:04] host VRAM readings (MiB): 1943 1943 1943 1943 1943 1943 1943 1943
+[08:17:04] launch cap 5.5 GiB < 6.5: Windows holds 1943 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:18:22] host VRAM readings (MiB): 1943 1943 1943 1943 1943 1943 1943 1943
+[08:18:23] launch cap 5.5 GiB < 6.5: Windows holds 1943 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:19:42] host VRAM readings (MiB): 1945 1944 1944 1944 1944 1944 1944 1944
+[08:19:42] launch cap 5.5 GiB < 6.5: Windows holds 1944 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:21:02] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1944 1944 1944
+[08:21:03] launch cap 5.5 GiB < 6.5: Windows holds 1944 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:22:23] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1944 1943 1943
+[08:22:24] launch cap 5.5 GiB < 6.5: Windows holds 1943 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:23:47] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1944 1944 1944
+[08:23:47] launch cap 5.5 GiB < 6.5: Windows holds 1944 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:25:04] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1944 1945 1944
+[08:25:04] launch cap 5.5 GiB < 6.5: Windows holds 1944 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:26:21] host VRAM readings (MiB): 1943 1943 1943 1943 1943 1945 1944 1944
+[08:26:21] launch cap 5.5 GiB < 6.5: Windows holds 1944 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:27:39] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1944 1944 1944
+[08:27:39] BLOCKED: launch cap 5.5 GiB < 6.5 after 60 min: Windows holds too much VRAM (close GPU apps, then re-run; nothing was started)
+[08:28:06] follow-up Kaggle chain start (D157, exploratory); GPU deadline 13:00 IST (271 min left); chain PID 18082
+[08:28:23] host VRAM readings (MiB): 1943 1943 1943 1943 1943 1943 1943 1943
+[08:28:23] host use 1943 MiB gives 5.5 GiB < 7.5: re-reading in 60 s
+[08:29:43] host VRAM readings (MiB): 1943 1943 1943 1945 1944 1944 1944 1944
+[08:29:43] host use 1944 MiB gives 5.5 GiB < 7.5: re-reading in 60 s
+[08:31:01] host VRAM readings (MiB): 1943 1945 1944 1944 1944 1944 1944 1944
+[08:31:01] host use 1944 MiB gives 5.5 GiB < 7.5: re-reading in 60 s
+[08:32:20] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1945 1945 1945
+[08:32:20] host use 1944 MiB gives 5.5 GiB < 7.5: re-reading in 60 s
+[08:33:37] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:33:37] launch cap 5.5 GiB (max 7.5, needed 6.5)
+[08:33:37] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:34:55] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1944 1944 1944
+[08:34:56] launch cap 5.5 GiB < 6.5: Windows holds 1944 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:36:14] host VRAM readings (MiB): 1944 1944 1944 1944 1944 1944 1944 1944
+[08:36:15] launch cap 5.5 GiB < 6.5: Windows holds 1944 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:37:33] host VRAM readings (MiB): 1944 1944 1944 1946 1945 1945 1945 1945
+[08:37:33] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:38:52] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:38:52] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:40:11] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:40:11] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:41:30] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:41:30] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:42:49] host VRAM readings (MiB): 1945 1944 1944 1944 1944 1944 1947 1945
+[08:42:49] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:44:08] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:44:08] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:45:26] host VRAM readings (MiB): 1941 1941 1941 1943 1942 1942 1942 1942
+[08:45:27] launch cap 5.5 GiB < 6.5: Windows holds 1942 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:46:46] host VRAM readings (MiB): 1942 1942 1943 1942 1942 1942 1942 1942
+[08:46:46] launch cap 5.5 GiB < 6.5: Windows holds 1942 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:48:06] host VRAM readings (MiB): 1949 1949 1949 1949 1949 1949 1949 1949
+[08:48:07] launch cap 5.5 GiB < 6.5: Windows holds 1949 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:49:26] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:49:26] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:50:47] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:50:47] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:52:07] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1947 1946
+[08:52:07] launch cap 5.5 GiB < 6.5: Windows holds 1946 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:53:26] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:53:26] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:54:46] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:54:46] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:56:05] host VRAM readings (MiB): 1946 1946 1946 1946 1946 1946 1946 1946
+[08:56:05] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:57:25] host VRAM readings (MiB): 1945 1945 1946 1946 1946 1946 1946 1947
+[08:57:25] launch cap 5.5 GiB < 6.5: Windows holds 1946 MiB of VRAM; close GPU apps; re-reading in 60 s
+[08:58:43] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[08:58:44] launch cap 5.5 GiB < 6.5: Windows holds 1945 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:00:02] host VRAM readings (MiB): 1945 1945 1945 1945 1945 1945 1945 1945
+[09:00:02] launch cap 5.5 GiB < 6.5: Windows holds 1947 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:01:21] host VRAM readings (MiB): 1931 1933 1935 1934 1934 1934 1935 1934
+[09:01:21] launch cap 5.6 GiB < 6.5: Windows holds 1934 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:02:40] host VRAM readings (MiB): 1931 1931 1931 1931 1931 1931 1931 1931
+[09:02:40] launch cap 5.6 GiB < 6.5: Windows holds 1931 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:03:58] host VRAM readings (MiB): 1923 1923 1923 1923 1923 1923 1923 1923
+[09:03:59] launch cap 5.6 GiB < 6.5: Windows holds 1923 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:05:18] host VRAM readings (MiB): 1922 1922 1922 1922 1922 1922 1922 1922
+[09:05:18] launch cap 5.6 GiB < 6.5: Windows holds 1922 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:06:36] host VRAM readings (MiB): 1922 1922 1922 1922 1935 1926 1924 1923
+[09:06:37] launch cap 5.6 GiB < 6.5: Windows holds 1923 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:07:56] host VRAM readings (MiB): 1924 1924 1924 1924 1924 1924 1924 1924
+[09:07:56] launch cap 5.6 GiB < 6.5: Windows holds 1924 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:09:14] host VRAM readings (MiB): 1924 1924 1924 1924 1923 1923 1927 1927
+[09:09:15] launch cap 5.6 GiB < 6.5: Windows holds 1923 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:10:33] host VRAM readings (MiB): 1924 1924 1924 1924 1924 1938 1927 1927
+[09:10:34] launch cap 5.6 GiB < 6.5: Windows holds 1923 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:11:52] host VRAM readings (MiB): 1923 1923 1923 1923 1923 1923 1923 1923
+[09:11:52] launch cap 5.6 GiB < 6.5: Windows holds 1923 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:13:11] host VRAM readings (MiB): 1923 1923 1923 1923 1923 1923 1923 1923
+[09:13:11] launch cap 5.6 GiB < 6.5: Windows holds 1923 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:14:29] host VRAM readings (MiB): 1937 1927 1923 1923 1923 1923 1923 1937
+[09:14:30] launch cap 5.6 GiB < 6.5: Windows holds 1927 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:15:48] host VRAM readings (MiB): 1927 1925 1924 1924 1924 1924 1924 1924
+[09:15:49] launch cap 5.6 GiB < 6.5: Windows holds 1924 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:17:07] host VRAM readings (MiB): 1924 1924 1924 1924 1924 1924 1924 1924
+[09:17:07] launch cap 5.6 GiB < 6.5: Windows holds 1924 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:18:27] host VRAM readings (MiB): 1924 1924 1924 1924 1924 1924 1924 1924
+[09:18:27] launch cap 5.6 GiB < 6.5: Windows holds 1938 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:19:45] host VRAM readings (MiB): 1938 1927 1924 1924 1924 1924 1924 1924
+[09:19:46] launch cap 5.6 GiB < 6.5: Windows holds 1928 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:21:03] host VRAM readings (MiB): 1456 1456 1456 1456 1455 1455 1455 1455
+[09:21:03] launch cap 6.0 GiB < 6.5: Windows holds 1455 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:22:20] host VRAM readings (MiB): 1428 1428 1428 1428 1428 1428 1436 1436
+[09:22:20] launch cap 6.1 GiB < 6.5: Windows holds 1436 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:23:37] host VRAM readings (MiB): 1425 1425 1425 1425 1424 1424 1424 1424
+[09:23:37] launch cap 6.1 GiB < 6.5: Windows holds 1424 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:24:54] host VRAM readings (MiB): 1424 1424 1424 1424 1424 1424 1464 1453
+[09:24:54] launch cap 6.1 GiB < 6.5: Windows holds 1438 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:26:11] host VRAM readings (MiB): 1408 1408 1408 1408 1408 1408 1408 1408
+[09:26:11] launch cap 6.1 GiB < 6.5: Windows holds 1408 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:27:28] host VRAM readings (MiB): 1408 1408 1408 1408 1408 1408 1408 1408
+[09:27:28] launch cap 6.1 GiB < 6.5: Windows holds 1411 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:28:45] host VRAM readings (MiB): 1411 1411 1408 1408 1408 1412 1408 1408
+[09:28:45] launch cap 6.1 GiB < 6.5: Windows holds 1408 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:30:01] host VRAM readings (MiB): 1408 1408 1408 1408 1408 1408 1408 1408
+[09:30:02] launch cap 6.1 GiB < 6.5: Windows holds 1408 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:31:19] host VRAM readings (MiB): 1408 1408 1408 1408 1408 1408 1408 1408
+[09:31:19] launch cap 6.1 GiB < 6.5: Windows holds 1408 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:32:35] host VRAM readings (MiB): 1408 1408 1408 1408 1422 1411 1411 1408
+[09:32:36] launch cap 6.1 GiB < 6.5: Windows holds 1408 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:33:52] host VRAM readings (MiB): 1408 1408 1408 1408 1408 1408 1408 1408
+[09:33:53] launch cap 6.1 GiB < 6.5: Windows holds 1408 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:35:09] host VRAM readings (MiB): 1408 1408 1408 1408 1408 1408 1408 1408
+[09:35:09] launch cap 6.1 GiB < 6.5: Windows holds 1408 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:36:26] host VRAM readings (MiB): 1408 1408 1408 1408 1408 1408 1408 1408
+[09:36:26] launch cap 6.1 GiB < 6.5: Windows holds 1408 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:37:43] host VRAM readings (MiB): 1408 1411 1411 1408 1408 1408 1412 1408
+[09:37:43] launch cap 6.1 GiB < 6.5: Windows holds 1480 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:39:00] host VRAM readings (MiB): 1466 1466 1466 1451 1451 1451 1451 1451
+[09:39:00] launch cap 6.0 GiB < 6.5: Windows holds 1436 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:40:17] host VRAM readings (MiB): 1428 1428 1448 1448 1448 1448 1448 1436
+[09:40:17] launch cap 6.0 GiB < 6.5: Windows holds 1436 MiB of VRAM; close GPU apps; re-reading in 60 s
+[09:41:34] host VRAM readings (MiB): 779 779 779 779 779 780 780 780
+[09:41:34] launch cap 6.7 GiB: starting the readouts
+[09:41:34] GPU at 44.50C, memory.used 780 MiB
+[09:41:36] disk: 41 GiB free on MLStorage
+[09:41:36] start fs_yes_7b (timeout 11906s): uv run python -m physcal.eval.followup_scale yes --model 7b --cap 6.7
+[10:05:50] follow-up Kaggle chain start (D157, exploratory); GPU deadline 14:00 IST (234 min left); chain PID 29437
+[10:06:07] host VRAM readings (MiB): 487 481 484 489 485 480 476 476
+[10:06:07] host use 482 MiB gives 7.0 GiB < 7.5: re-reading in 60 s
+[10:07:24] host VRAM readings (MiB): 484 483 483 483 483 483 483 483
+[10:07:24] host use 483 MiB gives 7.0 GiB < 7.5: re-reading in 60 s
+[10:08:41] host VRAM readings (MiB): 483 483 483 483 483 483 483 483
+[10:08:41] host use 483 MiB gives 7.0 GiB < 7.5: re-reading in 60 s
+[10:09:58] host VRAM readings (MiB): 483 483 483 483 483 483 483 483
+[10:09:58] host use 483 MiB gives 7.0 GiB < 7.5: re-reading in 60 s
+[10:11:15] host VRAM readings (MiB): 483 483 483 483 483 483 483 483
+[10:11:15] launch cap 7.0 GiB (max 7.5, needed 6.5)
+[10:11:15] launch cap 7.0 GiB: starting the readouts
+[10:11:15] GPU at 50.50C, memory.used 483 MiB
+[10:11:16] disk: 41 GiB free on MLStorage
+[10:11:16] start fs_yes_7b (timeout 13725s): uv run python -m physcal.eval.followup_scale yes --model 7b --cap 7.0
+[11:22:29] end fs_yes_7b: exit 0
+[11:22:29] fs_yes_7b: 9 temperature pauses, 270s paused of 4274s; tonight so far 9 pauses, 270s of 4274s (D143)

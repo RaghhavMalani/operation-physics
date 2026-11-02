@@ -1,0 +1,59 @@
+yes: 6133 kept answers, 6133 to read
+W1102 04:11:47.324000 25654 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1102 04:11:47.377000 25654 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:00<01:01,  5.54it/s]Loading weights:   1%|          | 2/339 [00:00<01:54,  2.94it/s]Loading weights:   5%|▍         | 16/339 [00:00<00:11, 29.24it/s]Loading weights:   9%|▊         | 29/339 [00:00<00:06, 49.95it/s]Loading weights:  14%|█▍        | 48/339 [00:00<00:03, 81.94it/s]Loading weights:  18%|█▊        | 62/339 [00:01<00:02, 96.16it/s]Loading weights:  22%|██▏       | 76/339 [00:01<00:02, 103.44it/s]Loading weights:  28%|██▊       | 96/339 [00:01<00:01, 128.52it/s]Loading weights:  33%|███▎      | 112/339 [00:01<00:01, 131.04it/s]Loading weights:  38%|███▊      | 130/339 [00:01<00:01, 143.90it/s]Loading weights:  43%|████▎     | 146/339 [00:01<00:01, 141.00it/s]Loading weights:  49%|████▊     | 165/339 [00:01<00:01, 151.32it/s]Loading weights:  54%|█████▎    | 182/339 [00:01<00:01, 151.75it/s]Loading weights:  58%|█████▊    | 198/339 [00:01<00:00, 147.72it/s]Loading weights:  64%|██████▍   | 218/339 [00:02<00:00, 154.62it/s]Loading weights:  69%|██████▉   | 234/339 [00:02<00:00, 150.12it/s]Loading weights:  74%|███████▍  | 252/339 [00:02<00:00, 156.81it/s]Loading weights:  79%|███████▉  | 268/339 [00:02<00:00, 148.65it/s]Loading weights:  84%|████████▍ | 286/339 [00:02<00:00, 154.19it/s]Loading weights:  89%|████████▉ | 302/339 [00:02<00:00, 148.84it/s]Loading weights:  94%|█████████▎| 317/339 [00:02<00:00, 143.25it/s]Loading weights:  99%|█████████▉| 336/339 [00:02<00:00, 155.99it/s]Loading weights: 100%|██████████| 339/339 [00:02<00:00, 119.18it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  yes 32/6133 (30s)
+  yes 64/6133 (59s)
+  yes 96/6133 (80s)
+  yes 128/6133 (108s)
+  yes 160/6133 (139s)
+  yes 192/6133 (169s)
+  yes 224/6133 (197s)
+  yes 256/6133 (227s)
+  yes 288/6133 (257s)
+  yes 320/6133 (288s)
+  yes 352/6133 (311s)
+  yes 384/6133 (340s)
+  yes 416/6133 (364s)
+  yes 448/6133 (391s)
+  yes 480/6133 (416s)
+  yes 512/6133 (445s)
+  yes 544/6133 (477s)
+  yes 576/6133 (506s)
+  yes 608/6133 (537s)
+  yes 640/6133 (560s)
+  yes 672/6133 (586s)
+  yes 704/6133 (611s)
+  yes 736/6133 (641s)
+  yes 768/6133 (672s)
+  yes 800/6133 (698s)
+  yes 832/6133 (732s)
+  yes 864/6133 (759s)
+  yes 896/6133 (797s)
+  yes 928/6133 (826s)
+  yes 960/6133 (859s)
+  yes 992/6133 (884s)
+  yes 1024/6133 (910s)
+  yes 1056/6133 (935s)
+  yes 1088/6133 (964s)
+  yes 1120/6133 (995s)
+  yes 1152/6133 (1027s)
+  yes 1184/6133 (1054s)
+  yes 1216/6133 (1079s)
+  yes 1248/6133 (1114s)
+  yes 1280/6133 (1140s)
+  yes 1312/6133 (1167s)
+  yes 1344/6133 (1196s)
+  yes 1376/6133 (1257s)
+  yes 1408/6133 (1285s)
+  yes 1440/6133 (1350s)
+  yes 1472/6133 (1384s)
+  yes 1504/6133 (1415s)
