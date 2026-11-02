@@ -1,0 +1,65 @@
+{
+ "decision": "D157: item 3's 7B samples on Kaggle (exploratory, follow-up project; not the paper)",
+ "run_id": "followup-scale-7b-kaggle-ef9926d7",
+ "segments": [
+  {
+   "session_start": 1793555382.0249605,
+   "started": "2026-11-01T17:53:05+0000",
+   "first_chunk": 0,
+   "repo_id": "Qwen/Qwen2.5-Math-7B-Instruct",
+   "revision": "ef9926d75ab1d54532f6a30dd5e760355eb9aa4d",
+   "decoding": {
+    "k": 8,
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "top_k": 20,
+    "repetition_penalty": 1.0,
+    "max_new_tokens": 3072,
+    "seed": 0
+   },
+   "python": "3.11.17",
+   "packages": {
+    "vllm": "0.29.0",
+    "torch": "2.13.0",
+    "transformers": "5.22.1",
+    "pint": "0.25.3"
+   },
+   "gpus": "Tesla T4, 15360 MiB, 580.178.04\nTesla T4, 15360 MiB, 580.178.04",
+   "commit": "865c6fac8b1f8b2e77fb36f1bae3ebc63c7d03a8",
+   "config_sha256": "709160135995ef3c6c195348fd189d7b7bfb3e2840ebd509a3ae6509fe594dae",
+   "chat_template_sha256": "c564d12c9977b8942423753b0c409a11f50142508ced170e9fe1c2f5b803cf70",
+   "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+   "enforce_eager": false,
+   "env": {
+    "NCCL_P2P_DISABLE": null,
+    "VLLM_USE_FLASHINFER_SAMPLER": "0"
+   },
+   "engine_args": {
+    "model": "/tmp/physcal/qwen2.5-math-7b-instruct",
+    "tokenizer": "/tmp/physcal/qwen2.5-math-7b-instruct",
+    "dtype": "half",
+    "tensor_parallel_size": 2,
+    "max_model_len": 4096,
+    "gpu_memory_utilization": 0.9,
+    "disable_custom_all_reduce": true,
+    "attention_backend": "TRITON_ATTN",
+    "enforce_eager": false,
+    "seed": 0
+   },
+   "plan": {
+    "session_start": 1793555382.0249605,
+    "t_end": 1793589582.0249605,
+    "planned_at": 1793556252.0585055,
+    "done_at_plan": 24,
+    "s_per_problem": 17.154627108573912,
+    "rate_margin": 1.25,
+    "n_planned": 1176
+   },
+   "chunks": 49,
+   "seconds": 18063.310119867325,
+   "last_chunk_end": 1176,
+   "stop": "planned candidates done",
+   "ended": "2026-11-01T22:56:43+0000"
+  }
+ ]
+}

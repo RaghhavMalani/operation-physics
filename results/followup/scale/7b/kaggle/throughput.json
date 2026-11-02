@@ -1,0 +1,14 @@
+{
+ "decision": "D157",
+ "n_candidates": 20,
+ "first_index": 0,
+ "seconds": 343.09254217147827,
+ "s_per_problem": 17.154627108573912,
+ "completion_tokens": 194899,
+ "tokens_per_s": 568.0653935712456,
+ "answered_share": 0.91875,
+ "truncated_share": 0.08125,
+ "distinct_completions_per_problem": 8.0,
+ "min_answered_share": 0.5,
+ "health_ok": true
+}

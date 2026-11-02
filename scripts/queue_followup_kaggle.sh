@@ -20,6 +20,8 @@ XM2_LIB_ONLY=1 . scripts/queue_xm2.sh          # CPU_ENV, gpu_stage
 SC=${SC_OUT:-results/followup/scale}
 MIN_STAGE_S=${MIN_STAGE_S:-900}                # a readout stage needs at least this much time left
 ANALYZE_S=${ANALYZE_S:-21600}                  # the CPU analysis (29 layers, grouped CV), after the GPU deadline too
+MIN_CAP=${MIN_CAP:-6.5}                        # D158: the 4-bit 7B is 5.23 GiB loaded; the longest readouts need ~6.5
+CAP_WAIT_S=${CAP_WAIT_S:-3600}                 # D158: wait this long for Windows to free VRAM, then BLOCKED (no stage)
 FS="$PY -m physcal.eval.followup_scale"
 FK="$PY -m physcal.eval.followup_kaggle"
 
@@ -44,7 +46,18 @@ ls "$SC/7b/samples"/chunk_*.jsonl > /dev/null 2>&1 || { log "BLOCKED: no 7B samp
 
 # ---- 2-3. 7B readouts on the kept answers -------------------------------------------------------------------------------
 CAP=$(launch_cap)
-log "launch cap ${CAP} GiB (max ${CAP_MAX})"
+log "launch cap ${CAP} GiB (max ${CAP_MAX}, needed ${MIN_CAP})"
+t_wait=$(date +%s)
+while awk -v c="$CAP" -v m="$MIN_CAP" 'BEGIN {exit !(c + 0 < m + 0)}'; do   # D158: never start below the need
+  if [ $(( $(date +%s) - t_wait )) -ge "$CAP_WAIT_S" ] || [ "$(left)" -lt "$MIN_STAGE_S" ]; then
+    log "BLOCKED: launch cap ${CAP} GiB < ${MIN_CAP} after $(( ($(date +%s) - t_wait) / 60 )) min: Windows holds too much VRAM (close GPU apps, then re-run; nothing was started)"
+    exit 1
+  fi
+  log "launch cap ${CAP} GiB < ${MIN_CAP}: Windows holds $(smi memory.used) MiB of VRAM; close GPU apps; re-reading in 60 s"
+  sleep 60
+  CAP=$(HOST_TRIES=1 launch_cap)
+done
+log "launch cap ${CAP} GiB: starting the readouts"
 DONE=0                                         # readouts that finished (exit 0; a finished one re-runs in seconds)
 for what in yes hidden; do
   if [ "$(left)" -lt "$MIN_STAGE_S" ]; then log "SKIP fs_${what}_7b: $(( $(left) / 60 )) min left (re-run to resume)"; continue; fi

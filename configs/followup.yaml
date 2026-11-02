@@ -77,7 +77,7 @@ scale:                                 # item 3: Qwen2.5-Math-7B-Instruct (4-bit
     score_batch_size: 2
     logit_check_rtol: 0.02
     head_chunk: 8192
-  hidden_batch_size: 2
+  hidden_batch_size: 1                 # D158: 2 -> 1 (every layer's full sequence is kept; the longest kept answers)
   hidden_part_size: 64                 # answers per saved part (resumable)
   logit_check_rtol: 0.02               # x2_hidden's check
   probe:                               # x2_analysis.crossfit_confidence (configs/x2.yaml analysis.probe)

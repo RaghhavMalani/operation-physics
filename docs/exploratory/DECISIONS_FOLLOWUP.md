@@ -459,3 +459,53 @@ appended here.
   - the measured rate decides N.
   - **The local readouts:** about 0.45 × N × 8 kept answers at ~2–3 s each (D154's 0.9 + 0.8 s at ≤ 2,048 tokens,
     longer contexts here). At N = 1,176 that is ~3 h. The stages are resumable.
+
+## 2026-11-02 morning: the Kaggle run is back (your instructions at ~07:10 IST; GPU deadline 13:00 IST)
+
+### D158. The Kaggle samples are ingested; before the local readouts, the hidden-state batch goes from 2 to 1 and the readouts wait for enough free VRAM (2026-11-02, ~07:25 IST; before any readout of a Kaggle answer)
+- **The Kaggle run (D157) finished cleanly:**
+  - one session, on the first attempt: no stall, no retry, no `enforce_eager`;
+  - the stop reason is "planned candidates done";
+  - the timing on the first 20 candidates was 17.2 s / problem (568 tokens / s), so the plan was all 1,176;
+  - sampling took 5.0 h (17:53–22:56 UTC on 2026-11-01), 15.4 s / problem;
+  - the zip's sha256 is `10bdb2d9…` (in `results/followup/scale/7b/kaggle/ingest.json`).
+- **The ingest passed every check:**
+  - 1,176 candidates × 8 samples, all 49 chunks;
+  - the manifest;
+  - every row's problem against the frozen pool, and the seeds;
+  - all 1,176 prompts re-render to the same sha256 and length with the local tokenizer;
+  - the local re-grade changed 0 rows.
+- **What was sampled (descriptive, no readout yet):**
+  - answered 91.1%, truncated 8.7% at 3,072 tokens, correct per sample 51.4%;
+  - by depth 1 → 4:
+    - answered 96 / 93 / 89 / 86%;
+    - truncated 4 / 7 / 10 / 14%;
+    - correct 78 / 61 / 39 / 29%.
+  - **Mixed (kept) problems:** 844 of 1,176 (71.8%). Of the rest, 216 have only correct answers and 116 only wrong
+    ones.
+  - **The readouts' items:** 6,133 answered answers of kept problems; completions average 1,003 tokens, at most 2,776.
+- **Two changes before any readout. Both concern memory only, not what is measured.**
+  1. **`scale.hidden_batch_size`: 2 → 1.**
+     - **Why:** the hidden-state pass keeps every layer's full sequence (`output_hidden_states`), and it has no OOM
+       backoff. At batch 2, the longest pair padded to ~3,100 tokens would need ~1.3 GB on top of the 5.23 GiB the
+       loaded model holds. D153's development answers were ≤ 2,048 tokens.
+     - **Effect:** a state differs only by padding numerics (right padding with a mask), and it is somewhat slower.
+       Direct P(yes) already halves its batch on an OOM.
+  2. **A launch gate in `scripts/queue_followup_kaggle.sh`.** The GPU stages start only when the launch cap is
+     ≥ 6.5 GiB, the estimated peak of the longest readouts.
+     - **The wait:** if the cap is lower, the chain re-reads every 60 s for up to 60 min. After that it stops as
+       BLOCKED, with nothing started.
+     - **Why:** at 07:15 IST, Windows apps held 1.9–2.2 GiB of VRAM, so the usual cap (total − host − 0.5 GiB) was
+       ~5.4 GiB. A stage at that cap would run out of memory, and a larger cap would spill (the WSL rule).
+- **The pin test is narrowed.** `test_followup_kaggle`'s check of the notebook's commit now compares only the sampling
+  settings of `configs/followup.yaml`: `scale.kaggle`, generation, system prompt, tolerance, chunk size, development
+  indices and pool. The sampler, scale module, render, units and x2 config are still compared byte for byte. A
+  readout setting may change after the Kaggle run.
+- **The readout estimate** uses D154's measured 0.89 s (P(yes)) and 0.81 s (hidden, batch 2) per answer, at similar
+  lengths. With batch 1 the hidden pass is assumed at ~0.95 s.
+  - **Total:** 6,133 × ~1.85 s ≈ 3.1 h, plus two loads ≈ 3.3 h.
+  - **The deadline:** if started by ~09:00 IST, it ends before 13:00 IST.
+  - **Otherwise:** the stages stop at the deadline and resume on a re-run (P(yes) appends rows; hidden states are
+    saved in parts of 64).
+- **The analysis** (CPU, after both readouts) is D151's, unchanged. The SFT 1.5B comparison uses X2 restricted to the
+  same 1,176-candidate prefix, plus the published numbers.

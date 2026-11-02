@@ -196,8 +196,8 @@ def test_restore_copies_the_prefix_and_refuses_other_settings(cfg, tmp_path):
 
 # ------------------------------------------------------------------------------------------- the notebook
 def test_the_notebook_parses_and_its_pinned_commit_holds_this_code():
-    """The Kaggle notebook's cells are valid Python, and COMMIT holds the same sampler, scale module and config as the
-    working tree (a change to any of them needs a re-pinned notebook and a D-entry)."""
+    """The Kaggle notebook's cells are valid Python, and COMMIT holds the same sampler, scale module and sampling
+    settings as the working tree (a change to any of them needs a re-pinned notebook and a D-entry)."""
     import ast
     import re
     import subprocess
@@ -209,8 +209,18 @@ def test_the_notebook_parses_and_its_pinned_commit_holds_this_code():
     for src in code:
         ast.parse(src)
     commit = re.search(r'^COMMIT = "([0-9a-f]{40})"$', code[0], flags=re.M).group(1)
-    for path in ("physcal/eval/followup_kaggle.py", "physcal/eval/followup_scale.py", "configs/followup.yaml",
-                 "configs/x2.yaml", "physcal/env/render.py", "physcal/env/units.py"):
-        pinned = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{commit}:{path}"], capture_output=True,
-                                text=True, check=True).stdout
-        assert pinned == (REPO_ROOT / path).read_text(), f"{path} changed since the notebook's commit {commit[:12]}"
+
+    def pinned(path):
+        return subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{commit}:{path}"], capture_output=True,
+                              text=True, check=True).stdout
+
+    for path in ("physcal/eval/followup_kaggle.py", "physcal/eval/followup_scale.py", "configs/x2.yaml",
+                 "physcal/env/render.py", "physcal/env/units.py"):
+        assert pinned(path) == (REPO_ROOT / path).read_text(), f"{path} changed since the notebook's commit {commit[:12]}"
+    # D158: of configs/followup.yaml, what the Kaggle run sampled with (the local readouts' settings may change)
+    import yaml
+
+    old = yaml.safe_load(pinned("configs/followup.yaml"))["scale"]
+    new = K._config()["scale"]
+    for key in ("kaggle", "generation", "system_prompt", "tolerance", "chunk_size", "dev_indices", "pool_config"):
+        assert old[key] == new[key], f"scale.{key} changed since the notebook's commit {commit[:12]}"
