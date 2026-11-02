@@ -425,3 +425,23 @@
 [21:30:36] guard(97321): stage continued after 30s paused (GPU at 63.90C <= 75C)
 [21:33:08] end fs_hidden_1.5b: exit 0
 [21:33:08] fs_hidden_1.5b: 8 temperature pauses, 240s paused of 1266s; tonight so far 13 pauses, 391s of 2673s (D143)
+[21:33:10] commit 'Follow-up (D157/D160, exploratory): 1.5b hidden readout on the kept answers (Kaggle samples)': pushed
+[21:33:11] GPU at 71.10C, memory.used 1472 MiB
+[21:33:12] disk: 22 GiB free on MLStorage
+[21:33:12] start fs_hidden_random_1.5b (timeout 41209s): uv run python -m physcal.eval.followup_scale hidden --random-init --model 1.5b --cap 5.9
+[21:35:43] guard(99312): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:36:13] guard(99312): stage continued after 30s paused (GPU at 66.00C <= 75C)
+[21:37:13] guard(99312): GPU at 87.50C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:37:43] guard(99312): stage continued after 30s paused (GPU at 65.70C <= 75C)
+[21:38:43] guard(99312): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:39:13] guard(99312): stage continued after 30s paused (GPU at 65.60C <= 75C)
+[21:39:43] guard(99312): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:40:13] guard(99312): stage continued after 30s paused (GPU at 64.60C <= 75C)
+[21:46:13] guard(99312): GPU at 87.80C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:46:43] guard(99312): stage continued after 30s paused (GPU at 66.70C <= 75C)
+[21:49:14] guard(99312): GPU at 87.30C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:49:44] guard(99312): stage continued after 30s paused (GPU at 66.60C <= 75C)
+[21:50:44] guard(99312): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:51:14] guard(99312): stage continued after 30s paused (GPU at 66.60C <= 75C)
+[21:58:23] end fs_hidden_random_1.5b: exit 0
+[21:58:23] fs_hidden_random_1.5b: 7 temperature pauses, 210s paused of 1512s; tonight so far 20 pauses, 601s of 4185s (D143)

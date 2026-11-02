@@ -1,0 +1,27 @@
+{
+ "decision": "D151 item 3c (hidden states; the arrays are local, gitignored); D160's random-weights control",
+ "n": 6000,
+ "parts": 94,
+ "identity": {
+  "model": "1.5b",
+  "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+  "revision": "e24e9530845f4e3a6648343796883cb509935039",
+  "content_sha256": "9939448b3a0fbe45"
+ },
+ "position": "the token holding the closing brace of the last \\boxed{}",
+ "seconds": 1509.0513026714325,
+ "random_init": {
+  "decision": "D160 (the probes' random-weights control; exploratory)",
+  "seed": 0,
+  "init": "Linear / Embedding N(0, 0.02^2), padding row 0, biases 0, RMSNorm 1 (transformers' Qwen2)",
+  "architecture_from": {
+   "model": "1.5b",
+   "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit",
+   "revision": "e24e9530845f4e3a6648343796883cb509935039",
+   "content_sha256": "9939448b3a0fbe45"
+  },
+  "n_params": 1543714304,
+  "n_shards": 2,
+  "content_sha256": "fa7be1e90689c11d"
+ }
+}

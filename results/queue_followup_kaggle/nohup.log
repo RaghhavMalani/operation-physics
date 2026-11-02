@@ -323,3 +323,9 @@
 [21:12:04] start fs_hidden_1.5b (timeout 42478s): uv run python -m physcal.eval.followup_scale hidden --model 1.5b --cap 5.9
 [21:33:08] end fs_hidden_1.5b: exit 0
 [21:33:08] fs_hidden_1.5b: 8 temperature pauses, 240s paused of 1266s; tonight so far 13 pauses, 391s of 2673s (D143)
+[21:33:10] commit 'Follow-up (D157/D160, exploratory): 1.5b hidden readout on the kept answers (Kaggle samples)': pushed
+[21:33:11] GPU at 71.10C, memory.used 1472 MiB
+[21:33:12] disk: 22 GiB free on MLStorage
+[21:33:12] start fs_hidden_random_1.5b (timeout 41209s): uv run python -m physcal.eval.followup_scale hidden --random-init --model 1.5b --cap 5.9
+[21:58:23] end fs_hidden_random_1.5b: exit 0
+[21:58:23] fs_hidden_random_1.5b: 7 temperature pauses, 210s paused of 1512s; tonight so far 20 pauses, 601s of 4185s (D143)

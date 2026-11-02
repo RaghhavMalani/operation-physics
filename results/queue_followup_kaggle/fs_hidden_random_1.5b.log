@@ -1,0 +1,106 @@
+W1102 16:03:17.272000 99326 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1102 16:03:17.294000 99326 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<01:56,  2.88it/s]Loading weights:   1%|          | 4/338 [00:00<00:32, 10.17it/s]Loading weights:   6%|▌         | 21/338 [00:00<00:05, 54.88it/s]Loading weights:  10%|█         | 35/338 [00:00<00:03, 78.97it/s]Loading weights:  15%|█▌        | 51/338 [00:00<00:02, 100.81it/s]Loading weights:  19%|█▉        | 65/338 [00:00<00:02, 104.93it/s]Loading weights:  26%|██▌       | 87/338 [00:01<00:01, 132.73it/s]Loading weights:  30%|███       | 102/338 [00:01<00:01, 128.34it/s]Loading weights:  36%|███▋      | 123/338 [00:01<00:01, 149.73it/s]Loading weights:  41%|████      | 139/338 [00:01<00:01, 131.66it/s]Loading weights:  47%|████▋     | 160/338 [00:01<00:01, 151.09it/s]Loading weights:  54%|█████▍    | 184/338 [00:01<00:00, 170.41it/s]Loading weights:  62%|██████▏   | 208/338 [00:01<00:00, 184.38it/s]Loading weights:  69%|██████▊   | 232/338 [00:01<00:00, 194.86it/s]Loading weights:  76%|███████▌  | 256/338 [00:01<00:00, 202.75it/s]Loading weights:  83%|████████▎ | 280/338 [00:02<00:00, 210.15it/s]Loading weights:  90%|████████▉ | 304/338 [00:02<00:00, 214.26it/s]Loading weights:  97%|█████████▋| 328/338 [00:02<00:00, 215.89it/s]Loading weights: 100%|██████████| 338/338 [00:02<00:00, 148.56it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  hidden part 0: 64/6000 (32s)
+  hidden part 1: 128/6000 (43s)
+  hidden part 2: 192/6000 (54s)
+  hidden part 3: 256/6000 (66s)
+  hidden part 4: 320/6000 (77s)
+  hidden part 5: 384/6000 (89s)
+  hidden part 6: 448/6000 (101s)
+  hidden part 7: 512/6000 (114s)
+  hidden part 8: 576/6000 (129s)
+  hidden part 9: 640/6000 (143s)
+  hidden part 10: 704/6000 (186s)
+  hidden part 11: 768/6000 (199s)
+  hidden part 12: 832/6000 (213s)
+  hidden part 13: 896/6000 (227s)
+  hidden part 14: 960/6000 (239s)
+  hidden part 15: 1024/6000 (282s)
+  hidden part 16: 1088/6000 (294s)
+  hidden part 17: 1152/6000 (309s)
+  hidden part 18: 1216/6000 (323s)
+  hidden part 19: 1280/6000 (365s)
+  hidden part 20: 1344/6000 (378s)
+  hidden part 21: 1408/6000 (421s)
+  hidden part 22: 1472/6000 (434s)
+  hidden part 23: 1536/6000 (446s)
+  hidden part 24: 1600/6000 (459s)
+  hidden part 25: 1664/6000 (473s)
+  hidden part 26: 1728/6000 (487s)
+  hidden part 27: 1792/6000 (500s)
+  hidden part 28: 1856/6000 (516s)
+  hidden part 29: 1920/6000 (529s)
+  hidden part 30: 1984/6000 (541s)
+  hidden part 31: 2048/6000 (556s)
+  hidden part 32: 2112/6000 (569s)
+  hidden part 33: 2176/6000 (584s)
+  hidden part 34: 2240/6000 (597s)
+  hidden part 35: 2304/6000 (612s)
+  hidden part 36: 2368/6000 (628s)
+  hidden part 37: 2432/6000 (642s)
+  hidden part 38: 2496/6000 (656s)
+  hidden part 39: 2560/6000 (671s)
+  hidden part 40: 2624/6000 (685s)
+  hidden part 41: 2688/6000 (700s)
+  hidden part 42: 2752/6000 (713s)
+  hidden part 43: 2816/6000 (727s)
+  hidden part 44: 2880/6000 (741s)
+  hidden part 45: 2944/6000 (756s)
+  hidden part 46: 3008/6000 (769s)
+  hidden part 47: 3072/6000 (813s)
+  hidden part 48: 3136/6000 (827s)
+  hidden part 49: 3200/6000 (841s)
+  hidden part 50: 3264/6000 (854s)
+  hidden part 51: 3328/6000 (868s)
+  hidden part 52: 3392/6000 (881s)
+  hidden part 53: 3456/6000 (896s)
+  hidden part 54: 3520/6000 (909s)
+  hidden part 55: 3584/6000 (924s)
+  hidden part 56: 3648/6000 (938s)
+  hidden part 57: 3712/6000 (953s)
+  hidden part 58: 3776/6000 (997s)
+  hidden part 59: 3840/6000 (1009s)
+  hidden part 60: 3904/6000 (1023s)
+  hidden part 61: 3968/6000 (1035s)
+  hidden part 62: 4032/6000 (1049s)
+  hidden part 63: 4096/6000 (1092s)
+  hidden part 64: 4160/6000 (1105s)
+  hidden part 65: 4224/6000 (1118s)
+  hidden part 66: 4288/6000 (1131s)
+  hidden part 67: 4352/6000 (1144s)
+  hidden part 68: 4416/6000 (1158s)
+  hidden part 69: 4480/6000 (1174s)
+  hidden part 70: 4544/6000 (1187s)
+  hidden part 71: 4608/6000 (1201s)
+  hidden part 72: 4672/6000 (1215s)
+  hidden part 73: 4736/6000 (1231s)
+  hidden part 74: 4800/6000 (1244s)
+  hidden part 75: 4864/6000 (1257s)
+  hidden part 76: 4928/6000 (1272s)
+  hidden part 77: 4992/6000 (1286s)
+  hidden part 78: 5056/6000 (1301s)
+  hidden part 79: 5120/6000 (1314s)
+  hidden part 80: 5184/6000 (1330s)
+  hidden part 81: 5248/6000 (1343s)
+  hidden part 82: 5312/6000 (1357s)
+  hidden part 83: 5376/6000 (1372s)
+  hidden part 84: 5440/6000 (1386s)
+  hidden part 85: 5504/6000 (1400s)
+  hidden part 86: 5568/6000 (1411s)
+  hidden part 87: 5632/6000 (1427s)
+  hidden part 88: 5696/6000 (1440s)
+  hidden part 89: 5760/6000 (1454s)
+  hidden part 90: 5824/6000 (1468s)
+  hidden part 91: 5888/6000 (1483s)
+  hidden part 92: 5952/6000 (1498s)
+  hidden part 93: 6000/6000 (1508s)
+{"decision": "D151 item 3c (hidden states; the arrays are local, gitignored); D160's random-weights control", "n": 6000, "parts": 94, "identity": {"model": "1.5b", "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit", "revision": "e24e9530845f4e3a6648343796883cb509935039", "content_sha256": "9939448b3a0fbe45"}, "position": "the token holding the closing brace of the last \\boxed{}", "seconds": 1509.0513026714325, "random_init": {"decision": "D160 (the probes' random-weights control; exploratory)", "seed": 0, "init": "Linear / Embedding N(0, 0.02^2), padding row 0, biases 0, RMSNorm 1 (transformers' Qwen2)", "architecture_from": {"model": "1.5b", "repo_id": "unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit", "revision": "e24e9530845f4e3a6648343796883cb509935039", "content_sha256": "9939448b3a0fbe45"}, "n_params": 1543714304, "n_shards": 2, "content_sha256": "fa7be1e90689c11d"}}
