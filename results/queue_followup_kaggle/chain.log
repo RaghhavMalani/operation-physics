@@ -277,3 +277,87 @@
 [13:56:14] end fs_analyze: exit 0
 [13:56:17] commit 'Follow-up (D157, exploratory): item 3's analysis on the Kaggle samples': pushed
 [13:56:17] follow-up Kaggle chain done: 16 temperature pauses, 480s paused of 8993s GPU-stage time
+[16:44:05] follow-up Kaggle chain start (D157/D160, exploratory): MODEL=7b, GPU_STAGES='hidden_random'; GPU deadline 09:00 IST (975 min left); chain PID 72993
+[16:44:06] random-weights copy present: /home/flash2404/operation-physics/results/followup/scale/7b/random_init_model (773402619421ef14)
+[16:44:23] host VRAM readings (MiB): 1344 1515 1501 1232 1228 1228 1242 1228
+[16:44:23] host use 1237 MiB gives 6.2 GiB < 7.5: re-reading in 60 s
+[16:45:40] host VRAM readings (MiB): 1330 1323 1298 1274 1181 1249 1167 1168
+[16:45:40] host use 1261 MiB gives 6.2 GiB < 7.5: re-reading in 60 s
+[16:46:57] host VRAM readings (MiB): 1321 1320 1289 1295 1354 1422 1474 1468
+[16:46:57] host use 1337 MiB gives 6.1 GiB < 7.5: re-reading in 60 s
+[16:48:14] host VRAM readings (MiB): 1523 1518 1518 1457 1435 1431 1431 1418
+[16:48:14] host use 1446 MiB gives 6.0 GiB < 7.5: re-reading in 60 s
+[16:49:31] host VRAM readings (MiB): 1317 1317 1331 1331 1331 1330 1315 1327
+[16:49:31] launch cap 6.1 GiB (max 7.5, needed 6.5)
+[16:49:32] launch cap 6.1 GiB < 6.5: Windows holds 1327 MiB of VRAM; close GPU apps; re-reading in 60 s
+[16:50:49] host VRAM readings (MiB): 1377 1377 1354 1330 1325 1325 1325 1311
+[16:50:50] launch cap 6.2 GiB < 6.5: Windows holds 1325 MiB of VRAM; close GPU apps; re-reading in 60 s
+[16:52:08] host VRAM readings (MiB): 1537 1489 1436 1428 1428 1428 1428 1428
+[16:52:08] launch cap 6.1 GiB < 6.5: Windows holds 1428 MiB of VRAM; close GPU apps; re-reading in 60 s
+[16:53:31] host VRAM readings (MiB): 1416 1416 1429 1501 1490 1624 1646 1459
+[16:53:32] launch cap 6.0 GiB < 6.5: Windows holds 1447 MiB of VRAM; close GPU apps; re-reading in 60 s
+[16:55:21] host VRAM readings (MiB): 1911 1734 1722 1417 1429 1402 1432 1332
+[16:55:25] launch cap 6.0 GiB < 6.5: Windows holds 1327 MiB of VRAM; close GPU apps; re-reading in 60 s
+[16:56:50] host VRAM readings (MiB): 1308 1308 1307 1352 1412 1440 1436 1332
+[16:56:50] launch cap 6.1 GiB < 6.5: Windows holds 1325 MiB of VRAM; close GPU apps; re-reading in 60 s
+[16:58:08] host VRAM readings (MiB): 1327 1363 1322 1334 1255 1401 1306 1311
+[16:58:08] launch cap 6.2 GiB < 6.5: Windows holds 1301 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:00:11] host VRAM readings (MiB): 1286 1411 1320 1314 1313 1451 1344 1365
+[17:00:11] launch cap 6.1 GiB < 6.5: Windows holds 1361 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:01:29] host VRAM readings (MiB): 1386 1385 1388 1390 1383 1382 1355 1351
+[17:01:31] launch cap 6.1 GiB < 6.5: Windows holds 1341 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:02:50] host VRAM readings (MiB): 1339 1339 1339 1339 1305 1305 1378 1309
+[17:02:50] launch cap 6.1 GiB < 6.5: Windows holds 1309 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:04:08] host VRAM readings (MiB): 1312 1312 1312 1312 1312 1312 1312 1312
+[17:04:08] launch cap 6.2 GiB < 6.5: Windows holds 1312 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:05:36] host VRAM readings (MiB): 1399 1399 1399 1402 1402 1402 1402 1401
+[17:05:37] launch cap 6.1 GiB < 6.5: Windows holds 1439 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:06:54] host VRAM readings (MiB): 1380 1379 1387 1389 1384 1383 1413 1401
+[17:06:54] launch cap 6.1 GiB < 6.5: Windows holds 1414 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:08:11] host VRAM readings (MiB): 1223 1121 1094 970 969 1085 1058 1065
+[17:08:11] launch cap 6.4 GiB < 6.5: Windows holds 1037 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:09:28] host VRAM readings (MiB): 1018 1031 1033 952 963 1079 1183 1113
+[17:09:29] launch cap 6.4 GiB < 6.5: Windows holds 1110 MiB of VRAM; close GPU apps; re-reading in 60 s
+[17:10:46] host VRAM readings (MiB): 940 947 946 945 941 941 941 941
+[17:10:46] launch cap 6.5 GiB: starting the readouts
+[17:10:46] GPU at 50.80C, memory.used 941 MiB
+[17:10:48] disk: 23 GiB free on MLStorage
+[17:10:48] start fs_hidden_random_7b (timeout 56954s): uv run python -m physcal.eval.followup_scale hidden --random-init --model 7b --cap 6.5
+[17:18:49] guard(78328): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[17:19:19] guard(78328): stage continued after 30s paused (GPU at 63.40C <= 75C)
+[17:21:50] guard(78328): GPU at 88.60C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[17:22:20] guard(78328): stage continued after 30s paused (GPU at 65.50C <= 75C)
+[17:29:21] guard(78328): GPU at 90.50C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[17:29:51] guard(78328): stage continued after 30s paused (GPU at 66.20C <= 75C)
+[17:32:51] guard(78328): GPU at 88.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[17:33:21] guard(78328): stage continued after 30s paused (GPU at 65.60C <= 75C)
+[17:42:23] guard(78328): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[17:42:53] guard(78328): stage continued after 30s paused (GPU at 65.90C <= 75C)
+[17:50:25] guard(78328): GPU at 89.40C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[17:50:55] guard(78328): stage continued after 30s paused (GPU at 65.40C <= 75C)
+[18:01:26] guard(78328): GPU at 88.60C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:01:56] guard(78328): stage continued after 30s paused (GPU at 64.80C <= 75C)
+[18:03:56] guard(78328): GPU at 87.50C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:04:26] guard(78328): stage continued after 30s paused (GPU at 65.60C <= 75C)
+[18:05:26] guard(78328): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:05:56] guard(78328): stage continued after 30s paused (GPU at 65.50C <= 75C)
+[18:22:58] guard(78328): GPU at 87.50C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:23:28] guard(78328): stage continued after 30s paused (GPU at 65.20C <= 75C)
+[18:28:33] guard(78328): GPU at 88.70C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:29:03] guard(78328): stage continued after 30s paused (GPU at 67.50C <= 75C)
+[18:29:33] guard(78328): GPU at 89.50C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:30:03] guard(78328): stage continued after 30s paused (GPU at 67.70C <= 75C)
+[18:31:03] guard(78328): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:31:33] guard(78328): stage continued after 30s paused (GPU at 65.20C <= 75C)
+[18:32:04] guard(78328): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:32:34] guard(78328): stage continued after 30s paused (GPU at 63.40C <= 75C)
+[18:34:04] guard(78328): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:34:34] guard(78328): stage continued after 30s paused (GPU at 67.50C <= 75C)
+[18:35:04] guard(78328): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:35:34] guard(78328): stage continued after 30s paused (GPU at 67.40C <= 75C)
+[18:36:34] guard(78328): GPU at 87.80C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:37:04] guard(78328): stage continued after 30s paused (GPU at 66.60C <= 75C)
+[18:39:04] guard(78328): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[18:39:34] guard(78328): stage continued after 30s paused (GPU at 65.00C <= 75C)
+[18:39:54] end fs_hidden_random_7b: exit 0
+[18:39:54] fs_hidden_random_7b: 18 temperature pauses, 540s paused of 5348s; tonight so far 18 pauses, 540s of 5348s (D143)
