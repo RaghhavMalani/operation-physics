@@ -670,3 +670,9 @@ appended here.
     setting.
 - **After both finish:** the analysis is re-run. Its probes come from the cache, so this takes minutes, and it picks up
   the refit if it passed.
+- **The outcome (18:40–19:11 IST):** the retry reproduces X2 exactly.
+  - It gives 0.5396260151347361, the published value, with a gap of 0.0. The inner-CV AUROCs equal D92's to 7
+    decimals.
+  - Its 4,109 per-answer values are kept (`results/followup/scale/x2_sft_probe_refit.json`). The first attempt's
+    record is beside it (`x2_sft_probe_refit_attempt1.json`).
+  - The next analysis reads it for the SFT 1.5B's probe on the prefix.

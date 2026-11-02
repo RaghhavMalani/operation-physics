@@ -1,0 +1,54 @@
+{
+ "decision": "D160 item 3 (D151 (2)): X2's cross-fitted SFT probe refit (exploratory)",
+ "reproduced": true,
+ "recomputed": 0.5396260151347361,
+ "published": 0.5396260151347361,
+ "gap": 0.0,
+ "atol": 1e-09,
+ "n_kept": 516,
+ "probe": {
+  "C": [
+   0.001,
+   0.01,
+   0.1,
+   1.0
+  ],
+  "folds": 5,
+  "max_iter": 2000,
+  "n_jobs": 4
+ },
+ "folds": [
+  {
+   "layer": 1,
+   "C": 0.01,
+   "inner_cv_auroc": 0.705343147317283
+  },
+  {
+   "layer": 1,
+   "C": 0.01,
+   "inner_cv_auroc": 0.7060105794261369
+  },
+  {
+   "layer": 1,
+   "C": 0.01,
+   "inner_cv_auroc": 0.7104034266824963
+  },
+  {
+   "layer": 1,
+   "C": 0.01,
+   "inner_cv_auroc": 0.7024550451732057
+  },
+  {
+   "layer": 11,
+   "C": 0.001,
+   "inner_cv_auroc": 0.7136917453548584
+  }
+ ],
+ "seconds": 1845.614471912384,
+ "threads": {
+  "cpu_count": 24,
+  "OMP_NUM_THREADS": "4",
+  "OPENBLAS_NUM_THREADS": "4",
+  "MKL_NUM_THREADS": "4"
+ }
+}
