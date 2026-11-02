@@ -1,0 +1,13 @@
+{
+ "decision": "D151 item 3c (hidden states; the arrays are local, gitignored)",
+ "n": 6133,
+ "parts": 96,
+ "identity": {
+  "model": "7b",
+  "repo_id": "unsloth/Qwen2.5-Math-7B-Instruct-bnb-4bit",
+  "revision": "2ab7fb373c247ef5933d034f016efefc66608458",
+  "content_sha256": "9d8d80f688a04194"
+ },
+ "position": "the token holding the closing brace of the last \\boxed{}",
+ "seconds": 4715.798728466034
+}

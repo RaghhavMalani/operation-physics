@@ -251,3 +251,23 @@
 [11:15:21] guard(33636): stage continued after 30s paused (GPU at 60.50C <= 75C)
 [11:22:29] end fs_yes_7b: exit 0
 [11:22:29] fs_yes_7b: 9 temperature pauses, 270s paused of 4274s; tonight so far 9 pauses, 270s of 4274s (D143)
+[11:22:33] commit 'Follow-up (D157, exploratory): 7B yes readout on the kept answers (Kaggle samples)': pushed
+[11:22:33] GPU at 67.50C, memory.used 388 MiB
+[11:22:35] disk: 41 GiB free on MLStorage
+[11:22:35] start fs_hidden_7b (timeout 9447s): uv run python -m physcal.eval.followup_scale hidden --model 7b --cap 7.0
+[11:30:05] guard(39379): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[11:30:35] guard(39379): stage continued after 30s paused (GPU at 61.40C <= 75C)
+[11:31:35] guard(39379): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[11:32:05] guard(39379): stage continued after 30s paused (GPU at 60.50C <= 75C)
+[11:57:07] guard(39379): GPU at 88.00C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[11:57:37] guard(39379): stage continued after 30s paused (GPU at 61.20C <= 75C)
+[11:59:07] guard(39379): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[11:59:37] guard(39379): stage continued after 30s paused (GPU at 60.60C <= 75C)
+[12:18:09] guard(39379): GPU at 88.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[12:18:39] guard(39379): stage continued after 30s paused (GPU at 61.30C <= 75C)
+[12:21:09] guard(39379): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[12:21:39] guard(39379): stage continued after 30s paused (GPU at 60.70C <= 75C)
+[12:34:40] guard(39379): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[12:35:10] guard(39379): stage continued after 30s paused (GPU at 61.00C <= 75C)
+[12:41:12] end fs_hidden_7b: exit 0
+[12:41:12] fs_hidden_7b: 7 temperature pauses, 210s paused of 4719s; tonight so far 16 pauses, 480s of 8993s (D143)

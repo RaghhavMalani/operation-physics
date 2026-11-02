@@ -228,3 +228,9 @@
 [10:11:16] start fs_yes_7b (timeout 13725s): uv run python -m physcal.eval.followup_scale yes --model 7b --cap 7.0
 [11:22:29] end fs_yes_7b: exit 0
 [11:22:29] fs_yes_7b: 9 temperature pauses, 270s paused of 4274s; tonight so far 9 pauses, 270s of 4274s (D143)
+[11:22:33] commit 'Follow-up (D157, exploratory): 7B yes readout on the kept answers (Kaggle samples)': pushed
+[11:22:33] GPU at 67.50C, memory.used 388 MiB
+[11:22:35] disk: 41 GiB free on MLStorage
+[11:22:35] start fs_hidden_7b (timeout 9447s): uv run python -m physcal.eval.followup_scale hidden --model 7b --cap 7.0
+[12:41:12] end fs_hidden_7b: exit 0
+[12:41:12] fs_hidden_7b: 7 temperature pauses, 210s paused of 4719s; tonight so far 16 pauses, 480s of 8993s (D143)
