@@ -509,3 +509,35 @@ appended here.
     saved in parts of 64).
 - **The analysis** (CPU, after both readouts) is D151's, unchanged. The SFT 1.5B comparison uses X2 restricted to the
   same 1,176-candidate prefix, plus the published numbers.
+
+## 2026-11-02 midday: the local readouts and the analysis (your instructions at ~10:00 IST: GPU deadline 14:00 IST)
+
+### D159. Item 3's local readouts and D151's analysis ran on the Kaggle samples. The chain was restarted once for the later deadline. The SFT 1.5B's probe on the same prefix is missing, and the write-up says how it is compared instead (2026-11-02, ~14:00 IST; after the analysis, before the write-up)
+- **The run, in order (`results/queue_followup_kaggle/chain.log`):**
+  - 07:20: the first chain waited at D158's gate (cap 5.5–5.6 GiB < 6.5) and stopped as BLOCKED at 08:27, with
+    nothing started.
+  - 08:28: relaunched with a longer gate wait (`CAP_WAIT_S=17000`). The gate opened at 09:41 (cap 6.7 GiB) once
+    Windows' GPU apps were closed, and P(yes) started.
+  - 10:05: **restarted on your instruction**, to move the GPU deadline from 13:00 to 14:00. A running bash cannot re-read
+    its deadline.
+    - P(yes) was stopped right after a saved batch: 1,504 of 6,133 rows on disk, every row parses.
+    - The copy of that attempt's log is `fs_yes_7b.attempt1.log`.
+    - The cost was ~6 min (the chain's start-up and the model reload). Nothing was recomputed.
+  - 10:11–11:22: P(yes), the other 4,629 answers (0.92 s / answer), with 9 temperature pauses (270 s).
+  - 11:22–12:41: hidden states, all 6,133 answers at batch 1 (0.77 s / answer), with 7 temperature pauses (210 s).
+  - 12:41–13:56: D151's analysis (CPU, 4 jobs, the GPU idle).
+  - Every stage committed and pushed.
+- **The analysis is D151's, unchanged.** Nothing in its rules or code changed after the readouts.
+- **One comparison D151 lists is missing: the SFT 1.5B's cross-fitted probe on the same prefix** (D151 (2)).
+  - **Why:** `followup_scale_analysis.x2_on_prefix` does not re-run X2's cross-fit; it reports the probe as missing.
+    That was the implementation's choice before any data; D151 allowed a re-run.
+  - **How it is compared instead:**
+    - against the published X2 number, 0.540 [0.514, 0.565] on 516 kept problems (the full pool; the prefix keeps 504);
+    - with an approximate unpaired difference: normal, from the two bootstrap CIs. It is labelled approximate, and it
+      is not D151's bootstrap.
+  - **Not re-run now:** the analysis saves no per-problem probe values, so a proper bootstrap would refit the 7B probe
+    too (~75 min of CPU). The two CIs are ~0.17 apart, so the reading would not change. It can be run later.
+- **The probe's selection,** a fact for the write-up: layer 19 of 29 and C = 0.001 in all five folds (inner-CV AUROC
+  0.773–0.781). C = 0.001 is the edge of D151's grid. The grid is not extended after the fact.
+- **The reading** is D151's, descriptive. The native 1.5B control did not run (D157, difference 13), so "the wall
+  moves" is judged against the SFT 1.5B: D151's fallback. The write-up states every confound of that comparison.

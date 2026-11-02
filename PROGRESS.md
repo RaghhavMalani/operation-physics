@@ -960,4 +960,13 @@ Progress:
   - `notebooks/kaggle_7b_scale.ipynb`, pinned to a commit;
   - `scripts/queue_followup_kaggle.sh`: the local ingest → P(yes) → hidden states → analysis (not run yet);
   - the steps for you: `docs/exploratory/kaggle_instructions.md`.
-- [ ] **You:** the Kaggle run (instructions §1–5), then bring the zip back (§7).
+- [x] **You:** the Kaggle run (instructions §1–5), then bring the zip back (§7).
+
+## 2026-11-02: item 3's readouts and analysis (D158–D159 in `docs/exploratory/DECISIONS_FOLLOWUP.md`)
+
+- [x] **D158:** the Kaggle samples ingested (1,176 candidates, a clean one-session finish, 844 kept).
+- [x] **D159:** P(yes), hidden states (29 layers) and D151's analysis on the 6,133 kept answers; every stage committed.
+- [x] **The write-up:** `docs/exploratory/followup_feasibility.md` §3 (the 7B results next to the SFT 1.5B's, and every
+  difference between the two setups).
+- [ ] **Open (not run):** the native 1.5B control, a random-init control for the 7B probe, and D151 (2)'s refit of
+  X2's probe on the same prefix.

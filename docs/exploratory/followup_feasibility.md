@@ -1,9 +1,10 @@
-# Follow-up feasibility: three exploratory items (night of 2026-10-30/31)
+# Follow-up feasibility: three exploratory items (night of 2026-10-30/31; item 3 on Kaggle, 2026-11-01/02)
 
 **Status: EXPLORATORY, for a follow-up project. Not part of the paper (D148's freeze applies to it).** Nothing here is
 pre-registered as a hypothesis or confirmatory. The plan and every analysis rule were written in D151 (now in
-`docs/exploratory/DECISIONS_FOLLOWUP.md`, D156) and pushed (`a8938c7`) before any of this track's data existed. Two later changes each have their own entry, written
-before the data they affect: D152 (item 3's decoding) and D153 (item 3's stop).
+`docs/exploratory/DECISIONS_FOLLOWUP.md`, D156) and pushed (`a8938c7`) before any of this track's data existed. Later changes each have their own entry, written
+before the data they affect: D152 (item 3's decoding), D153 (item 3's local stop), D157 (item 3 on Kaggle) and D158
+(the readouts' memory settings). D159 records the readouts' run and one missing comparison.
 
 | item | code | config | results |
 |---|---|---|---|
@@ -35,15 +36,19 @@ and MC-A in item 1).
      [−0.0018, +0.0006]. Descriptively it beats RSS and X1 at depths 1–2 and loses at depths 4–5.
    - **What this shows:** the model's arithmetic slips are not where the forecast loss is. Its wrong formulas and wrong
      chains are, and its sloppy aggregation partly offsets them (#35's pattern).
-3. **The 7B scale check cannot be run on this GPU at a useful size (D153). Its main stage did not run.**
-   - **The rate:** Qwen2.5-Math-7B-Instruct (4-bit) fits in memory, but decodes at ~6.6 steps/s.
-   - **The length:** its native chain-of-thought needs more than 1,024 tokens from depth 2 up.
-   - **The rule fired:** D151's 120 s / problem stop rule, at 139 s and 155 s.
-   - **What ran instead:** a development-only measurement at 2,048 tokens (§3) sizes what a real run would cost.
-     - At a budget that completes, a problem takes 277–852 s (depths 1–3), and batch 8 runs out of memory.
-     - That is about 50 problems per night on the 4060, roughly 20 kept: too few to measure the wall.
-     - A real run needs a cloud GPU or a faster inference stack. The code, the tested parser, the readouts and a queue
-       script are ready.
+3. **The 7B tells its own right answers from its wrong ones far better than the SFT 1.5B, by every readout. This is
+   not yet a scale effect.** It was sampled on Kaggle (D157) and read locally (D159).
+   - **Within-problem pairwise accuracy:** the 7B on 844 kept problems vs the SFT 1.5B (X2) on the same 1,176-candidate
+     prefix (504 kept):
+     - self-consistency 0.827 vs 0.645 (+0.182 [+0.148, +0.215]);
+     - direct P(yes) 0.683 vs 0.526 (+0.157 [+0.125, +0.189]);
+     - hidden-state probe 0.753 vs 0.540 published (≈ +0.21 [+0.18, +0.24], approximate);
+     - length 0.634 vs 0.534 (+0.100 [+0.067, +0.131]).
+   - **By D151's rule the wall moves:** a single-sample readout beats the SFT 1.5B's with a CI excluding 0.
+     Self-consistency still leads.
+   - **But the comparison changes model size, format, training, decoding and the kept problems at once.** The native
+     1.5B control, which would separate scale from the rest, did not run. Length alone also gains 0.10, so part of
+     the gain is a surface signal, and the 7B probe has no random-init control.
 
 ## 1. Uncertainty-guided test-time compute (offline)
 
@@ -177,25 +182,114 @@ only. **This is not FINDINGS #35:**
 - descriptive, with no multiple-comparison correction;
 - E_chain's depth-1–2 advantage is a subgroup seen after the fact, labelled descriptive.
 
-## 3. Scale check of the epistemic wall (GPU): not run at a useful size; what it would cost
+## 3. Scale check of the epistemic wall: the 7B, sampled on Kaggle and read locally
 
-**The plan (D151):**
-- **The model:** Qwen2.5-Math-7B-Instruct (Unsloth's 4-bit mirror, revision `2ab7fb37…`, content hash
-  `9d8d80f688a04194`), in its native `\boxed{}` format.
-- **Sampling:** k = 8 per problem on a prefix of X2's frozen candidates.
-- **The comparison:** self-consistency, X4-style direct P(yes) and a cross-fitted hidden-state probe, scored by X2's
-  within-problem pairwise accuracy, against the 1.5B.
-- **The stop rule:** above 120 s / problem, stop and report.
+**The question (D151):** within a problem, X2's SFT 1.5B barely tells its right answers from its wrong ones by any
+single-sample readout (pairwise accuracy 0.53–0.54); self-consistency does better (0.643). Does the 7B of the same
+family do better?
 
-**What happened (D152, D153; development problems only, never analyzed):**
+**What ran:**
+- **Sampling on Kaggle (D157):**
+  - the official Qwen2.5-Math-7B-Instruct (revision `ef9926d7…`) in fp16;
+  - vLLM 0.29.0 on 2 × T4, with D152's decoding (T 0.7, top_p 0.8, top_k 20), up to 3,072 new tokens, k = 8;
+  - **all 1,176 candidates** below the development indices, in one 5.0 h session (15.4 s / problem), with no retry.
+- **The ingest (D158)** passed every check: the manifest, the pool, the seeds, and every prompt re-rendered with the
+  local tokenizer. The local re-grade changed 0 of 9,408 rows.
+- **The readouts on the local 4060 (D159):**
+  - direct P(yes) and the hidden states of all 29 layers, on the 6,133 answered answers of the kept problems, using
+    the 4-bit copy of the same weights;
+  - then D151's analysis, on the CPU.
+
+**What was sampled:**
+- answered 91.1%, truncated 8.7% (at 3,072 tokens), correct per sample 51.4%;
+- by depth 1 → 4: correct 78 / 61 / 39 / 29%, truncated 4 / 7 / 10 / 14%;
+- **kept (mixed) problems:** 844 of 1,176 (71.8%); by depth, 158 / 223 / 232 / 231 of 294. The SFT 1.5B keeps 504
+  of the same 1,176 (42.9%);
+- 8,476 within-problem (correct, incorrect) pairs.
+
+**Results** (X2's within-problem pairwise accuracy, ties 0.5, mean over kept problems; 95% bootstrap over problems,
+B = 10,000):
+
+| readout | 7B, native format (844 kept) | SFT 1.5B X2, same prefix (504 kept) | SFT 1.5B X2, published (516 kept) | 7B − SFT 1.5B, same prefix |
+|---|---|---|---|---|
+| self-consistency (share of the other 7 within 1%) | **0.827** [0.809, 0.845] | 0.645 [0.617, 0.673] | 0.643 | +0.182 [+0.148, +0.215] |
+| direct P(yes) (X4 direct) | **0.683** [0.663, 0.701] | 0.526 [0.500, 0.551] | 0.526 | +0.157 [+0.125, +0.189] |
+| hidden-state probe, cross-fitted | **0.753** [0.734, 0.771] | – (not refit; D159) | 0.540 [0.514, 0.565] | ≈ +0.21 [+0.18, +0.24] vs published (approximate) |
+| length only (shorter = more confident) | 0.634 [0.614, 0.654] | 0.534 [0.510, 0.558] | 0.535 | +0.100 [+0.067, +0.131] |
+
+- **The differences are unpaired,** because the kept sets differ (D151).
+- **The probe's difference is approximate:**
+  - it is normal, from the two bootstrap CIs, against the full pool's published number;
+  - D151's re-run of X2's cross-fit on the prefix was not done (D159).
+- **By depth** (pairwise accuracy at depths 1–4):
+
+| readout | d1 | d2 | d3 | d4 |
+|---|---|---|---|---|
+| self-consistency | 0.881 | 0.856 | 0.804 | 0.785 |
+| direct P(yes) | 0.746 | 0.672 | 0.668 | 0.664 |
+| hidden-state probe | 0.787 | 0.724 | 0.749 | 0.759 |
+| length | 0.652 | 0.660 | 0.624 | 0.607 |
+| *SFT 1.5B probe (X2, published)* | *0.565* | *0.520* | *0.541* | *0.538* |
+
+- **The probe's choice:**
+  - the 7B probe chose layer 19 of 29 (index 0 is the embeddings) with C = 0.001 in all five outer folds; inner-CV
+    AUROC 0.773–0.781;
+  - C = 0.001 is the edge of D151's grid, which was not extended;
+  - X2's 1.5B probe chose layer 1 in four of five folds (layer 11 in one).
+
+**Reading (D151's rules, descriptive):**
+- **"The wall moves with scale": yes, by D151's rule.** A single-sample readout of the 7B (direct P(yes), and the
+  probe) exceeds the SFT 1.5B's with a CI excluding 0. The rule's first comparison, against the native 1.5B, is
+  missing (D157, difference 13), so this is the rule's fallback.
+- **Self-consistency still leads:** 0.827, against 0.753 (probe) and 0.683 (P(yes)). The CIs do not overlap.
+- **What the comparison cannot say is that size caused it.** Between the two columns, all of these change at once:
+  - model size (7B vs 1.5B);
+  - the format: the native `\boxed{}` chain-of-thought vs our `<steps>` / `<answer>` format with a stated σ;
+  - training: no task training vs our SFT;
+  - decoding and budget: T 0.7, top_p 0.8, top_k 20 and 3,072 tokens, vs T 1 with no top-p / top-k and 512 tokens (D152);
+  - who reads: the 7B's answers were sampled in fp16 and read by a 4-bit copy, while X2's model sampled and read
+    itself (D157, difference 3);
+  - the problems: 72% vs 43% of the prefix are kept. The 7B's pairs include many depth-3–4 problems that the 1.5B gets
+    all wrong, and its errors are of another kind.
+- **Part of the gain is a surface signal.**
+  - Length alone gains +0.100: the 7B's wrong answers are more often the long ones.
+  - P(yes) and the probe both stay above length (0.683 and 0.753, against 0.634; the CIs do not overlap). No paired
+    readout-vs-length test was specified.
+- **The probe has no random-init control** (D151's stated limit).
+  - In X2, the random-init probe was within noise of the real one.
+  - Without the control, the 7B probe's 0.753 may partly read the text's surface (length, position, the digits)
+    rather than what the model "knows".
+
+**Every difference from the 1.5B setup:**
+
+| | SFT 1.5B (X2) | 7B (this run) | entry |
+|---|---|---|---|
+| model | Qwen2.5-Math-1.5B-Instruct + our SFT (merged, 4-bit at load) | Qwen2.5-Math-7B-Instruct, the official weights, no task training | D151; D157 (2) |
+| format | `<steps>` / `<answer>` with a stated σ | Qwen2.5-Math's chain-of-thought prompt and `\boxed{}`; the problem without its `<steps>` sentence | D151 |
+| decoding | T 1, top_p 1, top_k 0; 512 new tokens | T 0.7, top_p 0.8, top_k 20; 3,072 new tokens | D152; D157 (4, 5) |
+| sampler | HF + bitsandbytes, 4-bit, on the 4060; one torch seed per chunk | vLLM 0.29.0 in fp16, tensor-parallel 2 on 2 × T4; one seed per sample | D157 (1, 2, 4) |
+| who reads | the same 4-bit model | the local 4-bit copy of the same weights (`unsloth/…-bnb-4bit`) | D157 (3) |
+| answer and grade | X2's parser for our format | the last box (the D151 + D154 parser); a truncation is no answer; re-graded at ingest | D151; D154; D157 (11) |
+| P(yes) turn | X4's `x4_v1` | the same, with "your \boxed{}" in place of "your <answer>"; context up to 4,096 tokens | D151; D157 (12) |
+| probe position | the "±" token | the closing brace of the last box | D151 |
+| probe control | random-init, within noise of the real probe | none | D151 |
+| problems | X2's 1,200 candidates (516 kept; 504 on the 7B's prefix) | the first 1,176 (844 kept) | D157 |
+| the 1.5B in the native format | – | not run (D151's control, "if time allows") | D157 (13) |
+
+**Caveats (item 3):**
+- one prompt, one model family, one synthetic domain;
+- the readouts read a 4-bit copy of the sampler's weights;
+- truncated samples (8.7%; 14% at depth 4) are no answer and in no pair, so the kept set misses the errors that run out
+  of tokens;
+- descriptive, with no multiple-comparison correction.
+
+**Before Kaggle: the local feasibility measurement** (D152–D154; development problems only, never analyzed):
 1. **X2's decoding (T = 1, no truncation) does not work for the 7B.** On the first development problem, 7 of 8
-   samples ran to the 1,024-token cap, and one switched to Chinese mid-solution. D152 switched both models to
-   Qwen2.5's documented sampling (T 0.7, top_p 0.8, top_k 20) before any non-development completion existed.
-2. **At that decoding the rule fired:** 139 s and 155 s per problem at 1,024 tokens.
-   - **The samples are not loops.** A 2-sample check shows legitimate step-by-step derivations still in phase 3 of 4
-     at 1,024 tokens: the native chain-of-thought needs more than 1,024 tokens from depth 2 up.
-   - **The main stage was not run** (D153), as D151 says.
-3. **A development-only measurement at 2,048 tokens** (3 kinematics problems, depths 1–3) sized a real run:
+   samples ran to the 1,024-token cap, and one switched to Chinese mid-solution. D152 switched to Qwen2.5's documented
+   sampling (T 0.7, top_p 0.8, top_k 20) before any non-development completion existed.
+2. **At that decoding, D151's 120 s / problem rule fired:** 139 s and 155 s per problem at 1,024 tokens. The samples
+   were legitimate derivations still unfinished at 1,024 tokens, so the local main stage did not run (D153).
+3. **A development-only measurement at 2,048 tokens** (3 kinematics problems, depths 1–3) sized a local run:
 
 | | 7B (4-bit) | native 1.5B (4-bit, untrained) |
 |---|---|---|
@@ -207,32 +301,10 @@ only. **This is not FINDINGS #35:**
 | answered correct (re-graded, D154) | 13 of 20; all 3 problems have right and wrong answers | 3 of 24 |
 | direct P(yes) / hidden states (29 layers), s per answer | 0.89 / 0.81 (both logit checks pass) | 0.14 / 0.12 |
 
-- **The time per problem** is set by the longest of the 8 samples: one runaway sample holds the whole batch. With the
-  out-of-memory halving, the halves run one after another.
-- **What a night buys on this GPU:**
-  - at ~550 s / problem (more at depth 4) an 8-hour night gives about 50 problems;
-  - with X2's 43% mixed share that is about 20 kept problems. The development problems hint at a higher share for
-    the 7B, but they are 3;
-  - a within-problem pairwise accuracy would then carry a CI of about ±0.1.
-  - **That cannot separate a 7B readout from the 1.5B's** (X2's probe 0.540; X4 direct 0.526).
-- **No within-problem result exists for the 7B.** The question "does the epistemic wall move with scale?" is open.
-
-**What a real run needs (estimates for planning, not measurements):**
-- **A serving stack with continuous batching and a paged KV cache,** e.g. vLLM with AWQ / GPTQ kernels rather than
-  bitsandbytes, on a GPU with room for the KV cache. A runaway sample then no longer holds the others, and the 8
-  samples of a problem share one prefill.
-- **The scale of the job:** 1,200 problems × 8 samples × ~1,300 tokens ≈ 12.5 M generated tokens. At an assumed
-  1,500–3,000 tokens / s for a 7B on one A100-class GPU, that is about 1.2–2.3 h, and the readouts are a few minutes.
-  This throughput is an assumption, not measured here.
-- **The control:** the native 1.5B on the same stack and settings separates scale from format and SFT. Locally it is
-  cheap (≈ 45 s / problem), but on these development problems it is rarely right in its native format, so it may
-  yield few kept problems.
-- **The parser** (D151 + D154) is tested and handles both models' development answers: units inside the box, after
-  it, or absent.
-- **Alternatives kept for the follow-up (D153):**
-  - a depth-1-only run, which fits the 1,024 budget locally (~140 s / problem);
-  - a short-answer format, which would need SFT;
-  - the 7B as an external judge of the SFT 1.5B's X2 answers, which is a different question.
+- **What that meant:** about 50 problems per night on the 4060, roughly 20 kept, too few to measure the wall. Hence
+  Kaggle (D157).
+- **The planning estimate was not what ran.** It assumed 1,500–3,000 tokens / s on an A100-class GPU. Kaggle's
+  2 × T4 sampled at 568 tokens / s on the 20 timed candidates (D158), and the whole job took 5.0 h.
 
 ## What this means for a follow-up
 
@@ -247,8 +319,14 @@ only. **This is not FINDINGS #35:**
   the derivative (formula) and the chain, as #35 found.
   - **The promising variant:** exact symbolic differentiation of the model's own chain (#35's "exact sensitivities":
     +51% of the RSS-to-σ\* gap), together with re-derived intermediates (E_chain helps at depths 1–2).
-- **Scale:** the 7B question needs a cloud GPU or a faster inference stack. On the 4060 it is not measurable at a
-  useful size. Everything else is ready: the code, the parser, the readouts, and the queue (`scripts/queue_followup.sh`).
+- **Scale:** in its native format, the 7B tells its own right answers from its wrong ones well above chance with
+  one sample (P(yes) 0.68, probe 0.75), where the SFT 1.5B sits at 0.53–0.54. Self-consistency still leads (0.83).
+  - **It is not yet a scale result.** Size, format, training, decoding and the kept problems all change together.
+  - **What would make it one:**
+    - the native 1.5B on the same stack and settings (D151 (3)), e.g. a second Kaggle run, which needs the sampler
+      generalized beyond the 7B;
+    - a random-init control for the 7B probe;
+    - a paired readout-vs-length test.
 
 ## Process notes and limits
 
@@ -257,12 +335,15 @@ only. **This is not FINDINGS #35:**
     the temperature and stall guards watched the wrong group.
   - **Found** during the third 7B run and re-pointed. The GPU peaked at 84.3 °C, so no pause was ever due.
   - **The queue scripts are not affected.**
-- **The paper's D-entry count (D155):**
-  - **The problem:** the paper's macro "The log has N entries" would have counted this track's D151–D154.
-  - **The fix:** it now skips D-entries under the follow-up project's section. The paper stays at 150, and `paper/`
-    is unchanged.
-- **Everything here is one night's exploratory work:**
+- **The paper's D-entry count (D155, then D156):**
+  - **D155** made the paper's macro skip this track's entries.
+  - **D156** replaced that: the track's entries moved to `docs/exploratory/DECISIONS_FOLLOWUP.md`, and the macro was
+    reverted. The paper stays at 150, and `paper/` is unchanged.
+- **Item 3's readouts (D159):**
+  - The chain was restarted once to move its GPU deadline, at a cost of ~6 min.
+  - 16 temperature pauses took 480 s of 2.5 h of GPU stages.
+- **Everything here is exploratory:**
   - item 1 re-reads one model's samples;
   - item 2 re-reads one model's logs;
-  - item 3 produced development-only measurements.
+  - item 3 is one Kaggle sampling run of the 7B, with local readouts.
   - None of it is in the paper, and no hypothesis was tested.
