@@ -650,3 +650,23 @@ appended here.
     the reproduction check fires as designed. No result was read from it.
   - **The full test suite** (CPU, 1 thread, nice 19): every test passes except D155's known wall-clock flake in
     `test_temp_guard.py`, which passes 3 of 3 alone.
+
+### D161. Item 3 of D160: the X2 probe refit was refused by its gate; D160 had misread X2's thread settings. One retry with the documented settings, after tonight's GPU stage (2026-11-02, ~17:20 IST; recorded before the retry)
+- **The first refit** (14:45–16:45 IST, 4 jobs, the default thread environment: loky gave each worker 24 / 4 = 6
+  BLAS threads):
+  - **The result:** 0.5397552 against X2's published 0.5396260, a gap of 1.3e-4 against D92's 1e-9. The gate refused
+    it, and no per-answer value was kept (`results/followup/scale/x2_sft_probe_refit.json`).
+  - **The selections are X2's in all five folds:** layer 1 with C 0.01 four times, layer 11 with C 0.001 once. The
+    inner-CV AUROCs differ in the 5th decimal: a thread-count effect, as in D97.
+- **The misreading:** D160 called X2's settings "4 jobs and the default thread environment". X2's analysis ran with
+  `OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4` and 4 jobs (`scripts/queue_x2_x3.sh:154`,
+  `queue_x2_x3_reruns.sh:79`). D97 says the same: "4 jobs, 4 BLAS threads".
+- **The retry, once:**
+  - those settings, at nice 19, the GPU hidden;
+  - it starts after tonight's GPU stage ends (D97: no multi-thread CPU job while the GPU is busy). It runs next to
+    the analysis; thread counts, not load, set the numbers;
+  - **the gate is unchanged:** exact reproduction within 1e-9;
+  - **if it is refused again,** the SFT probe on the prefix stays missing, as D151 (2) says. There is no third
+    setting.
+- **After both finish:** the analysis is re-run. Its probes come from the cache, so this takes minutes, and it picks up
+  the refit if it passed.
