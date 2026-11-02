@@ -968,5 +968,19 @@ Progress:
 - [x] **D159:** P(yes), hidden states (29 layers) and D151's analysis on the 6,133 kept answers; every stage committed.
 - [x] **The write-up:** `docs/exploratory/followup_feasibility.md` §3 (the 7B results next to the SFT 1.5B's, and every
   difference between the two setups).
-- [ ] **Open (not run):** the native 1.5B control, a random-init control for the 7B probe, and D151 (2)'s refit of
-  X2's probe on the same prefix.
+- [x] **Open after D159** → D160 below.
+
+## 2026-11-02 afternoon: the controls for D159 (D160 in `docs/exploratory/DECISIONS_FOLLOWUP.md`)
+
+- [x] **D160:** the plan and analysis rules for three controls, recorded before any of their data.
+- [x] **Code:**
+  - `followup_kaggle --model {7b, 1.5b}`, with per-model Kaggle settings;
+  - `followup_scale random_init` and `hidden --random-init`;
+  - the probe cache and D160's comparisons in `followup_scale_analysis`;
+  - `scripts/queue_followup_kaggle.sh` with `MODEL` and `GPU_STAGES`;
+  - tests in `tests/test_followup_controls.py` and `tests/test_followup_kaggle.py`.
+- [x] **The random-weights copies** (CPU, gitignored): 1.5B (2.9 GB) and 7B (~15 GB).
+- [ ] **CPU:** X2's probe refit on the same prefix (`followup_scale x2_probe`).
+- [ ] **Tonight (local GPU, deadline 09:00):** the 7B random-weights hidden states, then the analysis.
+- [ ] **You:** the 1.5B Kaggle run (`docs/exploratory/kaggle_instructions.md` §8), then bring the zip back.
+- [ ] **After the zip:** `MODEL=1.5b KAGGLE_ZIP=… scripts/queue_followup_kaggle.sh` (prepared, not run).

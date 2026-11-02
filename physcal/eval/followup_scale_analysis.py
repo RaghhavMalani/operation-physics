@@ -11,8 +11,10 @@ Scored by X2's pairwise accuracy (ties 0.5), mean over kept problems, bootstrap 
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import time
 from pathlib import Path
 
 import numpy as np
@@ -21,9 +23,10 @@ from physcal.config import REPO_ROOT, load_config
 from physcal.eval import followup_scale as F
 from physcal.eval import x2_pairs
 
-READOUTS = ("self_consistency", "yes", "probe", "length")
+READOUTS = ("self_consistency", "yes", "probe", "probe_random", "length")
 LABELS = {"self_consistency": "self-consistency (k − 1 others within 1%)", "yes": "direct P(yes) (X4 direct)",
-          "probe": "hidden-state probe, cross-fitted", "length": "length only (shorter = more confident)"}
+          "probe": "hidden-state probe, cross-fitted", "probe_random": "the same probe on random weights (D160)",
+          "length": "length only (shorter = more confident)"}
 
 
 def graded(model: str, cfg: dict) -> tuple[dict, list, list[dict]]:
@@ -60,8 +63,6 @@ def self_consistency(rows: list[dict], tol: float) -> dict:
 
 
 def model_confidences(model: str, cfg: dict) -> tuple[dict, list, dict, dict]:
-    from physcal.eval import x2_analysis as XA
-
     sc = cfg["scale"]
     groups, keys, rows = graded(model, cfg)
     conf: dict = {"self_consistency": self_consistency(rows, sc["tolerance"]),
@@ -76,25 +77,93 @@ def model_confidences(model: str, cfg: dict) -> tuple[dict, list, dict, dict]:
     if y.exists():
         conf["yes"] = {(tuple(r["key"]), r["sample"]): r["log_odds"] for r in map(json.loads, y.open())}
         info["yes_rows"] = len(conf["yes"])
-    try:
-        layers, idx = F.load_hidden(model, cfg)
-    except (TypeError, ValueError):
-        layers, idx = None, []
-    if layers:
-        corr = {(tuple(r["key"]), r["sample"]): bool(r["correct"]) for r in rows}
-        index = [{"key": list(k), "sample": s, "correct": corr[(k, s)]} for k, s in idx]
-        pc = dict(sc["probe"])
-        if pc.pop("even_layers_only"):
-            layers = layers[::2]
-        c, pinfo = XA.crossfit_confidence(layers, index, pc)
-        conf["probe"] = {(tuple(k), s): v for (k, s), v in c.items()}
-        info["probe"] = pinfo | {"n_layers": len(layers), "n": len(index)}
+    corr = {(tuple(r["key"]), r["sample"]): bool(r["correct"]) for r in rows}
+    for name, kind in (("probe", "hidden"), ("probe_random", "hidden_random")):
+        got = probe_confidence(model, kind, corr, cfg)
+        if got:
+            conf[name], info[name] = got
     return groups, keys, conf, info
+
+
+def _file_sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        while block := fh.read(1 << 24):
+            h.update(block)
+    return h.hexdigest()
+
+
+def probe_confidence(model: str, kind: str, corr: dict, cfg: dict) -> tuple[dict, dict] | None:
+    """The cross-fitted probe (x2_analysis.crossfit_confidence) on <model>/<kind> (hidden, or D160's hidden_random),
+    cached in <model>/probe_<kind>.json under the sha256 of its inputs (the probe settings, the answers and their
+    labels, every part's bytes); a cache with other inputs is refit. None without parts."""
+    from physcal.eval import x2_analysis as XA
+
+    parts = sorted((F.out_dir(model, cfg) / kind).glob("part_[0-9][0-9][0-9][0-9].npz"))
+    if not parts:
+        return None
+    idx = [tuple(x) for f in parts for x in json.loads(str(np.load(f)["index"]))]
+    index = [{"key": [a, b, c], "sample": s, "correct": corr[((a, b, c), s)]} for a, b, c, s in idx]
+    h = hashlib.sha256(json.dumps({"probe": cfg["scale"]["probe"], "index": index}, sort_keys=True).encode())
+    for f in parts:
+        h.update(f"{f.name}:{_file_sha256(f)}".encode())
+    cache = F.out_dir(model, cfg) / f"probe_{kind}.json"
+    if cache.exists() and (c := json.loads(cache.read_text()))["inputs_sha256"] == h.hexdigest():
+        return {(tuple(k), s): v for k, s, v in c["conf"]}, c["info"]
+    layers, _ = F.load_hidden(model, cfg, kind)
+    pc = dict(cfg["scale"]["probe"])
+    if pc.pop("even_layers_only"):
+        layers = layers[::2]
+    t0 = time.time()
+    conf, pinfo = XA.crossfit_confidence(layers, index, pc)
+    info = pinfo | {"n_layers": len(layers), "n": len(index), "seconds": time.time() - t0,
+                    "threads": {v: os.environ.get(v) for v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS")}}
+    cache.write_text(json.dumps({"decision": "D160: the cross-fitted probe's per-answer values (cache)",
+                                 "inputs_sha256": h.hexdigest(), "info": info,
+                                 "conf": [[list(k), s, v] for (k, s), v in conf.items()]}))
+    return {(tuple(k), s): v for (k, s), v in conf.items()}, info
+
+
+def refit_path(cfg: dict) -> Path:
+    return REPO_ROOT / cfg["output_dir"] / "scale" / "x2_sft_probe_refit.json"
+
+
+def x2_probe_refit(cfg: dict | None = None) -> dict:
+    """D160 item 3 (D151 (2)): X2's cross-fitted SFT probe, refit under X2's own settings (x2.yaml analysis.probe; the
+    thread environment is recorded). Its per-answer values are kept only if it reproduces X2's published pairwise
+    accuracy within D92's tolerance (x2_robustness reproduce_atol); otherwise the refit is recorded as refused."""
+    from physcal.eval import x2_analysis as XA
+    from physcal.eval import x2_hidden
+    from physcal.eval import x2_robustness as XR
+
+    cfg = cfg or F._config()
+    x2, rc = load_config("x2"), load_config("x2_robustness")
+    groups, keys, _ = XR.answer_records(x2)
+    layers, index = x2_hidden.load("sft", "x2", x2)
+    t0 = time.time()
+    conf, info = XA.crossfit_confidence(layers, index, x2["analysis"]["probe"])
+    published = json.loads((REPO_ROOT / x2["output_dir"] / "results.json").read_text())["methods"]["probe_crossfit"]
+    mine = float(XA.per_problem(groups, keys, conf).mean())
+    gap = abs(mine - published["pairwise_accuracy"])
+    ok = gap <= rc["reproduce_atol"]
+    res = {"decision": "D160 item 3 (D151 (2)): X2's cross-fitted SFT probe refit (exploratory)", "reproduced": ok,
+           "recomputed": mine, "published": published["pairwise_accuracy"], "gap": gap, "atol": rc["reproduce_atol"],
+           "n_kept": len(keys), "probe": x2["analysis"]["probe"], "folds": info["folds"], "seconds": time.time() - t0,
+           "threads": {"cpu_count": os.cpu_count(), **{v: os.environ.get(v) for v in (
+               "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")}},
+           "conf": [[list(k), s, v] for (k, s), v in sorted(conf.items())] if ok else None}
+    path = refit_path(cfg)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(res, indent=1))
+    print(json.dumps({k: v for k, v in res.items() if k != "conf"}, indent=1))
+    if not ok:
+        raise SystemExit(f"the refit does not reproduce X2 ({mine} vs {published['pairwise_accuracy']}): refused")
+    return res
 
 
 def x2_on_prefix(n_candidates: int, cfg: dict) -> dict:
     """The SFT 1.5B's X2 readouts restricted to the pool's first n candidates: SC, X4 direct and length from the
-    existing rows (the probe's per-answer values need X2's refit: reported as missing here)."""
+    existing rows; the probe from D160's refit (x2_probe_refit) when it reproduced X2, else missing."""
     from physcal.eval import x2_robustness as XR
 
     x2 = load_config("x2")
@@ -107,6 +176,9 @@ def x2_on_prefix(n_candidates: int, cfg: dict) -> dict:
     x4 = XR.x4_confidences(rc, groups, keys)
     if "x4_direct" in x4:
         conf["yes"] = x4["x4_direct"]
+    rf = refit_path(cfg)
+    if rf.exists() and (r := json.loads(rf.read_text()))["reproduced"]:
+        conf["probe"] = {(tuple(k), s): v for k, s, v in r["conf"]}
     n_boot, seed = cfg["scale"]["bootstrap"], cfg["scale"]["seed"]
     out = {"n_kept": len(pk), "methods": {}}
     for m, c in conf.items():
@@ -114,6 +186,14 @@ def x2_on_prefix(n_candidates: int, cfg: dict) -> dict:
         out["methods"][m] = x2_pairs.summarize(pa, n_boot, seed) if len(pk) else None
         out["methods"][m] and out["methods"][m].update(per_problem=pa.tolist())
     return out
+
+
+def paired(a: np.ndarray, b: np.ndarray, n_boot: int, seed: int) -> dict:
+    """a − b on the same problems: the mean difference and a bootstrap over problems."""
+    diff = a - b
+    rng = np.random.default_rng(seed)
+    bs = diff[rng.integers(0, len(diff), (n_boot, len(diff)))].mean(axis=1)
+    return {"n": len(diff), "diff": float(diff.mean()), "ci95": np.percentile(bs, [2.5, 97.5]).tolist()}
 
 
 def unpaired(a: np.ndarray, b: np.ndarray, n_boot: int, seed: int) -> dict:
@@ -148,6 +228,10 @@ def analyze(cfg: dict | None = None) -> dict:
                              for d in sorted({k[1] for k in keys})}
             m["readouts"][r] = s
         res["models"][model] = m
+    for model, want in sc["reproduce_probe"].items():   # D160: a refit must give the earlier result exactly
+        got = res["models"].get(model, {}).get("readouts", {}).get("probe", {}).get("pairwise_accuracy")
+        if got is not None and abs(got - want) > sc["reproduce_atol"]:
+            raise SystemExit(f"the {model} probe gives {got}, not {want} (D160): stopped before writing results")
     if "7b" in res["models"]:
         n = res["models"]["7b"]["info"]["n_candidates"]
         x2p = x2_on_prefix(n, cfg)
@@ -166,15 +250,27 @@ def analyze(cfg: dict | None = None) -> dict:
                 common = [k for k in k7 if k in set(k1)]
                 if common:
                     i7, i1 = [k7.index(k) for k in common], [k1.index(k) for k in common]
-                    diff = a7[i7] - a1[i1]
-                    rng = np.random.default_rng(seed)
-                    bs = diff[rng.integers(0, len(diff), (n_boot, len(diff)))].mean(axis=1)
-                    d["7b - native 1.5b (paired, common kept problems)"] = {
-                        "n": len(common), "diff": float(diff.mean()), "ci95": np.percentile(bs, [2.5, 97.5]).tolist()}
+                    d["7b - native 1.5b (paired, common kept problems)"] = paired(a7[i7], a1[i1], n_boot, seed)
             xm = x2p["methods"].get(r)
             if xm:
                 d["7b - SFT 1.5b X2 (same prefix, unpaired)"] = unpaired(a7, np.array(xm["per_problem"]), n_boot, seed)
+                if r in per.get("1.5b", {}):   # D160: format, training and decoding at a fixed size
+                    d["native 1.5b - SFT 1.5b X2 (same prefix, unpaired)"] = unpaired(
+                        per["1.5b"][r][1], np.array(xm["per_problem"]), n_boot, seed)
             res["differences"][r] = d
+    res["controls"] = {}   # D160: paired within a model (the same kept problems), and the probe's net scale effect
+    for model, rs in per.items():
+        c = {}
+        if "probe" in rs and "probe_random" in rs:
+            c["probe - probe_random (paired)"] = paired(rs["probe"][1], rs["probe_random"][1], n_boot, seed)
+        for r in ("yes", "probe"):
+            if r in rs and "length" in rs:
+                c[f"{r} - length (paired)"] = paired(rs[r][1], rs["length"][1], n_boot, seed)
+        res["controls"][model] = c
+    if all("probe" in per.get(m, {}) and "probe_random" in per.get(m, {}) for m in ("7b", "1.5b")):
+        net = {m: per[m]["probe"][1] - per[m]["probe_random"][1] for m in ("7b", "1.5b")}
+        res["controls"]["7b vs native 1.5b"] = {
+            "(probe - probe_random): 7b - native 1.5b (unpaired)": unpaired(net["7b"], net["1.5b"], n_boot, seed)}
     out = REPO_ROOT / cfg["output_dir"] / "scale"
     out.mkdir(parents=True, exist_ok=True)
     (out / "results.json").write_text(json.dumps(res, indent=1, default=float))
@@ -193,19 +289,23 @@ def render(res: dict) -> str:
         cells = [("–" if res["models"][m]["readouts"][r].get("missing") else ci(res["models"][m]["readouts"][r]))
                  for m in res["models"]]
         xp = (res.get("x2_sft_on_prefix") or {}).get("methods", {}).get(r)
+        published = res["x2_published"].get(pub.get(r))
         L.append(f"| {LABELS[r]} | " + " | ".join(cells) + f" | {ci(xp) if xp else '–'} | "
-                 f"{res['x2_published'][pub[r]]:.3f} |")
+                 f"{'–' if published is None else f'{published:.3f}'} |")
     for m, v in res["models"].items():
         i = v["info"]
         L += ["", f"**{m}:** {i['n_candidates']} candidates, {i['n_answers']} samples; answered "
                   f"{i['answered_share']:.1%}, correct per sample {i['accuracy_per_sample']:.1%}, truncated "
                   f"{i['truncated_share']:.1%}, mean {i['mean_tokens']:.0f} tokens; kept {v['n_kept']} "
                   f"({v['kept_share']:.1%}), {v['n_pairs']} pairs. Reasons: {i['reasons']}."]
-        if "probe" in i:
-            L.append(f"Probe folds: {[(f['layer'], f['C']) for f in i['probe']['folds']]} ({i['probe']['n_layers']} layers).")
-    if res.get("differences"):
-        L += ["", "| readout | comparison | difference [95% CI] |", "|---|---|---|"]
-        for r, d in res["differences"].items():
-            for name, x in d.items():
-                L.append(f"| {r} | {name} | {x['diff']:+.3f} [{x['ci95'][0]:+.3f}, {x['ci95'][1]:+.3f}] |")
+        for name in ("probe", "probe_random"):
+            if name in i:
+                L.append(f"{name} folds (layer, C): {[(f['layer'], f['C']) for f in i[name]['folds']]} "
+                         f"({i[name]['n_layers']} layers).")
+    if res.get("differences") or res.get("controls"):
+        L += ["", "| readout / model | comparison | difference [95% CI] |", "|---|---|---|"]
+        for group in ("differences", "controls"):
+            for r, d in res.get(group, {}).items():
+                for name, x in d.items():
+                    L.append(f"| {r} | {name} | {x['diff']:+.3f} [{x['ci95'][0]:+.3f}, {x['ci95'][1]:+.3f}] |")
     return "\n".join(L) + "\n"

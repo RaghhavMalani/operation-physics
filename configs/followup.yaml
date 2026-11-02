@@ -86,6 +86,13 @@ scale:                                 # item 3: Qwen2.5-Math-7B-Instruct (4-bit
     max_iter: 2000
     n_jobs: 4                          # after the GPU queue (D97); X2's setting
     even_layers_only: false            # D151: true only if all 29 layers cannot finish by the report
+  reproduce_probe:                     # D160: a refit of a model's probe (same code, threads) must give this exactly
+    7b: 0.7525589125855713             # D159's result (results/followup/scale/results.json, e658bea)
+  reproduce_atol: 1.0e-12
+  random_init:                         # D160: the probes' random-weights control (transformers' Qwen2 init)
+    dir: random_init_model             # under <output_dir>/scale/<model>/ (gitignored, regenerable: ~15 GB for the 7B)
+    seed: 0
+    shard_gb: 2.0                      # bf16 safetensors shards
   bootstrap: 10000
   seed: 0
   kaggle:                              # D157: item 3's 7B sampling on Kaggle "GPU T4 x2" with vLLM (readouts stay local)
@@ -120,6 +127,14 @@ scale:                                 # item 3: Qwen2.5-Math-7B-Instruct (4-bit
     attempts: 2                        # the second with enforce_eager and NCCL_P2P_DISABLE=1
     min_free_gb: 35                    # /tmp: weights 15.2 GB + the venv (~10 GB)
     max_file_mb: 64                    # ingest: a larger file in the zip is refused
+  kaggle_models:                       # D160: per-model overlays of `kaggle` (the 7B's settings are `kaggle` itself)
+    1.5b:                              # D151 (3)'s native control, the same run as the 7B's otherwise
+      repo_id: Qwen/Qwen2.5-Math-1.5B-Instruct
+      revision: aafeb0fc6f22cbf0eaeed126eff8be45b0360a35
+      weights_sha256:                  # HF's LFS sha256 at the revision (3,087,467,144 bytes)
+        model.safetensors: 08faf1e950173bb44c11d26df28c55da7237dc55c77dbc1cbae4a5d7584540d9
+      zip_name: followup_1.5b_scale.zip
+      min_free_gb: 20                  # /tmp: weights 3.1 GB + the venv (~10 GB)
   x2_published:                        # FINDINGS #19 / #22 (SFT 1.5B, our format, 516 kept problems)
     self_consistency: 0.643
     x4_direct: 0.526

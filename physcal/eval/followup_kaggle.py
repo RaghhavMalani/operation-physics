@@ -1,15 +1,16 @@
-"""D157 item 3 on Kaggle (EXPLORATORY, follow-up project; not the paper): the 7B's k = 8 samples with vLLM on
-"GPU T4 x2" (the official Qwen/Qwen2.5-Math-7B-Instruct, fp16, tensor-parallel 2), in followup_scale's chunk format
-plus the tape fields, so a session cutoff loses at most one chunk and a re-run resumes; and, locally, the ingest of
-the downloaded zip.
+"""D157 item 3 on Kaggle (EXPLORATORY, follow-up project; not the paper): a model's k = 8 samples with vLLM on
+"GPU T4 x2" (the official Qwen/Qwen2.5-Math-7B-Instruct, or D160's native 1.5B control; fp16, tensor-parallel 2), in
+followup_scale's chunk format plus the tape fields, so a session cutoff loses at most one chunk and a re-run resumes;
+and, locally, the ingest of the downloaded zip. A model's settings: `scale.kaggle` overlaid with
+`scale.kaggle_models[model]` (kaggle_cfg).
 
-On Kaggle (notebooks/kaggle_7b_scale.ipynb runs these with its venv's python, the repo on PYTHONPATH):
-    python -m physcal.eval.followup_kaggle download --model-dir D        # the pinned revision, sha256-checked
-    python -m physcal.eval.followup_kaggle restore --out W --src /kaggle/input
-    python -m physcal.eval.followup_kaggle sample --model-dir D --out W --session-start T [--enforce-eager]
-    python -m physcal.eval.followup_kaggle pack --out W
+On Kaggle (notebooks/kaggle_<model>_scale.ipynb runs these with its venv's python, the repo on PYTHONPATH):
+    python -m physcal.eval.followup_kaggle download --model M --model-dir D    # the pinned revision, sha256-checked
+    python -m physcal.eval.followup_kaggle restore --model M --out W --src /kaggle/input
+    python -m physcal.eval.followup_kaggle sample --model M --model-dir D --out W --session-start T [--enforce-eager]
+    python -m physcal.eval.followup_kaggle pack --model M --out W
 Locally (CPU), before scripts/queue_followup_kaggle.sh's readouts and analysis:
-    uv run python -m physcal.eval.followup_kaggle ingest --zip Z
+    uv run python -m physcal.eval.followup_kaggle ingest --model M --zip Z
 
 `sample` exits 0 when done, EXIT_ENGINE if the engine cannot start, EXIT_HEALTH if the health gate fails.
 """
@@ -33,10 +34,17 @@ import numpy as np
 from physcal.config import REPO_ROOT, load_config
 from physcal.eval import followup_scale as F
 
-MODEL = "7b"
+MODEL = "7b"                     # the default (D157); D160 adds "1.5b"
 EXIT_ENGINE, EXIT_HEALTH = 2, 3
-_ALLOWED = re.compile(r"scale/7b/(samples/chunk_\d{5}\.jsonl|samples/meta\.json|throughput\.json|plan\.json"
-                      r"|logs/[A-Za-z0-9_.-]+\.log)")
+
+
+def _allowed(model: str) -> re.Pattern:
+    return re.compile(rf"scale/{re.escape(model)}/(samples/chunk_\d{{5}}\.jsonl|samples/meta\.json|throughput\.json"
+                      r"|plan\.json|logs/[A-Za-z0-9_.-]+\.log)")
+
+
+def _manifest_name(model: str) -> str:
+    return f"scale/{model}/MANIFEST.json"
 
 
 def _config() -> dict:
@@ -55,12 +63,19 @@ def _file_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def scale_dir(out: Path) -> Path:
-    return Path(out) / "scale" / MODEL
+def kaggle_cfg(cfg: dict, model: str = MODEL) -> dict:
+    """D160: the model's Kaggle settings, `scale.kaggle` overlaid with `scale.kaggle_models[model]` (the 7B has none)."""
+    if model not in cfg["scale"]["models"]:
+        raise SystemExit(f"unknown model {model!r}")
+    return cfg["scale"]["kaggle"] | cfg["scale"].get("kaggle_models", {}).get(model, {})
 
 
-def samples_dir(out: Path) -> Path:
-    return scale_dir(out) / "samples"
+def scale_dir(out: Path, model: str = MODEL) -> Path:
+    return Path(out) / "scale" / model
+
+
+def samples_dir(out: Path, model: str = MODEL) -> Path:
+    return scale_dir(out, model) / "samples"
 
 
 def max_candidates(cfg: dict) -> int:
@@ -98,11 +113,12 @@ def _jsonl(rows: list[dict]) -> str:
 
 
 # ------------------------------------------------------------------------------------------- rows
-def rows_for(probs: list[dict], prompts: dict, gens: list[tuple[str, int, str]], cfg: dict, run_id: str) -> list[dict]:
+def rows_for(probs: list[dict], prompts: dict, gens: list[tuple[str, int, str]], cfg: dict, run_id: str,
+             model: str = MODEL) -> list[dict]:
     """One row per completion, problem-major (k per problem): the tape fields (reward null, since the native
     \\boxed format has no verifier reward; breakdown = the D151 / D154 grade), item 3's chunk fields
     (followup_scale.generate_problems) and the sampling provenance."""
-    sc = cfg["scale"]
+    sc, kc = cfg["scale"], kaggle_cfg(cfg, model)
     k = sc["generation"]["k"]
     rows = []
     for i, p in enumerate(probs):
@@ -113,7 +129,7 @@ def rows_for(probs: list[dict], prompts: dict, gens: list[tuple[str, int, str]],
             truncated = finish == "length"
             gr = F.grade(problem, text, truncated, sc["tolerance"])
             rows.append({"run_id": run_id, "step": 0, "seed": p["seed"], "generator_version": p["generator_version"],
-                         "model_id": f"{sc['kaggle']['repo_id']}@{sc['kaggle']['revision']}", "lora_hash": None,
+                         "model_id": f"{kc['repo_id']}@{kc['revision']}", "lora_hash": None,
                          "problem": problem, "completion": text, "reward": None,
                          "breakdown": {"grader": "followup_scale.grade (D151, D154)", "reason": gr["reason"],
                                        "correct": gr["correct"]},
@@ -194,12 +210,12 @@ def _environment(model_dir: Path) -> dict:
 
 
 # ------------------------------------------------------------------------------------------- Kaggle: the stages
-def download(model_dir: Path, cfg: dict | None = None) -> dict:
+def download(model_dir: Path, cfg: dict | None = None, model: str = MODEL) -> dict:
     """The pinned revision of the official weights; every safetensors file must match HF's LFS sha256."""
     from huggingface_hub import snapshot_download
 
     cfg = cfg or _config()
-    kc = cfg["scale"]["kaggle"]
+    kc = kaggle_cfg(cfg, model)
     snapshot_download(kc["repo_id"], revision=kc["revision"], local_dir=str(model_dir),
                       allow_patterns=kc["download_patterns"])
     got = {name: _file_sha256(Path(model_dir) / name) for name in kc["weights_sha256"]}
@@ -211,15 +227,16 @@ def download(model_dir: Path, cfg: dict | None = None) -> dict:
     return res
 
 
-def restore(out: Path, src: Path, cfg: dict | None = None) -> dict:
+def restore(out: Path, src: Path, cfg: dict | None = None, model: str = MODEL) -> dict:
     """A previous session's output (attached as a Kaggle input): the longest valid chunk prefix under `src`, with its
-    throughput.json and meta.json, copied into `out`. Chunks of another revision or decoding are refused."""
+    throughput.json and meta.json, copied into `out`. Chunks of another model, revision or decoding are refused."""
     cfg = cfg or _config()
-    kc = cfg["scale"]["kaggle"]
+    kc = kaggle_cfg(cfg, model)
     found = []
-    for d in sorted({p.parent for p in Path(src).rglob("chunk_*.jsonl") if p.parent.name == "samples"}):
+    for d in sorted({p.parent for p in Path(src).rglob("chunk_*.jsonl")
+                     if p.parent.name == "samples" and p.parent.parent.name == model}):
         try:
-            found.append((len(F.sampled_prefix(MODEL, cfg, d)), d))
+            found.append((len(F.sampled_prefix(model, cfg, d)), d))
         except (ValueError, KeyError, json.JSONDecodeError) as exc:
             print(f"restore: skipping {d}: {exc}", flush=True)
     found = [f for f in found if f[0]]
@@ -228,40 +245,41 @@ def restore(out: Path, src: Path, cfg: dict | None = None) -> dict:
     n, d = max(found)
     meta = json.loads((d / "meta.json").read_text())
     for seg in meta["segments"]:
-        if seg["revision"] != kc["revision"] or seg["decoding"] != decoding(cfg):
+        if seg["repo_id"] != kc["repo_id"] or seg["revision"] != kc["revision"] or seg["decoding"] != decoding(cfg):
             raise SystemExit(f"restore: {d} was sampled with other settings: {seg}")
-    dst = samples_dir(out)
+    dst = samples_dir(out, model)
     dst.mkdir(parents=True, exist_ok=True)
     k, cs = cfg["scale"]["generation"]["k"], cfg["scale"]["chunk_size"]
     for start in range(0, n // k, cs):
-        f = F.chunk_path(MODEL, start, cfg, d)
+        f = F.chunk_path(model, start, cfg, d)
         if not (dst / f.name).exists():
             shutil.copyfile(f, dst / f.name)
     shutil.copyfile(d / "meta.json", dst / "meta.json")
     for name in ("throughput.json", "plan.json"):
         if (d.parent / name).exists():
-            shutil.copyfile(d.parent / name, scale_dir(out) / name)
+            shutil.copyfile(d.parent / name, scale_dir(out, model) / name)
     if (d.parent / "logs").is_dir():
-        shutil.copytree(d.parent / "logs", scale_dir(out) / "logs", dirs_exist_ok=True)
+        shutil.copytree(d.parent / "logs", scale_dir(out, model) / "logs", dirs_exist_ok=True)
     res = {"restored_rows": n, "restored_candidates": n // k, "from": str(d)}
     print(f"restore: {res}", flush=True)
     return res
 
 
 def sample(engine_factory, tok, out: Path, session_start: float, cfg: dict | None = None, now=time.time,
-           log=print, settings: dict | None = None) -> int:
+           log=print, settings: dict | None = None, model: str = MODEL) -> int:
     """D157: from the first missing chunk, in pool order. If the run has no throughput.json yet, the first
     throughput_n candidates of that chunk are generated alone and timed (the health gate reads them), and the chunk is
     finished. Then N is planned (plan_total) and chunks run while may_start. Returns 0 or EXIT_HEALTH."""
     cfg = cfg or _config()
-    sc, kc = cfg["scale"], cfg["scale"]["kaggle"]
+    sc, kc = cfg["scale"], kaggle_cfg(cfg, model)
     cs, k = sc["chunk_size"], sc["generation"]["k"]
-    sd = samples_dir(out)
+    sd = samples_dir(out, model)
     sd.mkdir(parents=True, exist_ok=True)
     probs = [{**p, "_index": i} for i, p in enumerate(F.pool(cfg))]
     t_end = session_start + kc["sampling_hours"] * 3600
-    start = len(F.sampled_prefix(MODEL, cfg, sd)) // k
-    tp_path, meta_path, plan_path = scale_dir(out) / "throughput.json", sd / "meta.json", scale_dir(out) / "plan.json"
+    start = len(F.sampled_prefix(model, cfg, sd)) // k
+    tp_path, meta_path = scale_dir(out, model) / "throughput.json", sd / "meta.json"
+    plan_path = scale_dir(out, model) / "plan.json"
     if start + cs > max_candidates(cfg):
         log(f"the prefix is complete ({start} candidates); nothing to sample")
         return 0
@@ -270,8 +288,9 @@ def sample(engine_factory, tok, out: Path, session_start: float, cfg: dict | Non
         log(f"the health gate failed in an earlier session ({tp['answered_share']:.3f} answered); nothing is sampled")
         return EXIT_HEALTH
     meta = json.loads(meta_path.read_text()) if meta_path.exists() else {
-        "decision": "D157: item 3's 7B samples on Kaggle (exploratory, follow-up project; not the paper)",
-        "run_id": f"followup-scale-7b-kaggle-{kc['revision'][:8]}", "segments": []}
+        "decision": f"D157{'' if model == MODEL else ' / D160'}: item 3's {model} samples on Kaggle (exploratory, "
+                    "follow-up project; not the paper)",
+        "run_id": f"followup-scale-{model}-kaggle-{kc['revision'][:8]}", "segments": []}
     seg = {"session_start": session_start, "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "first_chunk": start,
            "repo_id": kc["repo_id"], "revision": kc["revision"], "decoding": decoding(cfg), **(settings or {})}
     meta["segments"].append(seg)
@@ -290,7 +309,7 @@ def sample(engine_factory, tok, out: Path, session_start: float, cfg: dict | Non
         seeds = [sample_seed(p["_index"], s, cfg) for p in ps for s in range(k)]
         t0 = now()
         gens = engine(ids, seeds)
-        return rows_for(ps, prompts, gens, cfg, meta["run_id"]), now() - t0
+        return rows_for(ps, prompts, gens, cfg, meta["run_id"], model), now() - t0
 
     def save_meta(**kw):
         seg.update(kw)
@@ -316,7 +335,7 @@ def sample(engine_factory, tok, out: Path, session_start: float, cfg: dict | Non
             save_meta(chunks=0, stop="health gate")
             return EXIT_HEALTH
         rest, dt2 = run(probs[start + n:start + cs])
-        _write_atomic(F.chunk_path(MODEL, start, cfg, sd), _jsonl(rows + rest))
+        _write_atomic(F.chunk_path(model, start, cfg, sd), _jsonl(rows + rest))
         times.append(dt + dt2)
         start += cs
     n_planned = plan_total(start, now(), t_end, tp["s_per_problem"], cfg)
@@ -332,7 +351,7 @@ def sample(engine_factory, tok, out: Path, session_start: float, cfg: dict | Non
             stop = f"chunk {start} would end after the sampling deadline"
             break
         rows, dt = run(probs[start:start + cs])
-        _write_atomic(F.chunk_path(MODEL, start, cfg, sd), _jsonl(rows))
+        _write_atomic(F.chunk_path(model, start, cfg, sd), _jsonl(rows))
         times.append(dt)
         acc = np.mean([bool(r["correct"]) for r in rows])
         start += cs
@@ -345,17 +364,17 @@ def sample(engine_factory, tok, out: Path, session_start: float, cfg: dict | Non
     return 0
 
 
-def pack(out: Path, cfg: dict | None = None) -> Path:
-    """scale/7b/ (chunks, meta, throughput, plan, logs) and MANIFEST.json (sha256 per file) in one zip."""
+def pack(out: Path, cfg: dict | None = None, model: str = MODEL) -> Path:
+    """scale/<model>/ (chunks, meta, throughput, plan, logs) and MANIFEST.json (sha256 per file) in one zip."""
     cfg = cfg or _config()
-    root = Path(out)
-    files = sorted(p for p in scale_dir(out).rglob("*") if p.is_file() and not p.name.endswith(".tmp")
+    root, mname = Path(out), _manifest_name(model)
+    files = sorted(p for p in scale_dir(out, model).rglob("*") if p.is_file() and not p.name.endswith(".tmp")
                    and p.name != "MANIFEST.json")
     data = {p.relative_to(root).as_posix(): p.read_bytes() for p in files}   # read once: the manifest is the zip's
     manifest = {name: _sha256(b) for name, b in data.items()}
-    data["scale/7b/MANIFEST.json"] = json.dumps(manifest, indent=1).encode()
-    (scale_dir(out) / "MANIFEST.json").write_bytes(data["scale/7b/MANIFEST.json"])
-    z = root / cfg["scale"]["kaggle"]["zip_name"]
+    data[mname] = json.dumps(manifest, indent=1).encode()
+    (scale_dir(out, model) / "MANIFEST.json").write_bytes(data[mname])
+    z = root / kaggle_cfg(cfg, model)["zip_name"]
     with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as zf:
         for name, b in data.items():
             zf.writestr(name, b)
@@ -364,10 +383,11 @@ def pack(out: Path, cfg: dict | None = None) -> Path:
 
 
 # ------------------------------------------------------------------------------------------- local: the ingest
-def safe_extract(zip_path: Path, dest: Path, cfg: dict) -> dict:
+def safe_extract(zip_path: Path, dest: Path, cfg: dict, model: str = MODEL) -> dict:
     """The zip is untrusted data: only _ALLOWED regular files no larger than max_file_mb, written by name into an
     empty `dest`; MANIFEST.json must list exactly those files with matching sha256. Returns the manifest."""
-    limit = cfg["scale"]["kaggle"]["max_file_mb"] * 1e6
+    limit = kaggle_cfg(cfg, model)["max_file_mb"] * 1e6
+    allowed, mname = _allowed(model), _manifest_name(model)
     dest.mkdir(parents=True, exist_ok=True)
     if any(dest.iterdir()):
         raise SystemExit(f"{dest} is not empty")
@@ -377,14 +397,14 @@ def safe_extract(zip_path: Path, dest: Path, cfg: dict) -> dict:
         if len(set(names)) != len(names):
             raise SystemExit("duplicate names in the zip")
         for i in infos:
-            if i.filename != "scale/7b/MANIFEST.json" and not _ALLOWED.fullmatch(i.filename):
+            if i.filename != mname and not allowed.fullmatch(i.filename):
                 raise SystemExit(f"unexpected file in the zip: {i.filename!r}")
             if (i.external_attr >> 16) & 0o170000 not in (0, 0o100000):
                 raise SystemExit(f"not a regular file: {i.filename!r}")
             if i.file_size > limit:
                 raise SystemExit(f"{i.filename!r} is larger than {limit / 1e6:.0f} MB")
         data = {i.filename: zf.read(i) for i in infos}
-    manifest = json.loads(data.pop("scale/7b/MANIFEST.json", b"null"))
+    manifest = json.loads(data.pop(mname, b"null"))
     if not isinstance(manifest, dict) or set(manifest) != set(data):
         raise SystemExit("MANIFEST.json does not list exactly the zip's files")
     for name, b in data.items():
@@ -397,21 +417,21 @@ def safe_extract(zip_path: Path, dest: Path, cfg: dict) -> dict:
 
 
 def ingest(zip_path: Path, cfg: dict | None = None, tok=None, staging: Path | None = None,
-           dest: Path | None = None) -> dict:
-    """The downloaded zip into results/followup/scale/7b/: safe extraction and the manifest; the chunk prefix
+           dest: Path | None = None, model: str = MODEL) -> dict:
+    """The downloaded zip into results/followup/scale/<model>/: safe extraction and the manifest; the chunk prefix
     (followup_scale.sampled_prefix); every segment's revision and decoding; every row's problem equal to the frozen
     pool's; every prompt re-rendered with the local tokenizer (the 4-bit copy's, which the readouts use) to the same
     sha256 and length; every row re-graded with the local parser (authoritative, changes counted). Idempotent."""
     cfg = cfg or _config()
-    sc, kc = cfg["scale"], cfg["scale"]["kaggle"]
+    sc, kc = cfg["scale"], kaggle_cfg(cfg, model)
     k = sc["generation"]["k"]
     zsha = _file_sha256(Path(zip_path))
     staging = staging or REPO_ROOT / ".cache" / "kaggle_import" / zsha[:16]
     if staging.exists():
         shutil.rmtree(staging)
-    safe_extract(Path(zip_path), staging, cfg)
-    sd = samples_dir(staging)
-    rows = F.sampled_prefix(MODEL, cfg, sd)
+    safe_extract(Path(zip_path), staging, cfg, model)
+    sd = samples_dir(staging, model)
+    rows = F.sampled_prefix(model, cfg, sd)
     if not rows:
         raise SystemExit("the zip holds no complete chunk")
     meta = json.loads((sd / "meta.json").read_text())
@@ -422,7 +442,7 @@ def ingest(zip_path: Path, cfg: dict | None = None, tok=None, staging: Path | No
     if tok is None:
         from transformers import AutoTokenizer
 
-        tok = AutoTokenizer.from_pretrained(str(REPO_ROOT / sc["models"][MODEL]["dir"]))
+        tok = AutoTokenizer.from_pretrained(str(REPO_ROOT / sc["models"][model]["dir"]))
     checked: dict = {}
     changed = 0
     for r in rows:
@@ -448,30 +468,30 @@ def ingest(zip_path: Path, cfg: dict | None = None, tok=None, staging: Path | No
         by_index.setdefault(r["index"], set()).add(r["sample"])
     if any(v != set(range(k)) for v in by_index.values()):
         raise SystemExit("a candidate lacks some of its k samples")
-    dest = dest or F.out_dir(MODEL, cfg)
+    dest = dest or F.out_dir(model, cfg)
     dsd = dest / "samples"
     dsd.mkdir(parents=True, exist_ok=True)
     cs = sc["chunk_size"]
     written = 0
     for start in range(0, len(rows) // k, cs):
         text = _jsonl(rows[start * k:(start + cs) * k])
-        f = F.chunk_path(MODEL, start, cfg, dsd)
+        f = F.chunk_path(model, start, cfg, dsd)
         if f.exists():
             if f.read_text() != text:
                 raise SystemExit(f"{f} exists with other content; move it away to re-ingest")
             continue
         _write_atomic(f, text)
         written += 1
-    F.sampled_prefix(MODEL, cfg, dsd)  # the destination is still one prefix
+    F.sampled_prefix(model, cfg, dsd)  # the destination is still one prefix
     shutil.copyfile(sd / "meta.json", dsd / "meta.json")
     kd = dest / "kaggle"
     kd.mkdir(exist_ok=True)
     for name in ("throughput.json", "plan.json"):
-        if (scale_dir(staging) / name).exists():
-            shutil.copyfile(scale_dir(staging) / name, kd / name)
-    if (scale_dir(staging) / "logs").is_dir():
-        shutil.copytree(scale_dir(staging) / "logs", kd / "logs", dirs_exist_ok=True)
-    res = {"decision": "D157: the Kaggle samples ingested (exploratory)", "zip_sha256": zsha,
+        if (scale_dir(staging, model) / name).exists():
+            shutil.copyfile(scale_dir(staging, model) / name, kd / name)
+    if (scale_dir(staging, model) / "logs").is_dir():
+        shutil.copytree(scale_dir(staging, model) / "logs", kd / "logs", dirs_exist_ok=True)
+    res = {"decision": "D157: the Kaggle samples ingested (exploratory)", "model": model, "zip_sha256": zsha,
            "n_candidates": len(rows) // k, "n_rows": len(rows), "chunks_written": written,
            "prompts_checked": len(checked), "regraded_changed_rows": changed,
            "answered_share": float(np.mean([r["value"] is not None for r in rows])),
@@ -487,6 +507,7 @@ def ingest(zip_path: Path, cfg: dict | None = None, tok=None, staging: Path | No
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("action", choices=["download", "restore", "sample", "pack", "ingest"])
+    ap.add_argument("--model", default=MODEL, help="7b (D157) or 1.5b (D160)")
     ap.add_argument("--model-dir", type=Path)
     ap.add_argument("--out", type=Path, help="Kaggle: the output root (/kaggle/working)")
     ap.add_argument("--src", type=Path, help="restore: where a previous session's output is mounted")
@@ -496,13 +517,13 @@ def main() -> None:
     a = ap.parse_args()
     cfg = _config()
     if a.action == "download":
-        print(json.dumps(download(a.model_dir, cfg), indent=1))
+        print(json.dumps(download(a.model_dir, cfg, a.model), indent=1))
     elif a.action == "restore":
-        restore(a.out, a.src, cfg)
+        restore(a.out, a.src, cfg, a.model)
     elif a.action == "pack":
-        pack(a.out, cfg)
+        pack(a.out, cfg, a.model)
     elif a.action == "ingest":
-        ingest(a.zip, cfg)
+        ingest(a.zip, cfg, model=a.model)
     else:
         from transformers import AutoTokenizer
 
@@ -521,7 +542,7 @@ def main() -> None:
             "NCCL_P2P_DISABLE", "VLLM_USE_FLASHINFER_SAMPLER")}}
         try:
             rc = sample(factory, tok, a.out, a.session_start, cfg, log=lambda m: print(m, flush=True),
-                        settings=settings)
+                        settings=settings, model=a.model)
         except Exception:
             if engine_error:
                 import traceback

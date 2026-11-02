@@ -118,3 +118,6 @@ paper/*.fls
 paper/*.fdb_latexmk
 paper/*.synctex.gz
 results/followup/scale/*/hidden/
+results/followup/scale/*/hidden_random/
+results/followup/scale/*/random_init_model/
+results/followup/scale/*/random_init_model.tmp/

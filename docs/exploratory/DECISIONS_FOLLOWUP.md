@@ -541,3 +541,112 @@ appended here.
   0.773–0.781). C = 0.001 is the edge of D151's grid. The grid is not extended after the fact.
 - **The reading** is D151's, descriptive. The native 1.5B control did not run (D157, difference 13), so "the wall
   moves" is judged against the SFT 1.5B: D151's fallback. The write-up states every confound of that comparison.
+
+## 2026-11-02 afternoon: the controls for D159 (your instructions at ~14:30 IST)
+
+### D160. Three controls that could make D159 a scale result: the native 1.5B on Kaggle, a random-weights control for each model's probe, and D151 (2)'s refit of X2's probe on the same prefix. Plan and analysis rules (2026-11-02, ~14:45 IST; recorded before any of their data exists)
+- **Why:** D159's 7B − SFT 1.5B comparison changes size, format, training, decoding, sampler precision and the
+  problems at once. The 7B probe has no random-weights control. The SFT probe on the 7B's prefix is missing.
+- **1. The native 1.5B on Kaggle** (D151 (3)'s control).
+  - **The model:** the official `Qwen/Qwen2.5-Math-1.5B-Instruct`, revision `aafeb0fc6f22cbf0eaeed126eff8be45b0360a35`,
+    one `model.safetensors` (3,087,467,144 bytes, LFS sha256 `08faf1e9…40d9`). No task training. 28 layers (29
+    hidden-state arrays, as for the 7B); context 4,096.
+  - **Identical to the 7B's run (D157):**
+    - the prompts, checked on 2026-11-02 before any sample: the official 1.5B tokenizer, the local 4-bit 1.5B and the
+      local 4-bit 7B render all 1,176 prompts to the same text and ids, and the official 1.5B matches the 7B's Kaggle
+      rows' prompt sha256 and token count for all 1,176 (0 mismatches);
+    - the format, D152's decoding (T 0.7, top_p 0.8, top_k 20, repetition penalty 1.0), k = 8, max_new_tokens 3,072;
+    - the per-sample seeds (0 + 8 × index + sample), so each (candidate, sample) has the 7B's seed;
+    - the 1,176 candidates, chunks of 24, the timing on 20 and N's sizing, the health gate (50% answered), the stall
+      watchdog and the retry, the zip and every ingest check;
+    - the stack: Kaggle "GPU T4 x2", vLLM 0.29.0, fp16, tensor-parallel 2, Triton attention, max_model_len 4,096,
+      gpu_memory_utilization 0.90, no custom all-reduce. Tensor-parallel 2 is kept although the 1.5B fits on one T4:
+      the same engine, at a cost in speed only. The 1.5B's 12 heads, 2 KV heads, 8,960 MLP width and vocabulary
+      divide by 2.
+  - **What differs:** the weights (repo, revision, sha256); the zip name `followup_1.5b_scale.zip`; the free-space check
+    on /tmp (20 GB: weights 3.1 GB + the venv); the notebook `notebooks/kaggle_1.5b_scale.ipynb`, pinned to its own
+    commit.
+  - **The code change, which touches no 7B data:**
+    - `followup_kaggle` takes `--model {7b, 1.5b}`;
+    - a model's settings are `scale.kaggle` overlaid with `scale.kaggle_models[model]`. The 7B's stay in
+      `scale.kaggle`, unchanged.
+    - **The 7B notebook's pin test becomes a provenance test:** its commit is the one in the 7B's ingested meta, and
+      that commit's sampling settings equal today's 7B settings. The 1.5B notebook gets D157's byte-for-byte test.
+  - **The local readouts** run on the local 4-bit 1.5B (`unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit` at `e24e9530…`),
+    as for the 7B: direct P(yes), the hidden states (29 layers, the same position), self-consistency and length.
+- **2. A random-weights control for each probe** (the 7B tonight; the 1.5B after its zip).
+  - **The weights:**
+    - the readout copy's architecture (its `config.json` without the quantization block), with random weights;
+    - every Linear and Embedding weight ~ N(0, 0.02²) (`initializer_range`); the embedding's padding row 0; biases 0;
+      RMSNorm weights 1. That is transformers' Qwen2 initialization;
+    - seed 0, one `torch.Generator`, tensors in parameter order;
+    - saved in bf16 with the readout copy's tokenizer files. The 7B is ~15 GB, under
+      `results/followup/scale/<model>/random_init_model/` (gitignored, regenerable).
+    - **The one difference from X2's control (D74):** X2 used `from_config`, which cannot hold a 7B in this
+      machine's RAM, so the weights are generated tensor by tensor. The distribution is transformers'; the random
+      stream is not.
+    - **Loaded the same way as the readout copy:** Unsloth, 4-bit, quantized at load, as X2's control was.
+  - **The same answers and position:** the same kept answers (6,133 for the 7B), teacher-forced with the same prompt;
+    the token of the last box's closing brace; batch 1; x2_hidden's logit check.
+  - **The same probe protocol:** `crossfit_confidence` with the same groups, so the same five folds; the same
+    (layer, C) grid; all 29 layers; the same thread settings as the real probe.
+  - **Primary:** the random-weights probe's pairwise accuracy, and real − random-weights, **paired** over the same
+    kept problems (bootstrap over problems, B = 10,000, seed 0).
+  - **Reading:**
+    - "the probe reads more than the text's surface" if real − random-weights > 0 with a CI excluding 0;
+    - otherwise the probe's number is reported as a surface signal, not as knowledge.
+- **3. X2's SFT probe on the same prefix** (D151 (2)).
+  - **The refit:** X2's cross-fit (`x2_analysis.crossfit_confidence`) on X2's SFT hidden states at the "±" token,
+    under X2's own settings: 4 jobs and the default thread environment, at nice 19.
+  - **Not single-threaded** (your instruction), because of D97: under 1 thread the same refit gave 0.5390 against
+    X2's 0.5396, since the inner (layer, C) choice depends on the BLAS thread count, and D92's check refused it.
+    D97's single-thread rule is for while the GPU is busy, and it runs now, while the GPU is idle.
+  - **The gate (D151 (2), D92):** the refit must reproduce X2's published 0.5396 on its 516 kept problems within
+    D92's 1e-9. Otherwise the probe stays missing.
+  - **Then:**
+    - its per-answer values are restricted to the prefix's 504 kept problems;
+    - the values come from a fit on all 516; the 12 kept problems beyond the prefix take part in the fit only;
+    - 7B − SFT 1.5B for the probe (unpaired, same prefix) replaces D159's approximation.
+- **4. The analysis** (`followup_scale analyze`, D151's metric and bootstrap; descriptive, no multiple-comparison
+  correction).
+  - **The readouts per model:** self-consistency, P(yes), the probe, the random-weights probe, length.
+  - **D151's comparisons, now with the native 1.5B:**
+    - 7B − native 1.5B, unpaired: primary, D151;
+    - the same on the problems both keep, paired: secondary;
+    - 7B − SFT 1.5B on the same prefix.
+  - **D151's reading with its first comparison:** "the wall moves with scale" if a single-sample readout of the 7B,
+    P(yes) or the probe, exceeds the native 1.5B's with a CI excluding 0.
+    - The probe counts only if the 7B's real − random-weights difference also excludes 0.
+    - **Secondary, the probe's scale effect net of the surface:** (7B real − random) − (1.5B real − random),
+      unpaired.
+  - **Also descriptive:**
+    - native 1.5B − SFT 1.5B (unpaired, same prefix): format, training and decoding at a fixed size;
+    - per model, P(yes) − length and probe − length, paired: is a readout more than length?
+  - **The cache:** each model's per-answer probe values are saved with a hash of their inputs (the hidden-state
+    parts, the answers, the probe settings), so later analyses do not refit.
+  - **The 7B probe is refit once with the same code and threads.** It must reproduce D159's 0.7526 exactly (it is
+    deterministic); otherwise the run stops and is reported.
+- **Where and when:**
+  - **Now (CPU, the GPU idle):** item 3's refit.
+  - **Tonight (local GPU, `GPU_DEADLINE=09:00`):** `MODEL=7b scripts/queue_followup_kaggle.sh`:
+    - D158's VRAM gate, the temperature and stall guards, the free-space guard, a commit + push after every stage;
+    - the stages: the random-weights 7B (CPU; ~15 GB written), its hidden states (GPU, ~80 min), then the analysis
+      (CPU, 4 jobs, after the GPU stage; D97).
+  - **On Kaggle (you):** `notebooks/kaggle_1.5b_scale.ipynb` (`docs/exploratory/kaggle_instructions.md` §8).
+  - **After its zip (prepared, not run):**
+    - `MODEL=1.5b KAGGLE_ZIP=… scripts/queue_followup_kaggle.sh`: ingest, P(yes), hidden states, the random-weights
+      1.5B and its hidden states, the analysis;
+    - its launch gate is lower (the 4-bit 1.5B peaks at ~2.3 GiB; D153).
+- **Done this afternoon, before any of the controls' data (code checks only):**
+  - **Both random-weights copies are built:** the 1.5B (1.54B parameters, 2 shards, 2.9 GB) and the 7B (7.62B
+    parameters, 8 shards, 15 GB). Tonight's chain finds them and moves on.
+    - **The 7B's first attempt was stopped** at 12 of 15 GB of RAM: the maker held every shard until the end. It now
+      writes each shard as soon as it fills; the grouping rule is unchanged, so the 1.5B copy is the same.
+  - **A GPU smoke test** (2 kept 7B answers through the 1.5B copies; a code check, nothing saved or analyzed):
+    - the random copy loads in 4-bit like the real one (196 4-bit linear modules each);
+    - its states are finite and pass x2_hidden's logit check (gap 0.004 against 0.02);
+    - their cosine with the real model's at layer 14 is −0.01.
+  - **A plumbing dry run of the analysis** into the scratchpad: the real answers with a fast stand-in for the probe;
+    the reproduction check fires as designed. No result was read from it.
+  - **The full test suite** (CPU, 1 thread, nice 19): every test passes except D155's known wall-clock flake in
+    `test_temp_guard.py`, which passes 3 of 3 alone.

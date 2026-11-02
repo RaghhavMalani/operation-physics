@@ -1,8 +1,10 @@
-"""D157 (exploratory follow-up track): item 3's Kaggle sampler (chunks, timing, health gate, resume), the zip, its
-local ingest, and the notebook's pinned commit. A fake engine, clock and tokenizer stand in for vLLM; CPU only."""
+"""D157 / D160 (exploratory follow-up track): item 3's Kaggle sampler (chunks, timing, health gate, resume), the zip,
+its local ingest, the per-model settings, and the notebooks' pinned commits. A fake engine, clock and tokenizer stand
+in for vLLM; CPU only."""
 
 import copy
 import json
+import re
 import zipfile
 
 import pytest
@@ -60,14 +62,14 @@ class Engine:
         return out
 
 
-def run(cfg, tmp_path, clock, engine, start_offset=0.0):
+def run(cfg, tmp_path, clock, engine, start_offset=0.0, model=K.MODEL):
     made = []
 
     def factory():
         made.append(1)
         return engine
 
-    rc = K.sample(factory, Tok(), tmp_path, clock.t - start_offset, cfg, now=clock, log=lambda m: None)
+    rc = K.sample(factory, Tok(), tmp_path, clock.t - start_offset, cfg, now=clock, log=lambda m: None, model=model)
     return rc, len(made)
 
 
@@ -128,19 +130,40 @@ def test_plan_total_and_may_start(cfg):
     assert K.max_candidates(full) == 1176
 
 
-def test_pack_ingest_roundtrip_regrades_and_is_idempotent(cfg, tmp_path):
+@pytest.mark.parametrize("model", ["7b", "1.5b"])
+def test_pack_ingest_roundtrip_regrades_and_is_idempotent(cfg, tmp_path, model):
     clock = Clock()
     work = tmp_path / "working"
-    run(cfg, work, clock, Engine(cfg, clock))
-    z = K.pack(work, cfg)
-    dest = tmp_path / "repo" / "7b"
-    res = K.ingest(z, cfg, tok=Tok(), staging=tmp_path / "staging", dest=dest)
+    run(cfg, work, clock, Engine(cfg, clock), model=model)
+    z = K.pack(work, cfg, model)
+    assert z.name == K.kaggle_cfg(cfg, model)["zip_name"]
+    with zipfile.ZipFile(z) as zf:
+        assert all(n.startswith(f"scale/{model}/") for n in zf.namelist())
+    dest = tmp_path / "repo" / model
+    res = K.ingest(z, cfg, tok=Tok(), staging=tmp_path / "staging", dest=dest, model=model)
     assert res["n_candidates"] == DEV and res["chunks_written"] == DEV // CS and res["regraded_changed_rows"] == 0
     assert res["prompts_checked"] == DEV and res["accuracy_per_sample"] == pytest.approx(0.5)
-    assert len(F.sampled_prefix(K.MODEL, cfg, dest / "samples")) == DEV * K8
+    rows = F.sampled_prefix(model, cfg, dest / "samples")
+    kc = K.kaggle_cfg(cfg, model)
+    assert len(rows) == DEV * K8 and rows[0]["model_id"] == f"{kc['repo_id']}@{kc['revision']}"
     assert (dest / "kaggle" / "throughput.json").exists() and (dest / "samples" / "meta.json").exists()
-    again = K.ingest(z, cfg, tok=Tok(), staging=tmp_path / "staging2", dest=dest)
+    again = K.ingest(z, cfg, tok=Tok(), staging=tmp_path / "staging2", dest=dest, model=model)
     assert again["chunks_written"] == 0
+    other = "1.5b" if model == "7b" else "7b"   # another model's zip is refused before anything is read
+    with pytest.raises(SystemExit, match="unexpected"):
+        K.ingest(z, cfg, tok=Tok(), staging=tmp_path / "staging3", dest=tmp_path / "other", model=other)
+
+
+def test_kaggle_settings_overlay_per_model(cfg):
+    """D160: the 7B's settings are `scale.kaggle` itself; the 1.5B changes only its weights, zip and disk check."""
+    assert K.kaggle_cfg(cfg, "7b") == cfg["scale"]["kaggle"]
+    k15 = K.kaggle_cfg(cfg, "1.5b")
+    assert set(k15) == set(cfg["scale"]["kaggle"])
+    changed = {key for key in k15 if k15[key] != cfg["scale"]["kaggle"][key]}
+    assert changed == {"repo_id", "revision", "weights_sha256", "zip_name", "min_free_gb"}
+    assert k15["repo_id"] == "Qwen/Qwen2.5-Math-1.5B-Instruct"
+    with pytest.raises(SystemExit, match="unknown model"):
+        K.kaggle_cfg(cfg, "3b")
 
 
 def test_ingest_refuses_another_tokenizer_rendering(cfg, tmp_path):
@@ -194,17 +217,18 @@ def test_restore_copies_the_prefix_and_refuses_other_settings(cfg, tmp_path):
     assert K.restore(tmp_path / "w3", tmp_path / "nothing-here", cfg) == {"restored_rows": 0}
 
 
-# ------------------------------------------------------------------------------------------- the notebook
-def test_the_notebook_parses_and_its_pinned_commit_holds_this_code():
-    """The Kaggle notebook's cells are valid Python, and COMMIT holds the same sampler, scale module and sampling
-    settings as the working tree (a change to any of them needs a re-pinned notebook and a D-entry)."""
+# ------------------------------------------------------------------------------------------- the notebooks
+SAMPLING_KEYS = ("generation", "system_prompt", "tolerance", "chunk_size", "dev_indices", "pool_config")
+
+
+def _notebook(name):
     import ast
     import re
     import subprocess
 
     from physcal.config import REPO_ROOT
 
-    nb = json.loads((REPO_ROOT / "notebooks" / "kaggle_7b_scale.ipynb").read_text())
+    nb = json.loads((REPO_ROOT / "notebooks" / name).read_text())
     code = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
     for src in code:
         ast.parse(src)
@@ -214,13 +238,20 @@ def test_the_notebook_parses_and_its_pinned_commit_holds_this_code():
         return subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{commit}:{path}"], capture_output=True,
                               text=True, check=True).stdout
 
-    for path in ("physcal/eval/followup_kaggle.py", "physcal/eval/followup_scale.py", "configs/x2.yaml",
-                 "physcal/env/render.py", "physcal/env/units.py"):
-        assert pinned(path) == (REPO_ROOT / path).read_text(), f"{path} changed since the notebook's commit {commit[:12]}"
-    # D158: of configs/followup.yaml, what the Kaggle run sampled with (the local readouts' settings may change)
+    return code, commit, pinned
+
+
+def test_the_7b_notebook_is_the_commit_that_sampled_the_ingested_7b_rows():
+    """D160: the 7B's Kaggle run is done, so its notebook's pin is a provenance check: its commit is the one every
+    ingested 7B segment recorded, and that commit's sampling settings are today's 7B settings (which the local ingest
+    and analysis read)."""
     import yaml
 
-    old = yaml.safe_load(pinned("configs/followup.yaml"))["scale"]
-    new = K._config()["scale"]
-    for key in ("kaggle", "generation", "system_prompt", "tolerance", "chunk_size", "dev_indices", "pool_config"):
-        assert old[key] == new[key], f"scale.{key} changed since the notebook's commit {commit[:12]}"
+    code, commit, pinned = _notebook("kaggle_7b_scale.ipynb")
+    meta = json.loads((F.out_dir("7b") / "samples" / "meta.json").read_text())
+    assert {seg["commit"] for seg in meta["segments"]} == {commit}
+    old, cfg = yaml.safe_load(pinned("configs/followup.yaml"))["scale"], K._config()
+    assert old["kaggle"] == K.kaggle_cfg(cfg, "7b")
+    for key in SAMPLING_KEYS:
+        assert old[key] == cfg["scale"][key], f"scale.{key} changed since the 7B's commit {commit[:12]}"
+

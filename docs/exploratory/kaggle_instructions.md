@@ -123,6 +123,38 @@ one. Each new version's zip holds all chunks so far, so download the latest one.
 
 The zip itself is not committed. The ingested chunks are, with the zip's sha256 in `ingest.json`.
 
+## 8. The native 1.5B control (D160): the same steps, another notebook
+
+The notebook is `notebooks/kaggle_1.5b_scale.ipynb`. It is the 7B's notebook with the official
+`Qwen/Qwen2.5-Math-1.5B-Instruct`; everything else is the same: the prompts, decoding, k = 8, token limit, seeds and
+candidates. It should take ~2–4 h, well under the 7B's 5 h. A 1.5B is faster, but the engine and the chunk rule are
+the same.
+
+1. **A new notebook,** not the 7B's: §2 with `kaggle_1.5b_scale.ipynb`; name it e.g. `physcal-1.5b-scale`.
+   Importing it into the 7B's notebook would mix the two runs' versions.
+2. **Settings:** §3 as before (**GPU T4 x2**, **Internet On**).
+3. **Run:** §4 (**Save Version** → **Save & Run All (Commit)**). The log lines are the same; the `repo …` line also
+   says `model 1.5b Qwen/Qwen2.5-Math-1.5B-Instruct@aafeb0fc`.
+4. **Download:** §5. The zip is **`followup_1.5b_scale.zip`**, and the `STATUS:` line starts with `1.5b:`.
+5. **A resume** (only if needed): §6, attaching this notebook's own latest version.
+6. **Bring it back:** copy it next to the 7B's zip:
+
+   ```bash
+   cp /mnt/c/Users/<you>/Downloads/followup_1.5b_scale.zip ~/kaggle_downloads/
+   ```
+
+   The local chain then ingests it and runs:
+   - P(yes);
+   - the hidden states;
+   - the random-weights copy's hidden states;
+   - the analysis.
+
+   It needs the GPU free; the 1.5B needs a 3.5 GiB cap, so most apps can stay open:
+
+   ```bash
+   MODEL=1.5b KAGGLE_ZIP=~/kaggle_downloads/followup_1.5b_scale.zip GPU_DEADLINE=09:00 setsid nohup scripts/queue_followup_kaggle.sh >> results/queue_followup_kaggle/nohup.log 2>&1 < /dev/null &
+   ```
+
 ## Troubleshooting
 
 | what you see | what it means | what to do |

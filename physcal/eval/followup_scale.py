@@ -7,6 +7,9 @@ within-problem pairwise accuracy: self-consistency, X4-style direct P(yes), and 
     uv run python -m physcal.eval.followup_scale sample --model 7b --cap G --stop-at T # GPU: chunks until T (epoch s)
     uv run python -m physcal.eval.followup_scale yes --model 7b --cap G                # GPU: direct P(yes), kept answers
     uv run python -m physcal.eval.followup_scale hidden --model 7b --cap G             # GPU: every layer, kept answers
+    uv run python -m physcal.eval.followup_scale random_init --model 7b                # CPU: D160's random weights
+    uv run python -m physcal.eval.followup_scale hidden --model 7b --cap G --random-init   # GPU: the probe's control
+    uv run python -m physcal.eval.followup_scale x2_probe                              # CPU: D160's X2 refit
     uv run python -m physcal.eval.followup_scale analyze                               # CPU
 
 Every stage is resumable: sampling writes one file per chunk of the pool; the readouts append rows / parts and skip
@@ -21,6 +24,7 @@ import json
 import math
 import os
 import re
+import shutil
 import time
 from pathlib import Path
 
@@ -182,13 +186,14 @@ def grade(problem: dict, completion: str, truncated: bool, tol: float) -> dict:
 
 
 # ------------------------------------------------------------------------------------------- GPU
-def make_backend(model: str, cfg: dict, cap: float, batch_size: int | None = None):
+def make_backend(model: str, cfg: dict, cap: float, batch_size: int | None = None, model_dir: Path | None = None):
+    """The readout copy (or `model_dir`, D160's random weights: loaded the same way, 4-bit at load)."""
     from physcal.eval.run_eval import HFBackend
 
     os.environ["UNSLOTH_RETURN_HIDDEN_STATES"] = "0"
     sc = cfg["scale"]
     g = sc["generation"]
-    model_cfg = {"id": str(REPO_ROOT / sc["models"][model]["dir"]), "loader": "unsloth_4bit", "lora": None,
+    model_cfg = {"id": str(model_dir or REPO_ROOT / sc["models"][model]["dir"]), "loader": "unsloth_4bit", "lora": None,
                  "max_seq_length": sc["max_seq_length"], "text_only": False, "dtype": "bfloat16",
                  "model_class": "causal_lm", "chat_template_kwargs": {}, "max_reserved_gib": cap}
     gen = {"do_sample": True, "num_samples": g["k"], "max_new_tokens": g["max_new_tokens"],
@@ -203,6 +208,98 @@ def _identity(model: str, cfg: dict) -> dict:
     m = cfg["scale"]["models"][model]
     return {"model": model, "repo_id": m["repo_id"], "revision": m["revision"],
             "content_sha256": _dir_content_hash(REPO_ROOT / m["dir"])}
+
+
+def random_init_dir(model: str, cfg: dict) -> Path:
+    return out_dir(model, cfg) / cfg["scale"]["random_init"]["dir"]
+
+
+def _init_rules(skeleton) -> dict:
+    """transformers' Qwen2 initialization per parameter: Linear weights and Embeddings ~ N(0, initializer_range^2)
+    (the padding row 0), biases 0, RMSNorm weights 1. Anything else is an error, not a guess."""
+    import torch
+
+    rules = {}
+    for mname, mod in skeleton.named_modules():
+        for pname, prm in mod.named_parameters(recurse=False):
+            name = f"{mname}.{pname}" if mname else pname
+            if isinstance(mod, torch.nn.Linear):
+                rule = ("normal", None) if pname == "weight" else ("zeros", None)
+            elif isinstance(mod, torch.nn.Embedding):
+                rule = ("normal", mod.padding_idx)
+            elif type(mod).__name__.endswith("RMSNorm") and pname == "weight":
+                rule = ("ones", None)
+            else:
+                raise ValueError(f"no init rule for {name} ({type(mod).__name__})")
+            rules[name] = (*rule, tuple(prm.shape))
+    return rules
+
+
+def make_random_init(model: str, cfg: dict | None = None) -> dict:
+    """D160: the readout copy's architecture (its config without the quantization block) with random weights, seed
+    random_init.seed, one torch.Generator over the parameters in order (tied ones once), bf16 safetensors shards, and
+    the readout copy's tokenizer and generation files. Tensor by tensor, so a 7B never sits in RAM (X2's D74 control
+    used from_config). Idempotent: an existing complete directory is kept."""
+    import torch
+    import transformers
+    from safetensors.torch import save_file
+
+    from physcal.eval.fingerprint import _dir_content_hash
+
+    cfg = cfg or _config()
+    ri = cfg["scale"]["random_init"]
+    src, out = REPO_ROOT / cfg["scale"]["models"][model]["dir"], random_init_dir(model, cfg)
+    if (out / "physcal_random_init.json").exists():
+        return json.loads((out / "physcal_random_init.json").read_text())
+    tmp = out.with_name(out.name + ".tmp")
+    for d in (out, tmp):
+        if d.exists():
+            shutil.rmtree(d)
+    tmp.mkdir(parents=True)
+    raw = json.loads((src / "config.json").read_text())
+    raw.pop("quantization_config", None)
+    (tmp / "config.json").write_text(json.dumps(raw, indent=2))
+    config = transformers.AutoConfig.from_pretrained(str(tmp))
+    with torch.device("meta"):
+        skeleton = transformers.AutoModelForCausalLM.from_config(config)
+    rules = _init_rules(skeleton)
+    names = [n for n, _ in skeleton.named_parameters()]   # tied parameters appear once
+    std, limit = config.initializer_range, ri["shard_gb"] * 1e9
+    gen = torch.Generator().manual_seed(ri["seed"])
+    weight_map, part, size, total, n_shards = {}, {}, 0, 0, 0
+    for i, name in enumerate(names):
+        kind, pad, shape = rules[name]
+        t = torch.empty(shape, dtype=torch.float32)
+        if kind == "normal":
+            t.normal_(0.0, std, generator=gen)
+            if pad is not None:
+                t[pad].zero_()
+        else:
+            t.fill_(0.0 if kind == "zeros" else 1.0)
+        part[name] = t.to(torch.bfloat16).contiguous()
+        del t
+        size += part[name].numel() * 2
+        if size >= limit or i == len(names) - 1:   # each shard is written once full: RAM holds one shard at most
+            n_shards += 1
+            save_file(part, str(tmp / f"shard-{n_shards:05d}.safetensors"), metadata={"format": "pt"})
+            weight_map |= {key: n_shards for key in part}
+            total += size
+            part, size = {}, 0
+    final = {i: f"model-{i:05d}-of-{n_shards:05d}.safetensors" for i in range(1, n_shards + 1)}
+    for i, fname in final.items():
+        (tmp / f"shard-{i:05d}.safetensors").rename(tmp / fname)
+    (tmp / "model.safetensors.index.json").write_text(json.dumps(
+        {"metadata": {"total_size": total}, "weight_map": {key: final[i] for key, i in weight_map.items()}}, indent=1))
+    for f in src.iterdir():
+        if f.is_file() and f.name not in ("config.json", "README.md") and not f.name.startswith("model"):
+            shutil.copyfile(f, tmp / f.name)
+    info = {"decision": "D160 (the probes' random-weights control; exploratory)", "seed": ri["seed"],
+            "init": f"Linear / Embedding N(0, {std}^2), padding row 0, biases 0, RMSNorm 1 (transformers' Qwen2)",
+            "architecture_from": _identity(model, cfg), "n_params": sum(math.prod(rules[n][2]) for n in names),
+            "n_shards": n_shards, "content_sha256": _dir_content_hash(tmp)}
+    (tmp / "physcal_random_init.json").write_text(json.dumps(info, indent=1))
+    tmp.rename(out)
+    return info
 
 
 def generate_problems(backend, probs: list[dict], cfg: dict, seed: int) -> tuple[list[dict], float]:
@@ -513,10 +610,16 @@ def run_yes(model: str, cap: float, cfg: dict | None = None) -> dict:
     return {"n": len(items), "new": len(todo), "seconds": time.time() - t0}
 
 
-def run_hidden(model: str, cap: float, cfg: dict | None = None) -> dict:
+def run_hidden(model: str, cap: float, cfg: dict | None = None, random_init: bool = False) -> dict:
+    """Every layer's state on the kept answers, in parts; `random_init`: D160's random-weights copy, into
+    hidden_random/ (the same answers, position and batch)."""
     cfg = cfg or _config()
     items = kept_items(model, cfg)
-    d = out_dir(model, cfg) / "hidden"
+    kind = "hidden_random" if random_init else "hidden"
+    weights = random_init_dir(model, cfg) if random_init else None
+    if random_init and not (weights / "physcal_random_init.json").exists():
+        raise SystemExit(f"no random-weights copy at {weights}: run `random_init --model {model}` first")
+    d = out_dir(model, cfg) / kind
     d.mkdir(parents=True, exist_ok=True)
     ps = cfg["scale"]["hidden_part_size"]
     backend, t0 = None, time.time()
@@ -526,22 +629,25 @@ def run_hidden(model: str, cap: float, cfg: dict | None = None) -> dict:
         idx = [[*it["key"], it["sample"]] for it in part]
         if f.exists() and json.loads(str(np.load(f)["index"])) == idx:
             continue
-        backend = backend or make_backend(model, cfg, cap)
+        backend = backend or make_backend(model, cfg, cap, model_dir=weights)
         layers, check = hidden_states(backend, part, cfg)
         tmp = d / f"part_{n:04d}.tmp.npz"
         np.savez(tmp, index=json.dumps(idx), check=json.dumps(check, default=str),
                  **{f"layer_{k:02d}": a for k, a in enumerate(layers)})
         tmp.rename(f)
         print(f"  hidden part {n}: {i + len(part)}/{len(items)} ({time.time() - t0:.0f}s)", flush=True)
-    info = {"decision": "D151 item 3c (hidden states; the arrays are local, gitignored)", "n": len(items),
+    info = {"decision": "D151 item 3c (hidden states; the arrays are local, gitignored)" + (
+                "; D160's random-weights control" if random_init else ""), "n": len(items),
             "parts": len(list(d.glob("part_[0-9][0-9][0-9][0-9].npz"))), "identity": _identity(model, cfg),
             "position": "the token holding the closing brace of the last \\boxed{}", "seconds": time.time() - t0}
-    (out_dir(model, cfg) / "hidden_info.json").write_text(json.dumps(info, indent=1))
+    if random_init:
+        info["random_init"] = json.loads((weights / "physcal_random_init.json").read_text())
+    (out_dir(model, cfg) / f"{kind}_info.json").write_text(json.dumps(info, indent=1))
     return info
 
 
-def load_hidden(model: str, cfg: dict) -> tuple[list[np.ndarray], list[tuple]]:
-    d = out_dir(model, cfg) / "hidden"
+def load_hidden(model: str, cfg: dict, kind: str = "hidden") -> tuple[list[np.ndarray], list[tuple]]:
+    d = out_dir(model, cfg) / kind
     parts = sorted(d.glob("part_[0-9][0-9][0-9][0-9].npz"))
     idx, layers = [], None
     for f in parts:
@@ -557,7 +663,8 @@ def load_hidden(model: str, cfg: dict) -> tuple[list[np.ndarray], list[tuple]]:
 # ------------------------------------------------------------------------------------------- main
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("action", choices=["feasibility", "plan", "sample", "yes", "hidden", "analyze"])
+    ap.add_argument("action", choices=["feasibility", "plan", "sample", "yes", "hidden", "random_init", "analyze",
+                                       "x2_probe"])
     ap.add_argument("--model", default="7b")
     ap.add_argument("--cap", type=float, default=None, help="allocator cap, GiB")
     ap.add_argument("--stop-at", type=float, default=None, help="sample: epoch seconds")
@@ -567,6 +674,7 @@ def main() -> None:
     ap.add_argument("--n", type=int, default=None, help="feasibility: dev problems (D153)")
     ap.add_argument("--no-batch16", action="store_true", help="feasibility: skip the 2-problem test (D153)")
     ap.add_argument("--tag", default="", help="feasibility: output file tag (D153)")
+    ap.add_argument("--random-init", action="store_true", help="hidden: D160's random-weights copy")
     a = ap.parse_args()
     if a.action == "plan":
         print(json.dumps(plan(a.deadline), indent=1))
@@ -578,7 +686,13 @@ def main() -> None:
     elif a.action == "yes":
         print(json.dumps(run_yes(a.model, a.cap)))
     elif a.action == "hidden":
-        print(json.dumps(run_hidden(a.model, a.cap)))
+        print(json.dumps(run_hidden(a.model, a.cap, random_init=a.random_init)))
+    elif a.action == "random_init":
+        print(json.dumps(make_random_init(a.model), indent=1))
+    elif a.action == "x2_probe":
+        from physcal.eval.followup_scale_analysis import x2_probe_refit
+
+        x2_probe_refit()
     else:
         from physcal.eval.followup_scale_analysis import analyze
 
