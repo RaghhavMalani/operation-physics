@@ -54,10 +54,14 @@ fi
 ls "$SC/$MODEL/samples"/chunk_*.jsonl > /dev/null 2>&1 || { log "BLOCKED: no $MODEL samples (set KAGGLE_ZIP)"; exit 1; }
 
 # ---- 2. D160's random-weights copy (CPU) --------------------------------------------------------------------------------
+RANDOM_DIR=$($PY -c "from physcal.eval import followup_scale as F; print(F.random_init_dir('$MODEL', F._config()))")
 if [[ " $GPU_STAGES " == *" hidden_random "* ]]; then
-  # its size on top of the usual free-space floor (the disk image does not shrink by itself)
-  MIN_FREE_GB=$((MIN_FREE_GB + RANDOM_GB)) run_stage "fs_random_$MODEL" 3600 $CPU_ENV $FS random_init --model "$MODEL" \
-    || { log "BLOCKED fs_random_$MODEL (see $LOG/fs_random_$MODEL.log)"; exit 1; }
+  if [ -f "$RANDOM_DIR/physcal_random_init.json" ]; then
+    log "random-weights copy present: $RANDOM_DIR ($(json_get "$RANDOM_DIR/physcal_random_init.json" "['content_sha256']"))"
+  else  # its size on top of the usual free-space floor (the disk image does not shrink by itself)
+    MIN_FREE_GB=$((MIN_FREE_GB + RANDOM_GB)) run_stage "fs_random_$MODEL" 3600 $CPU_ENV $FS random_init --model "$MODEL" \
+      || { log "BLOCKED fs_random_$MODEL (see $LOG/fs_random_$MODEL.log)"; exit 1; }
+  fi
 fi
 
 # ---- 3. the GPU readouts on the kept answers ----------------------------------------------------------------------------
