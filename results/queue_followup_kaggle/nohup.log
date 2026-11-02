@@ -234,3 +234,7 @@
 [11:22:35] start fs_hidden_7b (timeout 9447s): uv run python -m physcal.eval.followup_scale hidden --model 7b --cap 7.0
 [12:41:12] end fs_hidden_7b: exit 0
 [12:41:12] fs_hidden_7b: 7 temperature pauses, 210s paused of 4719s; tonight so far 16 pauses, 480s of 8993s (D143)
+[12:41:15] commit 'Follow-up (D157, exploratory): 7B hidden readout on the kept answers (Kaggle samples)': pushed
+[12:41:17] disk: 41 GiB free on MLStorage
+[12:41:17] start fs_analyze (timeout 21600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_scale analyze
+[13:56:14] end fs_analyze: exit 0

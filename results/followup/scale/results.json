@@ -1,0 +1,191 @@
+{
+ "kind": "D151 item 3, exploratory (not the paper)",
+ "models": {
+  "7b": {
+   "info": {
+    "n_candidates": 1176,
+    "n_answers": 9408,
+    "answered_share": 0.9106079931972789,
+    "accuracy_per_sample": 0.5144557823129252,
+    "truncated_share": 0.08715986394557823,
+    "reasons": {
+     "no_box": 11,
+     "no_number": 6,
+     "ok_converted": 85,
+     "ok_no_unit": 6023,
+     "ok_unit_after_box": 2448,
+     "ok_unit_unparsed": 11,
+     "truncated": 820,
+     "unit_mismatch": 4
+    },
+    "mean_tokens": 1127.3848852040817,
+    "yes_rows": 6133,
+    "probe": {
+     "folds": [
+      {
+       "layer": 19,
+       "C": 0.001,
+       "inner_cv_auroc": 0.7784073655456349
+      },
+      {
+       "layer": 19,
+       "C": 0.001,
+       "inner_cv_auroc": 0.7814876232811222
+      },
+      {
+       "layer": 19,
+       "C": 0.001,
+       "inner_cv_auroc": 0.7804322721494134
+      },
+      {
+       "layer": 19,
+       "C": 0.001,
+       "inner_cv_auroc": 0.7736858368767694
+      },
+      {
+       "layer": 19,
+       "C": 0.001,
+       "inner_cv_auroc": 0.7726585289775207
+      }
+     ],
+     "n_layers": 29,
+     "n": 6133
+    }
+   },
+   "n_kept": 844,
+   "kept_share": 0.717687074829932,
+   "n_pairs": 8476,
+   "readouts": {
+    "self_consistency": {
+     "n_problems": 844,
+     "pairwise_accuracy": 0.8270219758519521,
+     "ci95": [
+      0.8087143932661927,
+      0.8448898386368765
+     ],
+     "p_one_sided_gt_half": 0.0,
+     "by_depth": {
+      "1": 0.8812198613622663,
+      "2": 0.8558482810164425,
+      "3": 0.8040127257799671,
+      "4": 0.785232426303855
+     }
+    },
+    "yes": {
+     "n_problems": 844,
+     "pairwise_accuracy": 0.6826196118257729,
+     "ci95": [
+      0.6631265221827278,
+      0.7013949364797262
+     ],
+     "p_one_sided_gt_half": 0.0,
+     "by_depth": {
+      "1": 0.7464662447257384,
+      "2": 0.6721990889031247,
+      "3": 0.6676809660645868,
+      "4": 0.6640125747268605
+     }
+    },
+    "probe": {
+     "n_problems": 844,
+     "pairwise_accuracy": 0.7525589125855713,
+     "ci95": [
+      0.7339840341251035,
+      0.7707711060332505
+     ],
+     "p_one_sided_gt_half": 0.0,
+     "by_depth": {
+      "1": 0.7873932589913603,
+      "2": 0.7239385365506442,
+      "3": 0.7494748905309251,
+      "4": 0.7594593898165327
+     }
+    },
+    "length": {
+     "n_problems": 844,
+     "pairwise_accuracy": 0.6341497874821334,
+     "ci95": [
+      0.614349058244941,
+      0.6540327616038516
+     ],
+     "p_one_sided_gt_half": 0.0,
+     "by_depth": {
+      "1": 0.6518271549125979,
+      "2": 0.6602618513773222,
+      "3": 0.6237932744937056,
+      "4": 0.607252370645228
+     }
+    }
+   }
+  }
+ },
+ "x2_published": {
+  "self_consistency": 0.643,
+  "x4_direct": 0.526,
+  "probe_crossfit": 0.54,
+  "length": 0.535
+ },
+ "x2_sft_on_prefix": {
+  "n_candidates": 1176,
+  "n_kept": 504,
+  "methods": {
+   "self_consistency": {
+    "n_problems": 504,
+    "pairwise_accuracy": 0.6452103410808768,
+    "ci95": [
+     0.6174411257558581,
+     0.6734287013416477
+    ],
+    "p_one_sided_gt_half": 0.0
+   },
+   "length": {
+    "n_problems": 504,
+    "pairwise_accuracy": 0.5343307114512472,
+    "ci95": [
+     0.510207595190854,
+     0.5581434092734315
+    ],
+    "p_one_sided_gt_half": 0.0023
+   },
+   "yes": {
+    "n_problems": 504,
+    "pairwise_accuracy": 0.525563350340136,
+    "ci95": [
+     0.49977238638510957,
+     0.5512688669217686
+    ],
+    "p_one_sided_gt_half": 0.0267
+   }
+  }
+ },
+ "differences": {
+  "self_consistency": {
+   "7b - SFT 1.5b X2 (same prefix, unpaired)": {
+    "diff": 0.18181163477107531,
+    "ci95": [
+     0.14794047928297827,
+     0.21516356719590143
+    ]
+   }
+  },
+  "yes": {
+   "7b - SFT 1.5b X2 (same prefix, unpaired)": {
+    "diff": 0.1570562614856369,
+    "ci95": [
+     0.12493721898810867,
+     0.1893420297292166
+    ]
+   }
+  },
+  "probe": {},
+  "length": {
+   "7b - SFT 1.5b X2 (same prefix, unpaired)": {
+    "diff": 0.09981907603088613,
+    "ci95": [
+     0.06748224176123854,
+     0.1309596791175001
+    ]
+   }
+  }
+ }
+}
