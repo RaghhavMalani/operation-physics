@@ -255,3 +255,21 @@ def test_the_7b_notebook_is_the_commit_that_sampled_the_ingested_7b_rows():
     for key in SAMPLING_KEYS:
         assert old[key] == cfg["scale"][key], f"scale.{key} changed since the 7B's commit {commit[:12]}"
 
+
+def test_the_1_5b_notebook_parses_and_its_pinned_commit_holds_this_code():
+    """D160: the 1.5B notebook's COMMIT holds the same sampler, scale module and sampling settings as the working tree
+    (D157's rule: a change to any of them needs a re-pinned notebook and a D-entry)."""
+    import yaml
+
+    from physcal.config import REPO_ROOT
+
+    code, commit, pinned = _notebook("kaggle_1.5b_scale.ipynb")
+    assert re.search(r'^MODEL = "1.5b"\s*(#.*)?$', code[0], flags=re.M)
+    for path in ("physcal/eval/followup_kaggle.py", "physcal/eval/followup_scale.py", "configs/x2.yaml",
+                 "physcal/env/render.py", "physcal/env/units.py"):
+        assert pinned(path) == (REPO_ROOT / path).read_text(), f"{path} changed since the notebook's commit {commit[:12]}"
+    old, cfg = yaml.safe_load(pinned("configs/followup.yaml"))["scale"], K._config()
+    old_cfg = {"scale": old}
+    assert K.kaggle_cfg(old_cfg, "1.5b") == K.kaggle_cfg(cfg, "1.5b")
+    for key in SAMPLING_KEYS:
+        assert old[key] == cfg["scale"][key], f"scale.{key} changed since the notebook's commit {commit[:12]}"
