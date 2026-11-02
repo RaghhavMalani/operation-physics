@@ -980,7 +980,9 @@ Progress:
   - `scripts/queue_followup_kaggle.sh` with `MODEL` and `GPU_STAGES`;
   - tests in `tests/test_followup_controls.py` and `tests/test_followup_kaggle.py`.
 - [x] **The random-weights copies** (CPU, gitignored): 1.5B (2.9 GB) and 7B (~15 GB).
-- [ ] **CPU:** X2's probe refit on the same prefix (`followup_scale x2_probe`).
-- [ ] **Tonight (local GPU, deadline 09:00):** the 7B random-weights hidden states, then the analysis.
-- [ ] **You:** the 1.5B Kaggle run (`docs/exploratory/kaggle_instructions.md` §8), then bring the zip back.
-- [ ] **After the zip:** `MODEL=1.5b KAGGLE_ZIP=… scripts/queue_followup_kaggle.sh` (prepared, not run).
+- [x] **CPU:** X2's probe refit on the same prefix (D161: refused once under the wrong threads; the retry reproduces).
+- [x] **The 7B random-weights hidden states, then the analysis** (17:10–20:42).
+- [x] **You:** the 1.5B Kaggle run; the zip was brought back.
+- [x] **The 1.5B chain** (20:42–22:42): ingest, P(yes), hidden states, random-weights hidden states, the analysis.
+- [x] **D162 and the write-up** (`docs/exploratory/followup_feasibility.md` §3). Scale moves direct P(yes) (+0.110),
+  not the probe (−0.005). Both probes beat random weights by ~0.09, but random weights alone reach ~0.67.

@@ -449,3 +449,5 @@
 [21:58:27] disk: 21 GiB free on MLStorage
 [21:58:27] start fs_analyze (timeout 21600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_scale analyze
 [22:42:23] end fs_analyze: exit 0
+[22:42:26] commit 'Follow-up (D157/D160, exploratory): item 3's analysis (1.5b readouts)': pushed
+[22:42:26] follow-up Kaggle chain done: 20 temperature pauses, 601s paused of 4185s GPU-stage time

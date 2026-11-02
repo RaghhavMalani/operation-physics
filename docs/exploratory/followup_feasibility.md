@@ -4,7 +4,8 @@
 pre-registered as a hypothesis or confirmatory. The plan and every analysis rule were written in D151 (now in
 `docs/exploratory/DECISIONS_FOLLOWUP.md`, D156) and pushed (`a8938c7`) before any of this track's data existed. Later changes each have their own entry, written
 before the data they affect: D152 (item 3's decoding), D153 (item 3's local stop), D157 (item 3 on Kaggle) and D158
-(the readouts' memory settings). D159 records the readouts' run and one missing comparison.
+(the readouts' memory settings). D159 records the 7B readouts' run. D160 (written before their data) adds the controls,
+D161 one reproduction retry, and D162 records the controls' run.
 
 | item | code | config | results |
 |---|---|---|---|
@@ -36,19 +37,18 @@ and MC-A in item 1).
      [−0.0018, +0.0006]. Descriptively it beats RSS and X1 at depths 1–2 and loses at depths 4–5.
    - **What this shows:** the model's arithmetic slips are not where the forecast loss is. Its wrong formulas and wrong
      chains are, and its sloppy aggregation partly offsets them (#35's pattern).
-3. **The 7B tells its own right answers from its wrong ones far better than the SFT 1.5B, by every readout. This is
-   not yet a scale effect.** It was sampled on Kaggle (D157) and read locally (D159).
-   - **Within-problem pairwise accuracy:** the 7B on 844 kept problems vs the SFT 1.5B (X2) on the same 1,176-candidate
-     prefix (504 kept):
-     - self-consistency 0.827 vs 0.645 (+0.182 [+0.148, +0.215]);
-     - direct P(yes) 0.683 vs 0.526 (+0.157 [+0.125, +0.189]);
-     - hidden-state probe 0.753 vs 0.540 published (≈ +0.21 [+0.18, +0.24], approximate);
-     - length 0.634 vs 0.534 (+0.100 [+0.067, +0.131]).
-   - **By D151's rule the wall moves:** a single-sample readout beats the SFT 1.5B's with a CI excluding 0.
-     Self-consistency still leads.
-   - **But the comparison changes model size, format, training, decoding and the kept problems at once.** The native
-     1.5B control, which would separate scale from the rest, did not run. Length alone also gains 0.10, so part of
-     the gain is a surface signal, and the 7B probe has no random-init control.
+3. **Scale moves the model's own verdict, not what a linear probe can read.**
+   - **The setup:** the 7B and the off-the-shelf 1.5B were sampled the same way on Kaggle (D157, D160) and read
+     locally (D159–D162). Only the model's size differs.
+   - **7B − native 1.5B, within-problem pairwise accuracy** (unpaired, D151's primary):
+     - direct P(yes) 0.683 vs 0.572: +0.110 [+0.082, +0.138]. **By D151's rule, the wall moves with scale.**
+     - hidden-state probe 0.753 vs 0.758: −0.005 [−0.031, +0.020]. **No scale effect.**
+     - self-consistency 0.827 vs 0.774: +0.053 [+0.025, +0.081]. It still leads at both sizes.
+   - **D159's probe gap to the SFT 1.5B was not scale.** The native 1.5B's probe beats the SFT 1.5B's by +0.219
+     [+0.188, +0.249], as much as the 7B's does (+0.214). Format, training and decoding account for it.
+   - **Most of every probe's signal is surface.**
+     - The same probe on random weights reads 0.664 (7B) and 0.673 (1.5B).
+     - The real weights add +0.088 and +0.085, with CIs excluding 0, the same at both sizes.
 
 ## 1. Uncertainty-guided test-time compute (offline)
 
@@ -182,89 +182,125 @@ only. **This is not FINDINGS #35:**
 - descriptive, with no multiple-comparison correction;
 - E_chain's depth-1–2 advantage is a subgroup seen after the fact, labelled descriptive.
 
-## 3. Scale check of the epistemic wall: the 7B, sampled on Kaggle and read locally
+## 3. Scale check of the epistemic wall: the 7B and the native 1.5B, sampled on Kaggle and read locally
 
 **The question (D151):** within a problem, X2's SFT 1.5B barely tells its right answers from its wrong ones by any
-single-sample readout (pairwise accuracy 0.53–0.54); self-consistency does better (0.643). Does the 7B of the same
-family do better?
+single-sample readout (pairwise accuracy 0.53–0.54); self-consistency does better (0.643). Does a larger model of the
+same family do better, and is that size, or the format?
 
 **What ran:**
-- **Sampling on Kaggle (D157):**
-  - the official Qwen2.5-Math-7B-Instruct (revision `ef9926d7…`) in fp16;
+- **Sampling on Kaggle,** the same run for both models:
+  - the official Qwen2.5-Math-7B-Instruct (D157) and Qwen2.5-Math-1.5B-Instruct (D160), fp16;
   - vLLM 0.29.0 on 2 × T4, with D152's decoding (T 0.7, top_p 0.8, top_k 20), up to 3,072 new tokens, k = 8;
-  - **all 1,176 candidates** below the development indices, in one 5.0 h session (15.4 s / problem), with no retry.
-- **The ingest (D158)** passed every check: the manifest, the pool, the seeds, and every prompt re-rendered with the
-  local tokenizer. The local re-grade changed 0 of 9,408 rows.
-- **The readouts on the local 4060 (D159):**
-  - direct P(yes) and the hidden states of all 29 layers, on the 6,133 answered answers of the kept problems, using
-    the 4-bit copy of the same weights;
-  - then D151's analysis, on the CPU.
+  - the same seeds and the same 1,176 candidates;
+  - the prompts are byte-identical (checked);
+  - each model ran in one clean session: the 7B in 5.0 h, the 1.5B in 1.55 h.
+- **The ingests (D158, D162)** passed every check; the local re-grade changed 0 rows.
+- **The readouts on the local 4060** (D159, D162): direct P(yes); the hidden states of all 29 layers, on each model's
+  4-bit copy; the same hidden states on a random-weights copy of each architecture (D160); then D151's analysis with
+  D160's comparisons.
+- **The SFT 1.5B's probe on the same 1,176 candidates** comes from X2's cross-fit, refit under X2's settings. It
+  reproduces X2 exactly (D161, after a first attempt under other thread settings was refused).
 
 **What was sampled:**
-- answered 91.1%, truncated 8.7% (at 3,072 tokens), correct per sample 51.4%;
-- by depth 1 → 4: correct 78 / 61 / 39 / 29%, truncated 4 / 7 / 10 / 14%;
-- **kept (mixed) problems:** 844 of 1,176 (71.8%); by depth, 158 / 223 / 232 / 231 of 294. The SFT 1.5B keeps 504
-  of the same 1,176 (42.9%);
-- 8,476 within-problem (correct, incorrect) pairs.
+
+| | 7B | native 1.5B |
+|---|---|---|
+| answered | 91.1% | 97.6% |
+| truncated (3,072 tokens) | 8.7% | 1.0% |
+| correct per sample (depths 1–4) | 51.4% (78 / 61 / 39 / 29%) | 41.4% (73 / 49 / 28 / 16%) |
+| kept (mixed) problems | 844 (71.8%) | 766 (65.1%) |
+| kept by depth 1 / 2 / 3 / 4 | 158 / 223 / 232 / 231 | 167 / 224 / 215 / 160 |
+| only correct / only wrong | 216 / 116 | 155 / 255 |
+| answers read out; within-problem pairs | 6,133; 8,476 | 6,000; 8,849 |
+
+- **Kept by both:** 599 problems. The SFT 1.5B keeps 504 of the same 1,176 (42.9%).
 
 **Results** (X2's within-problem pairwise accuracy, ties 0.5, mean over kept problems; 95% bootstrap over problems,
 B = 10,000):
 
-| readout | 7B, native format (844 kept) | SFT 1.5B X2, same prefix (504 kept) | SFT 1.5B X2, published (516 kept) | 7B − SFT 1.5B, same prefix |
-|---|---|---|---|---|
-| self-consistency (share of the other 7 within 1%) | **0.827** [0.809, 0.845] | 0.645 [0.617, 0.673] | 0.643 | +0.182 [+0.148, +0.215] |
-| direct P(yes) (X4 direct) | **0.683** [0.663, 0.701] | 0.526 [0.500, 0.551] | 0.526 | +0.157 [+0.125, +0.189] |
-| hidden-state probe, cross-fitted | **0.753** [0.734, 0.771] | – (not refit; D159) | 0.540 [0.514, 0.565] | ≈ +0.21 [+0.18, +0.24] vs published (approximate) |
-| length only (shorter = more confident) | 0.634 [0.614, 0.654] | 0.534 [0.510, 0.558] | 0.535 | +0.100 [+0.067, +0.131] |
+| readout | 7B (844) | native 1.5B (766) | 7B − native 1.5B, unpaired | the same, paired (599 common) | SFT 1.5B X2, same prefix (504) |
+|---|---|---|---|---|---|
+| self-consistency | **0.827** [0.809, 0.845] | 0.774 [0.753, 0.796] | +0.053 [+0.025, +0.081] | +0.076 [+0.045, +0.106] | 0.645 [0.617, 0.673] |
+| direct P(yes) (X4 direct) | 0.683 [0.663, 0.701] | 0.572 [0.553, 0.592] | **+0.110 [+0.082, +0.138]** | +0.120 [+0.090, +0.150] | 0.526 [0.500, 0.551] |
+| hidden-state probe, cross-fitted | 0.753 [0.734, 0.771] | 0.758 [0.740, 0.775] | **−0.005 [−0.031, +0.020]** | −0.003 [−0.029, +0.024] | 0.539 [0.513, 0.564] |
+| the same probe on random weights | 0.664 [0.646, 0.683] | 0.673 [0.653, 0.692] | −0.008 [−0.035, +0.019] | +0.001 [−0.029, +0.029] | – |
+| length only (shorter = more confident) | 0.634 [0.614, 0.654] | 0.598 [0.578, 0.619] | +0.036 [+0.008, +0.065] | +0.040 [+0.011, +0.070] | 0.534 [0.510, 0.558] |
 
-- **The differences are unpaired,** because the kept sets differ (D151).
-- **The probe's difference is approximate:**
-  - it is normal, from the two bootstrap CIs, against the full pool's published number;
-  - D151's re-run of X2's cross-fit on the prefix was not done (D159).
-- **By depth** (pairwise accuracy at depths 1–4):
+**The controls** (paired within a model, over the same kept problems):
 
-| readout | d1 | d2 | d3 | d4 |
-|---|---|---|---|---|
-| self-consistency | 0.881 | 0.856 | 0.804 | 0.785 |
-| direct P(yes) | 0.746 | 0.672 | 0.668 | 0.664 |
-| hidden-state probe | 0.787 | 0.724 | 0.749 | 0.759 |
-| length | 0.652 | 0.660 | 0.624 | 0.607 |
-| *SFT 1.5B probe (X2, published)* | *0.565* | *0.520* | *0.541* | *0.538* |
+| | 7B | native 1.5B |
+|---|---|---|
+| probe − random-weights probe | +0.088 [+0.068, +0.109] | +0.085 [+0.064, +0.105] |
+| P(yes) − length | +0.048 [+0.027, +0.071] | −0.026 [−0.050, −0.002] |
+| probe − length | +0.118 [+0.098, +0.139] | +0.159 [+0.138, +0.182] |
 
-- **The probe's choice:**
-  - the 7B probe chose layer 19 of 29 (index 0 is the embeddings) with C = 0.001 in all five outer folds; inner-CV
-    AUROC 0.773–0.781;
-  - C = 0.001 is the edge of D151's grid, which was not extended;
-  - X2's 1.5B probe chose layer 1 in four of five folds (layer 11 in one).
+- **The probe's scale effect net of the surface:** (probe − random) for the 7B minus the 1.5B is +0.003
+  [−0.026, +0.032] (unpaired).
+- **Against the SFT 1.5B on the same prefix** (unpaired), 7B − SFT / native 1.5B − SFT:
 
-**Reading (D151's rules, descriptive):**
-- **"The wall moves with scale": yes, by D151's rule.** A single-sample readout of the 7B (direct P(yes), and the
-  probe) exceeds the SFT 1.5B's with a CI excluding 0. The rule's first comparison, against the native 1.5B, is
-  missing (D157, difference 13), so this is the rule's fallback.
-- **Self-consistency still leads:** 0.827, against 0.753 (probe) and 0.683 (P(yes)). The CIs do not overlap.
-- **What the comparison cannot say is that size caused it.** Between the two columns, all of these change at once:
-  - model size (7B vs 1.5B);
-  - the format: the native `\boxed{}` chain-of-thought vs our `<steps>` / `<answer>` format with a stated σ;
-  - training: no task training vs our SFT;
-  - decoding and budget: T 0.7, top_p 0.8, top_k 20 and 3,072 tokens, vs T 1 with no top-p / top-k and 512 tokens (D152);
-  - who reads: the 7B's answers were sampled in fp16 and read by a 4-bit copy, while X2's model sampled and read
-    itself (D157, difference 3);
-  - the problems: 72% vs 43% of the prefix are kept. The 7B's pairs include many depth-3–4 problems that the 1.5B gets
-    all wrong, and its errors are of another kind.
-- **Part of the gain is a surface signal.**
-  - Length alone gains +0.100: the 7B's wrong answers are more often the long ones.
-  - P(yes) and the probe both stay above length (0.683 and 0.753, against 0.634; the CIs do not overlap). No paired
-    readout-vs-length test was specified.
-- **The probe has no random-init control** (D151's stated limit).
-  - In X2, the random-init probe was within noise of the real one.
-  - Without the control, the 7B probe's 0.753 may partly read the text's surface (length, position, the digits)
-    rather than what the model "knows".
+| readout | 7B − SFT | native 1.5B − SFT |
+|---|---|---|
+| self-consistency | +0.182 [+0.148, +0.215] | +0.129 [+0.094, +0.164] |
+| P(yes) | +0.157 [+0.125, +0.189] | +0.047 [+0.014, +0.079] |
+| probe | +0.214 [+0.182, +0.245] | +0.219 [+0.188, +0.249] |
+| length | +0.100 [+0.067, +0.131] | +0.064 [+0.033, +0.096] |
 
-**Every difference from the 1.5B setup:**
+- **By depth** (pairwise accuracy, depths 1 / 2 / 3 / 4):
 
-| | SFT 1.5B (X2) | 7B (this run) | entry |
+| readout | 7B | native 1.5B |
+|---|---|---|
+| self-consistency | 0.881 / 0.856 / 0.804 / 0.785 | 0.848 / 0.818 / 0.731 / 0.695 |
+| direct P(yes) | 0.746 / 0.672 / 0.668 / 0.664 | 0.619 / 0.574 / 0.561 / 0.537 |
+| hidden-state probe | 0.787 / 0.724 / 0.749 / 0.759 | 0.770 / 0.762 / 0.753 / 0.746 |
+| random-weights probe | 0.697 / 0.677 / 0.638 / 0.656 | 0.709 / 0.676 / 0.649 / 0.661 |
+| length | 0.652 / 0.660 / 0.624 / 0.607 | 0.644 / 0.609 / 0.594 / 0.542 |
+
+- **The probes' choices** (layer of 29, index 0 = the embeddings; C):
+  - the 7B: layer 19, C 0.001 in all five folds (the grid's edge, not extended);
+  - the native 1.5B: layers 18–21, C 0.01;
+  - the random-weights copies: early layers (the 7B's layer 1; the 1.5B's layers 2–3), C 0.001;
+  - X2's SFT probe: layer 1 in four of five folds.
+
+**Reading (D160's rules, descriptive):**
+- **"The wall moves with scale": yes, through the model's own verdict.**
+  - The 7B's direct P(yes) on its own answer beats the native 1.5B's by +0.110 [+0.082, +0.138] (paired, on the
+    599 common problems: +0.120).
+  - This comparison changes only the model's size: the same prompts, decoding, seeds, sampling stack and readout
+    arrangement.
+  - The 7B's verdict also beats length (+0.048), and the 1.5B's does not (−0.026).
+- **Not through the probe.**
+  - A linear probe reads as much from the 1.5B's hidden states as from the 7B's: −0.005 [−0.031, +0.020].
+  - Net of the random-weights control, the difference is +0.003 [−0.026, +0.032].
+  - D160's rule counts the probe only with both conditions; the second fails.
+- **The random-weights control.**
+  - Both real probes beat their random-weights copies (+0.088 and +0.085, CIs excluding 0), so each reads more than
+    the text's surface.
+  - But the surface carries most of the signal: random weights alone reach 0.66–0.67, above length.
+  - The native answers' surface (their length, their wording, where the box sits) separates right from wrong far
+    better than the SFT format's did.
+- **D159's 7B − SFT probe gap (+0.214) was not scale.** The native 1.5B shows the same gap (+0.219). For P(yes) the
+  picture differs: the native format adds +0.047 at 1.5B, and size adds +0.110 on top.
+- **Self-consistency still leads at both sizes** (0.827 and 0.774) and gains with size (+0.053 unpaired, +0.076
+  paired).
+- **What still differs between the 7B and the native 1.5B:**
+  - the kept problems: 844 vs 766, 599 shared; the 7B keeps more depth-4 problems;
+  - truncation: 8.7% vs 1.0%. A truncated sample is no answer, so the 7B's runaway errors leave its pairs.
+  - The paired comparisons on the 599 shared problems agree with the unpaired ones.
+
+**Caveats (item 3):**
+- one prompt, one model family, one synthetic domain;
+- the readouts read 4-bit copies of the sampled fp16 weights;
+- one random-weights draw per architecture;
+- truncated samples are in no pair;
+- descriptive, with no multiple-comparison correction.
+
+**Every difference between the SFT 1.5B (X2) and the Kaggle runs.** The 7B and the native 1.5B differ from each other
+only in the weights.
+
+| | SFT 1.5B (X2) | 7B and native 1.5B (Kaggle) | entry |
 |---|---|---|---|
-| model | Qwen2.5-Math-1.5B-Instruct + our SFT (merged, 4-bit at load) | Qwen2.5-Math-7B-Instruct, the official weights, no task training | D151; D157 (2) |
+| model | Qwen2.5-Math-1.5B-Instruct + our SFT (merged, 4-bit at load) | Qwen2.5-Math-7B-Instruct / -1.5B-Instruct, the official weights, no task training | D151; D157 (2); D160 |
 | format | `<steps>` / `<answer>` with a stated σ | Qwen2.5-Math's chain-of-thought prompt and `\boxed{}`; the problem without its `<steps>` sentence | D151 |
 | decoding | T 1, top_p 1, top_k 0; 512 new tokens | T 0.7, top_p 0.8, top_k 20; 3,072 new tokens | D152; D157 (4, 5) |
 | sampler | HF + bitsandbytes, 4-bit, on the 4060; one torch seed per chunk | vLLM 0.29.0 in fp16, tensor-parallel 2 on 2 × T4; one seed per sample | D157 (1, 2, 4) |
@@ -272,16 +308,8 @@ B = 10,000):
 | answer and grade | X2's parser for our format | the last box (the D151 + D154 parser); a truncation is no answer; re-graded at ingest | D151; D154; D157 (11) |
 | P(yes) turn | X4's `x4_v1` | the same, with "your \boxed{}" in place of "your <answer>"; context up to 4,096 tokens | D151; D157 (12) |
 | probe position | the "±" token | the closing brace of the last box | D151 |
-| probe control | random-init, within noise of the real probe | none | D151 |
-| problems | X2's 1,200 candidates (516 kept; 504 on the 7B's prefix) | the first 1,176 (844 kept) | D157 |
-| the 1.5B in the native format | – | not run (D151's control, "if time allows") | D157 (13) |
-
-**Caveats (item 3):**
-- one prompt, one model family, one synthetic domain;
-- the readouts read a 4-bit copy of the sampler's weights;
-- truncated samples (8.7%; 14% at depth 4) are no answer and in no pair, so the kept set misses the errors that run out
-  of tokens;
-- descriptive, with no multiple-comparison correction.
+| probe control | random-init, within noise of the real probe (X2) | random weights, the same protocol: 0.664 / 0.673 | D160 |
+| problems | X2's 1,200 candidates (516 kept; 504 on the prefix) | the first 1,176 (844 / 766 kept) | D157; D160 |
 
 **Before Kaggle: the local feasibility measurement** (D152–D154; development problems only, never analyzed):
 1. **X2's decoding (T = 1, no truncation) does not work for the 7B.** On the first development problem, 7 of 8
@@ -319,14 +347,15 @@ B = 10,000):
   the derivative (formula) and the chain, as #35 found.
   - **The promising variant:** exact symbolic differentiation of the model's own chain (#35's "exact sensitivities":
     +51% of the RSS-to-σ\* gap), together with re-derived intermediates (E_chain helps at depths 1–2).
-- **Scale:** in its native format, the 7B tells its own right answers from its wrong ones well above chance with
-  one sample (P(yes) 0.68, probe 0.75), where the SFT 1.5B sits at 0.53–0.54. Self-consistency still leads (0.83).
-  - **It is not yet a scale result.** Size, format, training, decoding and the kept problems all change together.
-  - **What would make it one:**
-    - the native 1.5B on the same stack and settings (D151 (3)), e.g. a second Kaggle run, which needs the sampler
-      generalized beyond the 7B;
-    - a random-init control for the 7B probe;
-    - a paired readout-vs-length test.
+- **Scale:** size helps the model judge its own answer, not what a linear probe reads.
+  - **The 7B's own P(yes)** separates its right answers from its wrong ones better than the 1.5B's (+0.110), with
+    everything else equal.
+  - **A probe on the hidden states** reads the same at both sizes (0.75–0.76), and most of it is surface: random
+    weights reach 0.66–0.67.
+  - **The SFT format's wall** (0.53–0.54 for every single-sample readout) comes mostly from the format, training and
+    decoding, not from the model's size.
+  - **A follow-up worth running:** what in the native answers makes the surface so informative (length, hedging,
+    re-checks, where the box sits). Also whether an SFT format that keeps those signs keeps the probe's 0.76.
 
 ## Process notes and limits
 
@@ -342,8 +371,13 @@ B = 10,000):
 - **Item 3's readouts (D159):**
   - The chain was restarted once to move its GPU deadline, at a cost of ~6 min.
   - 16 temperature pauses took 480 s of 2.5 h of GPU stages.
+- **The controls (D160–D162):**
+  - **X2's probe refit** was refused once by its exact gate: D160 had misread X2's thread settings. The one retry
+    under X2's documented settings reproduced it exactly (D161).
+  - **The two readout chains ran one after the other,** never at once, with 38 temperature pauses in all.
+  - **The 7B's random-weights copy** (15 GB, gitignored) can be deleted; it is regenerable from its seed.
 - **Everything here is exploratory:**
   - item 1 re-reads one model's samples;
   - item 2 re-reads one model's logs;
-  - item 3 is one Kaggle sampling run of the 7B, with local readouts.
+  - item 3 is two Kaggle sampling runs (the 7B and the native 1.5B), with local readouts and controls.
   - None of it is in the paper, and no hypothesis was tested.

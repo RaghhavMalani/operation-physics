@@ -676,3 +676,43 @@ appended here.
   - Its 4,109 per-answer values are kept (`results/followup/scale/x2_sft_probe_refit.json`). The first attempt's
     record is beside it (`x2_sft_probe_refit_attempt1.json`).
   - The next analysis reads it for the SFT 1.5B's probe on the prefix.
+
+## 2026-11-02 evening: the controls' data (your instructions at ~19:40 IST)
+
+### D162. D160's controls ran. By D160's rules, scale moves direct P(yes), not the probe; both probes pass their random-weights control, but most of their signal is surface (2026-11-02, ~22:50 IST; after the analysis)
+- **The 7B random-weights chain** (`MODEL=7b GPU_STAGES=hidden_random`):
+  - the gate opened at 17:10;
+  - its hidden states took 17:10–18:39 (18 temperature pauses);
+  - the analysis took 18:39–20:42;
+  - the 7B probe's refit reproduced D159's 0.7525589 exactly (D160's check).
+- **The native 1.5B on Kaggle** (D160):
+  - **The run:** 1,176 / 1,176 candidates in one clean session on the pinned commit `4039888`, at 6.2 s per problem
+    (1.55 h).
+  - **The ingest:** every check passed; the re-grade changed 0 rows.
+  - **What was sampled:** answered 97.6%, truncated 1.0%, correct 41.4%; 766 kept (7B: 844); 599 kept by both.
+- **The ingest order:** the report ingest ran into the scratchpad first, with the same code and every check. Tonight's
+  7B analysis was still running and reads every model's samples, so it would have picked up partial 1.5B numbers. The
+  repo ingest was the 1.5B chain's first stage.
+- **The 1.5B chain** started at 20:42:49, after the 7B chain had exited and released its lock (a wrapper waited;
+  never two GPU chains at once):
+  - P(yes), the hidden states and the random-weights hidden states took 20:48–21:58 (20 temperature pauses);
+  - the analysis took 21:58–22:42;
+  - every stage committed and pushed.
+- **The reading, D160's rules applied as written:**
+  - **"The wall moves with scale": yes, through direct P(yes).** 7B − native 1.5B is +0.110 [+0.082, +0.138]
+    unpaired, and +0.120 [+0.090, +0.150] paired on the 599 shared problems.
+  - **The probe does not count:**
+    - 7B − native 1.5B is −0.005 [−0.031, +0.020];
+    - net of the random-weights control, (7B − random) − (1.5B − random) is +0.003 [−0.026, +0.032];
+    - the 7B's own real − random is +0.088 [+0.068, +0.109], so the probe passes its control but shows no scale
+      effect.
+  - **The random-weights control:** both probes read more than the surface (7B +0.088, 1.5B +0.085). Random weights
+    alone reach 0.664 / 0.673, above length (0.634 / 0.598).
+  - **Native 1.5B − SFT 1.5B,** same prefix:
+    - the probe +0.219 [+0.188, +0.249]: D159's 7B − SFT probe gap (+0.214) is format, training and decoding, not
+      size;
+    - P(yes) +0.047 [+0.014, +0.079].
+  - **Self-consistency still leads at both sizes** (0.827 / 0.774), and 7B − 1.5B is +0.053 [+0.025, +0.081].
+  - **P(yes) − length:** the 7B +0.048 [+0.027, +0.071]; the 1.5B −0.026 [−0.050, −0.002].
+- **Nothing in D160's rules or code changed after its data.** The write-up is `docs/exploratory/followup_feasibility.md`
+  §3.
