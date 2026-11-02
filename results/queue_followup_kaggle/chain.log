@@ -375,3 +375,31 @@
 [20:42:51] start fk_ingest_1.5b (timeout 3600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_kaggle ingest --model 1.5b --zip /home/flash2404/kaggle_downloads/followup_1.5b_scale.zip
 [20:42:58] end fk_ingest_1.5b: exit 0
 [20:42:58] ingest: 1176 candidates, 0 rows re-graded differently
+[20:43:06] commit 'Follow-up (D157/D160, exploratory): the 1.5b's Kaggle samples ingested (1176 candidates)': pushed
+[20:43:06] random-weights copy present: /home/flash2404/operation-physics/results/followup/scale/1.5b/random_init_model (fa7be1e90689c11d)
+[20:43:23] host VRAM readings (MiB): 1530 1457 1458 1444 1444 1458 1458 1458
+[20:43:23] host use 1458 MiB gives 6.0 GiB < 7.5: re-reading in 60 s
+[20:44:40] host VRAM readings (MiB): 1454 1454 1454 1440 1440 1455 1455 1554
+[20:44:40] host use 1454 MiB gives 6.0 GiB < 7.5: re-reading in 60 s
+[20:45:57] host VRAM readings (MiB): 1452 1439 1451 1451 1451 1438 1451 1438
+[20:45:57] host use 1451 MiB gives 6.0 GiB < 7.5: re-reading in 60 s
+[20:47:14] host VRAM readings (MiB): 1684 1684 1684 1670 1670 1684 1684 1684
+[20:47:14] host use 1684 MiB gives 5.8 GiB < 7.5: re-reading in 60 s
+[20:48:32] host VRAM readings (MiB): 1620 1634 1634 1620 1634 1634 1620 1634
+[20:48:32] launch cap 5.9 GiB (max 7.5, needed 3.5)
+[20:48:32] launch cap 5.9 GiB: starting the readouts
+[20:48:32] GPU at 51.60C, memory.used 1840 MiB
+[20:48:33] disk: 22 GiB free on MLStorage
+[20:48:33] start fs_yes_1.5b (timeout 43888s): uv run python -m physcal.eval.followup_scale yes --model 1.5b --cap 5.9
+[20:53:03] guard(95553): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[20:53:33] guard(95553): stage continued after 30s paused (GPU at 63.40C <= 75C)
+[21:03:34] guard(95553): GPU at 87.70C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:04:04] guard(95553): stage continued after 30s paused (GPU at 64.60C <= 75C)
+[21:06:04] guard(95553): GPU at 87.70C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:06:34] guard(95553): stage continued after 30s paused (GPU at 63.10C <= 75C)
+[21:07:34] guard(95553): GPU at 87.30C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:08:05] guard(95553): stage continued after 31s paused (GPU at 62.10C <= 75C)
+[21:11:05] guard(95553): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[21:11:35] guard(95553): stage continued after 30s paused (GPU at 62.70C <= 75C)
+[21:11:59] end fs_yes_1.5b: exit 0
+[21:11:59] fs_yes_1.5b: 5 temperature pauses, 151s paused of 1407s; tonight so far 5 pauses, 151s of 1407s (D143)
