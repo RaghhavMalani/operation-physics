@@ -361,3 +361,9 @@
 [18:39:34] guard(78328): stage continued after 30s paused (GPU at 65.00C <= 75C)
 [18:39:54] end fs_hidden_random_7b: exit 0
 [18:39:54] fs_hidden_random_7b: 18 temperature pauses, 540s paused of 5348s; tonight so far 18 pauses, 540s of 5348s (D143)
+[18:39:56] commit 'Follow-up (D157/D160, exploratory): 7b hidden_random readout on the kept answers (Kaggle samples)': pushed
+[18:39:58] disk: 22 GiB free on MLStorage
+[18:39:58] start fs_analyze (timeout 21600s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_scale analyze
+[18:40:16] D161 retry starts (the GPU stage ended)
+[19:11:06] D161 retry ended: exit 0
+[20:42:41] end fs_analyze: exit 0
