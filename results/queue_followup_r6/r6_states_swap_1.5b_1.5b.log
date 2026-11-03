@@ -1,0 +1,118 @@
+W1103 19:56:42.541000 13731 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 19:56:42.558000 13731 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  25%|██▍       | 84/338 [00:00<00:00, 839.57it/s]Loading weights:  50%|████▉     | 168/338 [00:00<00:00, 831.41it/s]Loading weights:  75%|███████▍  | 253/338 [00:00<00:00, 837.70it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 840.06it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  swap_1.5b/1.5b part 0: 64/6000 (23s)
+  swap_1.5b/1.5b part 1: 128/6000 (33s)
+  swap_1.5b/1.5b part 2: 192/6000 (43s)
+  swap_1.5b/1.5b part 3: 256/6000 (54s)
+  swap_1.5b/1.5b part 4: 320/6000 (95s)
+  swap_1.5b/1.5b part 5: 384/6000 (106s)
+  swap_1.5b/1.5b part 6: 448/6000 (116s)
+  swap_1.5b/1.5b part 7: 512/6000 (126s)
+  swap_1.5b/1.5b part 8: 576/6000 (138s)
+  swap_1.5b/1.5b part 9: 640/6000 (147s)
+  swap_1.5b/1.5b part 10: 704/6000 (158s)
+  swap_1.5b/1.5b part 11: 768/6000 (168s)
+  swap_1.5b/1.5b part 12: 832/6000 (179s)
+  swap_1.5b/1.5b part 13: 896/6000 (190s)
+  swap_1.5b/1.5b part 14: 960/6000 (199s)
+  swap_1.5b/1.5b part 15: 1024/6000 (209s)
+  swap_1.5b/1.5b part 16: 1088/6000 (219s)
+  swap_1.5b/1.5b part 17: 1152/6000 (230s)
+  swap_1.5b/1.5b part 18: 1216/6000 (240s)
+  swap_1.5b/1.5b part 19: 1280/6000 (250s)
+  swap_1.5b/1.5b part 20: 1344/6000 (261s)
+  swap_1.5b/1.5b part 21: 1408/6000 (271s)
+  swap_1.5b/1.5b part 22: 1472/6000 (282s)
+  swap_1.5b/1.5b part 23: 1536/6000 (292s)
+  swap_1.5b/1.5b part 24: 1600/6000 (303s)
+  swap_1.5b/1.5b part 25: 1664/6000 (314s)
+  swap_1.5b/1.5b part 26: 1728/6000 (326s)
+  swap_1.5b/1.5b part 27: 1792/6000 (336s)
+  swap_1.5b/1.5b part 28: 1856/6000 (349s)
+  swap_1.5b/1.5b part 29: 1920/6000 (361s)
+  swap_1.5b/1.5b part 30: 1984/6000 (371s)
+  swap_1.5b/1.5b part 31: 2048/6000 (382s)
+  swap_1.5b/1.5b part 32: 2112/6000 (423s)
+  swap_1.5b/1.5b part 33: 2176/6000 (432s)
+  swap_1.5b/1.5b part 34: 2240/6000 (443s)
+  swap_1.5b/1.5b part 35: 2304/6000 (454s)
+  swap_1.5b/1.5b part 36: 2368/6000 (465s)
+  swap_1.5b/1.5b part 37: 2432/6000 (475s)
+  swap_1.5b/1.5b part 38: 2496/6000 (486s)
+  swap_1.5b/1.5b part 39: 2560/6000 (497s)
+  swap_1.5b/1.5b part 40: 2624/6000 (508s)
+  swap_1.5b/1.5b part 41: 2688/6000 (518s)
+  swap_1.5b/1.5b part 42: 2752/6000 (528s)
+  swap_1.5b/1.5b part 43: 2816/6000 (539s)
+  swap_1.5b/1.5b part 44: 2880/6000 (549s)
+  swap_1.5b/1.5b part 45: 2944/6000 (560s)
+  swap_1.5b/1.5b part 46: 3008/6000 (570s)
+  swap_1.5b/1.5b part 47: 3072/6000 (581s)
+  swap_1.5b/1.5b part 48: 3136/6000 (592s)
+  swap_1.5b/1.5b part 49: 3200/6000 (634s)
+  swap_1.5b/1.5b part 50: 3264/6000 (643s)
+  swap_1.5b/1.5b part 51: 3328/6000 (654s)
+  swap_1.5b/1.5b part 52: 3392/6000 (693s)
+  swap_1.5b/1.5b part 53: 3456/6000 (704s)
+  swap_1.5b/1.5b part 54: 3520/6000 (712s)
+  swap_1.5b/1.5b part 55: 3584/6000 (723s)
+  swap_1.5b/1.5b part 56: 3648/6000 (734s)
+  swap_1.5b/1.5b part 57: 3712/6000 (744s)
+  swap_1.5b/1.5b part 58: 3776/6000 (754s)
+  swap_1.5b/1.5b part 59: 3840/6000 (764s)
+  swap_1.5b/1.5b part 60: 3904/6000 (774s)
+  swap_1.5b/1.5b part 61: 3968/6000 (814s)
+  swap_1.5b/1.5b part 62: 4032/6000 (823s)
+  swap_1.5b/1.5b part 63: 4096/6000 (833s)
+  swap_1.5b/1.5b part 64: 4160/6000 (874s)
+  swap_1.5b/1.5b part 65: 4224/6000 (885s)
+  swap_1.5b/1.5b part 66: 4288/6000 (894s)
+  swap_1.5b/1.5b part 67: 4352/6000 (905s)
+  swap_1.5b/1.5b part 68: 4416/6000 (915s)
+  swap_1.5b/1.5b part 69: 4480/6000 (926s)
+  swap_1.5b/1.5b part 70: 4544/6000 (936s)
+  swap_1.5b/1.5b part 71: 4608/6000 (946s)
+  swap_1.5b/1.5b part 72: 4672/6000 (957s)
+  swap_1.5b/1.5b part 73: 4736/6000 (969s)
+  swap_1.5b/1.5b part 74: 4800/6000 (979s)
+  swap_1.5b/1.5b part 75: 4864/6000 (990s)
+  swap_1.5b/1.5b part 76: 4928/6000 (1000s)
+  swap_1.5b/1.5b part 77: 4992/6000 (1011s)
+  swap_1.5b/1.5b part 78: 5056/6000 (1052s)
+  swap_1.5b/1.5b part 79: 5120/6000 (1062s)
+  swap_1.5b/1.5b part 80: 5184/6000 (1072s)
+  swap_1.5b/1.5b part 81: 5248/6000 (1081s)
+  swap_1.5b/1.5b part 82: 5312/6000 (1092s)
+  swap_1.5b/1.5b part 83: 5376/6000 (1103s)
+  swap_1.5b/1.5b part 84: 5440/6000 (1113s)
+  swap_1.5b/1.5b part 85: 5504/6000 (1123s)
+  swap_1.5b/1.5b part 86: 5568/6000 (1131s)
+  swap_1.5b/1.5b part 87: 5632/6000 (1143s)
+  swap_1.5b/1.5b part 88: 5696/6000 (1153s)
+  swap_1.5b/1.5b part 89: 5760/6000 (1163s)
+  swap_1.5b/1.5b part 90: 5824/6000 (1174s)
+  swap_1.5b/1.5b part 91: 5888/6000 (1186s)
+  swap_1.5b/1.5b part 92: 5952/6000 (1197s)
+  swap_1.5b/1.5b part 93: 6000/6000 (1204s)
+{
+ "decision": "D167",
+ "set": "swap_1.5b",
+ "reader": "1.5b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+ "n": 6000,
+ "parts": 94,
+ "seconds": 1204.1196444034576,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "not kept (D167 uses p1 in R6-4 only)"
+ }
+}

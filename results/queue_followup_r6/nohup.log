@@ -95,3 +95,10 @@
 [01:18:54] start r6_states_answer_only_1.5b_1.5b (timeout 27668s): uv run python -m physcal.eval.followup_r6 states --set answer_only_1.5b --reader 1.5b --cap 6.7
 [01:26:15] end r6_states_answer_only_1.5b_1.5b: exit 0
 [01:26:15] r6_states_answer_only_1.5b_1.5b: 2 temperature pauses, 60s paused of 443s; tonight so far 24 pauses, 724s of 6118s (D143)
+[01:26:17] commit 'Follow-up (D167, exploratory): R6 states, answer_only_1.5b read by 1.5b': pushed
+[01:26:36] host VRAM readings (MiB): 711 711 711 711 711 745 745 745
+[01:26:36] GPU at 63.20C, memory.used 745 MiB
+[01:26:38] disk: 21 GiB free on MLStorage
+[01:26:38] start r6_states_swap_1.5b_1.5b (timeout 27204s): uv run python -m physcal.eval.followup_r6 states --set swap_1.5b --reader 1.5b --cap 6.8
+[01:46:43] end r6_states_swap_1.5b_1.5b: exit 0
+[01:46:43] r6_states_swap_1.5b_1.5b: 7 temperature pauses, 210s paused of 1207s; tonight so far 31 pauses, 934s of 7325s (D143)
