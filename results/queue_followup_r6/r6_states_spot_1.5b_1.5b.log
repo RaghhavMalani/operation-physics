@@ -1,15 +1,3 @@
-W1103 18:07:26.891000 1440 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-W1103 18:07:26.932000 1440 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
-🦥 Unsloth Zoo will now patch everything to make training faster!
-==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
-   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
-O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
-\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
- "-____-"     Free license: http://github.com/unslothai/unsloth
-Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<00:35,  9.53it/s]Loading weights:   9%|▊         | 29/338 [00:00<00:01, 162.36it/s]Loading weights:  19%|█▊        | 63/338 [00:00<00:01, 232.27it/s]Loading weights:  29%|██▉       | 99/338 [00:00<00:00, 275.09it/s]Loading weights:  42%|████▏     | 143/338 [00:00<00:00, 331.64it/s]Loading weights:  55%|█████▍    | 185/338 [00:00<00:00, 360.05it/s]Loading weights:  69%|██████▊   | 232/338 [00:00<00:00, 392.61it/s]Loading weights:  81%|████████▏ | 275/338 [00:00<00:00, 402.04it/s]Loading weights:  93%|█████████▎| 316/338 [00:00<00:00, 400.22it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 349.60it/s]
-unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
-  spot_1.5b/1.5b part 0: 16/16 (23s)
 {
  "decision": "D167",
  "set": "spot_1.5b",
@@ -17,7 +5,7 @@ unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'voc
  "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
  "n": 16,
  "parts": 1,
- "seconds": 23.35018754005432,
+ "seconds": 0.0016682147979736328,
  "positions": {
   "p2": "the first token after the final answer",
   "p1": "not kept (D167 uses p1 in R6-4 only)"

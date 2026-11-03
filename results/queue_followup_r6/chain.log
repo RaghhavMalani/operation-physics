@@ -13,3 +13,16 @@
 [23:37:19] start r6_states_spot_1.5b_1.5b (timeout 33762s): uv run python -m physcal.eval.followup_r6 states --set spot_1.5b --reader 1.5b --cap 6.4
 [23:37:44] end r6_states_spot_1.5b_1.5b: exit 0
 [23:37:44] r6_states_spot_1.5b_1.5b: 0 temperature pauses, 0s paused of 26s; tonight so far 0 pauses, 0s of 26s (D143)
+[23:37:47] commit 'Follow-up (D167, exploratory): R6 states, spot_1.5b read by 1.5b': pushed
+[23:38:04] host VRAM readings (MiB): 1018 1019 989 1059 1010 1144 1140 1092
+[23:38:04] host use 1039 MiB gives 6.4 GiB < 7.5: re-reading in 60 s
+[23:39:21] host VRAM readings (MiB): 849 847 847 845 846 845 842 842
+[23:39:21] host use 845 MiB gives 6.6 GiB < 7.5: re-reading in 60 s
+[23:39:49] chain 503 stopped by hand between stages (no stage running): relaunched with HOST_TRIES=1 so each stage reads the cap once instead of re-reading for up to 4 min (D168)
+[23:39:49] R6 chain start (D167, exploratory): GPU deadline 09:00 IST (560 min left); chain PID 2366
+[23:40:07] host VRAM readings (MiB): 850 851 847 808 807 802 802 802
+[23:40:07] GPU at 57.80C, memory.used 802 MiB
+[23:40:08] disk: 21 GiB free on MLStorage
+[23:40:08] start r6_states_spot_1.5b_1.5b (timeout 33593s): uv run python -m physcal.eval.followup_r6 states --set spot_1.5b --reader 1.5b --cap 6.7
+[23:40:09] end r6_states_spot_1.5b_1.5b: exit 0
+[23:40:09] r6_states_spot_1.5b_1.5b: 0 temperature pauses, 0s paused of 2s; tonight so far 0 pauses, 0s of 2s (D143)
