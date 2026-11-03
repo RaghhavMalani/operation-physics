@@ -1,0 +1,31 @@
+W1103 18:48:02.731000 6428 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 18:48:02.749000 6428 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  24%|██▍       | 81/338 [00:00<00:00, 806.01it/s]Loading weights:  48%|████▊     | 162/338 [00:00<00:00, 807.98it/s]Loading weights:  72%|███████▏  | 243/338 [00:00<00:00, 797.20it/s]Loading weights:  96%|█████████▌| 323/338 [00:00<00:00, 779.56it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 808.95it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  yes truncated/1.5b 32/466 (18s)
+  yes truncated/1.5b 64/466 (36s)
+  yes truncated/1.5b 96/466 (55s)
+  yes truncated/1.5b 128/466 (73s)
+  yes truncated/1.5b 160/466 (92s)
+  yes truncated/1.5b 192/466 (110s)
+  yes truncated/1.5b 224/466 (128s)
+  yes truncated/1.5b 256/466 (147s)
+  yes truncated/1.5b 288/466 (166s)
+  yes truncated/1.5b 320/466 (184s)
+  yes truncated/1.5b 352/466 (203s)
+  yes truncated/1.5b 384/466 (222s)
+  yes truncated/1.5b 416/466 (240s)
+  yes truncated/1.5b 448/466 (259s)
+  yes truncated/1.5b 466/466 (270s)
+{
+ "n": 466,
+ "new": 466,
+ "seconds": 270.3398404121399
+}
