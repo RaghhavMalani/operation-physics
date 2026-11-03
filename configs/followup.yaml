@@ -140,3 +140,11 @@ scale:                                 # item 3: Qwen2.5-Math-7B-Instruct (4-bit
     x4_direct: 0.526
     probe_crossfit: 0.540
     length: 0.535
+audit:                                 # D164: a zero-GPU confound audit of D162's table (CPU, 1 thread; exploratory)
+  output_dir: audit                    # under output_dir
+  models: [7b, 1.5b]                   # the Kaggle models; the SFT 1.5B is X2 on the same prefix
+  length_match_rel: 0.10               # a pair is length-matched if |n_c - n_i| <= 10% of the longer completion
+  text:                                # an A5-style text classifier, cross-fitted on the probe's folds
+    a5_config: nested_baselines_4bit   # A5's text features (TF-IDF) and its p grid (logistic C, 4 GBTs)
+    feature_set: problem_answer_reasoning
+    inner_folds: 5                     # GroupKFold by problem; the outer folds are the probe's (scale.probe.folds)

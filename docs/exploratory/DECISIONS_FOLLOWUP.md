@@ -840,3 +840,21 @@ appended here.
   - the write-up in `docs/exploratory/followup_feasibility.md` §3.
 - **Cost (an estimate):** the text classifier is 2 models × 5 outer folds × (9 candidates × 5 inner folds + 1) fits,
   mostly GBT time. At one thread that is under an hour per model. The measured time is recorded with the results.
+- **The outcome (2026-11-03, 08:44–09:57 IST; CPU only, 1 thread, nice 19; written after the analysis).**
+  - **The run:**
+    - D162's unchanged recompute reproduces `results/followup/scale/results.json` with a gap of exactly 0.0 (checked
+      before the long fit, with the text readout stubbed, and again by `analyze`);
+    - the text classifier took 16 min (native 1.5B) and 26 min (7B); the analysis 33 s;
+    - outputs: `results/followup/audit/` (`results.json`, `summary.md`, `text_{7b,1.5b}.json`, the logs).
+  - **One implementation detail, not a plan change:** in 1(a), a problem left with a single untruncated sample has no
+    others for self-consistency, so it is left out of that readout (`followup_audit.with_others`). Such a problem
+    cannot be kept, so no pair is affected. The first run stopped on it with a division by zero, before any number.
+  - **1(a)** is identical to D162 in every digit, as stated above.
+  - **The reading rules, applied as written:**
+    - "the probe reads more than the text": **yes** at both sizes, on all pairs and length-matched;
+    - "a D162 conclusion is sensitive": **2 of 20 checks flag**, both the probe's net scale effect,
+      (probe − random) 7B − native. Its sign goes from +0.003 to −0.003 (the 599) and −0.001 (length-matched). Its
+      CI contains 0 in D162 and in both variants, so the conclusion it carries (no net scale effect) does not change.
+      The rule as written did not separate a sign change around 0 from a real one; that is recorded here, and the
+      rule is not edited.
+  - **The numbers and the write-up:** `docs/exploratory/followup_feasibility.md` §3, "The confound audit (D164)".

@@ -93,12 +93,9 @@ def _file_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def probe_confidence(model: str, kind: str, corr: dict, cfg: dict) -> tuple[dict, dict] | None:
-    """The cross-fitted probe (x2_analysis.crossfit_confidence) on <model>/<kind> (hidden, or D160's hidden_random),
-    cached in <model>/probe_<kind>.json under the sha256 of its inputs (the probe settings, the answers and their
-    labels, every part's bytes); a cache with other inputs is refit. None without parts."""
-    from physcal.eval import x2_analysis as XA
-
+def probe_inputs(model: str, kind: str, corr: dict, cfg: dict) -> tuple[list[dict], str, Path] | None:
+    """The probe's answers in the parts' order (key, sample, label), the sha256 of its inputs (the probe settings,
+    the answers and their labels, every part's bytes) and its cache path; None without parts."""
     parts = sorted((F.out_dir(model, cfg) / kind).glob("part_[0-9][0-9][0-9][0-9].npz"))
     if not parts:
         return None
@@ -107,8 +104,19 @@ def probe_confidence(model: str, kind: str, corr: dict, cfg: dict) -> tuple[dict
     h = hashlib.sha256(json.dumps({"probe": cfg["scale"]["probe"], "index": index}, sort_keys=True).encode())
     for f in parts:
         h.update(f"{f.name}:{_file_sha256(f)}".encode())
-    cache = F.out_dir(model, cfg) / f"probe_{kind}.json"
-    if cache.exists() and (c := json.loads(cache.read_text()))["inputs_sha256"] == h.hexdigest():
+    return index, h.hexdigest(), F.out_dir(model, cfg) / f"probe_{kind}.json"
+
+
+def probe_confidence(model: str, kind: str, corr: dict, cfg: dict) -> tuple[dict, dict] | None:
+    """The cross-fitted probe (x2_analysis.crossfit_confidence) on <model>/<kind> (hidden, or D160's hidden_random),
+    cached in <model>/probe_<kind>.json under the sha256 of its inputs (`probe_inputs`); a cache with other inputs is
+    refit. None without parts."""
+    from physcal.eval import x2_analysis as XA
+
+    if (got := probe_inputs(model, kind, corr, cfg)) is None:
+        return None
+    index, sha, cache = got
+    if cache.exists() and (c := json.loads(cache.read_text()))["inputs_sha256"] == sha:
         return {(tuple(k), s): v for k, s, v in c["conf"]}, c["info"]
     layers, _ = F.load_hidden(model, cfg, kind)
     pc = dict(cfg["scale"]["probe"])
@@ -119,7 +127,7 @@ def probe_confidence(model: str, kind: str, corr: dict, cfg: dict) -> tuple[dict
     info = pinfo | {"n_layers": len(layers), "n": len(index), "seconds": time.time() - t0,
                     "threads": {v: os.environ.get(v) for v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS")}}
     cache.write_text(json.dumps({"decision": "D160: the cross-fitted probe's per-answer values (cache)",
-                                 "inputs_sha256": h.hexdigest(), "info": info,
+                                 "inputs_sha256": sha, "info": info,
                                  "conf": [[list(k), s, v] for (k, s), v in conf.items()]}))
     return {(tuple(k), s): v for (k, s), v in conf.items()}, info
 
@@ -161,9 +169,10 @@ def x2_probe_refit(cfg: dict | None = None) -> dict:
     return res
 
 
-def x2_on_prefix(n_candidates: int, cfg: dict) -> dict:
-    """The SFT 1.5B's X2 readouts restricted to the pool's first n candidates: SC, X4 direct and length from the
-    existing rows; the probe from D160's refit (x2_probe_refit) when it reproduced X2, else missing."""
+def x2_prefix_data(n_candidates: int, cfg: dict) -> tuple[dict, list, dict, list[dict]]:
+    """The SFT 1.5B's X2 answers on the pool's first n candidates: (groups, kept keys on the prefix, confidences, the
+    kept problems' records). SC, X4 direct and length from the existing rows; the probe from D160's refit
+    (x2_probe_refit) when it reproduced X2, else missing."""
     from physcal.eval import x2_robustness as XR
 
     x2 = load_config("x2")
@@ -179,6 +188,12 @@ def x2_on_prefix(n_candidates: int, cfg: dict) -> dict:
     rf = refit_path(cfg)
     if rf.exists() and (r := json.loads(rf.read_text()))["reproduced"]:
         conf["probe"] = {(tuple(k), s): v for k, s, v in r["conf"]}
+    return groups, pk, conf, recs
+
+
+def x2_on_prefix(n_candidates: int, cfg: dict) -> dict:
+    """The SFT 1.5B's X2 readouts restricted to the pool's first n candidates (`x2_prefix_data`)."""
+    groups, pk, conf, _ = x2_prefix_data(n_candidates, cfg)
     n_boot, seed = cfg["scale"]["bootstrap"], cfg["scale"]["seed"]
     out = {"n_kept": len(pk), "methods": {}}
     for m, c in conf.items():

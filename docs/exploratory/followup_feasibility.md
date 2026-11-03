@@ -5,7 +5,8 @@ pre-registered as a hypothesis or confirmatory. The plan and every analysis rule
 `docs/exploratory/DECISIONS_FOLLOWUP.md`, D156) and pushed (`a8938c7`) before any of this track's data existed. Later changes each have their own entry, written
 before the data they affect: D152 (item 3's decoding), D153 (item 3's local stop), D157 (item 3 on Kaggle) and D158
 (the readouts' memory settings). D159 records the 7B readouts' run. D160 (written before their data) adds the controls,
-D161 one reproduction retry, and D162 records the controls' run.
+D161 one reproduction retry, and D162 records the controls' run. D164 (plan pushed before its numbers) audits D162's
+table for confounds without a GPU: `physcal/eval/followup_audit.py`, `results/followup/audit/`.
 
 | item | code | config | results |
 |---|---|---|---|
@@ -49,6 +50,15 @@ and MC-A in item 1).
    - **Most of every probe's signal is surface.**
      - The same probe on random weights reads 0.664 (7B) and 0.673 (1.5B).
      - The real weights add +0.088 and +0.085, with CIs excluding 0, the same at both sizes.
+   - **A confound audit (D164, no GPU) leaves these readings standing.**
+     - **Truncation:** dropping every problem with a truncated sample (44% of the 7B's kept problems) gives P(yes)
+       +0.094 [+0.061, +0.126] and probe −0.019 [−0.050, +0.012].
+     - **The problem mix:** on the 599 shared problems, standardized by pass count, P(yes) is +0.114
+       [+0.083, +0.145] and the probe −0.003 [−0.031, +0.024].
+     - **The surface:** an A5-style text classifier reads exactly what the random-weights probe reads (0.663 / 0.673).
+       The probe beats it by +0.089 / +0.084, and by +0.101 / +0.102 on length-matched pairs.
+     - **One qualification:** self-consistency's size gain is mostly the pass-count mix: +0.076 paired, +0.023
+       [+0.004, +0.043] standardized.
 
 ## 1. Uncertainty-guided test-time compute (offline)
 
@@ -288,11 +298,126 @@ B = 10,000):
   - truncation: 8.7% vs 1.0%. A truncated sample is no answer, so the 7B's runaway errors leave its pairs.
   - The paired comparisons on the 599 shared problems agree with the unpaired ones.
 
+**The confound audit (D164, zero GPU).** It asks whether three things besides size could produce D162's readings:
+truncation, the problem mix and the text's surface. Plan and rules: D164, pushed before any of its numbers existed.
+- **How it ran:**
+  - CPU only, 1 thread;
+  - D162's per-answer readouts, unchanged. The probes come from their caches and are not refit on any subset;
+  - problem-level bootstrap throughout (B = 10,000);
+  - the unchanged recompute reproduces D162's results to the last digit (gap 0.0).
+  - Code: `physcal/eval/followup_audit.py`; results: `results/followup/audit/`.
+- **A new readout, an A5-style text classifier:**
+  - **features:** A5's problem + answer + reasoning TF-IDF over the text the probe can see (everything up to the last
+    box's closing brace);
+  - **models:** A5's p grid (logistic regression, 4 GBTs), chosen by inner CV;
+  - **cross-fitting:** on the probe's own five folds, grouped by problem.
+
+**1. Truncation.**
+- **(a) Truncated samples dropped:** identical to D162 in every digit. Truncated samples were never answers, and
+  self-consistency's denominator is the same for every answer of a problem.
+- **(b) Problems with any truncated sample dropped.** This is the informative version: the 7B loses 371 of its 844
+  kept problems (44%), the native 1.5B 55 of 766, the SFT 1.5B none.
+
+| readout | 7B (473) | native 1.5B (711) | 7B − native, unpaired | paired (319 common) |
+|---|---|---|---|---|
+| self-consistency | 0.857 | 0.785 | +0.072 [+0.040, +0.104] | +0.083 [+0.043, +0.123] |
+| direct P(yes) | 0.666 | 0.572 | **+0.094 [+0.061, +0.126]** | +0.077 [+0.039, +0.115] |
+| hidden-state probe | 0.732 | 0.751 | **−0.019 [−0.050, +0.012]** | −0.020 [−0.057, +0.017] |
+| probe on random weights | 0.643 | 0.668 | −0.025 [−0.055, +0.006] | −0.021 [−0.060, +0.018] |
+| length | 0.624 | 0.599 | +0.025 [−0.009, +0.057] | +0.015 [−0.026, +0.056] |
+| text classifier | 0.643 | 0.666 | −0.022 [−0.056, +0.011] | −0.016 [−0.056, +0.024] |
+
+- Within each model: probe − random weights +0.089 / +0.083 and P(yes) − length +0.042 / −0.027, as in D162.
+- The net scale effect, (probe − random) 7B − native, is +0.005 [−0.029, +0.040].
+- **What changes:** only length's 7B advantage, which loses its CI (+0.036 → +0.025 [−0.009, +0.057]). Part of it was
+  the 7B's runaway answers.
+
+**2. The 599 problems both models keep, and their pass counts** (c = correct of 8, each model's own count).
+
+| readout | 7B | native 1.5B | 7B − native, paired | 7B − native, standardized by pass count |
+|---|---|---|---|---|
+| self-consistency | 0.840 | 0.765 | +0.076 [+0.045, +0.106] | **+0.023 [+0.004, +0.043]** |
+| direct P(yes) | 0.689 | 0.569 | +0.120 [+0.090, +0.150] | **+0.114 [+0.083, +0.145]** |
+| hidden-state probe | 0.758 | 0.761 | −0.003 [−0.029, +0.024] | −0.003 [−0.031, +0.024] |
+| probe on random weights | 0.669 | 0.668 | +0.001 [−0.029, +0.029] | −0.003 [−0.034, +0.027] |
+| length | 0.640 | 0.600 | +0.040 [+0.011, +0.070] | +0.031 [+0.001, +0.062] |
+| text classifier | 0.668 | 0.678 | −0.010 [−0.040, +0.019] | −0.008 [−0.038, +0.022] |
+
+- **The pass-count mix differs:** of the 599 problems, the 7B has 61 at c = 7 and 101 at c = 1; the 1.5B has 40 and 133.
+  The standardized column weights each c by its pooled share over both models.
+- **Self-consistency's size gain is mostly that mix.**
+  - It is near-perfect at high pass counts (0.95–1.00 at c ≥ 4 for both models) and below chance at c = 1
+    (0.375 / 0.369): there, the one right answer has no agreeing others.
+  - The 7B has more high-c problems, and with the mix held fixed its gain shrinks from +0.076 to +0.023.
+- **P(yes)'s gain does not depend on the mix.** The 7B leads in every pass-count stratum, by +0.05 to +0.19 (point
+  estimates; the per-stratum CIs are in `summary.md`).
+- **The probe's pattern differs.** The 7B is ahead at c = 1 (0.826 vs 0.733) and c = 4 (0.779 vs 0.736), and behind
+  in the other five strata. Pooled, the two are equal.
+- **The SFT 1.5B** keeps 281 of the 599: SC 0.651, P(yes) 0.510, probe 0.526, length 0.553.
+
+**3. The probe against the text classifier, on all pairs and on length-matched pairs** (the two completions' token
+counts within 10% of the longer).
+
+| readout | 7B, all pairs (844) | native, all pairs (766) | 7B, length-matched (677) | native, length-matched (648) |
+|---|---|---|---|---|
+| self-consistency | 0.827 | 0.774 | 0.820 | 0.772 |
+| direct P(yes) | 0.683 | 0.572 | 0.633 | 0.533 [0.505, 0.562] |
+| hidden-state probe | 0.753 | 0.758 | 0.694 | 0.723 |
+| probe on random weights | 0.664 | 0.673 | 0.592 | 0.621 |
+| length | 0.634 | 0.598 | 0.538 [0.512, 0.564] | 0.511 [0.486, 0.537] |
+| text classifier | 0.663 [0.643, 0.683] | 0.673 [0.654, 0.692] | 0.593 | 0.621 |
+| **probe − text, paired** | **+0.089 [+0.069, +0.110]** | **+0.084 [+0.065, +0.104]** | **+0.101 [+0.065, +0.136]** | **+0.102 [+0.070, +0.135]** |
+| text − random weights, paired | −0.001 [−0.022, +0.019] | +0.001 [−0.019, +0.020] | +0.001 [−0.036, +0.038] | +0.000 [−0.035, +0.035] |
+
+- **Length matching works.** Length's own readout falls to 0.538 / 0.511. The matched pairs are 2,378 / 2,483 of
+  8,476 / 8,849.
+- **The text classifier lands exactly on the random-weights probe,** on all pairs and length-matched.
+  - Two different surface readers (A5's word features, and a linear probe on an untrained network) agree within
+    0.001.
+  - That supports reading the random-weights number as "what the text's surface carries".
+  - **The text classifier's choices:**
+    - 7B: logistic C = 1 in 2 folds, a GBT in 3;
+    - native 1.5B: the depth-3 GBT in all 5;
+    - inner-CV AUROC 0.69–0.71, pooled across problems. The 7B probe's was 0.77–0.78.
+- **Length-matched, scale still moves P(yes):** 7B − native +0.100 [+0.059, +0.140].
+  - The native 1.5B's verdict is near chance on matched pairs.
+  - The 7B's verdict beats length by +0.095 [+0.059, +0.131].
+- **Length-matched, scale still does not move the probe:** −0.029 [−0.067, +0.008]. Net of random weights:
+  −0.001 [−0.050, +0.049].
+
+**Reading (D164's rules):**
+- **"The probe reads more than the text": yes,** at both sizes, on all pairs (+0.089, +0.084) and length-matched
+  (+0.101, +0.102). Every CI is above 0.
+- **D162's conclusions under truncation and the problem mix:** 2 of D164's 20 checks flag, by its rule as written.
+  - Both flags are the probe's net scale effect, (probe − random) 7B − native.
+  - Its sign changes from +0.003 to −0.003 (the 599) and to −0.001 (length-matched).
+  - Its CI contains 0 in D162 and in both variants, so the conclusion it supports (no net scale effect) is unchanged.
+  - D164's rule did not separate a sign change around 0 from a real change. This is reported, and the rule is not
+    edited.
+  - The other 18 checks do not change: 7B − native P(yes) and probe, and each model's probe − random weights, across
+    1(a), 1(b), 2 and 3.
+- **D162's readings survive the audit:**
+  - size moves the model's own verdict;
+  - it does not move what the probe reads;
+  - both probes read more than the surface.
+- **Two of D162's statements need qualifying:**
+  - **"Most of every probe's signal is surface"** holds on all pairs: the surface readers are 0.163 / 0.173 above
+    chance, against the probes' 0.253 / 0.258.
+    - On length-matched pairs the surface is about half: 0.093 / 0.121, against 0.194 / 0.223.
+    - Matched pairs are harder for every reader (the probe also falls, 0.753 → 0.694 for the 7B). So this does not
+      measure how much of the surface is length.
+  - **"Self-consistency gains with size"** is mostly a pass-count effect: +0.023 [+0.004, +0.043] once the mix is held
+    fixed.
+
 **Caveats (item 3):**
 - one prompt, one model family, one synthetic domain;
 - the readouts read 4-bit copies of the sampled fp16 weights;
 - one random-weights draw per architecture;
-- truncated samples are in no pair;
+- truncated samples are in no pair. Dropping every problem with a truncated sample leaves the readings standing
+  (D164), but a truncated attempt still has no readout;
+- in D164's subsets, the probes and the text classifier keep the values they got from fits on all kept answers. They
+  are not refit;
+- the text classifier is one surface reader: A5's unigrams and grid. Another feature set could read more;
 - descriptive, with no multiple-comparison correction.
 
 **Every difference between the SFT 1.5B (X2) and the Kaggle runs.** The 7B and the native 1.5B differ from each other
@@ -351,7 +476,11 @@ only in the weights.
   - **The 7B's own P(yes)** separates its right answers from its wrong ones better than the 1.5B's (+0.110), with
     everything else equal.
   - **A probe on the hidden states** reads the same at both sizes (0.75–0.76), and most of it is surface: random
-    weights reach 0.66–0.67.
+    weights reach 0.66–0.67, and so does an A5-style text classifier.
+    - The probe's margin over both is ~0.09 at either size, and ~0.10 on length-matched pairs (D164). It reads
+      something the text features do not, but no more of it at 7B.
+  - **Self-consistency's gain from size** is mostly that the 7B solves more of each problem. With the pass-count mix
+    held fixed, it is +0.023 (D164).
   - **The SFT format's wall** (0.53–0.54 for every single-sample readout) comes mostly from the format, training and
     decoding, not from the model's size.
   - **A follow-up worth running:** what in the native answers makes the surface so informative (length, hedging,
@@ -376,6 +505,12 @@ only in the weights.
     under X2's documented settings reproduced it exactly (D161).
   - **The two readout chains ran one after the other,** never at once, with 38 temperature pauses in all.
   - **The 7B's random-weights copy** (15 GB, gitignored) was deleted on 2026-11-03 (D163); it is regenerable from its seed.
+- **The confound audit (D164):**
+  - CPU only, 1 thread: the text classifier took 16 + 26 min, the analysis 33 s.
+  - The first run stopped on a division by zero, before any number: in 1(a), a problem with one untruncated sample has
+    no others for self-consistency. Such a problem is never kept, and it is now left out of that readout.
+  - The plan's sensitivity rule flags a sign change around 0 as a change. It fired twice, both on a quantity whose CI
+    contains 0 throughout (§3).
 - **Everything here is exploratory:**
   - item 1 re-reads one model's samples;
   - item 2 re-reads one model's logs;
