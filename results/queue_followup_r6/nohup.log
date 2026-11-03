@@ -67,3 +67,10 @@
 [00:41:06] start r6_states_fact_native_sft (timeout 29935s): uv run python -m physcal.eval.followup_r6 states --set fact_native --reader sft --cap 6.7
 [00:50:27] end r6_states_fact_native_sft: exit 0
 [00:50:27] r6_states_fact_native_sft: 3 temperature pauses, 90s paused of 562s; tonight so far 16 pauses, 483s of 4054s (D143)
+[00:50:31] commit 'Follow-up (D167, exploratory): R6 states, fact_native read by sft': pushed
+[00:50:48] host VRAM readings (MiB): 750 750 750 750 750 750 750 750
+[00:50:49] GPU at 65.00C, memory.used 750 MiB
+[00:50:50] disk: 21 GiB free on MLStorage
+[00:50:50] start r6_states_fact_terse_sft (timeout 29351s): uv run python -m physcal.eval.followup_r6 states --set fact_terse --reader sft --cap 6.7
+[00:59:59] end r6_states_fact_terse_sft: exit 0
+[00:59:59] r6_states_fact_terse_sft: 2 temperature pauses, 60s paused of 550s; tonight so far 18 pauses, 543s of 4604s (D143)
