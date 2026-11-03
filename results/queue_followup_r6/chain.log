@@ -49,3 +49,14 @@
 [23:57:45] guard(2787): stage continued after 31s paused (GPU at 65.10C <= 75C)
 [23:58:18] end r6_states_bank_7b_1.5b: exit 0
 [23:58:18] r6_states_bank_7b_1.5b: 8 temperature pauses, 242s paused of 1069s; tonight so far 8 pauses, 242s of 1071s (D143)
+[23:58:21] commit 'Follow-up (D167, exploratory): R6 states, bank_7b read by 1.5b': pushed
+[23:59:08] host VRAM readings (MiB): 889 889 889 889 889 885 885 885
+[23:59:21] GPU at 61.10C, memory.used 885 MiB
+[23:59:29] disk: 21 GiB free on MLStorage
+[23:59:29] start r6_yes_bank_7b_1.5b (timeout 32439s): uv run python -m physcal.eval.followup_r6 yes --set bank_7b --reader 1.5b --cap 6.6
+[00:04:10] guard(4891): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[00:04:41] guard(4891): stage continued after 31s paused (GPU at 64.80C <= 75C)
+[00:10:47] guard(4891): GPU at 87.30C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[00:11:17] guard(4891): stage continued after 30s paused (GPU at 64.80C <= 75C)
+[00:17:35] end r6_yes_bank_7b_1.5b: exit 0
+[00:17:35] r6_yes_bank_7b_1.5b: 2 temperature pauses, 61s paused of 1094s; tonight so far 10 pauses, 303s of 2165s (D143)
