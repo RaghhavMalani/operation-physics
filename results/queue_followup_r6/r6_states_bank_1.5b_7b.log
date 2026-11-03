@@ -1,0 +1,98 @@
+W1103 20:18:16.789000 15796 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 20:18:16.836000 15796 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   1%|          | 2/339 [00:00<00:26, 12.55it/s]Loading weights:  12%|█▏        | 40/339 [00:00<00:01, 183.23it/s]Loading weights:  24%|██▍       | 82/339 [00:00<00:00, 274.48it/s]Loading weights:  37%|███▋      | 126/339 [00:00<00:00, 332.36it/s]Loading weights:  50%|█████     | 170/339 [00:00<00:00, 368.42it/s]Loading weights:  63%|██████▎   | 214/339 [00:00<00:00, 389.76it/s]Loading weights:  75%|███████▌  | 255/339 [00:00<00:00, 372.73it/s]Loading weights:  87%|████████▋ | 294/339 [00:00<00:00, 370.91it/s]Loading weights: 100%|██████████| 339/339 [00:00<00:00, 343.10it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  bank_1.5b/7b part 0: 64/4683 (67s)
+  bank_1.5b/7b part 1: 128/4683 (113s)
+  bank_1.5b/7b part 2: 192/4683 (160s)
+  bank_1.5b/7b part 3: 256/4683 (207s)
+  bank_1.5b/7b part 4: 320/4683 (253s)
+  bank_1.5b/7b part 5: 384/4683 (296s)
+  bank_1.5b/7b part 6: 448/4683 (346s)
+  bank_1.5b/7b part 7: 512/4683 (389s)
+  bank_1.5b/7b part 8: 576/4683 (435s)
+  bank_1.5b/7b part 9: 640/4683 (481s)
+  bank_1.5b/7b part 10: 704/4683 (528s)
+  bank_1.5b/7b part 11: 768/4683 (572s)
+  bank_1.5b/7b part 12: 832/4683 (614s)
+  bank_1.5b/7b part 13: 896/4683 (662s)
+  bank_1.5b/7b part 14: 960/4683 (710s)
+  bank_1.5b/7b part 15: 1024/4683 (753s)
+  bank_1.5b/7b part 16: 1088/4683 (799s)
+  bank_1.5b/7b part 17: 1152/4683 (845s)
+  bank_1.5b/7b part 18: 1216/4683 (890s)
+  bank_1.5b/7b part 19: 1280/4683 (963s)
+  bank_1.5b/7b part 20: 1344/4683 (1012s)
+  bank_1.5b/7b part 21: 1408/4683 (1056s)
+  bank_1.5b/7b part 22: 1472/4683 (1105s)
+  bank_1.5b/7b part 23: 1536/4683 (1150s)
+  bank_1.5b/7b part 24: 1600/4683 (1196s)
+  bank_1.5b/7b part 25: 1664/4683 (1237s)
+  bank_1.5b/7b part 26: 1728/4683 (1285s)
+  bank_1.5b/7b part 27: 1792/4683 (1332s)
+  bank_1.5b/7b part 28: 1856/4683 (1378s)
+  bank_1.5b/7b part 29: 1920/4683 (1428s)
+  bank_1.5b/7b part 30: 1984/4683 (1474s)
+  bank_1.5b/7b part 31: 2048/4683 (1524s)
+  bank_1.5b/7b part 32: 2112/4683 (1569s)
+  bank_1.5b/7b part 33: 2176/4683 (1619s)
+  bank_1.5b/7b part 34: 2240/4683 (1662s)
+  bank_1.5b/7b part 35: 2304/4683 (1705s)
+  bank_1.5b/7b part 36: 2368/4683 (1777s)
+  bank_1.5b/7b part 37: 2432/4683 (1823s)
+  bank_1.5b/7b part 38: 2496/4683 (1873s)
+  bank_1.5b/7b part 39: 2560/4683 (1921s)
+  bank_1.5b/7b part 40: 2624/4683 (1971s)
+  bank_1.5b/7b part 41: 2688/4683 (2018s)
+  bank_1.5b/7b part 42: 2752/4683 (2063s)
+  bank_1.5b/7b part 43: 2816/4683 (2106s)
+  bank_1.5b/7b part 44: 2880/4683 (2152s)
+  bank_1.5b/7b part 45: 2944/4683 (2201s)
+  bank_1.5b/7b part 46: 3008/4683 (2245s)
+  bank_1.5b/7b part 47: 3072/4683 (2288s)
+  bank_1.5b/7b part 48: 3136/4683 (2334s)
+  bank_1.5b/7b part 49: 3200/4683 (2382s)
+  bank_1.5b/7b part 50: 3264/4683 (2429s)
+  bank_1.5b/7b part 51: 3328/4683 (2477s)
+  bank_1.5b/7b part 52: 3392/4683 (2523s)
+  bank_1.5b/7b part 53: 3456/4683 (2600s)
+  bank_1.5b/7b part 54: 3520/4683 (2650s)
+  bank_1.5b/7b part 55: 3584/4683 (2695s)
+  bank_1.5b/7b part 56: 3648/4683 (2743s)
+  bank_1.5b/7b part 57: 3712/4683 (2791s)
+  bank_1.5b/7b part 58: 3776/4683 (2832s)
+  bank_1.5b/7b part 59: 3840/4683 (2877s)
+  bank_1.5b/7b part 60: 3904/4683 (2929s)
+  bank_1.5b/7b part 61: 3968/4683 (2973s)
+  bank_1.5b/7b part 62: 4032/4683 (3019s)
+  bank_1.5b/7b part 63: 4096/4683 (3065s)
+  bank_1.5b/7b part 64: 4160/4683 (3113s)
+  bank_1.5b/7b part 65: 4224/4683 (3158s)
+  bank_1.5b/7b part 66: 4288/4683 (3207s)
+  bank_1.5b/7b part 67: 4352/4683 (3250s)
+  bank_1.5b/7b part 68: 4416/4683 (3301s)
+  bank_1.5b/7b part 69: 4480/4683 (3345s)
+  bank_1.5b/7b part 70: 4544/4683 (3394s)
+  bank_1.5b/7b part 71: 4608/4683 (3472s)
+  bank_1.5b/7b part 72: 4672/4683 (3515s)
+  bank_1.5b/7b part 73: 4683/4683 (3525s)
+{
+ "decision": "D167",
+ "set": "bank_1.5b",
+ "reader": "7b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-7B-Instruct-bnb-4bit/snapshots/2ab7fb373c247ef5933d034f016efefc66608458",
+ "n": 4683,
+ "parts": 74,
+ "seconds": 3524.8625712394714,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "not kept (D167 uses p1 in R6-4 only)"
+ }
+}

@@ -172,3 +172,18 @@
 [01:47:06] start r6_states_spot_7b_7b (timeout 25975s): uv run python -m physcal.eval.followup_r6 states --set spot_7b --reader 7b --cap 6.7
 [01:47:49] end r6_states_spot_7b_7b: exit 0
 [01:47:49] r6_states_spot_7b_7b: 0 temperature pauses, 0s paused of 44s; tonight so far 31 pauses, 934s of 7369s (D143)
+[01:47:51] commit 'Follow-up (D167, exploratory): R6 states, spot_7b read by 7b': pushed
+[01:48:09] host VRAM readings (MiB): 711 711 711 711 711 711 711 711
+[01:48:09] GPU at 61.90C, memory.used 711 MiB
+[01:48:11] disk: 21 GiB free on MLStorage
+[01:48:11] start r6_states_bank_1.5b_7b (timeout 25911s): uv run python -m physcal.eval.followup_r6 states --set bank_1.5b --reader 7b --cap 6.8
+[02:03:13] guard(15782): GPU at 88.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[02:03:43] guard(15782): stage continued after 30s paused (GPU at 63.50C <= 75C)
+[02:16:44] guard(15782): GPU at 88.00C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[02:17:14] guard(15782): stage continued after 30s paused (GPU at 64.10C <= 75C)
+[02:30:16] guard(15782): GPU at 88.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[02:30:46] guard(15782): stage continued after 30s paused (GPU at 63.80C <= 75C)
+[02:45:18] guard(15782): GPU at 87.60C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[02:45:48] guard(15782): stage continued after 30s paused (GPU at 63.40C <= 75C)
+[02:46:57] end r6_states_bank_1.5b_7b: exit 0
+[02:46:57] r6_states_bank_1.5b_7b: 4 temperature pauses, 120s paused of 3528s; tonight so far 35 pauses, 1054s of 10897s (D143)
