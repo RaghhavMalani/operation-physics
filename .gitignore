@@ -121,3 +121,6 @@ results/followup/scale/*/hidden/
 results/followup/scale/*/hidden_random/
 results/followup/scale/*/random_init_model/
 results/followup/scale/*/random_init_model.tmp/
+# The follow-up Kaggle chain (D157, D160, D163): queue PID and lock files
+results/queue_followup_kaggle/*.pid
+results/queue_followup_kaggle/*.lock

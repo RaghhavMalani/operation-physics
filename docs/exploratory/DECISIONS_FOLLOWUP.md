@@ -716,3 +716,29 @@ appended here.
   - **P(yes) − length:** the 7B +0.048 [+0.027, +0.071]; the 1.5B −0.026 [−0.050, −0.002].
 - **Nothing in D160's rules or code changed after its data.** The write-up is `docs/exploratory/followup_feasibility.md`
   §3.
+
+## 2026-11-03 morning: cleanup (your instructions at ~06:40 IST)
+
+### D163. The 7B's random-weights copy is deleted; the queue's PID and lock files are ignored (2026-11-03, ~06:45 IST)
+- **Deleted:** `results/followup/scale/7b/random_init_model/`, D160's random-weights copy of the 7B (15.2 GB of bf16
+  shards, gitignored).
+  - **Why it is safe:** its only use was the `hidden_random` readout, which is done. The hidden states it produced
+    (`hidden_random/`, local) and the probe values (`probe_hidden_random.json`, committed) stay, so the analysis
+    re-runs without it.
+  - **To rebuild it:** run `python -m physcal.eval.followup_scale random_init --model 7b` (CPU, ~10 min, seed 0 from
+    `configs/followup.yaml`). Check the rebuild against content hash `773402619421ef14`, recorded in the committed
+    `hidden_random_info.json`. The queue rebuilds it by itself if a `hidden_random` stage needs it.
+  - **Kept:** the 1.5B's copy (2.9 GB). Deleting it was not asked for.
+- **Free space after:**
+  - **Windows, MLStorage:** unchanged at 21.6 GiB. Deleting inside WSL does not shrink the disk image, and the queue's
+    disk guard reads only this figure.
+  - **Inside the image:** ext4 use fell from 79.9 to 65.7 GiB, so 14.2 GiB is free for reuse. New WSL writes can grow
+    about 16.6 GiB before the 82.3 GiB image grows again.
+  - **To return the space to Windows:** compact the image (`wsl --shutdown`, then `Optimize-VHD` or diskpart's
+    `compact vdisk`). Not done: it stops every WSL process.
+- **The leftovers:** the follow-up Kaggle chain's `*.pid` and `queue.lock` are now gitignored, like every other queue's.
+  - None of the PIDs is alive, and the lock is free.
+- **One stale waiter was stopped:**
+  - It waited for D161's X2 refit (started 2026-11-02 ~14:45 IST).
+  - It never exited, because its `pgrep -f` pattern matched its own command line. It used no GPU and wrote nothing.
+- **No GPU process is held,** and no queue lock is held.

@@ -375,7 +375,7 @@ only in the weights.
   - **X2's probe refit** was refused once by its exact gate: D160 had misread X2's thread settings. The one retry
     under X2's documented settings reproduced it exactly (D161).
   - **The two readout chains ran one after the other,** never at once, with 38 temperature pauses in all.
-  - **The 7B's random-weights copy** (15 GB, gitignored) can be deleted; it is regenerable from its seed.
+  - **The 7B's random-weights copy** (15 GB, gitignored) was deleted on 2026-11-03 (D163); it is regenerable from its seed.
 - **Everything here is exploratory:**
   - item 1 re-reads one model's samples;
   - item 2 re-reads one model's logs;
