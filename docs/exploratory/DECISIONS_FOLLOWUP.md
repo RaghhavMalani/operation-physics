@@ -858,3 +858,49 @@ appended here.
       The rule as written did not separate a sign change around 0 from a real one; that is recorded here, and the
       rule is not edited.
   - **The numbers and the write-up:** `docs/exploratory/followup_feasibility.md` §3, "The confound audit (D164)".
+
+## 2026-11-03 midday: the round-6 review (your instructions at ~10:30 IST)
+
+### D165. Round-6 review synthesis: R6-1 to R6-6 recorded (your decision, 2026-11-03; `REVIEW_SYNTHESIS_ROUND6_2026-11-03.md`, committed `e649ac6` before this entry)
+- **Where both reviewers (Gemini, ChatGPT) agree:**
+  1. Paper #1 goes to arXiv around 20 November. Its experiments stay frozen (D148).
+  2. **"Fine-tuning removed the model's knowledge of its errors" is not supported.** The 0.758 → 0.539 probe gap may
+     mean the information was:
+     - (i) lost;
+     - (ii) displaced to other tokens or layers;
+     - (iii) present but not linearly readable;
+     - (iv) never internal, only inferable from the text.
+     The random-weights probe (0.66–0.67 on native traces) makes (iv) a serious candidate.
+  3. **No scale-law claim from two models.** The wording is: "we observed no improvement in this probe metric between
+     the two native sizes under these conditions".
+  4. **Novelty:** hidden-vs-expressed knowledge, including pair ranking, is prior art (Gekhman et al., COLM 2025;
+     Orgad et al., ICLR 2025). Paper #2's contribution must be the controlled effect of post-training, format and
+     size on accessible answer-specific information, and whether it transfers into cheap verbalized confidence.
+- **R6-1, paper #1's wording:** a paper D-entry, D166 in DECISIONS.md. It is the one exception to D151's rule that
+  nothing from this track enters `paper/`: a single exploratory paragraph. FINDINGS.md and the paper's tables are
+  unchanged.
+- **R6-2, the zero-GPU audit:** this is D164 (`7872f87`), done. Against R6-2's list:
+  - truncated samples dropped: yes, 1(a) and 1(b);
+  - every row on the 599 problems mixed for both models: yes, item 2;
+  - stratified by pass count: yes, with a standardized difference;
+  - the A5-style text classifier and probe − text, paired: yes;
+  - length-matched: yes;
+  - **per-problem weighting:** D164's metric is already per-problem weighted (X2's: each problem weighs the same,
+    whatever its number of pairs). D164 does not show the contrast with pair weighting. **It is added now, before it
+    is computed:**
+    - **the quantity:** the pair-weighted pairwise accuracy, where each pair weighs the same: Σ_p n_p · pa_p / Σ_p n_p;
+    - **where:** per readout and model, on D162's kept sets and on the 599;
+    - **the difference:** 7B − native, unpaired on the full sets and paired on the 599;
+    - **the CI:** a bootstrap over problems, with the ratio recomputed in each replicate (B = 10,000, seed 0);
+    - **the reading:** "the weighting matters" if, between the two weightings, 7B − native for P(yes) or the probe,
+      or the probe's net scale effect, changes sign or CI side.
+- **R6-3, R6-4, R6-5:** pre-registered together in D167, before any of their code is built.
+- **R6-6, later, only after R6-2 to R6-5 have results:**
+  - probe-to-verbal-confidence distillation, against direct supervised confidence and no training (pairwise accuracy,
+    Brier, selective risk, held-out templates);
+  - then one replication on a different model family;
+  - paper #2's framing (representation change vs elicitation) is decided after R6-2 to R6-5.
+  - Nothing of R6-6 is built now.
+- **References to verify before citing** (the synthesis's list): Gekhman et al. (2503.15299), Orgad et al.
+  (2410.02707), Ni et al. ReProbe (2511.06209), Kossen et al. (2406.15927), Lin, Hilton & Evans (2205.14334),
+  Kadavath et al. (2207.05221), Tam et al. (2408.02442), Levinstein & Herrmann (2307.02477), Ni et al. (2408.09773).

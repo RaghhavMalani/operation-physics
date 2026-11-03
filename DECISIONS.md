@@ -5593,3 +5593,36 @@ Your decisions on MORNING.md (2026-10-26) §6, as written:
 ## The follow-up project (D151 on)
 
 Its decisions are in `docs/exploratory/DECISIONS_FOLLOWUP.md` (D156): exploratory, not the paper.
+
+## After the round-6 review (2026-11-03)
+
+The follow-up log holds D151–D165 (the numbering is shared, D156), so the next paper entry is D166.
+
+### D166. R6-1: paper #1's within-problem claim is scoped to the evaluated checkpoint and format, and one exploratory paragraph reports the post-freeze comparison (your decision, 2026-11-03; `REVIEW_SYNTHESIS_ROUND6_2026-11-03.md`; the follow-up log's D165)
+- **The wording replaces the broad epistemic claim** ("no single-answer readout tells a right answer from a wrong
+  one"), verbatim:
+  > On the fine-tuned Qwen2.5-Math-1.5B model and its terse response format, the tested single-completion uncertainty
+  > signals provide little within-problem discrimination between correct and incorrect answers; sample agreement
+  > provides stronger discrimination. This is specific to the evaluated checkpoint and elicitation conditions and does
+  > not establish that small language models generally lack accessible answer-correctness information.
+- **Where it applies:**
+  - `docs/paper_outline.md`: §1's second finding, §5's title and claim, §7's "why sampling works", and the
+    claims-to-avoid table;
+  - `paper/sections/results.tex`: Act 2's title and its opening claim;
+  - `paper/sections/discussion.tex`: one paragraph in Limitations.
+- **The exploratory paragraph (Limitations), explicitly post-freeze:**
+  - a later comparison found stronger hidden-state probe discrimination in the untrained ("native") 1.5B on its own
+    chain-of-thought answers than in the fine-tuned model (0.758 vs 0.539);
+  - a random-weights probe on the same text largely matches it (0.673);
+  - it found a larger gain in the model's own verbalized verdict from the native 1.5B to a native 7B;
+  - the conditions are not matched (format, decoding, sampler, problems), so it motivates a separate investigation.
+- **Its numbers** come from `results/followup/scale/results.json` (committed) through the build's macros, like
+  every other number. The 7B comparison itself gets no number in paper #1: it is reserved for paper #2.
+- **An exception to D151,** which kept every follow-up result out of `paper/`: this one paragraph only. FINDINGS.md
+  and the paper's tables do not change.
+- **R5-6 part J** is reported with the clamped comparator (+0.831) beside J1. The rank-flip subgroup (D-pos-v2
+  +1.123 against the clamped +0.357) rests on 43 pairs and is descriptive, outside the Holm family (#39).
+- **The Llama pilot** stays an exploratory, one-seed replication whose pre-registered go rule returned NO-GO (#38,
+  D146).
+- **Unchanged:** D148's experiment freeze. The log's entry count in `protocol.tex` (a generated value) rises to 151.
+
