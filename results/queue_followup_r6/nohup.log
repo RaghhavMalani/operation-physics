@@ -123,3 +123,10 @@
 [02:47:20] start r6_yes_bank_1.5b_7b (timeout 22362s): uv run python -m physcal.eval.followup_r6 yes --set bank_1.5b --reader 7b --cap 6.9
 [03:58:22] end r6_yes_bank_1.5b_7b: exit 0
 [03:58:22] r6_yes_bank_1.5b_7b: 11 temperature pauses, 332s paused of 4264s; tonight so far 46 pauses, 1386s of 15161s (D143)
+[03:58:26] commit 'Follow-up (D167, exploratory): R6 yes, bank_1.5b read by 7b': pushed
+[03:58:44] host VRAM readings (MiB): 508 508 508 508 508 508 508 508
+[03:58:45] GPU at 63.90C, memory.used 508 MiB
+[03:58:46] disk: 21 GiB free on MLStorage
+[03:58:46] start r6_yes_truncated_7b (timeout 18075s): uv run python -m physcal.eval.followup_r6 yes --set truncated --reader 7b --cap 7.0
+[04:17:27] end r6_yes_truncated_7b: exit 0
+[04:17:27] r6_yes_truncated_7b: 4 temperature pauses, 120s paused of 1122s; tonight so far 50 pauses, 1506s of 16283s (D143)
