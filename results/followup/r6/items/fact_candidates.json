@@ -1,0 +1,3232 @@
+[
+{
+"correct": true,
+"key": [
+"dynamics",
+3,
+30000006
+],
+"native_id": "1.5b|dynamics|3|30000006|1",
+"terse_id": "sft|dynamics|3|30000006|0"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+3,
+30000006
+],
+"native_id": "1.5b|dynamics|3|30000006|0",
+"terse_id": "sft|dynamics|3|30000006|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000009
+],
+"native_id": "1.5b|energy|2|30000009|1",
+"terse_id": "sft|energy|2|30000009|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000009
+],
+"native_id": "1.5b|energy|2|30000009|3",
+"terse_id": "sft|energy|2|30000009|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000011
+],
+"native_id": "1.5b|energy|4|30000011|1",
+"terse_id": "sft|energy|4|30000011|2"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000011
+],
+"native_id": "1.5b|energy|4|30000011|6",
+"terse_id": "sft|energy|4|30000011|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000014
+],
+"native_id": "1.5b|kinematics|3|30000014|3",
+"terse_id": "sft|kinematics|3|30000014|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000014
+],
+"native_id": "1.5b|kinematics|3|30000014|7",
+"terse_id": "sft|kinematics|3|30000014|7"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000014
+],
+"native_id": "1.5b|kinematics|3|30000014|2",
+"terse_id": "sft|kinematics|3|30000014|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000021
+],
+"native_id": "1.5b|energy|2|30000021|5",
+"terse_id": "sft|energy|2|30000021|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000021
+],
+"native_id": "1.5b|energy|2|30000021|6",
+"terse_id": "sft|energy|2|30000021|6"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000021
+],
+"native_id": "1.5b|energy|2|30000021|1",
+"terse_id": "sft|energy|2|30000021|0"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000021
+],
+"native_id": "1.5b|energy|2|30000021|7",
+"terse_id": "sft|energy|2|30000021|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000024
+],
+"native_id": "1.5b|kinematics|1|30000024|3",
+"terse_id": "sft|kinematics|1|30000024|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000024
+],
+"native_id": "1.5b|kinematics|1|30000024|4",
+"terse_id": "sft|kinematics|1|30000024|4"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000024
+],
+"native_id": "1.5b|kinematics|1|30000024|5",
+"terse_id": "sft|kinematics|1|30000024|7"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+1,
+30000024
+],
+"native_id": "1.5b|kinematics|1|30000024|1",
+"terse_id": "sft|kinematics|1|30000024|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000046
+],
+"native_id": "1.5b|energy|3|30000046|0",
+"terse_id": "sft|energy|3|30000046|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000046
+],
+"native_id": "1.5b|energy|3|30000046|1",
+"terse_id": "sft|energy|3|30000046|5"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000046
+],
+"native_id": "1.5b|energy|3|30000046|2",
+"terse_id": "sft|energy|3|30000046|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000057
+],
+"native_id": "1.5b|energy|2|30000057|1",
+"terse_id": "sft|energy|2|30000057|3"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000057
+],
+"native_id": "1.5b|energy|2|30000057|3",
+"terse_id": "sft|energy|2|30000057|5"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000065
+],
+"native_id": "1.5b|dynamics|2|30000065|2",
+"terse_id": "sft|dynamics|2|30000065|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000065
+],
+"native_id": "1.5b|dynamics|2|30000065|3",
+"terse_id": "sft|dynamics|2|30000065|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000065
+],
+"native_id": "1.5b|dynamics|2|30000065|4",
+"terse_id": "sft|dynamics|2|30000065|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000065
+],
+"native_id": "1.5b|dynamics|2|30000065|6",
+"terse_id": "sft|dynamics|2|30000065|3"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30000065
+],
+"native_id": "1.5b|dynamics|2|30000065|1",
+"terse_id": "sft|dynamics|2|30000065|7"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000082
+],
+"native_id": "1.5b|energy|3|30000082|0",
+"terse_id": "sft|energy|3|30000082|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000082
+],
+"native_id": "1.5b|energy|3|30000082|3",
+"terse_id": "sft|energy|3|30000082|6"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000082
+],
+"native_id": "1.5b|energy|3|30000082|2",
+"terse_id": "sft|energy|3|30000082|0"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000082
+],
+"native_id": "1.5b|energy|3|30000082|7",
+"terse_id": "sft|energy|3|30000082|5"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000098
+],
+"native_id": "1.5b|kinematics|3|30000098|1",
+"terse_id": "sft|kinematics|3|30000098|4"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000098
+],
+"native_id": "1.5b|kinematics|3|30000098|3",
+"terse_id": "sft|kinematics|3|30000098|7"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000098
+],
+"native_id": "1.5b|kinematics|3|30000098|5",
+"terse_id": "sft|kinematics|3|30000098|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+4,
+30000103
+],
+"native_id": "1.5b|dynamics|4|30000103|4",
+"terse_id": "sft|dynamics|4|30000103|7"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+4,
+30000103
+],
+"native_id": "1.5b|dynamics|4|30000103|1",
+"terse_id": "sft|dynamics|4|30000103|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000105
+],
+"native_id": "1.5b|energy|2|30000105|1",
+"terse_id": "sft|energy|2|30000105|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000105
+],
+"native_id": "1.5b|energy|2|30000105|5",
+"terse_id": "sft|energy|2|30000105|3"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000105
+],
+"native_id": "1.5b|energy|2|30000105|2",
+"terse_id": "sft|energy|2|30000105|5"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000109
+],
+"native_id": "1.5b|kinematics|2|30000109|0",
+"terse_id": "sft|kinematics|2|30000109|4"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000109
+],
+"native_id": "1.5b|kinematics|2|30000109|2",
+"terse_id": "sft|kinematics|2|30000109|6"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000109
+],
+"native_id": "1.5b|kinematics|2|30000109|6",
+"terse_id": "sft|kinematics|2|30000109|7"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000137
+],
+"native_id": "1.5b|dynamics|2|30000137|1",
+"terse_id": "sft|dynamics|2|30000137|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000137
+],
+"native_id": "1.5b|dynamics|2|30000137|6",
+"terse_id": "sft|dynamics|2|30000137|4"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30000137
+],
+"native_id": "1.5b|dynamics|2|30000137|3",
+"terse_id": "sft|dynamics|2|30000137|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000141
+],
+"native_id": "1.5b|energy|2|30000141|0",
+"terse_id": "sft|energy|2|30000141|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000141
+],
+"native_id": "1.5b|energy|2|30000141|1",
+"terse_id": "sft|energy|2|30000141|6"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000141
+],
+"native_id": "1.5b|energy|2|30000141|3",
+"terse_id": "sft|energy|2|30000141|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000143
+],
+"native_id": "1.5b|energy|4|30000143|1",
+"terse_id": "sft|energy|4|30000143|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000143
+],
+"native_id": "1.5b|energy|4|30000143|3",
+"terse_id": "sft|energy|4|30000143|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000143
+],
+"native_id": "1.5b|energy|4|30000143|4",
+"terse_id": "sft|energy|4|30000143|5"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000143
+],
+"native_id": "1.5b|energy|4|30000143|6",
+"terse_id": "sft|energy|4|30000143|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000143
+],
+"native_id": "1.5b|energy|4|30000143|0",
+"terse_id": "sft|energy|4|30000143|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000156
+],
+"native_id": "1.5b|kinematics|1|30000156|1",
+"terse_id": "sft|kinematics|1|30000156|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000156
+],
+"native_id": "1.5b|kinematics|1|30000156|3",
+"terse_id": "sft|kinematics|1|30000156|6"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+1,
+30000156
+],
+"native_id": "1.5b|kinematics|1|30000156|4",
+"terse_id": "sft|kinematics|1|30000156|0"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+1,
+30000156
+],
+"native_id": "1.5b|kinematics|1|30000156|7",
+"terse_id": "sft|kinematics|1|30000156|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000165
+],
+"native_id": "1.5b|energy|2|30000165|1",
+"terse_id": "sft|energy|2|30000165|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000165
+],
+"native_id": "1.5b|energy|2|30000165|2",
+"terse_id": "sft|energy|2|30000165|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000165
+],
+"native_id": "1.5b|energy|2|30000165|6",
+"terse_id": "sft|energy|2|30000165|5"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000167
+],
+"native_id": "1.5b|energy|4|30000167|1",
+"terse_id": "sft|energy|4|30000167|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000167
+],
+"native_id": "1.5b|energy|4|30000167|0",
+"terse_id": "sft|energy|4|30000167|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000172
+],
+"native_id": "1.5b|dynamics|1|30000172|0",
+"terse_id": "sft|dynamics|1|30000172|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000172
+],
+"native_id": "1.5b|dynamics|1|30000172|1",
+"terse_id": "sft|dynamics|1|30000172|2"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30000172
+],
+"native_id": "1.5b|dynamics|1|30000172|3",
+"terse_id": "sft|dynamics|1|30000172|0"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30000172
+],
+"native_id": "1.5b|dynamics|1|30000172|4",
+"terse_id": "sft|dynamics|1|30000172|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000178
+],
+"native_id": "1.5b|energy|3|30000178|0",
+"terse_id": "sft|energy|3|30000178|1"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000178
+],
+"native_id": "1.5b|energy|3|30000178|2",
+"terse_id": "sft|energy|3|30000178|0"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000178
+],
+"native_id": "1.5b|energy|3|30000178|4",
+"terse_id": "sft|energy|3|30000178|4"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000178
+],
+"native_id": "1.5b|energy|3|30000178|5",
+"terse_id": "sft|energy|3|30000178|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000182
+],
+"native_id": "1.5b|kinematics|3|30000182|2",
+"terse_id": "sft|kinematics|3|30000182|4"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000182
+],
+"native_id": "1.5b|kinematics|3|30000182|1",
+"terse_id": "sft|kinematics|3|30000182|6"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000189
+],
+"native_id": "1.5b|energy|2|30000189|4",
+"terse_id": "sft|energy|2|30000189|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000189
+],
+"native_id": "1.5b|energy|2|30000189|6",
+"terse_id": "sft|energy|2|30000189|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000189
+],
+"native_id": "1.5b|energy|2|30000189|7",
+"terse_id": "sft|energy|2|30000189|2"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000189
+],
+"native_id": "1.5b|energy|2|30000189|5",
+"terse_id": "sft|energy|2|30000189|5"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000191
+],
+"native_id": "1.5b|energy|4|30000191|4",
+"terse_id": "sft|energy|4|30000191|2"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000191
+],
+"native_id": "1.5b|energy|4|30000191|2",
+"terse_id": "sft|energy|4|30000191|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000194
+],
+"native_id": "1.5b|kinematics|3|30000194|2",
+"terse_id": "sft|kinematics|3|30000194|2"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000194
+],
+"native_id": "1.5b|kinematics|3|30000194|1",
+"terse_id": "sft|kinematics|3|30000194|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+3,
+30000258
+],
+"native_id": "1.5b|dynamics|3|30000258|3",
+"terse_id": "sft|dynamics|3|30000258|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+3,
+30000258
+],
+"native_id": "1.5b|dynamics|3|30000258|7",
+"terse_id": "sft|dynamics|3|30000258|1"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+3,
+30000258
+],
+"native_id": "1.5b|dynamics|3|30000258|5",
+"terse_id": "sft|dynamics|3|30000258|5"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000274
+],
+"native_id": "1.5b|energy|3|30000274|1",
+"terse_id": "sft|energy|3|30000274|5"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000274
+],
+"native_id": "1.5b|energy|3|30000274|0",
+"terse_id": "sft|energy|3|30000274|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000274
+],
+"native_id": "1.5b|energy|3|30000274|4",
+"terse_id": "sft|energy|3|30000274|1"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000274
+],
+"native_id": "1.5b|energy|3|30000274|5",
+"terse_id": "sft|energy|3|30000274|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000288
+],
+"native_id": "1.5b|kinematics|1|30000288|0",
+"terse_id": "sft|kinematics|1|30000288|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000288
+],
+"native_id": "1.5b|kinematics|1|30000288|1",
+"terse_id": "sft|kinematics|1|30000288|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000288
+],
+"native_id": "1.5b|kinematics|1|30000288|4",
+"terse_id": "sft|kinematics|1|30000288|2"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000288
+],
+"native_id": "1.5b|kinematics|1|30000288|5",
+"terse_id": "sft|kinematics|1|30000288|4"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000288
+],
+"native_id": "1.5b|kinematics|1|30000288|7",
+"terse_id": "sft|kinematics|1|30000288|6"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+1,
+30000288
+],
+"native_id": "1.5b|kinematics|1|30000288|3",
+"terse_id": "sft|kinematics|1|30000288|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000337
+],
+"native_id": "1.5b|kinematics|2|30000337|1",
+"terse_id": "sft|kinematics|2|30000337|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000337
+],
+"native_id": "1.5b|kinematics|2|30000337|2",
+"terse_id": "sft|kinematics|2|30000337|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000337
+],
+"native_id": "1.5b|kinematics|2|30000337|3",
+"terse_id": "sft|kinematics|2|30000337|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000337
+],
+"native_id": "1.5b|kinematics|2|30000337|5",
+"terse_id": "sft|kinematics|2|30000337|6"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000337
+],
+"native_id": "1.5b|kinematics|2|30000337|7",
+"terse_id": "sft|kinematics|2|30000337|5"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30000339
+],
+"native_id": "1.5b|kinematics|4|30000339|3",
+"terse_id": "sft|kinematics|4|30000339|1"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+4,
+30000339
+],
+"native_id": "1.5b|kinematics|4|30000339|6",
+"terse_id": "sft|kinematics|4|30000339|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000352
+],
+"native_id": "1.5b|dynamics|1|30000352|0",
+"terse_id": "sft|dynamics|1|30000352|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000352
+],
+"native_id": "1.5b|dynamics|1|30000352|2",
+"terse_id": "sft|dynamics|1|30000352|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000352
+],
+"native_id": "1.5b|dynamics|1|30000352|4",
+"terse_id": "sft|dynamics|1|30000352|4"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000352
+],
+"native_id": "1.5b|dynamics|1|30000352|5",
+"terse_id": "sft|dynamics|1|30000352|5"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000352
+],
+"native_id": "1.5b|dynamics|1|30000352|6",
+"terse_id": "sft|dynamics|1|30000352|6"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30000352
+],
+"native_id": "1.5b|dynamics|1|30000352|1",
+"terse_id": "sft|dynamics|1|30000352|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000376
+],
+"native_id": "1.5b|dynamics|1|30000376|1",
+"terse_id": "sft|dynamics|1|30000376|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000376
+],
+"native_id": "1.5b|dynamics|1|30000376|3",
+"terse_id": "sft|dynamics|1|30000376|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000376
+],
+"native_id": "1.5b|dynamics|1|30000376|4",
+"terse_id": "sft|dynamics|1|30000376|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000376
+],
+"native_id": "1.5b|dynamics|1|30000376|5",
+"terse_id": "sft|dynamics|1|30000376|5"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000376
+],
+"native_id": "1.5b|dynamics|1|30000376|7",
+"terse_id": "sft|dynamics|1|30000376|7"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30000376
+],
+"native_id": "1.5b|dynamics|1|30000376|6",
+"terse_id": "sft|dynamics|1|30000376|6"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000394
+],
+"native_id": "1.5b|energy|3|30000394|3",
+"terse_id": "sft|energy|3|30000394|4"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000394
+],
+"native_id": "1.5b|energy|3|30000394|1",
+"terse_id": "sft|energy|3|30000394|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000404
+],
+"native_id": "1.5b|energy|1|30000404|0",
+"terse_id": "sft|energy|1|30000404|3"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30000404
+],
+"native_id": "1.5b|energy|1|30000404|1",
+"terse_id": "sft|energy|1|30000404|0"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30000404
+],
+"native_id": "1.5b|energy|1|30000404|2",
+"terse_id": "sft|energy|1|30000404|4"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30000404
+],
+"native_id": "1.5b|energy|1|30000404|4",
+"terse_id": "sft|energy|1|30000404|6"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000416
+],
+"native_id": "1.5b|energy|1|30000416|0",
+"terse_id": "sft|energy|1|30000416|2"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30000416
+],
+"native_id": "1.5b|energy|1|30000416|5",
+"terse_id": "sft|energy|1|30000416|6"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+4,
+30000439
+],
+"native_id": "1.5b|dynamics|4|30000439|5",
+"terse_id": "sft|dynamics|4|30000439|0"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+4,
+30000439
+],
+"native_id": "1.5b|dynamics|4|30000439|6",
+"terse_id": "sft|dynamics|4|30000439|5"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000442
+],
+"native_id": "1.5b|energy|3|30000442|1",
+"terse_id": "sft|energy|3|30000442|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000442
+],
+"native_id": "1.5b|energy|3|30000442|3",
+"terse_id": "sft|energy|3|30000442|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000442
+],
+"native_id": "1.5b|energy|3|30000442|0",
+"terse_id": "sft|energy|3|30000442|0"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000442
+],
+"native_id": "1.5b|energy|3|30000442|4",
+"terse_id": "sft|energy|3|30000442|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30000447
+],
+"native_id": "1.5b|kinematics|4|30000447|0",
+"terse_id": "sft|kinematics|4|30000447|2"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+4,
+30000447
+],
+"native_id": "1.5b|kinematics|4|30000447|6",
+"terse_id": "sft|kinematics|4|30000447|7"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+3,
+30000450
+],
+"native_id": "1.5b|dynamics|3|30000450|1",
+"terse_id": "sft|dynamics|3|30000450|0"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+3,
+30000450
+],
+"native_id": "1.5b|dynamics|3|30000450|3",
+"terse_id": "sft|dynamics|3|30000450|1"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+3,
+30000450
+],
+"native_id": "1.5b|dynamics|3|30000450|6",
+"terse_id": "sft|dynamics|3|30000450|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+4,
+30000487
+],
+"native_id": "1.5b|dynamics|4|30000487|0",
+"terse_id": "sft|dynamics|4|30000487|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+4,
+30000487
+],
+"native_id": "1.5b|dynamics|4|30000487|1",
+"terse_id": "sft|dynamics|4|30000487|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+4,
+30000487
+],
+"native_id": "1.5b|dynamics|4|30000487|2",
+"terse_id": "sft|dynamics|4|30000487|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+4,
+30000487
+],
+"native_id": "1.5b|dynamics|4|30000487|7",
+"terse_id": "sft|dynamics|4|30000487|4"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+4,
+30000487
+],
+"native_id": "1.5b|dynamics|4|30000487|3",
+"terse_id": "sft|dynamics|4|30000487|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+3,
+30000498
+],
+"native_id": "1.5b|dynamics|3|30000498|0",
+"terse_id": "sft|dynamics|3|30000498|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+3,
+30000498
+],
+"native_id": "1.5b|dynamics|3|30000498|2",
+"terse_id": "sft|dynamics|3|30000498|4"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+3,
+30000498
+],
+"native_id": "1.5b|dynamics|3|30000498|3",
+"terse_id": "sft|dynamics|3|30000498|1"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+3,
+30000498
+],
+"native_id": "1.5b|dynamics|3|30000498|6",
+"terse_id": "sft|dynamics|3|30000498|5"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+3,
+30000498
+],
+"native_id": "1.5b|dynamics|3|30000498|7",
+"terse_id": "sft|dynamics|3|30000498|6"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000503
+],
+"native_id": "1.5b|energy|4|30000503|1",
+"terse_id": "sft|energy|4|30000503|4"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000503
+],
+"native_id": "1.5b|energy|4|30000503|2",
+"terse_id": "sft|energy|4|30000503|5"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000503
+],
+"native_id": "1.5b|energy|4|30000503|6",
+"terse_id": "sft|energy|4|30000503|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000518
+],
+"native_id": "1.5b|kinematics|3|30000518|3",
+"terse_id": "sft|kinematics|3|30000518|2"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000518
+],
+"native_id": "1.5b|kinematics|3|30000518|4",
+"terse_id": "sft|kinematics|3|30000518|3"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000518
+],
+"native_id": "1.5b|kinematics|3|30000518|1",
+"terse_id": "sft|kinematics|3|30000518|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000524
+],
+"native_id": "1.5b|energy|1|30000524|7",
+"terse_id": "sft|energy|1|30000524|5"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30000524
+],
+"native_id": "1.5b|energy|1|30000524|3",
+"terse_id": "sft|energy|1|30000524|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000550
+],
+"native_id": "1.5b|energy|3|30000550|3",
+"terse_id": "sft|energy|3|30000550|4"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000550
+],
+"native_id": "1.5b|energy|3|30000550|0",
+"terse_id": "sft|energy|3|30000550|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000550
+],
+"native_id": "1.5b|energy|3|30000550|1",
+"terse_id": "sft|energy|3|30000550|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000554
+],
+"native_id": "1.5b|kinematics|3|30000554|3",
+"terse_id": "sft|kinematics|3|30000554|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000554
+],
+"native_id": "1.5b|kinematics|3|30000554|4",
+"terse_id": "sft|kinematics|3|30000554|6"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000554
+],
+"native_id": "1.5b|kinematics|3|30000554|5",
+"terse_id": "sft|kinematics|3|30000554|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000566
+],
+"native_id": "1.5b|kinematics|3|30000566|0",
+"terse_id": "sft|kinematics|3|30000566|2"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000566
+],
+"native_id": "1.5b|kinematics|3|30000566|1",
+"terse_id": "sft|kinematics|3|30000566|5"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000577
+],
+"native_id": "1.5b|kinematics|2|30000577|0",
+"terse_id": "sft|kinematics|2|30000577|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000577
+],
+"native_id": "1.5b|kinematics|2|30000577|2",
+"terse_id": "sft|kinematics|2|30000577|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000577
+],
+"native_id": "1.5b|kinematics|2|30000577|4",
+"terse_id": "sft|kinematics|2|30000577|2"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000577
+],
+"native_id": "1.5b|kinematics|2|30000577|6",
+"terse_id": "sft|kinematics|2|30000577|5"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000577
+],
+"native_id": "1.5b|kinematics|2|30000577|1",
+"terse_id": "sft|kinematics|2|30000577|6"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000588
+],
+"native_id": "1.5b|kinematics|1|30000588|1",
+"terse_id": "sft|kinematics|1|30000588|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+1,
+30000588
+],
+"native_id": "1.5b|kinematics|1|30000588|4",
+"terse_id": "sft|kinematics|1|30000588|2"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+1,
+30000588
+],
+"native_id": "1.5b|kinematics|1|30000588|0",
+"terse_id": "sft|kinematics|1|30000588|3"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+1,
+30000588
+],
+"native_id": "1.5b|kinematics|1|30000588|2",
+"terse_id": "sft|kinematics|1|30000588|5"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+1,
+30000588
+],
+"native_id": "1.5b|kinematics|1|30000588|3",
+"terse_id": "sft|kinematics|1|30000588|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000608
+],
+"native_id": "1.5b|energy|1|30000608|3",
+"terse_id": "sft|energy|1|30000608|0"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30000608
+],
+"native_id": "1.5b|energy|1|30000608|1",
+"terse_id": "sft|energy|1|30000608|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000614
+],
+"native_id": "1.5b|kinematics|3|30000614|0",
+"terse_id": "sft|kinematics|3|30000614|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000614
+],
+"native_id": "1.5b|kinematics|3|30000614|1",
+"terse_id": "sft|kinematics|3|30000614|4"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000614
+],
+"native_id": "1.5b|kinematics|3|30000614|2",
+"terse_id": "sft|kinematics|3|30000614|6"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000614
+],
+"native_id": "1.5b|kinematics|3|30000614|4",
+"terse_id": "sft|kinematics|3|30000614|1"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000614
+],
+"native_id": "1.5b|kinematics|3|30000614|7",
+"terse_id": "sft|kinematics|3|30000614|7"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000616
+],
+"native_id": "1.5b|dynamics|1|30000616|2",
+"terse_id": "sft|dynamics|1|30000616|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000616
+],
+"native_id": "1.5b|dynamics|1|30000616|3",
+"terse_id": "sft|dynamics|1|30000616|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000616
+],
+"native_id": "1.5b|dynamics|1|30000616|4",
+"terse_id": "sft|dynamics|1|30000616|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000616
+],
+"native_id": "1.5b|dynamics|1|30000616|5",
+"terse_id": "sft|dynamics|1|30000616|5"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000616
+],
+"native_id": "1.5b|dynamics|1|30000616|6",
+"terse_id": "sft|dynamics|1|30000616|6"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30000616
+],
+"native_id": "1.5b|dynamics|1|30000616|0",
+"terse_id": "sft|dynamics|1|30000616|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000617
+],
+"native_id": "1.5b|dynamics|2|30000617|3",
+"terse_id": "sft|dynamics|2|30000617|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000617
+],
+"native_id": "1.5b|dynamics|2|30000617|5",
+"terse_id": "sft|dynamics|2|30000617|5"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30000617
+],
+"native_id": "1.5b|dynamics|2|30000617|0",
+"terse_id": "sft|dynamics|2|30000617|1"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30000617
+],
+"native_id": "1.5b|dynamics|2|30000617|4",
+"terse_id": "sft|dynamics|2|30000617|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000632
+],
+"native_id": "1.5b|energy|1|30000632|1",
+"terse_id": "sft|energy|1|30000632|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000632
+],
+"native_id": "1.5b|energy|1|30000632|2",
+"terse_id": "sft|energy|1|30000632|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000632
+],
+"native_id": "1.5b|energy|1|30000632|4",
+"terse_id": "sft|energy|1|30000632|4"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30000632
+],
+"native_id": "1.5b|energy|1|30000632|7",
+"terse_id": "sft|energy|1|30000632|5"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000638
+],
+"native_id": "1.5b|kinematics|3|30000638|0",
+"terse_id": "sft|kinematics|3|30000638|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000638
+],
+"native_id": "1.5b|kinematics|3|30000638|2",
+"terse_id": "sft|kinematics|3|30000638|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000638
+],
+"native_id": "1.5b|kinematics|3|30000638|4",
+"terse_id": "sft|kinematics|3|30000638|5"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000638
+],
+"native_id": "1.5b|kinematics|3|30000638|5",
+"terse_id": "sft|kinematics|3|30000638|7"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000638
+],
+"native_id": "1.5b|kinematics|3|30000638|6",
+"terse_id": "sft|kinematics|3|30000638|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000664
+],
+"native_id": "1.5b|dynamics|1|30000664|0",
+"terse_id": "sft|dynamics|1|30000664|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000664
+],
+"native_id": "1.5b|dynamics|1|30000664|2",
+"terse_id": "sft|dynamics|1|30000664|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000664
+],
+"native_id": "1.5b|dynamics|1|30000664|3",
+"terse_id": "sft|dynamics|1|30000664|4"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000664
+],
+"native_id": "1.5b|dynamics|1|30000664|4",
+"terse_id": "sft|dynamics|1|30000664|6"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30000664
+],
+"native_id": "1.5b|dynamics|1|30000664|1",
+"terse_id": "sft|dynamics|1|30000664|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+3,
+30000702
+],
+"native_id": "1.5b|dynamics|3|30000702|7",
+"terse_id": "sft|dynamics|3|30000702|0"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+3,
+30000702
+],
+"native_id": "1.5b|dynamics|3|30000702|5",
+"terse_id": "sft|dynamics|3|30000702|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30000723
+],
+"native_id": "1.5b|kinematics|4|30000723|0",
+"terse_id": "sft|kinematics|4|30000723|6"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+4,
+30000723
+],
+"native_id": "1.5b|kinematics|4|30000723|7",
+"terse_id": "sft|kinematics|4|30000723|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+4,
+30000739
+],
+"native_id": "1.5b|dynamics|4|30000739|5",
+"terse_id": "sft|dynamics|4|30000739|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+4,
+30000739
+],
+"native_id": "1.5b|dynamics|4|30000739|6",
+"terse_id": "sft|dynamics|4|30000739|2"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+4,
+30000739
+],
+"native_id": "1.5b|dynamics|4|30000739|4",
+"terse_id": "sft|dynamics|4|30000739|4"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000782
+],
+"native_id": "1.5b|kinematics|3|30000782|0",
+"terse_id": "sft|kinematics|3|30000782|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000782
+],
+"native_id": "1.5b|kinematics|3|30000782|1",
+"terse_id": "sft|kinematics|3|30000782|2"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000782
+],
+"native_id": "1.5b|kinematics|3|30000782|2",
+"terse_id": "sft|kinematics|3|30000782|4"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000782
+],
+"native_id": "1.5b|kinematics|3|30000782|3",
+"terse_id": "sft|kinematics|3|30000782|6"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+3,
+30000782
+],
+"native_id": "1.5b|kinematics|3|30000782|5",
+"terse_id": "sft|kinematics|3|30000782|7"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+3,
+30000782
+],
+"native_id": "1.5b|kinematics|3|30000782|4",
+"terse_id": "sft|kinematics|3|30000782|5"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000800
+],
+"native_id": "1.5b|energy|1|30000800|1",
+"terse_id": "sft|energy|1|30000800|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30000800
+],
+"native_id": "1.5b|energy|1|30000800|2",
+"terse_id": "sft|energy|1|30000800|6"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30000800
+],
+"native_id": "1.5b|energy|1|30000800|5",
+"terse_id": "sft|energy|1|30000800|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000801
+],
+"native_id": "1.5b|energy|2|30000801|0",
+"terse_id": "sft|energy|2|30000801|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000801
+],
+"native_id": "1.5b|energy|2|30000801|4",
+"terse_id": "sft|energy|2|30000801|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000801
+],
+"native_id": "1.5b|energy|2|30000801|5",
+"terse_id": "sft|energy|2|30000801|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000801
+],
+"native_id": "1.5b|energy|2|30000801|7",
+"terse_id": "sft|energy|2|30000801|3"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000801
+],
+"native_id": "1.5b|energy|2|30000801|1",
+"terse_id": "sft|energy|2|30000801|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000801
+],
+"native_id": "1.5b|energy|2|30000801|6",
+"terse_id": "sft|energy|2|30000801|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000802
+],
+"native_id": "1.5b|energy|3|30000802|3",
+"terse_id": "sft|energy|3|30000802|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000802
+],
+"native_id": "1.5b|energy|3|30000802|4",
+"terse_id": "sft|energy|3|30000802|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000802
+],
+"native_id": "1.5b|energy|3|30000802|6",
+"terse_id": "sft|energy|3|30000802|6"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000802
+],
+"native_id": "1.5b|energy|3|30000802|7",
+"terse_id": "sft|energy|3|30000802|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000805
+],
+"native_id": "1.5b|kinematics|2|30000805|0",
+"terse_id": "sft|kinematics|2|30000805|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000805
+],
+"native_id": "1.5b|kinematics|2|30000805|1",
+"terse_id": "sft|kinematics|2|30000805|4"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000805
+],
+"native_id": "1.5b|kinematics|2|30000805|2",
+"terse_id": "sft|kinematics|2|30000805|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000809
+],
+"native_id": "1.5b|dynamics|2|30000809|2",
+"terse_id": "sft|dynamics|2|30000809|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30000809
+],
+"native_id": "1.5b|dynamics|2|30000809|7",
+"terse_id": "sft|dynamics|2|30000809|2"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30000809
+],
+"native_id": "1.5b|dynamics|2|30000809|0",
+"terse_id": "sft|dynamics|2|30000809|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000826
+],
+"native_id": "1.5b|energy|3|30000826|3",
+"terse_id": "sft|energy|3|30000826|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30000826
+],
+"native_id": "1.5b|energy|3|30000826|6",
+"terse_id": "sft|energy|3|30000826|3"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000826
+],
+"native_id": "1.5b|energy|3|30000826|0",
+"terse_id": "sft|energy|3|30000826|1"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30000826
+],
+"native_id": "1.5b|energy|3|30000826|1",
+"terse_id": "sft|energy|3|30000826|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000829
+],
+"native_id": "1.5b|kinematics|2|30000829|0",
+"terse_id": "sft|kinematics|2|30000829|2"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000829
+],
+"native_id": "1.5b|kinematics|2|30000829|1",
+"terse_id": "sft|kinematics|2|30000829|7"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000829
+],
+"native_id": "1.5b|kinematics|2|30000829|3",
+"terse_id": "sft|kinematics|2|30000829|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000839
+],
+"native_id": "1.5b|energy|4|30000839|1",
+"terse_id": "sft|energy|4|30000839|2"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000839
+],
+"native_id": "1.5b|energy|4|30000839|5",
+"terse_id": "sft|energy|4|30000839|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30000851
+],
+"native_id": "1.5b|energy|4|30000851|7",
+"terse_id": "sft|energy|4|30000851|6"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000851
+],
+"native_id": "1.5b|energy|4|30000851|0",
+"terse_id": "sft|energy|4|30000851|0"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000851
+],
+"native_id": "1.5b|energy|4|30000851|1",
+"terse_id": "sft|energy|4|30000851|2"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30000851
+],
+"native_id": "1.5b|energy|4|30000851|3",
+"terse_id": "sft|energy|4|30000851|5"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000853
+],
+"native_id": "1.5b|kinematics|2|30000853|0",
+"terse_id": "sft|kinematics|2|30000853|1"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000853
+],
+"native_id": "1.5b|kinematics|2|30000853|1",
+"terse_id": "sft|kinematics|2|30000853|3"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000853
+],
+"native_id": "1.5b|kinematics|2|30000853|3",
+"terse_id": "sft|kinematics|2|30000853|6"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000853
+],
+"native_id": "1.5b|kinematics|2|30000853|5",
+"terse_id": "sft|kinematics|2|30000853|7"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000853
+],
+"native_id": "1.5b|kinematics|2|30000853|2",
+"terse_id": "sft|kinematics|2|30000853|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000873
+],
+"native_id": "1.5b|energy|2|30000873|0",
+"terse_id": "sft|energy|2|30000873|5"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000873
+],
+"native_id": "1.5b|energy|2|30000873|1",
+"terse_id": "sft|energy|2|30000873|2"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000873
+],
+"native_id": "1.5b|energy|2|30000873|2",
+"terse_id": "sft|energy|2|30000873|7"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000880
+],
+"native_id": "1.5b|dynamics|1|30000880|0",
+"terse_id": "sft|dynamics|1|30000880|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000880
+],
+"native_id": "1.5b|dynamics|1|30000880|2",
+"terse_id": "sft|dynamics|1|30000880|4"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000880
+],
+"native_id": "1.5b|dynamics|1|30000880|4",
+"terse_id": "sft|dynamics|1|30000880|5"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000880
+],
+"native_id": "1.5b|dynamics|1|30000880|5",
+"terse_id": "sft|dynamics|1|30000880|6"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30000880
+],
+"native_id": "1.5b|dynamics|1|30000880|1",
+"terse_id": "sft|dynamics|1|30000880|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000928
+],
+"native_id": "1.5b|dynamics|1|30000928|2",
+"terse_id": "sft|dynamics|1|30000928|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000928
+],
+"native_id": "1.5b|dynamics|1|30000928|4",
+"terse_id": "sft|dynamics|1|30000928|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30000928
+],
+"native_id": "1.5b|dynamics|1|30000928|5",
+"terse_id": "sft|dynamics|1|30000928|2"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30000928
+],
+"native_id": "1.5b|dynamics|1|30000928|0",
+"terse_id": "sft|dynamics|1|30000928|5"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30000933
+],
+"native_id": "1.5b|energy|2|30000933|1",
+"terse_id": "sft|energy|2|30000933|6"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000933
+],
+"native_id": "1.5b|energy|2|30000933|3",
+"terse_id": "sft|energy|2|30000933|5"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30000933
+],
+"native_id": "1.5b|energy|2|30000933|6",
+"terse_id": "sft|energy|2|30000933|2"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000937
+],
+"native_id": "1.5b|kinematics|2|30000937|0",
+"terse_id": "sft|kinematics|2|30000937|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+2,
+30000937
+],
+"native_id": "1.5b|kinematics|2|30000937|1",
+"terse_id": "sft|kinematics|2|30000937|4"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000937
+],
+"native_id": "1.5b|kinematics|2|30000937|3",
+"terse_id": "sft|kinematics|2|30000937|3"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000937
+],
+"native_id": "1.5b|kinematics|2|30000937|4",
+"terse_id": "sft|kinematics|2|30000937|5"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+2,
+30000937
+],
+"native_id": "1.5b|kinematics|2|30000937|6",
+"terse_id": "sft|kinematics|2|30000937|2"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30001011
+],
+"native_id": "1.5b|kinematics|4|30001011|1",
+"terse_id": "sft|kinematics|4|30001011|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30001011
+],
+"native_id": "1.5b|kinematics|4|30001011|2",
+"terse_id": "sft|kinematics|4|30001011|2"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30001011
+],
+"native_id": "1.5b|kinematics|4|30001011|5",
+"terse_id": "sft|kinematics|4|30001011|3"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+4,
+30001011
+],
+"native_id": "1.5b|kinematics|4|30001011|7",
+"terse_id": "sft|kinematics|4|30001011|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001012
+],
+"native_id": "1.5b|dynamics|1|30001012|0",
+"terse_id": "sft|dynamics|1|30001012|3"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30001012
+],
+"native_id": "1.5b|dynamics|1|30001012|3",
+"terse_id": "sft|dynamics|1|30001012|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30001013
+],
+"native_id": "1.5b|dynamics|2|30001013|0",
+"terse_id": "sft|dynamics|2|30001013|2"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30001013
+],
+"native_id": "1.5b|dynamics|2|30001013|1",
+"terse_id": "sft|dynamics|2|30001013|3"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30001013
+],
+"native_id": "1.5b|dynamics|2|30001013|6",
+"terse_id": "sft|dynamics|2|30001013|7"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30001013
+],
+"native_id": "1.5b|dynamics|2|30001013|7",
+"terse_id": "sft|dynamics|2|30001013|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30001061
+],
+"native_id": "1.5b|dynamics|2|30001061|0",
+"terse_id": "sft|dynamics|2|30001061|0"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30001061
+],
+"native_id": "1.5b|dynamics|2|30001061|6",
+"terse_id": "sft|dynamics|2|30001061|4"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30001071
+],
+"native_id": "1.5b|kinematics|4|30001071|0",
+"terse_id": "sft|kinematics|4|30001071|0"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+4,
+30001071
+],
+"native_id": "1.5b|kinematics|4|30001071|6",
+"terse_id": "sft|kinematics|4|30001071|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001072
+],
+"native_id": "1.5b|dynamics|1|30001072|1",
+"terse_id": "sft|dynamics|1|30001072|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001072
+],
+"native_id": "1.5b|dynamics|1|30001072|2",
+"terse_id": "sft|dynamics|1|30001072|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001072
+],
+"native_id": "1.5b|dynamics|1|30001072|3",
+"terse_id": "sft|dynamics|1|30001072|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001072
+],
+"native_id": "1.5b|dynamics|1|30001072|4",
+"terse_id": "sft|dynamics|1|30001072|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001072
+],
+"native_id": "1.5b|dynamics|1|30001072|5",
+"terse_id": "sft|dynamics|1|30001072|4"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001072
+],
+"native_id": "1.5b|dynamics|1|30001072|6",
+"terse_id": "sft|dynamics|1|30001072|5"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001072
+],
+"native_id": "1.5b|dynamics|1|30001072|7",
+"terse_id": "sft|dynamics|1|30001072|7"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30001072
+],
+"native_id": "1.5b|dynamics|1|30001072|0",
+"terse_id": "sft|dynamics|1|30001072|6"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001076
+],
+"native_id": "1.5b|energy|1|30001076|1",
+"terse_id": "sft|energy|1|30001076|0"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30001076
+],
+"native_id": "1.5b|energy|1|30001076|6",
+"terse_id": "sft|energy|1|30001076|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001088
+],
+"native_id": "1.5b|energy|1|30001088|0",
+"terse_id": "sft|energy|1|30001088|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001088
+],
+"native_id": "1.5b|energy|1|30001088|1",
+"terse_id": "sft|energy|1|30001088|5"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30001088
+],
+"native_id": "1.5b|energy|1|30001088|6",
+"terse_id": "sft|energy|1|30001088|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001100
+],
+"native_id": "1.5b|energy|1|30001100|1",
+"terse_id": "sft|energy|1|30001100|0"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001100
+],
+"native_id": "1.5b|energy|1|30001100|3",
+"terse_id": "sft|energy|1|30001100|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001100
+],
+"native_id": "1.5b|energy|1|30001100|4",
+"terse_id": "sft|energy|1|30001100|2"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001100
+],
+"native_id": "1.5b|energy|1|30001100|5",
+"terse_id": "sft|energy|1|30001100|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001100
+],
+"native_id": "1.5b|energy|1|30001100|6",
+"terse_id": "sft|energy|1|30001100|6"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30001100
+],
+"native_id": "1.5b|energy|1|30001100|7",
+"terse_id": "sft|energy|1|30001100|7"
+},
+{
+"correct": true,
+"key": [
+"energy",
+1,
+30001124
+],
+"native_id": "1.5b|energy|1|30001124|5",
+"terse_id": "sft|energy|1|30001124|1"
+},
+{
+"correct": false,
+"key": [
+"energy",
+1,
+30001124
+],
+"native_id": "1.5b|energy|1|30001124|7",
+"terse_id": "sft|energy|1|30001124|4"
+},
+{
+"correct": true,
+"key": [
+"energy",
+2,
+30001125
+],
+"native_id": "1.5b|energy|2|30001125|1",
+"terse_id": "sft|energy|2|30001125|5"
+},
+{
+"correct": false,
+"key": [
+"energy",
+2,
+30001125
+],
+"native_id": "1.5b|energy|2|30001125|3",
+"terse_id": "sft|energy|2|30001125|6"
+},
+{
+"correct": true,
+"key": [
+"energy",
+4,
+30001127
+],
+"native_id": "1.5b|energy|4|30001127|4",
+"terse_id": "sft|energy|4|30001127|3"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30001127
+],
+"native_id": "1.5b|energy|4|30001127|1",
+"terse_id": "sft|energy|4|30001127|1"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30001127
+],
+"native_id": "1.5b|energy|4|30001127|2",
+"terse_id": "sft|energy|4|30001127|7"
+},
+{
+"correct": false,
+"key": [
+"energy",
+4,
+30001127
+],
+"native_id": "1.5b|energy|4|30001127|3",
+"terse_id": "sft|energy|4|30001127|4"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+2,
+30001133
+],
+"native_id": "1.5b|dynamics|2|30001133|3",
+"terse_id": "sft|dynamics|2|30001133|1"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+2,
+30001133
+],
+"native_id": "1.5b|dynamics|2|30001133|5",
+"terse_id": "sft|dynamics|2|30001133|6"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30001143
+],
+"native_id": "1.5b|kinematics|4|30001143|5",
+"terse_id": "sft|kinematics|4|30001143|0"
+},
+{
+"correct": true,
+"key": [
+"kinematics",
+4,
+30001143
+],
+"native_id": "1.5b|kinematics|4|30001143|6",
+"terse_id": "sft|kinematics|4|30001143|3"
+},
+{
+"correct": false,
+"key": [
+"kinematics",
+4,
+30001143
+],
+"native_id": "1.5b|kinematics|4|30001143|1",
+"terse_id": "sft|kinematics|4|30001143|1"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30001150
+],
+"native_id": "1.5b|energy|3|30001150|4",
+"terse_id": "sft|energy|3|30001150|1"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30001150
+],
+"native_id": "1.5b|energy|3|30001150|2",
+"terse_id": "sft|energy|3|30001150|3"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001156
+],
+"native_id": "1.5b|dynamics|1|30001156|0",
+"terse_id": "sft|dynamics|1|30001156|0"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001156
+],
+"native_id": "1.5b|dynamics|1|30001156|2",
+"terse_id": "sft|dynamics|1|30001156|1"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001156
+],
+"native_id": "1.5b|dynamics|1|30001156|5",
+"terse_id": "sft|dynamics|1|30001156|2"
+},
+{
+"correct": true,
+"key": [
+"dynamics",
+1,
+30001156
+],
+"native_id": "1.5b|dynamics|1|30001156|6",
+"terse_id": "sft|dynamics|1|30001156|4"
+},
+{
+"correct": false,
+"key": [
+"dynamics",
+1,
+30001156
+],
+"native_id": "1.5b|dynamics|1|30001156|3",
+"terse_id": "sft|dynamics|1|30001156|3"
+},
+{
+"correct": true,
+"key": [
+"energy",
+3,
+30001174
+],
+"native_id": "1.5b|energy|3|30001174|1",
+"terse_id": "sft|energy|3|30001174|3"
+},
+{
+"correct": false,
+"key": [
+"energy",
+3,
+30001174
+],
+"native_id": "1.5b|energy|3|30001174|0",
+"terse_id": "sft|energy|3|30001174|2"
+}
+]

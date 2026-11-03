@@ -148,3 +148,23 @@ audit:                                 # D164: a zero-GPU confound audit of D162
     a5_config: nested_baselines_4bit   # A5's text features (TF-IDF) and its p grid (logistic C, 4 GBTs)
     feature_set: problem_answer_reasoning
     inner_folds: 5                     # GroupKFold by problem; the outer folds are the probe's (scale.probe.folds)
+r6:                                    # D167: paper #2's R6-3 / R6-4 / R6-5 (exploratory track; nothing on the GPU yet)
+  output_dir: r6                       # under output_dir: items/, states/, yes/, results.json
+  sft_dir: results/sft/qwen2.5-math-1.5b-instruct/merged   # R6-4's fine-tuned reader (X2's, 4-bit at load)
+  terse_prompt_id: v4_worked_example   # X2's prompt (the SFT format)
+  positions: [p2, p1]                  # p2 (primary): the first token after the final answer; p1: its last token
+  p1_sets: [fact_native, fact_terse]   # D167 uses p1 in R6-4 only; the other sets store p2 alone (disk: ~8 GB, not ~13)
+  part_size: 64                        # items per saved states part (resumable)
+  yes_step: 32                         # items per saved P(yes) chunk (resumable)
+  spot_check_n: 16                     # re-extracted own answers that must match the stored states
+  spot_check_rtol: 1.0e-2              # max |diff| / max |state| per layer (fp16 rounding)
+  swap_refit_atol: 1.0e-3              # refit fold probes must reproduce the cached out-of-fold values
+  rich_text:                           # R6-5 (a): A5's features with bigrams, plus 15 hand features
+    ngram_range: [1, 2]
+    hesitation: [wait, re-check, recheck, double-check, let me, however, mistake, actually, verify, again]
+    operators: ["\\frac", "\\sqrt", "\\cdot", "\\times", "\\left", "\\pi"]
+    log10_zero: -12.0                  # log10 |value| for a value of 0
+  rates:                               # measured s / context token at batch 1, temperature pauses included (GPU estimates)
+    7b: {hidden: 6.3e-4, "yes": 6.9e-4, floor_s: 0.15}     # D159: 0.77 / 0.92 s at ~1,230 / ~1,330 tokens
+    1.5b: {hidden: 1.8e-4, "yes": 1.85e-4, floor_s: 0.05}  # D162: 0.21 / 0.23 s at ~1,150 / ~1,250 tokens
+    load_s: 120                        # a model load, per stage

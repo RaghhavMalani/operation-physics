@@ -1,0 +1,55 @@
+{
+ "decision": "D167",
+ "sets": {
+  "truncated": {
+   "n": 466,
+   "sha256": "a931664bbf0dea385abeb674a0b580e90a84c4dac40418d81d1cf736715abfc8"
+  },
+  "bank_7b": {
+   "n": 4369,
+   "sha256": "ac3f1b7210052011a60a639245e69f17207c741c964fbc4c18fbe19687e75d2e"
+  },
+  "spot_7b": {
+   "n": 16,
+   "sha256": "22cd762e5bb9d0e97dda45d12941207a7d2e33d42cd97f98993a473ac8198a04"
+  },
+  "bank_1.5b": {
+   "n": 4683,
+   "sha256": "a136e4d12e4da384b3793f29d05900c5b6ba27a5d4c44fc1f4fd5fa9d85ce943"
+  },
+  "spot_1.5b": {
+   "n": 16,
+   "sha256": "9666e7a5a96f322a0025d29d0d96cac1d50ec7131fd33a7ee6da3272d7dd084d"
+  },
+  "fact_native": {
+   "n": 2722,
+   "sha256": "3151d32f5c2d014dc506201caa5b0295848a15f41f9791b9c488f89e6a50f72f"
+  },
+  "fact_terse": {
+   "n": 2766,
+   "sha256": "32aa8bb1031e9618851bb69903666857e3d8f6c8baf560f1085ef0be16532d2e"
+  },
+  "answer_only_7b": {
+   "n": 6133,
+   "sha256": "a9757f15c927e94d194ce480fe22c2ccd215b358b840c949ff49d9440ae41985"
+  },
+  "swap_7b": {
+   "n": 6133,
+   "sha256": "991ace63712ea93e656ec817678cf08767bad4d0bbd9fd6b75492c6496a023d9"
+  },
+  "answer_only_1.5b": {
+   "n": 6000,
+   "sha256": "320a264cc1398aff0a0bd077054c3dd8dacc5387f9163e9eec2f7d9e5a49c9a7"
+  },
+  "swap_1.5b": {
+   "n": 6000,
+   "sha256": "34f57c0487ba47028622c346a2d1535b25e8777f7a012737020b802eff3cc9cb"
+  }
+ },
+ "fact_candidates": {
+  "n": 323,
+  "problems": 93,
+  "pairs": 248,
+  "sha256": "094fecca4573160c8be4f0dd52b44fa7fbf3bda91cf0b8635284259cd906c5ca"
+ }
+}

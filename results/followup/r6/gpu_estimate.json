@@ -1,0 +1,213 @@
+{
+ "stages": [
+  {
+   "kind": "states",
+   "set": "spot_1.5b",
+   "reader": "1.5b",
+   "n": 16,
+   "mean_tokens": 1597.0625,
+   "max_tokens": 2194,
+   "hours": 0.03461098333333334,
+   "disk_gb": 0.001425408,
+   "experiment": "R6-3"
+  },
+  {
+   "kind": "states",
+   "set": "bank_7b",
+   "reader": "1.5b",
+   "n": 4369,
+   "mean_tokens": 1285.9622339208056,
+   "max_tokens": 3044,
+   "hours": 0.3142517833333333,
+   "disk_gb": 0.389225472,
+   "experiment": "R6-3"
+  },
+  {
+   "kind": "yes",
+   "set": "bank_7b",
+   "reader": "1.5b",
+   "n": 4369,
+   "mean_tokens": 1362.9622339208056,
+   "max_tokens": 3121,
+   "hours": 0.3393429638888889,
+   "disk_gb": 0.0,
+   "experiment": "R6-3"
+  },
+  {
+   "kind": "yes",
+   "set": "truncated",
+   "reader": "1.5b",
+   "n": 466,
+   "mean_tokens": 3493.0901287553647,
+   "max_tokens": 3576,
+   "hours": 0.1169831388888889,
+   "disk_gb": 0.0,
+   "experiment": "R6-3"
+  },
+  {
+   "kind": "states",
+   "set": "fact_native",
+   "reader": "1.5b",
+   "n": 2722,
+   "mean_tokens": 1189.9408523144746,
+   "max_tokens": 3068,
+   "hours": 0.19528428333333334,
+   "disk_gb": 0.484995072,
+   "experiment": "R6-4"
+  },
+  {
+   "kind": "states",
+   "set": "fact_terse",
+   "reader": "1.5b",
+   "n": 2766,
+   "mean_tokens": 1226.2809110629066,
+   "max_tokens": 1403,
+   "hours": 0.20292798333333334,
+   "disk_gb": 0.492834816,
+   "experiment": "R6-4"
+  },
+  {
+   "kind": "states",
+   "set": "fact_native",
+   "reader": "sft",
+   "n": 2722,
+   "mean_tokens": 1189.9408523144746,
+   "max_tokens": 3068,
+   "hours": 0.19528428333333334,
+   "disk_gb": 0.484995072,
+   "experiment": "R6-4"
+  },
+  {
+   "kind": "states",
+   "set": "fact_terse",
+   "reader": "sft",
+   "n": 2766,
+   "mean_tokens": 1226.2809110629066,
+   "max_tokens": 1403,
+   "hours": 0.20292798333333334,
+   "disk_gb": 0.492834816,
+   "experiment": "R6-4"
+  },
+  {
+   "kind": "states",
+   "set": "fact_native",
+   "reader": "random_1.5b",
+   "n": 2722,
+   "mean_tokens": 1189.9408523144746,
+   "max_tokens": 3068,
+   "hours": 0.19528428333333334,
+   "disk_gb": 0.484995072,
+   "experiment": "R6-4"
+  },
+  {
+   "kind": "states",
+   "set": "fact_terse",
+   "reader": "random_1.5b",
+   "n": 2766,
+   "mean_tokens": 1226.2809110629066,
+   "max_tokens": 1403,
+   "hours": 0.20292798333333334,
+   "disk_gb": 0.492834816,
+   "experiment": "R6-4"
+  },
+  {
+   "kind": "states",
+   "set": "answer_only_1.5b",
+   "reader": "1.5b",
+   "n": 6000,
+   "mean_tokens": 295.71066666666667,
+   "max_tokens": 373,
+   "hours": 0.12342765000000001,
+   "disk_gb": 0.534528,
+   "experiment": "R6-5"
+  },
+  {
+   "kind": "states",
+   "set": "swap_1.5b",
+   "reader": "1.5b",
+   "n": 6000,
+   "mean_tokens": 1191.6213333333333,
+   "max_tokens": 3102,
+   "hours": 0.39081973333333336,
+   "disk_gb": 0.534528,
+   "experiment": "R6-5"
+  },
+  {
+   "kind": "states",
+   "set": "spot_7b",
+   "reader": "7b",
+   "n": 16,
+   "mean_tokens": 1654.1875,
+   "max_tokens": 2114,
+   "hours": 0.037965058333333336,
+   "disk_gb": 0.003325952,
+   "experiment": "R6-3"
+  },
+  {
+   "kind": "states",
+   "set": "bank_1.5b",
+   "reader": "7b",
+   "n": 4683,
+   "mean_tokens": 1213.6448857569933,
+   "max_tokens": 3384,
+   "hours": 1.0279456583333335,
+   "disk_gb": 0.973464576,
+   "experiment": "R6-3"
+  },
+  {
+   "kind": "yes",
+   "set": "bank_1.5b",
+   "reader": "7b",
+   "n": 4683,
+   "mean_tokens": 1290.6448857569933,
+   "max_tokens": 3461,
+   "hours": 1.1917839166666666,
+   "disk_gb": 0.0,
+   "experiment": "R6-3"
+  },
+  {
+   "kind": "yes",
+   "set": "truncated",
+   "reader": "7b",
+   "n": 466,
+   "mean_tokens": 3493.0901287553647,
+   "max_tokens": 3576,
+   "hours": 0.34532450000000003,
+   "disk_gb": 0.0,
+   "experiment": "R6-3"
+  },
+  {
+   "kind": "states",
+   "set": "answer_only_7b",
+   "reader": "7b",
+   "n": 6133,
+   "mean_tokens": 297.93510516875915,
+   "max_tokens": 373,
+   "hours": 0.35323820833333336,
+   "disk_gb": 1.274878976,
+   "experiment": "R6-5"
+  },
+  {
+   "kind": "states",
+   "set": "swap_7b",
+   "reader": "7b",
+   "n": 6133,
+   "mean_tokens": 1318.687754769281,
+   "max_tokens": 3046,
+   "hours": 1.4486479333333333,
+   "disk_gb": 1.274878976,
+   "experiment": "R6-5"
+  }
+ ],
+ "by_experiment": {
+  "R6-3": 3.408208002777778,
+  "R6-4": 1.1946368,
+  "R6-5": 2.316133525
+ },
+ "by_size": {
+  "1.5b": 2.5140730527777775,
+  "7b": 4.404905275
+ },
+ "disk_gb": 7.919745024000001,
+ "total_hours": 6.918978327777778
+}
