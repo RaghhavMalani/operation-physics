@@ -1,0 +1,67 @@
+W1103 19:11:11.144000 9018 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 19:11:11.161000 9018 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<00:57,  5.84it/s]Loading weights:   5%|▌         | 17/338 [00:00<00:04, 75.54it/s]Loading weights:  12%|█▏        | 41/338 [00:00<00:02, 136.83it/s]Loading weights:  22%|██▏       | 75/338 [00:00<00:01, 202.28it/s]Loading weights:  30%|██▉       | 100/338 [00:00<00:01, 210.32it/s]Loading weights:  37%|███▋      | 125/338 [00:00<00:00, 220.80it/s]Loading weights:  44%|████▍     | 149/338 [00:00<00:00, 225.70it/s]Loading weights:  51%|█████     | 173/338 [00:00<00:00, 226.02it/s]Loading weights:  58%|█████▊    | 197/338 [00:01<00:00, 224.67it/s]Loading weights:  65%|██████▌   | 221/338 [00:01<00:00, 218.71it/s]Loading weights:  75%|███████▌  | 255/338 [00:01<00:00, 243.87it/s]Loading weights:  83%|████████▎ | 280/338 [00:01<00:00, 231.14it/s]Loading weights:  90%|████████▉ | 304/338 [00:01<00:00, 229.22it/s]Loading weights:  97%|█████████▋| 328/338 [00:01<00:00, 228.60it/s]Loading weights: 100%|██████████| 338/338 [00:01<00:00, 211.80it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': True}, 'bnb_4bit_linear_modules': 196}
+  fact_native/sft part 0: 64/2722 (28s)
+  fact_native/sft part 1: 128/2722 (38s)
+  fact_native/sft part 2: 192/2722 (49s)
+  fact_native/sft part 3: 256/2722 (59s)
+  fact_native/sft part 4: 320/2722 (70s)
+  fact_native/sft part 5: 384/2722 (81s)
+  fact_native/sft part 6: 448/2722 (93s)
+  fact_native/sft part 7: 512/2722 (103s)
+  fact_native/sft part 8: 576/2722 (113s)
+  fact_native/sft part 9: 640/2722 (154s)
+  fact_native/sft part 10: 704/2722 (165s)
+  fact_native/sft part 11: 768/2722 (175s)
+  fact_native/sft part 12: 832/2722 (216s)
+  fact_native/sft part 13: 896/2722 (225s)
+  fact_native/sft part 14: 960/2722 (235s)
+  fact_native/sft part 15: 1024/2722 (275s)
+  fact_native/sft part 16: 1088/2722 (286s)
+  fact_native/sft part 17: 1152/2722 (297s)
+  fact_native/sft part 18: 1216/2722 (307s)
+  fact_native/sft part 19: 1280/2722 (318s)
+  fact_native/sft part 20: 1344/2722 (329s)
+  fact_native/sft part 21: 1408/2722 (339s)
+  fact_native/sft part 22: 1472/2722 (350s)
+  fact_native/sft part 23: 1536/2722 (360s)
+  fact_native/sft part 24: 1600/2722 (370s)
+  fact_native/sft part 25: 1664/2722 (381s)
+  fact_native/sft part 26: 1728/2722 (393s)
+  fact_native/sft part 27: 1792/2722 (403s)
+  fact_native/sft part 28: 1856/2722 (413s)
+  fact_native/sft part 29: 1920/2722 (423s)
+  fact_native/sft part 30: 1984/2722 (434s)
+  fact_native/sft part 31: 2048/2722 (444s)
+  fact_native/sft part 32: 2112/2722 (455s)
+  fact_native/sft part 33: 2176/2722 (465s)
+  fact_native/sft part 34: 2240/2722 (477s)
+  fact_native/sft part 35: 2304/2722 (487s)
+  fact_native/sft part 36: 2368/2722 (498s)
+  fact_native/sft part 37: 2432/2722 (509s)
+  fact_native/sft part 38: 2496/2722 (519s)
+  fact_native/sft part 39: 2560/2722 (530s)
+  fact_native/sft part 40: 2624/2722 (541s)
+  fact_native/sft part 41: 2688/2722 (552s)
+  fact_native/sft part 42: 2722/2722 (559s)
+{
+ "decision": "D167",
+ "set": "fact_native",
+ "reader": "sft",
+ "reader_dir": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+ "n": 2722,
+ "parts": 43,
+ "seconds": 559.1819422245026,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "the final answer's last token"
+ }
+}

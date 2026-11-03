@@ -1,0 +1,13 @@
+{
+ "decision": "D167",
+ "set": "fact_native",
+ "reader": "sft",
+ "reader_dir": "/home/flash2404/operation-physics/results/sft/qwen2.5-math-1.5b-instruct/merged",
+ "n": 2722,
+ "parts": 43,
+ "seconds": 559.1819422245026,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "the final answer's last token"
+ }
+}
