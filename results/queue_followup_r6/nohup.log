@@ -46,3 +46,10 @@
 [00:17:58] start r6_yes_truncated_1.5b (timeout 31323s): uv run python -m physcal.eval.followup_r6 yes --set truncated --reader 1.5b --cap 6.7
 [00:22:42] end r6_yes_truncated_1.5b: exit 0
 [00:22:42] r6_yes_truncated_1.5b: 0 temperature pauses, 0s paused of 285s; tonight so far 10 pauses, 303s of 2450s (D143)
+[00:22:44] commit 'Follow-up (D167, exploratory): R6 yes, truncated read by 1.5b': pushed
+[00:23:02] host VRAM readings (MiB): 770 754 754 754 754 754 754 754
+[00:23:02] GPU at 65.70C, memory.used 754 MiB
+[00:23:04] disk: 21 GiB free on MLStorage
+[00:23:04] start r6_states_fact_native_1.5b (timeout 31018s): uv run python -m physcal.eval.followup_r6 states --set fact_native --reader 1.5b --cap 6.7
+[00:30:55] end r6_states_fact_native_1.5b: exit 0
+[00:30:55] r6_states_fact_native_1.5b: 0 temperature pauses, 0s paused of 473s; tonight so far 10 pauses, 303s of 2923s (D143)
