@@ -130,3 +130,10 @@
 [03:58:46] start r6_yes_truncated_7b (timeout 18075s): uv run python -m physcal.eval.followup_r6 yes --set truncated --reader 7b --cap 7.0
 [04:17:27] end r6_yes_truncated_7b: exit 0
 [04:17:27] r6_yes_truncated_7b: 4 temperature pauses, 120s paused of 1122s; tonight so far 50 pauses, 1506s of 16283s (D143)
+[04:17:30] commit 'Follow-up (D167, exploratory): R6 yes, truncated read by 7b': pushed
+[04:17:48] host VRAM readings (MiB): 506 506 506 506 506 506 506 506
+[04:17:48] GPU at 63.50C, memory.used 506 MiB
+[04:17:51] disk: 21 GiB free on MLStorage
+[04:17:51] start r6_states_answer_only_7b_7b (timeout 16932s): uv run python -m physcal.eval.followup_r6 states --set answer_only_7b --reader 7b --cap 7.0
+[04:45:53] end r6_states_answer_only_7b_7b: exit 0
+[04:45:53] r6_states_answer_only_7b_7b: 4 temperature pauses, 120s paused of 1685s; tonight so far 54 pauses, 1626s of 17968s (D143)

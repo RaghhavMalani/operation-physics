@@ -1,0 +1,120 @@
+W1103 22:47:55.173000 26831 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 22:47:55.190000 26831 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:00<01:27,  3.87it/s]Loading weights:   9%|▊         | 29/339 [00:00<00:03, 101.71it/s]Loading weights:  19%|█▉        | 66/339 [00:00<00:01, 191.65it/s]Loading weights:  32%|███▏      | 108/339 [00:00<00:00, 264.56it/s]Loading weights:  44%|████▎     | 148/339 [00:00<00:00, 306.69it/s]Loading weights:  54%|█████▍    | 184/339 [00:00<00:00, 315.44it/s]Loading weights:  65%|██████▍   | 220/339 [00:00<00:00, 310.53it/s]Loading weights:  75%|███████▍  | 254/339 [00:00<00:00, 317.69it/s]Loading weights:  86%|████████▋ | 293/339 [00:01<00:00, 332.37it/s]Loading weights:  97%|█████████▋| 330/339 [00:01<00:00, 342.42it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 280.78it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  answer_only_7b/7b part 0: 64/6133 (31s)
+  answer_only_7b/7b part 1: 128/6133 (46s)
+  answer_only_7b/7b part 2: 192/6133 (61s)
+  answer_only_7b/7b part 3: 256/6133 (77s)
+  answer_only_7b/7b part 4: 320/6133 (94s)
+  answer_only_7b/7b part 5: 384/6133 (110s)
+  answer_only_7b/7b part 6: 448/6133 (126s)
+  answer_only_7b/7b part 7: 512/6133 (142s)
+  answer_only_7b/7b part 8: 576/6133 (158s)
+  answer_only_7b/7b part 9: 640/6133 (174s)
+  answer_only_7b/7b part 10: 704/6133 (189s)
+  answer_only_7b/7b part 11: 768/6133 (206s)
+  answer_only_7b/7b part 12: 832/6133 (221s)
+  answer_only_7b/7b part 13: 896/6133 (237s)
+  answer_only_7b/7b part 14: 960/6133 (253s)
+  answer_only_7b/7b part 15: 1024/6133 (269s)
+  answer_only_7b/7b part 16: 1088/6133 (286s)
+  answer_only_7b/7b part 17: 1152/6133 (333s)
+  answer_only_7b/7b part 18: 1216/6133 (348s)
+  answer_only_7b/7b part 19: 1280/6133 (364s)
+  answer_only_7b/7b part 20: 1344/6133 (380s)
+  answer_only_7b/7b part 21: 1408/6133 (396s)
+  answer_only_7b/7b part 22: 1472/6133 (412s)
+  answer_only_7b/7b part 23: 1536/6133 (428s)
+  answer_only_7b/7b part 24: 1600/6133 (444s)
+  answer_only_7b/7b part 25: 1664/6133 (460s)
+  answer_only_7b/7b part 26: 1728/6133 (477s)
+  answer_only_7b/7b part 27: 1792/6133 (493s)
+  answer_only_7b/7b part 28: 1856/6133 (509s)
+  answer_only_7b/7b part 29: 1920/6133 (526s)
+  answer_only_7b/7b part 30: 1984/6133 (572s)
+  answer_only_7b/7b part 31: 2048/6133 (587s)
+  answer_only_7b/7b part 32: 2112/6133 (602s)
+  answer_only_7b/7b part 33: 2176/6133 (618s)
+  answer_only_7b/7b part 34: 2240/6133 (634s)
+  answer_only_7b/7b part 35: 2304/6133 (650s)
+  answer_only_7b/7b part 36: 2368/6133 (667s)
+  answer_only_7b/7b part 37: 2432/6133 (683s)
+  answer_only_7b/7b part 38: 2496/6133 (729s)
+  answer_only_7b/7b part 39: 2560/6133 (745s)
+  answer_only_7b/7b part 40: 2624/6133 (760s)
+  answer_only_7b/7b part 41: 2688/6133 (777s)
+  answer_only_7b/7b part 42: 2752/6133 (793s)
+  answer_only_7b/7b part 43: 2816/6133 (810s)
+  answer_only_7b/7b part 44: 2880/6133 (825s)
+  answer_only_7b/7b part 45: 2944/6133 (842s)
+  answer_only_7b/7b part 46: 3008/6133 (858s)
+  answer_only_7b/7b part 47: 3072/6133 (874s)
+  answer_only_7b/7b part 48: 3136/6133 (891s)
+  answer_only_7b/7b part 49: 3200/6133 (907s)
+  answer_only_7b/7b part 50: 3264/6133 (923s)
+  answer_only_7b/7b part 51: 3328/6133 (939s)
+  answer_only_7b/7b part 52: 3392/6133 (956s)
+  answer_only_7b/7b part 53: 3456/6133 (972s)
+  answer_only_7b/7b part 54: 3520/6133 (989s)
+  answer_only_7b/7b part 55: 3584/6133 (1004s)
+  answer_only_7b/7b part 56: 3648/6133 (1020s)
+  answer_only_7b/7b part 57: 3712/6133 (1066s)
+  answer_only_7b/7b part 58: 3776/6133 (1081s)
+  answer_only_7b/7b part 59: 3840/6133 (1096s)
+  answer_only_7b/7b part 60: 3904/6133 (1112s)
+  answer_only_7b/7b part 61: 3968/6133 (1127s)
+  answer_only_7b/7b part 62: 4032/6133 (1143s)
+  answer_only_7b/7b part 63: 4096/6133 (1159s)
+  answer_only_7b/7b part 64: 4160/6133 (1175s)
+  answer_only_7b/7b part 65: 4224/6133 (1192s)
+  answer_only_7b/7b part 66: 4288/6133 (1207s)
+  answer_only_7b/7b part 67: 4352/6133 (1224s)
+  answer_only_7b/7b part 68: 4416/6133 (1241s)
+  answer_only_7b/7b part 69: 4480/6133 (1257s)
+  answer_only_7b/7b part 70: 4544/6133 (1272s)
+  answer_only_7b/7b part 71: 4608/6133 (1289s)
+  answer_only_7b/7b part 72: 4672/6133 (1305s)
+  answer_only_7b/7b part 73: 4736/6133 (1321s)
+  answer_only_7b/7b part 74: 4800/6133 (1338s)
+  answer_only_7b/7b part 75: 4864/6133 (1354s)
+  answer_only_7b/7b part 76: 4928/6133 (1371s)
+  answer_only_7b/7b part 77: 4992/6133 (1387s)
+  answer_only_7b/7b part 78: 5056/6133 (1404s)
+  answer_only_7b/7b part 79: 5120/6133 (1420s)
+  answer_only_7b/7b part 80: 5184/6133 (1436s)
+  answer_only_7b/7b part 81: 5248/6133 (1452s)
+  answer_only_7b/7b part 82: 5312/6133 (1469s)
+  answer_only_7b/7b part 83: 5376/6133 (1485s)
+  answer_only_7b/7b part 84: 5440/6133 (1502s)
+  answer_only_7b/7b part 85: 5504/6133 (1518s)
+  answer_only_7b/7b part 86: 5568/6133 (1534s)
+  answer_only_7b/7b part 87: 5632/6133 (1550s)
+  answer_only_7b/7b part 88: 5696/6133 (1567s)
+  answer_only_7b/7b part 89: 5760/6133 (1584s)
+  answer_only_7b/7b part 90: 5824/6133 (1600s)
+  answer_only_7b/7b part 91: 5888/6133 (1617s)
+  answer_only_7b/7b part 92: 5952/6133 (1634s)
+  answer_only_7b/7b part 93: 6016/6133 (1650s)
+  answer_only_7b/7b part 94: 6080/6133 (1667s)
+  answer_only_7b/7b part 95: 6133/6133 (1681s)
+{
+ "decision": "D167",
+ "set": "answer_only_7b",
+ "reader": "7b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-7B-Instruct-bnb-4bit/snapshots/2ab7fb373c247ef5933d034f016efefc66608458",
+ "n": 6133,
+ "parts": 96,
+ "seconds": 1680.5861749649048,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "not kept (D167 uses p1 in R6-4 only)"
+ }
+}

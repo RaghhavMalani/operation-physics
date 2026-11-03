@@ -231,3 +231,18 @@
 [04:14:18] guard(25260): stage continued after 30s paused (GPU at 62.40C <= 75C)
 [04:17:27] end r6_yes_truncated_7b: exit 0
 [04:17:27] r6_yes_truncated_7b: 4 temperature pauses, 120s paused of 1122s; tonight so far 50 pauses, 1506s of 16283s (D143)
+[04:17:30] commit 'Follow-up (D167, exploratory): R6 yes, truncated read by 7b': pushed
+[04:17:48] host VRAM readings (MiB): 506 506 506 506 506 506 506 506
+[04:17:48] GPU at 63.50C, memory.used 506 MiB
+[04:17:51] disk: 21 GiB free on MLStorage
+[04:17:51] start r6_states_answer_only_7b_7b (timeout 16932s): uv run python -m physcal.eval.followup_r6 states --set answer_only_7b --reader 7b --cap 7.0
+[04:22:51] guard(26817): GPU at 87.40C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[04:23:21] guard(26817): stage continued after 30s paused (GPU at 63.10C <= 75C)
+[04:26:52] guard(26817): GPU at 88.30C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[04:27:22] guard(26817): stage continued after 30s paused (GPU at 63.10C <= 75C)
+[04:29:22] guard(26817): GPU at 87.70C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[04:29:52] guard(26817): stage continued after 30s paused (GPU at 62.70C <= 75C)
+[04:34:53] guard(26817): GPU at 87.30C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[04:35:23] guard(26817): stage continued after 30s paused (GPU at 63.30C <= 75C)
+[04:45:53] end r6_states_answer_only_7b_7b: exit 0
+[04:45:53] r6_states_answer_only_7b_7b: 4 temperature pauses, 120s paused of 1685s; tonight so far 54 pauses, 1626s of 17968s (D143)
