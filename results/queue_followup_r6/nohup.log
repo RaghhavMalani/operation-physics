@@ -1,0 +1,15 @@
+[23:31:51] R6 chain start (D167, exploratory): GPU deadline 09:00 IST (568 min left); chain PID 503
+[23:32:09] host VRAM readings (MiB): 1065 1030 1067 1045 1053 1040 1052 1039
+[23:32:09] host use 1048 MiB gives 6.4 GiB < 7.5: re-reading in 60 s
+[23:33:26] host VRAM readings (MiB): 1014 1065 1042 1077 1073 1064 1044 1029
+[23:33:26] host use 1054 MiB gives 6.4 GiB < 7.5: re-reading in 60 s
+[23:34:43] host VRAM readings (MiB): 951 988 967 883 867 895 892 911
+[23:34:43] host use 903 MiB gives 6.6 GiB < 7.5: re-reading in 60 s
+[23:36:01] host VRAM readings (MiB): 802 802 802 802 802 802 802 802
+[23:36:01] host use 802 MiB gives 6.7 GiB < 7.5: re-reading in 60 s
+[23:37:18] host VRAM readings (MiB): 1103 1099 1052 1092 1102 1043 1045 1021
+[23:37:18] GPU at 57.60C, memory.used 1039 MiB
+[23:37:19] disk: 21 GiB free on MLStorage
+[23:37:19] start r6_states_spot_1.5b_1.5b (timeout 33762s): uv run python -m physcal.eval.followup_r6 states --set spot_1.5b --reader 1.5b --cap 6.4
+[23:37:44] end r6_states_spot_1.5b_1.5b: exit 0
+[23:37:44] r6_states_spot_1.5b_1.5b: 0 temperature pauses, 0s paused of 26s; tonight so far 0 pauses, 0s of 26s (D143)

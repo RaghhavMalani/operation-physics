@@ -1,0 +1,13 @@
+{
+ "decision": "D167",
+ "set": "spot_1.5b",
+ "reader": "1.5b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+ "n": 16,
+ "parts": 1,
+ "seconds": 23.35018754005432,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "not kept (D167 uses p1 in R6-4 only)"
+ }
+}
