@@ -214,3 +214,32 @@ def test_sensitivity_flags_a_changed_sign_or_ci_side():
 def test_with_others_drops_lone_samples():
     rows = [{"key": ["f", 1, 1], "sample": 0}, {"key": ["f", 1, 1], "sample": 1}, {"key": ["f", 1, 2], "sample": 0}]
     assert AU.with_others(rows, lambda r: tuple(r["key"])) == rows[:2]
+
+
+def test_pair_weighting_weighs_pairs_not_problems():
+    """Two problems: one with 1 pair (score 1), one with 12 pairs (score 0): per problem 0.5, per pair 1/13."""
+    def model(seed):
+        groups = {("f", 1, 1): [{"correct": s < 1, "sample": s} for s in range(2)],
+                  ("f", 1, 2): [{"correct": s < 2, "sample": s} for s in range(8)]}
+        conf = {}
+        for k, g in groups.items():
+            for a in g:
+                good = k == ("f", 1, 1)
+                conf[(k, a["sample"])] = float(a["correct"] == good)
+        ntok = {(k, a["sample"]): 100 for k, g in groups.items() for a in g}
+        c = {r: conf for r in ("yes", "probe", "probe_random")}
+        return AU._data(groups, list(groups), c, ntok, set())
+    data = {"7b": model(0), "1.5b": model(1)}
+    out = AU.pair_weighted(data, SC, paired=True)
+    m = out["models"]["7b"]["probe"]
+    assert m["per_problem_weighted"] == pytest.approx(0.5) and m["pairwise_accuracy"] == pytest.approx(1 / 13)
+    assert out["differences"]["probe"]["diff"] == pytest.approx(0.0)
+    assert out["differences"]["probe"]["ci95"] == pytest.approx([0.0, 0.0])      # paired: the same resamples
+    assert out["net_scale_effect"]["diff"] == pytest.approx(0.0)
+
+
+def test_pair_weighting_paired_needs_the_same_problems():
+    data = _data()
+    with pytest.raises(ValueError):
+        AU.pair_weighted(data, SC, paired=True)
+    assert set(AU.pair_weighted(data, SC, paired=False)["differences"]) >= {"yes", "probe"}

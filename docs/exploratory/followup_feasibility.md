@@ -385,6 +385,22 @@ counts within 10% of the longer).
 - **Length-matched, scale still does not move the probe:** −0.029 [−0.067, +0.008]. Net of random weights:
   −0.001 [−0.050, +0.049].
 
+**4. Pair weighting (D165, R6-2's "per-problem weighting").** Every number above weighs each problem the same,
+whatever its number of pairs (X2's metric). As a check, each pair weighs the same instead:
+
+| 7B − native | per problem, D162's sets | per pair, D162's sets | per problem, the 599 | per pair, the 599 (paired) |
+|---|---|---|---|---|
+| direct P(yes) | +0.110 [+0.082, +0.138] | +0.105 [+0.078, +0.133] | +0.120 [+0.090, +0.150] | +0.115 [+0.086, +0.143] |
+| hidden-state probe | −0.005 [−0.031, +0.020] | −0.012 [−0.038, +0.013] | −0.003 [−0.029, +0.024] | −0.013 [−0.039, +0.014] |
+| net scale effect (probe − random) | +0.003 [−0.026, +0.032] | −0.001 [−0.030, +0.027] | −0.003 [−0.037, +0.030] | −0.007 [−0.039, +0.025] |
+| self-consistency | +0.053 [+0.025, +0.081] | +0.043 [+0.019, +0.069] | +0.076 [+0.045, +0.106] | +0.060 [+0.034, +0.086] |
+
+- **Nothing D162 concludes changes.** D165's rule flags one check: the net scale effect on D162's sets, whose sign
+  goes from +0.003 to −0.001 with its CI containing 0 both times (the same pattern as in D164).
+- **Per pair, self-consistency is higher for both models** (0.862 / 0.819 against 0.827 / 0.774). Problems with
+  many pairs have mid pass counts, where agreement separates well.
+- Source: `results/followup/audit/summary.md`.
+
 **Reading (D164's rules):**
 - **"The probe reads more than the text": yes,** at both sizes, on all pairs (+0.089, +0.084) and length-matched
   (+0.101, +0.102). Every CI is above 0.

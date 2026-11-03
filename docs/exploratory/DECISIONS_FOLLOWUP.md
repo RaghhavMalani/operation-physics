@@ -904,3 +904,11 @@ appended here.
 - **References to verify before citing** (the synthesis's list): Gekhman et al. (2503.15299), Orgad et al.
   (2410.02707), Ni et al. ReProbe (2511.06209), Kossen et al. (2406.15927), Lin, Hilton & Evans (2205.14334),
   Kadavath et al. (2207.05221), Tam et al. (2408.02442), Levinstein & Herrmann (2307.02477), Ni et al. (2408.09773).
+- **R6-2's pair-weighting check, the outcome (2026-11-03, after it ran; CPU, 1 thread, 33 s):**
+  - every number that D164 computed is unchanged in `results/followup/audit/results.json`; the new keys are
+    `pair_weighted` and `weighting_sensitivity`;
+  - 7B − native per pair: P(yes) +0.105 [+0.078, +0.133] (paired on the 599: +0.115); probe −0.012
+    [−0.038, +0.013] (−0.013);
+  - D165's rule flags one of six checks: the net scale effect on D162's sets, +0.003 → −0.001. Its CI contains 0
+    both times, so no conclusion changes.
+  - **R6-2 is complete.**

@@ -228,6 +228,64 @@ def d162_gap(mine: dict, d162: dict) -> float:
     return max(gaps)
 
 
+# ------------------------------------------------------------------------------------------- pair weighting
+def _pw(pa: np.ndarray, n: np.ndarray, ix: np.ndarray | None = None) -> np.ndarray:
+    """Pair-weighted pairwise accuracy Σ n·pa / Σ n, per bootstrap replicate when `ix` (replicates × problems)."""
+    if ix is None:
+        return np.array([np.sum(n * pa) / np.sum(n)])
+    return (n[ix] * pa[ix]).sum(1) / n[ix].sum(1)
+
+
+def pair_weighted(data: dict, sc: dict, paired: bool) -> dict:
+    """D165 (R6-2): each pair weighs the same instead of each problem. Per readout and Kaggle model, with a bootstrap
+    over problems (the ratio recomputed per replicate), and 7B − native: unpaired (independent resamples), or paired
+    on the same problems in the same order."""
+    n_boot, seed = sc["bootstrap"], sc["seed"]
+    d7, d1 = data["7b"], data["1.5b"]
+    if paired and d7["keys"] != d1["keys"]:
+        raise ValueError("a paired pair-weighted comparison needs the same problems in the same order")
+    n = {m: np.array([len(_pairs(data[m], k, None)) for k in data[m]["keys"]], dtype=float) for m in ("7b", "1.5b")}
+    rng = np.random.default_rng(seed)
+    ix = {m: rng.integers(0, len(data[m]["keys"]), (n_boot, len(data[m]["keys"]))) for m in ("7b", "1.5b")}
+    if paired:
+        ix["1.5b"] = ix["7b"]
+    out: dict = {"paired": paired, "models": {}, "differences": {}}
+    pa, boots = {}, {}
+    for m in ("7b", "1.5b"):
+        out["models"][m] = {}
+        for r in READOUTS:
+            if r not in data[m]["conf"]:
+                continue
+            pa[(m, r)] = per_problem(data[m], data[m]["keys"], data[m]["conf"][r])
+            boots[(m, r)] = _pw(pa[(m, r)], n[m], ix[m])
+            out["models"][m][r] = {"pairwise_accuracy": float(_pw(pa[(m, r)], n[m])[0]),
+                                   "per_problem_weighted": float(pa[(m, r)].mean()),
+                                   "ci95": np.percentile(boots[(m, r)], [2.5, 97.5]).tolist()}
+    for r in READOUTS:
+        if ("7b", r) in boots and ("1.5b", r) in boots:
+            d = out["models"]["7b"][r]["pairwise_accuracy"] - out["models"]["1.5b"][r]["pairwise_accuracy"]
+            out["differences"][r] = {"diff": d, "ci95": np.percentile(boots[("7b", r)] - boots[("1.5b", r)],
+                                                                      [2.5, 97.5]).tolist()}
+    net = {m: (out["models"][m]["probe"]["pairwise_accuracy"] - out["models"][m]["probe_random"]["pairwise_accuracy"],
+               boots[(m, "probe")] - boots[(m, "probe_random")]) for m in ("7b", "1.5b")}
+    out["net_scale_effect"] = {"diff": net["7b"][0] - net["1.5b"][0],
+                               "ci95": np.percentile(net["7b"][1] - net["1.5b"][1], [2.5, 97.5]).tolist()}
+    return out
+
+
+def weighting_sensitivity(per_problem_variant: dict, pw: dict, paired: bool) -> dict:
+    """D165's reading: whether 7B − native for P(yes), the probe, or the net scale effect changes sign or CI side."""
+    name = "7b - native 1.5b (paired, common kept problems)" if paired else "7b - native 1.5b (unpaired)"
+    pp = {"yes": per_problem_variant["differences"]["yes"][name],
+          "probe": per_problem_variant["differences"]["probe"][name],
+          "net_scale_effect": per_problem_variant["controls"]["7b vs native 1.5b"][
+              "(probe - probe_random): 7b - native 1.5b (unpaired)"]}
+    qw = {"yes": pw["differences"]["yes"], "probe": pw["differences"]["probe"], "net_scale_effect": pw["net_scale_effect"]}
+    return {q: {"per_problem": pp[q]["diff"], "pair_weighted": qw[q]["diff"],
+                "changed": bool(np.sign(pp[q]["diff"]) != np.sign(qw[q]["diff"])
+                                or _excludes_zero(pp[q]) != _excludes_zero(qw[q]))} for q in pp}
+
+
 # ------------------------------------------------------------------------------------------- pass counts
 def by_pass_count(data: dict, sc: dict) -> dict:
     """Item 2 on problems both Kaggle models keep (the same keys, same order): each readout per model by its own pass
@@ -421,6 +479,10 @@ def analyze(cfg: dict | None = None) -> dict:
     both = {m: d | {"keys": [k for k in order if k in set(d["keys"])]} for m, d in base.items()}
     res["variants"]["2_common"] = compare(both, sc)
     res["common_by_pass_count"] = by_pass_count({m: both[m] for m in ("7b", "1.5b")}, sc)
+    res["pair_weighted"] = {"d162": pair_weighted(base, sc, paired=False),         # D165 (R6-2)
+                            "2_common": pair_weighted(both, sc, paired=True)}
+    res["weighting_sensitivity"] = {v: weighting_sensitivity(res["variants"][v], res["pair_weighted"][v], v != "d162")
+                                    for v in ("d162", "2_common")}
     res["variants"]["3_length_matched"] = compare(base, sc, ac["length_match_rel"])
     res["length_match_rel"] = ac["length_match_rel"]
     res["sensitivity"] = {v: sensitivity(res["variants"]["d162"], res["variants"][v])
@@ -499,6 +561,22 @@ def render(res: dict) -> str:
     for v, s in res["sensitivity"].items():
         for q, x in s.items():
             L.append(f"| {v} | {q} | {x['d162']:+.3f} | {x['here']:+.3f} | {'**yes**' if x['changed'] else 'no'} |")
+    if "pair_weighted" in res:
+        L += ["", "### Pair weighting (D165, R6-2): each pair weighs the same, against each problem", ""]
+        for v, title in (("d162", "D162's kept sets, 7B − native unpaired"), ("2_common", "the 599, paired")):
+            pw = res["pair_weighted"][v]
+            L += [f"**{title}**", "", "| readout | 7B, per problem | 7B, per pair | native, per problem | "
+                  "native, per pair | 7B − native, per pair |", "|---|---|---|---|---|---|"]
+            for r in READOUTS:
+                a, b = pw["models"]["7b"].get(r), pw["models"]["1.5b"].get(r)
+                if a and b:
+                    L.append(f"| {LABELS[r]} | {a['per_problem_weighted']:.3f} | {_ci(a)} | "
+                             f"{b['per_problem_weighted']:.3f} | {_ci(b)} | {_ci(pw['differences'][r], 'diff', True)} |")
+            L += [f"| net scale effect (probe − random) | | | | | {_ci(pw['net_scale_effect'], 'diff', True)} |", ""]
+            for q, x in res["weighting_sensitivity"][v].items():
+                L.append(f"- {q}: per problem {x['per_problem']:+.3f}, per pair {x['pair_weighted']:+.3f}; "
+                         f"changed: {'**yes**' if x['changed'] else 'no'}")
+            L.append("")
     L += ["", "### The text classifier's folds (kind, hyperparameters, inner-CV AUROC)", ""]
     for m, info in res["text"].items():
         L.append(f"- {m} ({info['n']} answers, {info['seconds'] / 60:.0f} min): " + "; ".join(

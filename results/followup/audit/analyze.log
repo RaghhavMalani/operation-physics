@@ -174,6 +174,41 @@ weights (pooled): 0.195, 0.160, 0.134, 0.167, 0.132, 0.128, 0.084
 | 3_length_matched | 7b: probe - probe_random (paired) | +0.088 | +0.102 | no |
 | 3_length_matched | 1.5b: probe - probe_random (paired) | +0.085 | +0.102 | no |
 
+### Pair weighting (D165, R6-2): each pair weighs the same, against each problem
+
+**D162's kept sets, 7B − native unpaired**
+
+| readout | 7B, per problem | 7B, per pair | native, per problem | native, per pair | 7B − native, per pair |
+|---|---|---|---|---|---|
+| self-consistency (k − 1 others within 1%) | 0.827 | 0.862 [0.845, 0.879] | 0.774 | 0.819 [0.800, 0.837] | +0.043 [+0.019, +0.069] |
+| direct P(yes) (X4 direct) | 0.683 | 0.679 [0.660, 0.697] | 0.572 | 0.573 [0.554, 0.593] | +0.105 [+0.078, +0.133] |
+| hidden-state probe, cross-fitted | 0.753 | 0.744 [0.725, 0.763] | 0.758 | 0.756 [0.739, 0.773] | -0.012 [-0.038, +0.013] |
+| the same probe on random weights (D160) | 0.664 | 0.663 [0.645, 0.682] | 0.673 | 0.675 [0.655, 0.694] | -0.011 [-0.038, +0.016] |
+| length only (shorter = more confident) | 0.634 | 0.632 [0.613, 0.652] | 0.598 | 0.605 [0.585, 0.626] | +0.027 [-0.001, +0.055] |
+| A5-style text classifier (D164) | 0.663 | 0.654 [0.633, 0.674] | 0.673 | 0.671 [0.652, 0.690] | -0.018 [-0.045, +0.010] |
+| net scale effect (probe − random) | | | | | -0.001 [-0.030, +0.027] |
+
+- yes: per problem +0.110, per pair +0.105; changed: no
+- probe: per problem -0.005, per pair -0.012; changed: no
+- net_scale_effect: per problem +0.003, per pair -0.001; changed: **yes**
+
+**the 599, paired**
+
+| readout | 7B, per problem | 7B, per pair | native, per problem | native, per pair | 7B − native, per pair |
+|---|---|---|---|---|---|
+| self-consistency (k − 1 others within 1%) | 0.840 | 0.876 [0.857, 0.894] | 0.765 | 0.816 [0.794, 0.837] | +0.060 [+0.034, +0.086] |
+| direct P(yes) (X4 direct) | 0.689 | 0.687 [0.665, 0.708] | 0.569 | 0.572 [0.551, 0.594] | +0.115 [+0.086, +0.143] |
+| hidden-state probe, cross-fitted | 0.758 | 0.747 [0.724, 0.769] | 0.761 | 0.760 [0.740, 0.778] | -0.013 [-0.039, +0.014] |
+| the same probe on random weights (D160) | 0.669 | 0.668 [0.646, 0.689] | 0.668 | 0.674 [0.652, 0.695] | -0.006 [-0.034, +0.023] |
+| length only (shorter = more confident) | 0.640 | 0.635 [0.611, 0.659] | 0.600 | 0.610 [0.588, 0.633] | +0.025 [-0.004, +0.055] |
+| A5-style text classifier (D164) | 0.668 | 0.658 [0.633, 0.683] | 0.678 | 0.677 [0.655, 0.699] | -0.019 [-0.050, +0.010] |
+| net scale effect (probe − random) | | | | | -0.007 [-0.039, +0.025] |
+
+- yes: per problem +0.120, per pair +0.115; changed: no
+- probe: per problem -0.003, per pair -0.013; changed: no
+- net_scale_effect: per problem -0.003, per pair -0.007; changed: no
+
+
 ### The text classifier's folds (kind, hyperparameters, inner-CV AUROC)
 
 - 7b (6133 answers, 26 min): linear 1.0 0.712; gbt {'max_iter': 300, 'max_depth': 3, 'learning_rate': 0.05, 'min_samples_leaf': 20} 0.711; gbt {'max_iter': 300, 'max_depth': 3, 'learning_rate': 0.05, 'min_samples_leaf': 20} 0.698; linear 1.0 0.704; gbt {'max_iter': 300, 'max_depth': 2, 'learning_rate': 0.05, 'min_samples_leaf': 20} 0.694
