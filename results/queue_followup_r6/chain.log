@@ -74,3 +74,16 @@
 [00:23:04] start r6_states_fact_native_1.5b (timeout 31018s): uv run python -m physcal.eval.followup_r6 states --set fact_native --reader 1.5b --cap 6.7
 [00:30:55] end r6_states_fact_native_1.5b: exit 0
 [00:30:55] r6_states_fact_native_1.5b: 0 temperature pauses, 0s paused of 473s; tonight so far 10 pauses, 303s of 2923s (D143)
+[00:30:57] commit 'Follow-up (D167, exploratory): R6 states, fact_native read by 1.5b': pushed
+[00:31:16] host VRAM readings (MiB): 754 754 754 754 754 754 754 754
+[00:31:16] GPU at 66.00C, memory.used 754 MiB
+[00:31:17] disk: 21 GiB free on MLStorage
+[00:31:17] start r6_states_fact_terse_1.5b (timeout 30524s): uv run python -m physcal.eval.followup_r6 states --set fact_terse --reader 1.5b --cap 6.7
+[00:32:17] guard(7993): GPU at 88.40C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[00:32:47] guard(7993): stage continued after 30s paused (GPU at 63.10C <= 75C)
+[00:36:48] guard(7993): GPU at 87.90C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[00:37:18] guard(7993): stage continued after 30s paused (GPU at 63.70C <= 75C)
+[00:39:18] guard(7993): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[00:39:48] guard(7993): stage continued after 30s paused (GPU at 63.30C <= 75C)
+[00:40:45] end r6_states_fact_terse_1.5b: exit 0
+[00:40:45] r6_states_fact_terse_1.5b: 3 temperature pauses, 90s paused of 569s; tonight so far 13 pauses, 393s of 3492s (D143)

@@ -1,0 +1,13 @@
+{
+ "decision": "D167",
+ "set": "fact_terse",
+ "reader": "1.5b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+ "n": 2766,
+ "parts": 44,
+ "seconds": 566.2358586788177,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "the final answer's last token"
+ }
+}

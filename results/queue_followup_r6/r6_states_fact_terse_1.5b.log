@@ -1,0 +1,68 @@
+W1103 19:01:21.677000 8007 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 19:01:21.695000 8007 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  24%|██▎       | 80/338 [00:00<00:00, 799.52it/s]Loading weights:  49%|████▉     | 165/338 [00:00<00:00, 827.58it/s]Loading weights:  74%|███████▎  | 249/338 [00:00<00:00, 827.48it/s]Loading weights:  99%|█████████▊| 333/338 [00:00<00:00, 832.34it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 836.76it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  fact_terse/1.5b part 0: 64/2766 (23s)
+  fact_terse/1.5b part 1: 128/2766 (33s)
+  fact_terse/1.5b part 2: 192/2766 (44s)
+  fact_terse/1.5b part 3: 256/2766 (55s)
+  fact_terse/1.5b part 4: 320/2766 (96s)
+  fact_terse/1.5b part 5: 384/2766 (106s)
+  fact_terse/1.5b part 6: 448/2766 (116s)
+  fact_terse/1.5b part 7: 512/2766 (126s)
+  fact_terse/1.5b part 8: 576/2766 (137s)
+  fact_terse/1.5b part 9: 640/2766 (148s)
+  fact_terse/1.5b part 10: 704/2766 (159s)
+  fact_terse/1.5b part 11: 768/2766 (169s)
+  fact_terse/1.5b part 12: 832/2766 (180s)
+  fact_terse/1.5b part 13: 896/2766 (191s)
+  fact_terse/1.5b part 14: 960/2766 (202s)
+  fact_terse/1.5b part 15: 1024/2766 (212s)
+  fact_terse/1.5b part 16: 1088/2766 (223s)
+  fact_terse/1.5b part 17: 1152/2766 (234s)
+  fact_terse/1.5b part 18: 1216/2766 (245s)
+  fact_terse/1.5b part 19: 1280/2766 (256s)
+  fact_terse/1.5b part 20: 1344/2766 (267s)
+  fact_terse/1.5b part 21: 1408/2766 (278s)
+  fact_terse/1.5b part 22: 1472/2766 (289s)
+  fact_terse/1.5b part 23: 1536/2766 (300s)
+  fact_terse/1.5b part 24: 1600/2766 (311s)
+  fact_terse/1.5b part 25: 1664/2766 (321s)
+  fact_terse/1.5b part 26: 1728/2766 (363s)
+  fact_terse/1.5b part 27: 1792/2766 (373s)
+  fact_terse/1.5b part 28: 1856/2766 (384s)
+  fact_terse/1.5b part 29: 1920/2766 (394s)
+  fact_terse/1.5b part 30: 1984/2766 (405s)
+  fact_terse/1.5b part 31: 2048/2766 (416s)
+  fact_terse/1.5b part 32: 2112/2766 (427s)
+  fact_terse/1.5b part 33: 2176/2766 (438s)
+  fact_terse/1.5b part 34: 2240/2766 (449s)
+  fact_terse/1.5b part 35: 2304/2766 (460s)
+  fact_terse/1.5b part 36: 2368/2766 (471s)
+  fact_terse/1.5b part 37: 2432/2766 (512s)
+  fact_terse/1.5b part 38: 2496/2766 (522s)
+  fact_terse/1.5b part 39: 2560/2766 (532s)
+  fact_terse/1.5b part 40: 2624/2766 (542s)
+  fact_terse/1.5b part 41: 2688/2766 (553s)
+  fact_terse/1.5b part 42: 2752/2766 (564s)
+  fact_terse/1.5b part 43: 2766/2766 (566s)
+{
+ "decision": "D167",
+ "set": "fact_terse",
+ "reader": "1.5b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+ "n": 2766,
+ "parts": 44,
+ "seconds": 566.2358586788177,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "the final answer's last token"
+ }
+}
