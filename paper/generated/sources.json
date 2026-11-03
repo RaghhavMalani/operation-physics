@@ -18,7 +18,7 @@
    "configs/base_4bit.yaml": "3d9d1725e751",
    "configs/base_llama32_3b_4bit.yaml": "584299a76a2e",
    "configs/env_v2.yaml": "547e903d8e18",
-   "configs/followup.yaml": "242a12c1a293",
+   "configs/followup.yaml": "7e2bce03725e",
    "configs/grpo_e1a.yaml": "e460668aa3e5",
    "configs/grpo_e1d.yaml": "f13534dc12ad",
    "configs/grpo_split_credit.yaml": "3b36da32e485",
@@ -116,7 +116,7 @@
    "results/r5_diag/tail.json": "d92087ff65fd"
   }
  },
- "commit": "a36251ff42f6aec2dca5b25468b3bd7dcf8d3b05",
+ "commit": "ff69c4ea608901b3ba16d1c7f2450a22f1296d99",
  "figures": [
   "headline.png",
   "headline.pdf",

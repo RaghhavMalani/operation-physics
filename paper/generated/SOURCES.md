@@ -1,6 +1,6 @@
 # Sources of the paper's generated values, tables and figures
 
-Built from commit `a36251ff42f6` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
+Built from commit `ff69c4ea6089` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
 
 ## fig_headline
 
@@ -22,7 +22,7 @@ Built from commit `a36251ff42f6` by `scripts/paper/build.py`; every source is tr
 - `configs/base_4bit.yaml` @ `3d9d1725e751`
 - `configs/base_llama32_3b_4bit.yaml` @ `584299a76a2e`
 - `configs/env_v2.yaml` @ `547e903d8e18`
-- `configs/followup.yaml` @ `242a12c1a293`
+- `configs/followup.yaml` @ `7e2bce03725e`
 - `configs/grpo_e1a.yaml` @ `e460668aa3e5`
 - `configs/grpo_e1d.yaml` @ `f13534dc12ad`
 - `configs/grpo_split_credit.yaml` @ `3b36da32e485`

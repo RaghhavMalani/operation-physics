@@ -475,6 +475,37 @@ only in the weights.
 - **The planning estimate was not what ran.** It assumed 1,500–3,000 tokens / s on an A100-class GPU. Kaggle's
   2 × T4 sampled at 568 tokens / s on the 20 timed candidates (D158), and the whole job took 5.0 h.
 
+## Paper #2's next experiments: R6-3 to R6-5, pre-registered and built, not run (D165–D167)
+
+The round-6 review (`REVIEW_SYNTHESIS_ROUND6_2026-11-03.md`, D165) asks what the probe gap between the native and the
+fine-tuned 1.5B means. The information may be lost, displaced, not linearly readable, or only inferable from the text.
+D167 pre-registered three experiments before any of their code existed. They were then built and tested on CPU.
+Nothing has run on the GPU.
+- **R6-3, a common candidate bank:**
+  - **the bank:** every answer of both models on the 599 shared problems (9,052);
+  - **the readers:** the 7B and the native 1.5B, each teacher-forced on all of them;
+  - **the comparison:** P(yes) and a probe on identical question–answer pairs. The primary pairs are within one
+    source, because surface style separates the sources (§3's audit);
+  - **truncated samples** are reported separately, through P(yes).
+- **R6-4, a format × weights factorial at 1.5B:**
+  - **the factors:** the native vs the fine-tuned weights, against native traces (CoT frame) vs terse completions (X2's
+    frame), with a random-weights reader as the surface control;
+  - **the primary set:** the 93 problems where both presentations hold the same candidate answers (323 candidates,
+    248 pairs);
+  - **the readings:** an interpretation table fixed in advance (weights vs presentation), plus the interaction.
+- **R6-5, probe controls on the native traces:**
+  - a richer text classifier (bigrams + 15 hand features: lengths, numbers, units, expressions, hesitation);
+  - an answer-tokens-only probe;
+  - a reasoning swap: the same box after the reasoning of an opposite-label answer, scored by the probe's own fold
+    models. Their refits reproduce the cached values exactly.
+- **GPU time (laptop, measured rates):** 6.9 h in all, with 7.9 GB of states:
+  - R6-3: 3.4 h;
+  - R6-4: 1.2 h;
+  - R6-5: 2.3 h.
+- **Kaggle:** estimated 7–10 h of wall time plus setup, because the reused local readouts would have to be re-read on
+  the T4s to stay comparable. The laptop is recommended (D167).
+- **The CPU analysis afterwards:** about 10 h at 4 jobs.
+
 ## What this means for a follow-up
 
 - **Test-time compute:** for this model, "spend more samples where the model is unsure" mostly means "do not sample

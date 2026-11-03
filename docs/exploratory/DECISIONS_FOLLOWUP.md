@@ -1075,3 +1075,49 @@ appended here.
   - `physcal/eval/followup_r6.py` (item sets, readout stages, analysis), `configs/followup.yaml` `r6`,
     `tests/test_followup_r6.py` and a queue script;
   - with GPU-time estimates, laptop against Kaggle. **Nothing runs on the GPU until you say so.**
+- **After the build (2026-11-03, ~14:00 IST; CPU only, nothing on the GPU; appended, the plan above is unchanged):**
+  - **The code:**
+    - `physcal/eval/followup_r6.py`: item sets, readout stages, analysis, GPU estimate;
+    - `scripts/queue_followup_r6.sh`: D157's guards and D158's VRAM gate per reader; **not run**;
+    - `tests/test_followup_r6.py`: 17 tests, including the readout path on a tiny Qwen2 on CPU and the queue's dry
+      run;
+    - `configs/followup.yaml`: the `r6` block.
+  - **The item sets are frozen** (`results/followup/r6/items/`, manifest with sha256). Their counts equal the facts
+    above: bank 4,369 + 4,683, truncated 466, factorial 2,722 + 2,766, and identical candidates on 93 problems, 323
+    candidates, 248 pairs. D162's kept-answer order is the probe's (asserted at the build).
+  - **Storage, within the plan:** p1 is defined for R6-4 only, so only `fact_native` and `fact_terse` keep it. The
+    other sets store p2 alone. States total ~7.9 GB, against ~13 GB with p1 everywhere.
+  - **A real-data plumbing check (CPU):** the cached probes' five fold models, refit with their recorded (layer, C),
+    reproduce the cached out-of-fold values exactly (max |Δp| = 0.0 for both models; the tolerance is 1e-3). So
+    R6-5 (d) can score swapped states with them.
+  - **One fix during the build, before any data:** hand feature 12 (`\boxed` occurrences) cut the text one character
+    into the last box; its test found it.
+  - **Laptop GPU estimate** (`results/followup/r6/gpu_estimate.json`): measured s / token at batch 1 with pauses
+    included (D159, D162), applied to each set's real context lengths (the longest 3,576 tokens, under 4,096):
+
+| | 1.5B readers | 7B reader | total | states on disk |
+|---|---|---|---|---|
+| R6-3 common bank | 0.80 h | 2.61 h | 3.41 h | 1.4 GB |
+| R6-4 factorial | 1.19 h | – | 1.19 h | 2.9 GB |
+| R6-5 controls | 0.51 h | 1.80 h | 2.32 h | 3.6 GB |
+| **all** | 2.51 h | 4.40 h | **6.92 h** | **7.9 GB** |
+
+  - **Kaggle instead (an estimate with assumptions, not measured):**
+    - **The comparability rule:** R6-3 reuses D162's own-answer verdicts and states, and R6-5 scores swaps with fold
+      models fit on D160's states. Both were read by the local 4-bit copies on the 4060. Read on a T4 (sm75 kernels),
+      the new readouts would not be comparable unless the reused ones are re-read there too: about +4.6 h of
+      laptop-equivalent work.
+    - **The assumption:** one T4 runs 4-bit teacher forcing at 0.6–0.8× the 4060. Two T4s in parallel give 1.2–1.6×.
+    - **So:** (6.9 + 4.6) / (1.2–1.6) ≈ 7–10 h of wall time. On top come a new Kaggle stack for teacher-forced
+      readouts (transformers / bitsandbytes / Unsloth, not D157's vLLM), uploading the SFT model (3.1 GB) and the
+      random copy (2.9 GB) as private datasets, and bringing ~11 GB of states back (7.9 GB new + 3.1 GB re-read). That is likely two 12 h
+      sessions.
+    - **Recommendation: the laptop,** one night (~7 GPU-h). Before launch, check free space: 14.2 GiB inside the
+      image (D163), against 7.9 GB of states.
+  - **CPU after the GPU (an estimate from D159–D162's probe times at 4 jobs; 7B 99 min / 6,133 answers, 1.5B
+    29 min / 6,000):**
+    - R6-3's two probes: ~3.2 h;
+    - R6-4's 12 probes: ~2.7 h;
+    - R6-5's answer-only probes: ~2.1 h;
+    - the text classifiers: ~2–3 h;
+    - **in all ≈ 10 h,** at nice 19 with the GPU idle.
