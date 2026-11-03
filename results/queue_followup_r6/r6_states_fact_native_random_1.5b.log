@@ -1,0 +1,67 @@
+W1103 19:30:25.258000 11043 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 19:30:25.276000 11043 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   0%|          | 1/338 [00:00<01:10,  4.80it/s]Loading weights:   1%|▏         | 5/338 [00:00<00:17, 18.72it/s]Loading weights:   8%|▊         | 27/338 [00:00<00:03, 90.74it/s]Loading weights:  15%|█▌        | 51/338 [00:00<00:02, 134.22it/s]Loading weights:  21%|██        | 71/338 [00:00<00:01, 154.59it/s]Loading weights:  26%|██▋       | 89/338 [00:00<00:01, 160.89it/s]Loading weights:  33%|███▎      | 112/338 [00:00<00:01, 181.24it/s]Loading weights:  41%|████      | 137/338 [00:00<00:01, 197.75it/s]Loading weights:  48%|████▊     | 161/338 [00:01<00:00, 200.99it/s]Loading weights:  55%|█████▍    | 185/338 [00:01<00:00, 205.22it/s]Loading weights:  62%|██████▏   | 208/338 [00:01<00:00, 201.91it/s]Loading weights:  68%|██████▊   | 231/338 [00:01<00:00, 203.30it/s]Loading weights:  75%|███████▍  | 252/338 [00:01<00:00, 196.42it/s]Loading weights:  80%|████████  | 272/338 [00:01<00:00, 188.74it/s]Loading weights:  86%|████████▋ | 292/338 [00:01<00:00, 183.23it/s]Loading weights:  93%|█████████▎| 315/338 [00:01<00:00, 190.58it/s]Loading weights:  99%|█████████▉| 336/338 [00:01<00:00, 195.86it/s]Loading weights: 100%|██████████| 338/338 [00:01<00:00, 172.23it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  fact_native/random_1.5b part 0: 64/2722 (27s)
+  fact_native/random_1.5b part 1: 128/2722 (37s)
+  fact_native/random_1.5b part 2: 192/2722 (47s)
+  fact_native/random_1.5b part 3: 256/2722 (57s)
+  fact_native/random_1.5b part 4: 320/2722 (68s)
+  fact_native/random_1.5b part 5: 384/2722 (79s)
+  fact_native/random_1.5b part 6: 448/2722 (91s)
+  fact_native/random_1.5b part 7: 512/2722 (101s)
+  fact_native/random_1.5b part 8: 576/2722 (111s)
+  fact_native/random_1.5b part 9: 640/2722 (152s)
+  fact_native/random_1.5b part 10: 704/2722 (162s)
+  fact_native/random_1.5b part 11: 768/2722 (172s)
+  fact_native/random_1.5b part 12: 832/2722 (183s)
+  fact_native/random_1.5b part 13: 896/2722 (192s)
+  fact_native/random_1.5b part 14: 960/2722 (202s)
+  fact_native/random_1.5b part 15: 1024/2722 (212s)
+  fact_native/random_1.5b part 16: 1088/2722 (224s)
+  fact_native/random_1.5b part 17: 1152/2722 (234s)
+  fact_native/random_1.5b part 18: 1216/2722 (246s)
+  fact_native/random_1.5b part 19: 1280/2722 (257s)
+  fact_native/random_1.5b part 20: 1344/2722 (268s)
+  fact_native/random_1.5b part 21: 1408/2722 (278s)
+  fact_native/random_1.5b part 22: 1472/2722 (289s)
+  fact_native/random_1.5b part 23: 1536/2722 (299s)
+  fact_native/random_1.5b part 24: 1600/2722 (309s)
+  fact_native/random_1.5b part 25: 1664/2722 (320s)
+  fact_native/random_1.5b part 26: 1728/2722 (331s)
+  fact_native/random_1.5b part 27: 1792/2722 (342s)
+  fact_native/random_1.5b part 28: 1856/2722 (351s)
+  fact_native/random_1.5b part 29: 1920/2722 (361s)
+  fact_native/random_1.5b part 30: 1984/2722 (372s)
+  fact_native/random_1.5b part 31: 2048/2722 (382s)
+  fact_native/random_1.5b part 32: 2112/2722 (393s)
+  fact_native/random_1.5b part 33: 2176/2722 (403s)
+  fact_native/random_1.5b part 34: 2240/2722 (414s)
+  fact_native/random_1.5b part 35: 2304/2722 (455s)
+  fact_native/random_1.5b part 36: 2368/2722 (464s)
+  fact_native/random_1.5b part 37: 2432/2722 (475s)
+  fact_native/random_1.5b part 38: 2496/2722 (484s)
+  fact_native/random_1.5b part 39: 2560/2722 (494s)
+  fact_native/random_1.5b part 40: 2624/2722 (505s)
+  fact_native/random_1.5b part 41: 2688/2722 (516s)
+  fact_native/random_1.5b part 42: 2722/2722 (522s)
+{
+ "decision": "D167",
+ "set": "fact_native",
+ "reader": "random_1.5b",
+ "reader_dir": "/home/flash2404/operation-physics/results/followup/scale/1.5b/random_init_model",
+ "n": 2722,
+ "parts": 43,
+ "seconds": 522.4103116989136,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "the final answer's last token"
+ }
+}
