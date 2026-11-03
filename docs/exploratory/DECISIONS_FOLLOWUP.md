@@ -1121,3 +1121,37 @@ appended here.
     - R6-5's answer-only probes: ~2.1 h;
     - the text classifiers: ~2–3 h;
     - **in all ≈ 10 h,** at nice 19 with the GPU idle.
+
+## 2026-11-03 night: the R6 queue (your instructions at ~23:25 IST; GPU deadline 09:00 IST)
+
+### D168. The R6 queue is launched with D157 / D158's guards. The 7B gate waits until the deadline, each stage reads the cap once, and the analysis caches every fit (2026-11-03, ~23:45 IST; after the first stage, before any result)
+- **The launch:** `GPU_DEADLINE=09:00 CAP_WAIT_S=21600 HOST_TRIES=1 scripts/queue_followup_r6.sh`.
+  - **The chain:** PID 503 at 23:31, relaunched as PID 2366 at 23:40 (below).
+  - **The guards, unchanged:** temperature (D143), stall (D132), free space (D111), and D158's VRAM gate (7B 6.5 GiB,
+    the 1.5B readers 3.5).
+- **Before it:**
+  - Windows held a steady ~1.05 GiB of VRAM, so the cap was 6.4 GiB, under the 7B's gate;
+  - 21.6 GiB was free on MLStorage;
+  - both extra readers were present (the SFT merge, D160's 1.5B random copy);
+  - no other queue or GPU process was running.
+- **Two settings, neither a guard:**
+  1. **`CAP_WAIT_S=21600`:** the 7B gate waits until the deadline instead of 60 min, as D159 did (`CAP_WAIT_S=17000`).
+     The 7B stages start after ~2.5 h of 1.5B stages, and Windows' share often drops at night (it was 802 MiB by
+     23:36).
+  2. **`HOST_TRIES=1`, after a restart:** the queue reads the cap before every stage. With 5 tries it re-read for up
+     to 4 min whenever the cap was under 7.5 GiB. That is ~70 idle GPU minutes over 18 stages, enough to push the last
+     7B stages past 09:00.
+     - The chain was stopped between stages (no stage process alive) and relaunched with one reading per stage.
+     - The cap formula and the gate are unchanged, and the 7B's gate loop re-reads every 60 s as before.
+     - The finished spot stage was skipped in 2 s.
+- **The first stage** (`spot_1.5b`, 16 own answers re-read by the 1.5B): 23:37, 26 s, cap 6.4 GiB.
+  - **D167's spot check, run then (1 thread, seconds):** max |diff| / max |state| = 0.0. The states are bitwise D160's,
+    so R6-3 reuses the stored ones as planned.
+- **The analysis's robustness, an implementation change only (no rule):**
+  - `followup_r6.analyze` now writes `results.json` after each experiment;
+  - every probe and text-classifier fit is cached under the sha256 of its inputs (`results/followup/r6/cache/`), so a
+    re-run after a failure keeps the finished fits;
+  - the GPU-stage functions are byte-identical (checked by diff), and the module was swapped in by an atomic rename;
+  - the tests: 18 pass (one new, for the cache).
+- **The analysis starts only if every GPU stage finished:** 4 jobs × 1 BLAS thread, nice 19, the GPU hidden
+  (`CPU_ENV`).

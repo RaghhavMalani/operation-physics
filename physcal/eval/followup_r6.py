@@ -562,6 +562,34 @@ def _side(x: dict) -> int:
     return 1 if lo > 0 else (-1 if hi < 0 else 0)
 
 
+def cached(cfg: dict, name: str, inputs: list, compute) -> tuple[dict, object]:
+    """compute() -> ({item id: value}, info), cached in <r6>/cache/<name>.json under the sha256 of `inputs` (arrays by
+    their bytes, anything else as sorted JSON), so a re-run of the analysis does not refit what it already has."""
+    h = hashlib.sha256()
+    for x in inputs:
+        if isinstance(x, np.ndarray):
+            h.update(np.ascontiguousarray(x).tobytes())
+        else:
+            h.update(json.dumps(x, sort_keys=True, default=str).encode())
+    sha, path = h.hexdigest(), r6_dir(cfg) / "cache" / f"{name}.json"
+    if path.exists() and (c := json.loads(path.read_text()))["inputs_sha256"] == sha:
+        print(f"  {name}: from the cache", flush=True)
+        return c["conf"], c["info"]
+    t0 = time.time()
+    conf, info = compute()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps({"decision": "D167 (analysis cache)", "inputs_sha256": sha, "info": info, "conf": conf},
+                              default=float))
+    tmp.rename(path)
+    print(f"  {name}: fitted in {time.time() - t0:.0f}s", flush=True)
+    return conf, info
+
+
+def _probe_inputs(name: str, layers: list[np.ndarray], items: list[dict], cfg: dict) -> list:
+    return [name, [[it["id"], it["key"], it["correct"]] for it in items], cfg["scale"]["probe"], *layers]
+
+
 # ------------------------------------------------------------------------------------------- probes (CPU)
 def crossfit_items(layers: list[np.ndarray], items: list[dict], cfg: dict) -> tuple[dict, dict]:
     """x2_analysis.crossfit_confidence on items (folds by problem, (layer, C) by inner CV); item id -> P(correct)."""
@@ -624,10 +652,13 @@ def analyze_bank(cfg: dict) -> dict:
     conf: dict = {"length": {it["id"]: -float(it["n_tokens"]) for it in bank}}
     recs = [AU.text_fields(it["text"], it["completion"]) for it in bank]
     tc = cfg["audit"]["text"]
-    p, folds = AU.crossfit_text(recs, np.array([it["correct"] for it in bank], dtype=int), [_kid(it["key"]) for it in bank],
-                                sc["probe"]["folds"], tc["feature_set"], tc["inner_folds"], load_config(tc["a5_config"]))
-    conf["text"] = {it["id"]: float(v) for it, v in zip(bank, p)}
-    res["text_folds"] = folds
+    def text_fit():
+        p, folds = AU.crossfit_text(recs, np.array([it["correct"] for it in bank], dtype=int),
+                                    [_kid(it["key"]) for it in bank], sc["probe"]["folds"], tc["feature_set"],
+                                    tc["inner_folds"], load_config(tc["a5_config"]))
+        return {it["id"]: float(v) for it, v in zip(bank, p)}, folds
+    conf["text"], res["text_folds"] = cached(cfg, "bank_text", ["bank_text", [it["id"] for it in bank], recs, tc,
+                                                                [it["correct"] for it in bank]], text_fit)
     for reader in ("7b", "1.5b"):
         spot = load_set(f"spot_{reader}", cfg)
         st, ids, _ = load_states(f"spot_{reader}", reader, "p2", cfg)
@@ -637,7 +668,11 @@ def analyze_bank(cfg: dict) -> dict:
         if not res["spot_check"][reader]["passes"]:
             raise SystemExit(f"R6-3 spot check failed for {reader}: {res['spot_check'][reader]} (re-read own answers)")
         conf[f"yes_{reader}"] = yes_conf(reader, bank, cfg)
-        conf[f"probe_{reader}"], res["readers"][reader] = crossfit_items(own_and_cross_states(reader, bank, cfg), bank, cfg)
+        layers = own_and_cross_states(reader, bank, cfg)
+        conf[f"probe_{reader}"], res["readers"][reader] = cached(
+            cfg, f"bank_probe_{reader}", _probe_inputs(f"bank_probe_{reader}", layers, bank, cfg),
+            lambda: crossfit_items(layers, bank, cfg))
+        del layers
     filt = pair_filters(cfg["audit"]["length_match_rel"])
     res["by_filter"] = {}
     pa = {}
@@ -744,7 +779,9 @@ def analyze_factorial(cfg: dict) -> dict:
                 if ids != [it["id"] for it in items]:
                     raise SystemExit(f"fact_{f}/{reader}: states are not in item order")
                 shas[reader] = sh
-                conf[(reader, f, pos)], res["cells"][f"{reader}/{f}/{pos}"] = crossfit_items(layers, items, cfg)
+                nm = f"fact_{f}_{reader}_{pos}"
+                conf[(reader, f, pos)], res["cells"][f"{reader}/{f}/{pos}"] = cached(
+                    cfg, nm, _probe_inputs(nm, layers, items, cfg), lambda: crossfit_items(layers, items, cfg))
         res["checks"][f"{f}: every reader read the same text"] = len({tuple(v) for v in shas.values()}) == 1
         if not res["checks"][f"{f}: every reader read the same text"]:
             raise SystemExit(f"fact_{f}: the readers' texts differ")
@@ -882,19 +919,27 @@ def analyze_controls(model: str, cfg: dict) -> dict:
     value = {(tuple(r["key"]), r["sample"]): r["value"] for r in rows}
     H = np.array([hand_features(rec, it["completion"], value[_key_sample(it)], it["key"][1], it["n_tokens"], rt)
                   for rec, it in zip(recs, items)])
-    p, res["rich_text_folds"] = crossfit_rich(recs, H, y, groups, sc["probe"]["folds"], tc["inner_folds"], a5, rt)
-    conf["rich_text"] = {it["id"]: float(v) for it, v in zip(items, p)}
+    def rich_fit():
+        p, chosen = crossfit_rich(recs, H, y, groups, sc["probe"]["folds"], tc["inner_folds"], a5, rt)
+        return {it["id"]: float(v) for it, v in zip(items, p)}, chosen
+    conf["rich_text"], res["rich_text_folds"] = cached(cfg, f"rich_text_{model}", [
+        f"rich_text_{model}", [it["id"] for it in items], recs, H, rt, tc, y.tolist()], rich_fit)
     text = AU.text_confidence(model, cfg, fit=False, rows=rows)
     conf["text"] = {it["id"]: text[_key_sample(it)] for it in items}
-    p, res["text_answer_only_folds"] = AU.crossfit_text([{k: r[k] for k in ("problem", "answer")} | {"reasoning": ""}
-                                                         for r in recs], y, groups, sc["probe"]["folds"],
-                                                        "problem_answer", tc["inner_folds"], a5)
-    conf["text_answer_only"] = {it["id"]: float(v) for it, v in zip(items, p)}
+    ao_recs = [{k: r[k] for k in ("problem", "answer")} | {"reasoning": ""} for r in recs]
+
+    def text_ao_fit():
+        p, folds = AU.crossfit_text(ao_recs, y, groups, sc["probe"]["folds"], "problem_answer", tc["inner_folds"], a5)
+        return {it["id"]: float(v) for it, v in zip(items, p)}, folds
+    conf["text_answer_only"], res["text_answer_only_folds"] = cached(cfg, f"text_answer_only_{model}", [
+        f"text_answer_only_{model}", [it["id"] for it in items], ao_recs, tc, y.tolist()], text_ao_fit)
     ao = load_set(f"answer_only_{model}", cfg)
     layers, ids, _ = load_states(f"answer_only_{model}", model, "p2", cfg)
     if ids != [it["id"] for it in ao] or [it["orig_id"] for it in ao] != [it["id"] for it in items]:
         raise SystemExit(f"answer_only_{model}: not in the probe's order")
-    c, res["answer_only_probe"] = crossfit_items(layers, ao, cfg)
+    c, res["answer_only_probe"] = cached(cfg, f"answer_only_probe_{model}",
+                                         _probe_inputs(f"answer_only_probe_{model}", layers, ao, cfg),
+                                         lambda: crossfit_items(layers, ao, cfg))
     conf["probe_answer_only"] = {it["orig_id"]: c[it["id"]] for it in ao}
     # (d) the reasoning swap: the cached probe's fold models on the swapped states
     sw = load_set(f"swap_{model}", cfg)
@@ -949,12 +994,24 @@ def analyze_controls(model: str, cfg: dict) -> dict:
 
 # ------------------------------------------------------------------------------------------- the analysis
 def analyze(cfg: dict | None = None) -> dict:
+    """R6-3, R6-4, then R6-5 per model; results.json is rewritten after each, and every fit is cached (`cached`), so a
+    re-run after a failure keeps what finished."""
     cfg = cfg or F._config()
     t0 = time.time()
-    res = {"decision": "D167 (exploratory, paper #2)", "R6-3": analyze_bank(cfg), "R6-4": analyze_factorial(cfg),
-           "R6-5": {m: analyze_controls(m, cfg) for m in ("7b", "1.5b")}}
-    res["seconds"] = time.time() - t0
-    (r6_dir(cfg) / "results.json").write_text(json.dumps(res, indent=1, default=float))
+    res: dict = {"decision": "D167 (exploratory, paper #2)", "threads": AU._threads()}
+    path = r6_dir(cfg) / "results.json"
+
+    def save():
+        res["seconds"] = time.time() - t0
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(res, indent=1, default=float))
+        tmp.rename(path)
+
+    for name, run in (("R6-3", lambda: analyze_bank(cfg)), ("R6-4", lambda: analyze_factorial(cfg)),
+                      ("R6-5 7b", lambda: analyze_controls("7b", cfg)), ("R6-5 1.5b", lambda: analyze_controls("1.5b", cfg))):
+        print(f"{name}: start ({time.time() - t0:.0f}s)", flush=True)
+        res[name] = run()
+        save()
     return res
 
 

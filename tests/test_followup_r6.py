@@ -313,3 +313,17 @@ def test_the_queue_dry_run_lists_every_stage_then_the_analysis(tmp_path):
            if "] DRY " in ln and "commit" not in ln and "disk" not in ln]
     assert ran == [f"r6_{k}_{s}_{r}" for k, s, r in R6.GPU_STAGES] + ["r6_analyze"]
     assert os.access(REPO_ROOT / "scripts" / "queue_followup_r6.sh", os.X_OK)
+
+
+def test_the_analysis_cache_refits_only_when_its_inputs_change(tmp_path):
+    cfg = _cfg(tmp_path)
+    calls = []
+
+    def fit():
+        calls.append(1)
+        return {"a": 0.25}, {"folds": [1]}
+    x = np.arange(6, dtype=np.float16)
+    assert R6.cached(cfg, "toy", ["toy", x], fit) == ({"a": 0.25}, {"folds": [1]})
+    assert R6.cached(cfg, "toy", ["toy", x], fit) == ({"a": 0.25}, {"folds": [1]}) and len(calls) == 1
+    R6.cached(cfg, "toy", ["toy", x + 1], fit)
+    assert len(calls) == 2
