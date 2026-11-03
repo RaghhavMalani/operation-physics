@@ -1,6 +1,6 @@
 # Sources of the paper's generated values, tables and figures
 
-Built from commit `f54b0c94f911` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
+Built from commit `a36251ff42f6` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
 
 ## fig_headline
 
@@ -17,11 +17,12 @@ Built from commit `f54b0c94f911` by `scripts/paper/build.py`; every source is tr
 
 ## macros
 
-- `DECISIONS.md` @ `4add2b31008a`
+- `DECISIONS.md` @ `bbca7607a4f2`
 - `FINDINGS.md` @ `d3660390b89c`
 - `configs/base_4bit.yaml` @ `3d9d1725e751`
 - `configs/base_llama32_3b_4bit.yaml` @ `584299a76a2e`
 - `configs/env_v2.yaml` @ `547e903d8e18`
+- `configs/followup.yaml` @ `242a12c1a293`
 - `configs/grpo_e1a.yaml` @ `e460668aa3e5`
 - `configs/grpo_e1d.yaml` @ `f13534dc12ad`
 - `configs/grpo_split_credit.yaml` @ `3b36da32e485`
@@ -42,6 +43,7 @@ Built from commit `f54b0c94f911` by `scripts/paper/build.py`; every source is tr
 - `physcal/env/formulas/dynamics.py` @ `1df5803da9d5`
 - `physcal/env/formulas/energy.py` @ `352ee72aefc0`
 - `physcal/env/formulas/kinematics.py` @ `73721bf1f2b0`
+- `results/followup/scale/results.json` @ `b68d85d2fbab`
 - `results/phase12_sft_data_r4/manifest.json` @ `f305c1b4036e`
 - `results/r5_diag/tail.json` @ `d92087ff65fd`
 - `results/sigma_star_gate_final/gate.json` @ `a7d0943a955d`
