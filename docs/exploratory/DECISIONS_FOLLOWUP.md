@@ -742,3 +742,101 @@ appended here.
   - It waited for D161's X2 refit (started 2026-11-02 ~14:45 IST).
   - It never exited, because its `pgrep -f` pattern matched its own command line. It used no GPU and wrote nothing.
 - **No GPU process is held,** and no queue lock is held.
+
+## 2026-11-03 morning: a zero-GPU confound audit of D162 (your instructions at ~08:30 IST)
+
+### D164. A confound audit of D162's table: truncation, the 599 shared problems by pass count, and an A5-style text classifier against the probe. Plan and analysis rules (2026-11-03, ~08:40 IST; recorded before any of its numbers exist)
+- **Why:** three things besides size differ between D162's columns.
+  - **Truncation:** 8.7% of the 7B's samples against 1.0%. A truncated sample is no answer, so it decides which wrong
+    answers enter the pairs.
+  - **The problem mix:** 844 against 766 kept problems, with different pass counts.
+  - **The surface:** random weights alone reach 0.66–0.67, so a reader of the text alone may match the probe.
+- **Status:** exploratory, under D151's rules and D148's freeze (nothing enters the paper).
+  - CPU only, 1 thread (OMP / OPENBLAS / MKL = 1), nice 19. No GPU and no new model output.
+- **Inputs, all unchanged from D162:**
+  - each model's samples, re-graded by the D151 + D154 parser (`followup_scale_analysis.graded`);
+  - the per-answer readouts: self-consistency, P(yes) (`yes.jsonl`), length, and the cross-fitted probe and its
+    random-weights control. The probes come from the cached `probe_hidden*.json`, checked against their input
+    hashes, and are not refit;
+  - the SFT 1.5B's X2 rows on the same prefix, with D161's refit probe.
+- **The metric and CIs:** X2's pairwise accuracy (ties 0.5), the mean over problems. Every CI is a bootstrap over
+  problems (B = 10,000, seed 0), with D162's code (`x2_pairs.summarize`, `paired`, `unpaired`).
+- **Facts checked before this plan (counts only, no readout):**
+  - no truncated sample carries an answer in any model (7B 820 truncated samples, native 1.5B 96, SFT 5): the parser
+    makes a truncation no answer (D151);
+  - kept problems with ≥ 1 truncated sample: 7B 371 of 844, native 1.5B 55 of 766, SFT 0 of 504.
+- **1. Truncation.**
+  - **(a) As asked: truncated samples dropped.**
+    - A truncated sample leaves its problem entirely: the answers (it was never one), the kept rule,
+      self-consistency's denominator (now the problem's other untruncated samples) and the length readout.
+    - Every row of D162's table, the paired controls and the SFT comparisons are recomputed.
+    - **Expected, stated now:** identical to D162 in every digit. Truncated samples are already in no pair, and
+      self-consistency's denominator is the same for every answer of a problem, so no ranking changes. Any difference
+      is reported as a pipeline finding.
+  - **(b) The informative variant: problems with any truncated sample dropped.**
+    - Each model keeps its own kept problems without truncation: the 7B 473, the native 1.5B 711, the SFT 504.
+    - This removes the selection D162 lists as a caveat: a problem whose runaway attempts were truncated keeps only its
+      finished attempts.
+    - Every row and comparison as in (a). The paired 7B − native column uses the shared problems with no truncated
+      sample in either model.
+  - **In both,** the per-answer confidences are D162's. Only the scored problems change.
+- **2. The 599 problems kept by both.**
+  - **Levels:** every readout for each model on the same 599, and 7B − native paired (D162's paired column, now with
+    the levels beside it).
+  - **The SFT 1.5B** on those of the 599 that it also keeps (the count reported), as context.
+  - **By pass count:** c = the number of a model's 8 samples graded correct (1..7; a truncated or unparsed sample is not
+    correct). Each model is stratified by its own c. Per stratum: n problems, and the pairwise accuracy with a
+    bootstrap CI over the stratum's problems.
+  - **One summary, added by this entry:** a pass-count-standardized 7B − native difference per readout.
+    - The weights w_c are the pooled share of each c over both models' 1,198 (problem, model) units.
+    - A model's standardized value is Σ_c w_c × its mean in stratum c.
+    - The CI is a paired bootstrap over the 599 problems (B = 10,000, seed 0). A stratum that is empty in a replicate
+      gives its weight to the others in proportion.
+- **3. An A5-style text classifier against the probe.**
+  - **Items:** the answers the probe reads (each model's answered samples of its kept problems: 6,133 / 6,000), in the
+    probe's order. So the outer folds (5, GroupKFold by problem, as `crossfit_confidence`) are the probe's own folds.
+  - **The text, A5's problem + answer + reasoning set:**
+    - problem = the native user text (`followup_scale.native_text`);
+    - answer = the content of the last `\boxed{}`;
+    - reasoning = the completion before that box's `\boxed{`.
+    - So the classifier sees what the probe's state can see: everything up to the box's closing brace. Text after the
+      box is left out.
+  - **Features, A5's** (`configs/nested_baselines_4bit.yaml`, `text`):
+    - TF-IDF unigrams over whitespace tokens, case kept, min_df 3, sublinear tf;
+    - one vocabulary per field, fitted on the training part only;
+    - for the GBT, each field's 1,000 most frequent terms, dense;
+    - built by `nested_baselines.Candidate`, not copied.
+  - **Models, A5's p grid:** logistic regression with C ∈ {0.01, 0.1, 1, 10, 100}, and A5's 4 HistGradientBoosting
+    classifiers (random_state 0).
+  - **Selection, as the probe's:**
+    - within each outer training part, an inner GroupKFold(5) by problem;
+    - the candidate with the best pooled out-of-fold AUROC wins (ties: the earlier in the grid);
+    - it is refit on the training part, and its P(correct) on the held-out answers is the confidence.
+  - **Reported per model:**
+    - the pairwise accuracy, overall and by depth;
+    - **probe − text, paired: the primary quantity asked;**
+    - text − random-weights probe, and text − length (paired);
+    - 7B − native for the text classifier (unpaired);
+    - the folds' choices.
+  - **The length-matched comparison:**
+    - a (correct, incorrect) pair is length-matched if the two completions' token counts (`n_tokens`, as the length
+      readout) differ by ≤ 10% of the longer one;
+    - per problem, the mean over its matched pairs. Problems with none drop out, and the headline is the mean over the
+      rest;
+    - every readout per model, with the numbers of pairs and problems. Length's own value on matched pairs shows how
+      much length signal is left;
+    - probe − text, paired over the problems with a matched pair; and 7B − native for each readout (unpaired).
+  - **The text classifier also enters the tables of 1 and 2,** as a new row.
+- **Reading (descriptive, no multiple-comparison correction):**
+  - **"The probe reads more than the text"** if probe − text has a CI above 0, overall and length-matched.
+  - **"A D162 conclusion is sensitive to truncation or to the problem mix"** if, in 1(b) or 2, a sign or a CI's
+    exclusion of 0 changes for any of: 7B − native P(yes), 7B − native probe, the probe's net scale effect, or
+    probe − random-weights.
+- **Code and outputs:**
+  - `physcal/eval/followup_audit.py`, with its settings in `configs/followup.yaml` (`audit`) and its tests in
+    `tests/test_followup_audit.py`;
+  - `results/followup/audit/`: `results.json`, `summary.md`, and the text classifier's per-answer values per model,
+    under a hash of their inputs;
+  - the write-up in `docs/exploratory/followup_feasibility.md` §3.
+- **Cost (an estimate):** the text classifier is 2 models × 5 outer folds × (9 candidates × 5 inner folds + 1) fits,
+  mostly GBT time. At one thread that is under an hour per model. The measured time is recorded with the results.
