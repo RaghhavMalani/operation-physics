@@ -188,6 +188,16 @@ def build(S: Sources) -> Macros:
     add("stat.cilevel", pct(an["criterion_ci_level"], 0), "stage_r4.yaml analysis.criterion_ci_level")
     add("stat.practical", num(an["practical_slope"], 1), "stage_r4.yaml analysis.practical_slope (C2)")
     add("stat.margin", num(pc["invariance_analysis"]["equivalence_margin"], 1), "pairs.yaml invariance_analysis.equivalence_margin")
+    # ---- the post-freeze exploratory comparison (D166, R6-1): the follow-up track's item 3 (D157-D162), not a result
+    # of this paper's frozen experiments; the 7B's numbers stay out (reserved for a separate paper)
+    fs = S.json(A, "results/followup/scale/results.json")
+    add("post.probe.native", num(fs["models"]["1.5b"]["readouts"]["probe"]["pairwise_accuracy"]),
+        "followup scale results.json models.1.5b probe pairwise_accuracy (D162)")
+    add("post.probe.random", num(fs["models"]["1.5b"]["readouts"]["probe_random"]["pairwise_accuracy"]),
+        "followup scale results.json models.1.5b probe_random pairwise_accuracy (D160, D162)")
+    add("post.probe.sft", num(fs["x2_sft_on_prefix"]["methods"]["probe"]["pairwise_accuracy"]),
+        "followup scale results.json x2_sft_on_prefix probe (D161's refit, the same 1,176 candidates)")
+
     # ---- the protocol's record
     dec = S.text(A, "DECISIONS.md")
     add("record.dentries", integer(len(re.findall(r"^### D\d+\.", dec, flags=re.M))), "DECISIONS.md: '### D<n>.' headers")

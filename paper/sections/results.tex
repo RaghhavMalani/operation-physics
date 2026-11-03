@@ -17,9 +17,16 @@
   \label{fig:headline}
 \end{figure}
 
-\section{Does the model know which of its answers is right?}
+\section{Within-problem correctness signals on the fine-tuned model}
 \label{sec:act2}
-\todo{To be written (docs/paper\_outline.md, section 5; FINDINGS \#7, \#19--\#22, \#26, \#37).}
+% R6-1 (D166): the claim, scoped to the evaluated checkpoint and its elicitation conditions; FINDINGS #19, #22, #37.
+On the fine-tuned Qwen2.5-Math-1.5B model and its terse response format, the tested single-completion uncertainty
+signals provide little within-problem discrimination between correct and incorrect answers; sample agreement provides
+stronger discrimination.
+This is specific to the evaluated checkpoint and elicitation conditions and does not establish that small language
+models generally lack accessible answer-correctness information.
+
+\todo{The rest to be written (docs/paper\_outline.md, section 5; FINDINGS \#7, \#19--\#22, \#26, \#37).}
 
 \input{generated/tables/cost}
 \input{generated/tables/cost_mca}

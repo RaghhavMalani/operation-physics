@@ -5,5 +5,19 @@
 
 \section{Limitations}
 \label{sec:limitations}
+% R6-1 (D166): one explicitly exploratory paragraph on a comparison made after this paper's experiments were frozen
+% (D148): the follow-up track's item 3 (D157-D162; results/followup/scale/results.json). The 7B numbers are reserved
+% for a separate paper.
+\paragraph{A post-freeze, exploratory comparison.}
+After this paper's experiments were frozen, we read the same kind of cross-fitted hidden-state probe on the untrained
+\pv{model.base}, answering in its own chain-of-thought format.
+Within problems it discriminated more strongly there than on the fine-tuned model (\pv{post.probe.native} against
+\pv{post.probe.sft}), but the same probe on a random-weights copy of the architecture, reading the same text, largely
+matched it (\pv{post.probe.random}).
+Between it and the untrained Qwen2.5-Math-7B-Instruct, the model's own verbalized verdict discriminated better at the
+larger size, while we observed no improvement in this probe metric between the two sizes under these conditions.
+The conditions are not matched (response format, training, decoding, sampler and problems all differ), so this is not
+evidence about what fine-tuning does to the model; it motivates a separate investigation.
+
 \todo{To be written (docs/paper\_outline.md, section 8): one model family; a synthetic domain; single-seed pilots;
 fresh Jacobians only (D148); the Llama pilot's descriptive invariance slope.}

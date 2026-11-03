@@ -33,8 +33,12 @@ replication and genuine family or formula transfer.
 - **The three findings, one per panel of the headline figure:**
   1. **Optimization.** With sequence-level credit, a proper scoring rule did not stop σ collapsing. Split credit fixes
      coverage, but not ranking.
-  2. **Epistemic.** No single-answer readout tells a right answer from a wrong one to the same problem. Cross-sample
-     agreement does, at ~8× the tokens.
+  2. **Within-problem correctness signals (R6-1, D166; this wording replaces "no single-answer readout tells a right
+     answer from a wrong one").** On the fine-tuned Qwen2.5-Math-1.5B model and its terse response format, the
+     tested single-completion uncertainty signals provide little within-problem discrimination between correct and
+     incorrect answers; sample agreement provides stronger discrimination (at ~8× the tokens). This is specific to
+     the evaluated checkpoint and elicitation conditions and does not establish that small language models generally
+     lack accessible answer-correctness information.
   3. **Aleatoric.** Visible sensitivity derivations give a σ that propagates measurement noise on fresh problems, yet
      its expected score is not shown to beat a surface heuristic. The loss is in value-dependent derivatives.
 - **Contributions, stated narrowly:**
@@ -123,9 +127,15 @@ replication and genuine family or formula transfer.
 - headline panel A;
 - `results/corrected/robustness_3v3/trajectories.png` (training σ and the σ = 0 share per seed).
 
-## 5. Act 2: does the model know which of its answers is right?
+## 5. Act 2: within-problem correctness signals on the fine-tuned model
 
-**The claim:**
+**The claim (R6-1, D166), verbatim:** "On the fine-tuned Qwen2.5-Math-1.5B model and its terse response format, the
+tested single-completion uncertainty signals provide little within-problem discrimination between correct and
+incorrect answers; sample agreement provides stronger discrimination. This is specific to the evaluated checkpoint
+and elicitation conditions and does not establish that small language models generally lack accessible
+answer-correctness information."
+
+**The evidence:**
 - **The test design:** problem difficulty is held fixed (X2: 516 problems with right and wrong samples, 5,390 pairs;
   CIs clustered over problems).
 - **Single-answer readouts sit near chance:** the stated σ (SFT, split credit), the text model (A5), self-verification
@@ -189,7 +199,7 @@ replication and genuine family or formula transfer.
 A6c + A6b.
 - **The go rule:** R4-3's criterion on D-pos-v2. Three seeds only on GO.
 - **Reported separately:** format-following and arithmetic accuracy after SFT, and the R5-2 tail categories.
-- **Status: NO-GO** ([#38](../FINDINGS.md#38-r5-5-cross-model-pilot-on-llama-32-3b-seed-0-frozen-a6c--a6b-the-explicit-propagation-recipes-a6c-result-replicates-k1-c2-d-pos-v2s-answer-σ-slope-0785-but-the-a6b-control-cannot-be-measured-4-computation-correct-pairs-so-the-pre-registered-go-rule-is-no-go-no-seed-expansion-a-failed-replication-at-one-seed-d137--d139--d146-2026-10-30)), accepted as pre-registered (D146): K1 and C2 replicate on
+- **Status: an exploratory, one-seed replication; its pre-registered go rule returned NO-GO** ([#38](../FINDINGS.md#38-r5-5-cross-model-pilot-on-llama-32-3b-seed-0-frozen-a6c--a6b-the-explicit-propagation-recipes-a6c-result-replicates-k1-c2-d-pos-v2s-answer-σ-slope-0785-but-the-a6b-control-cannot-be-measured-4-computation-correct-pairs-so-the-pre-registered-go-rule-is-no-go-no-seed-expansion-a-failed-replication-at-one-seed-d137--d139--d146-2026-10-30)), accepted as pre-registered (D146): K1 and C2 replicate on
   A6c (answer-σ slope +0.785); C3 is unmeasurable (4 computation-correct A6b pairs). Reported as "does not transfer
   at one seed on this model", with that reason, and with the same prominence as a replication.
 
@@ -199,8 +209,11 @@ one given's sensitivity lies outside every value that chain had in training (≥
 - **Status: P_J confirmed** ([#39](../FINDINGS.md#39-r5-6-part-j-3-seeds-frozen-j-set-d-pos-v2s-answer-σ-propagates-through-jacobians-outside-its-training-range-so-p_j-is-confirmed-j1-slope-0985-0868-1103-c2-c3-explicit-beats-implicit-on-the-slope-j2-0530-no-score-gain-over-rss-or-x1-j3-j4-not-rejected-a-propagator-clamped-to-the-training-range-would-already-reach-0831-d147--d149-2026-10-30)):
   J1 +0.985 [+0.868, +1.103], C3 +0.026 [−0.055, +0.119]; explicit − implicit +0.530 (J2); no gain over RSS / X1 (J3,
   J4).
-- **Report with it:** the clamped comparator (+0.831): most of the set's contrast is reachable inside the training
-  range. C3 rests on 72–86 computation-correct pairs per seed, nearly all at depths 1–2.
+- **Report with it (R6-1):**
+  - **the clamped comparator (+0.831):** most of the set's contrast is reachable inside the training range;
+  - **the rank-flip subgroup:** this is where D-pos-v2 most exceeds the clamped comparator (+1.123 vs +0.357). It
+    rests on 43 pairs and is descriptive, outside the Holm family (`tables/j_subgroups`; #39);
+  - **C3** rests on 72–86 computation-correct pairs per seed, nearly all at depths 1–2.
 - **Scope:** new Jacobians of trained chains only. Not new formulas, compositions or physics (part U, optics, not
   run; D148).
 
@@ -220,8 +233,11 @@ one given's sensitivity lies outside every value that chain had in training (≥
   - **Measurement noise** is handled once the structure is right: levels, root-sum-square and copying are correct.
   - **Reasoning errors in derivatives of value-dependent relations** cost the forecast. The same wrong intermediate
     corrupts both μ and its sensitivity (#35).
-- **Why sampling works and single readouts do not:** right answers cluster and wrong ones scatter (#22). This
-  information is not in a single answer, its σ, its hidden state or its self-check, for this model.
+- **Why sampling works and single readouts do not, here:** right answers cluster and wrong ones scatter (#22). For
+  this fine-tuned checkpoint and its terse format, the tested single-completion signals (its σ, a linear
+  hidden-state probe, its self-check) do not recover that (R6-1).
+  - That does not show the information is absent from the model. It may be lost, displaced to other tokens or
+    layers, not linearly readable, or only inferable from a fuller text (R6 synthesis, D165).
 - **What would close the gap:**
   - correct sensitivities (#35's counterfactual), not fallbacks (#36);
   - an executor that computes the chain (MC-B did not get there; future work in ChatGPT's sequence: semantic
@@ -244,6 +260,17 @@ one given's sensitivity lies outside every value that chain had in training (≥
       stay flat.
     - Qwen seed 0's is +0.010.
     - It does not change the NO-GO, and the paper does not claim scale invariance on Llama.
+- **A post-freeze, exploratory comparison (R6-1, D166; one paragraph, numbers from
+  `results/followup/scale/results.json`):**
+  - **The probe:** on the untrained ("native") Qwen2.5-Math-1.5B-Instruct, answering in its own chain-of-thought
+    format, the hidden-state probe discriminates more strongly within problems than on the fine-tuned model (0.758
+    vs 0.539).
+  - **The control:** a random-weights probe on the same text largely matches it (0.673).
+  - **The verdict:** the model's own verbalized verdict gained more from the native 1.5B to a native 7B, while this
+    probe metric showed no improvement between the two native sizes under these conditions.
+  - **The conditions are not matched** (format, training, decoding, sampler, problems), so this motivates a separate
+    investigation and is not evidence about what fine-tuning does.
+  - **No 7B number appears in paper #1.** The 7B comparison is reserved for paper #2.
 - **Seeds:**
   - **One seed** for the pilots: E1, X3, E1c / E1d, C, D, R4-1, the cross-model pilot.
   - **Three seeds:** S, uniform credit, stage B, R4-3.
@@ -290,6 +317,9 @@ D54, D57, D92, D135).
 | "all bf16 merging is unsafe" | "merging this LoRA into the bf16 SFT model erased > 90% of the RL update in our pipeline" | R5-1, #15 |
 | "uncertainty is not felt inside one forward pass" | the narrower R4-8 framing: single-response estimators do not reveal answer-specific correctness here | R4 synthesis, R4-8 |
 | "the model knows its error" (from probes) | a random-init model of the same architecture reads nearly as much from the same tokens | #7, #19 |
+| "no single-answer readout tells right from wrong" / "small models lack answer-correctness information" | R6-1's sentence: this fine-tuned checkpoint, its terse format, the tested signals | R6-1, D166 |
+| "fine-tuning removed the model's knowledge of its errors" | the post-freeze probe gap may be loss, displacement to other tokens or layers, non-linear readability, or text-only inferability; the conditions are not matched | R6 synthesis, D165, D166 |
+| any scale claim from the native 1.5B and 7B | paper #1 gives no 7B number; paper #2 says "we observed no improvement in this probe metric between the two native sizes under these conditions" | R6 synthesis, D165 |
 | "self-consistency is a free confidence signal" | 0.643 within problems at 8.0× the tokens of one answer | #22, #37 |
 | "split credit calibrates σ" | it raises 1σ coverage to 41.8% (nominal 68%); ρ(σ, error) stays ≤ 0.08 and S2 is not supported | #16, #18 |
 | "RL improves calibration" against stated σ alone | judge against the A5 text baselines on the same answers (family N fails) | D49, D50/A5, #16 |
