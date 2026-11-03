@@ -25,3 +25,10 @@
 [23:40:08] start r6_states_spot_1.5b_1.5b (timeout 33593s): uv run python -m physcal.eval.followup_r6 states --set spot_1.5b --reader 1.5b --cap 6.7
 [23:40:09] end r6_states_spot_1.5b_1.5b: exit 0
 [23:40:09] r6_states_spot_1.5b_1.5b: 0 temperature pauses, 0s paused of 2s; tonight so far 0 pauses, 0s of 2s (D143)
+[23:40:10] commit 'Follow-up (D167, exploratory): R6 states, spot_1.5b read by 1.5b': pushed
+[23:40:28] host VRAM readings (MiB): 802 802 802 802 802 803 825 823
+[23:40:29] GPU at 56.90C, memory.used 808 MiB
+[23:40:30] disk: 21 GiB free on MLStorage
+[23:40:30] start r6_states_bank_7b_1.5b (timeout 33571s): uv run python -m physcal.eval.followup_r6 states --set bank_7b --reader 1.5b --cap 6.7
+[23:58:18] end r6_states_bank_7b_1.5b: exit 0
+[23:58:18] r6_states_bank_7b_1.5b: 8 temperature pauses, 242s paused of 1069s; tonight so far 8 pauses, 242s of 1071s (D143)
