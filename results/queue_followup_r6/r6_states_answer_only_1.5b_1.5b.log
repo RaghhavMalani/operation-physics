@@ -1,0 +1,118 @@
+W1103 19:48:58.654000 12841 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 19:48:58.672000 12841 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  24%|██▍       | 81/338 [00:00<00:00, 796.16it/s]Loading weights:  48%|████▊     | 161/338 [00:00<00:00, 797.47it/s]Loading weights:  72%|███████▏  | 243/338 [00:00<00:00, 798.15it/s]Loading weights:  96%|█████████▌| 325/338 [00:00<00:00, 805.76it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 810.21it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  answer_only_1.5b/1.5b part 0: 64/6000 (17s)
+  answer_only_1.5b/1.5b part 1: 128/6000 (21s)
+  answer_only_1.5b/1.5b part 2: 192/6000 (25s)
+  answer_only_1.5b/1.5b part 3: 256/6000 (28s)
+  answer_only_1.5b/1.5b part 4: 320/6000 (32s)
+  answer_only_1.5b/1.5b part 5: 384/6000 (36s)
+  answer_only_1.5b/1.5b part 6: 448/6000 (39s)
+  answer_only_1.5b/1.5b part 7: 512/6000 (43s)
+  answer_only_1.5b/1.5b part 8: 576/6000 (47s)
+  answer_only_1.5b/1.5b part 9: 640/6000 (51s)
+  answer_only_1.5b/1.5b part 10: 704/6000 (54s)
+  answer_only_1.5b/1.5b part 11: 768/6000 (58s)
+  answer_only_1.5b/1.5b part 12: 832/6000 (62s)
+  answer_only_1.5b/1.5b part 13: 896/6000 (66s)
+  answer_only_1.5b/1.5b part 14: 960/6000 (69s)
+  answer_only_1.5b/1.5b part 15: 1024/6000 (73s)
+  answer_only_1.5b/1.5b part 16: 1088/6000 (77s)
+  answer_only_1.5b/1.5b part 17: 1152/6000 (81s)
+  answer_only_1.5b/1.5b part 18: 1216/6000 (85s)
+  answer_only_1.5b/1.5b part 19: 1280/6000 (89s)
+  answer_only_1.5b/1.5b part 20: 1344/6000 (93s)
+  answer_only_1.5b/1.5b part 21: 1408/6000 (97s)
+  answer_only_1.5b/1.5b part 22: 1472/6000 (101s)
+  answer_only_1.5b/1.5b part 23: 1536/6000 (105s)
+  answer_only_1.5b/1.5b part 24: 1600/6000 (109s)
+  answer_only_1.5b/1.5b part 25: 1664/6000 (113s)
+  answer_only_1.5b/1.5b part 26: 1728/6000 (117s)
+  answer_only_1.5b/1.5b part 27: 1792/6000 (121s)
+  answer_only_1.5b/1.5b part 28: 1856/6000 (124s)
+  answer_only_1.5b/1.5b part 29: 1920/6000 (128s)
+  answer_only_1.5b/1.5b part 30: 1984/6000 (132s)
+  answer_only_1.5b/1.5b part 31: 2048/6000 (136s)
+  answer_only_1.5b/1.5b part 32: 2112/6000 (140s)
+  answer_only_1.5b/1.5b part 33: 2176/6000 (144s)
+  answer_only_1.5b/1.5b part 34: 2240/6000 (148s)
+  answer_only_1.5b/1.5b part 35: 2304/6000 (152s)
+  answer_only_1.5b/1.5b part 36: 2368/6000 (156s)
+  answer_only_1.5b/1.5b part 37: 2432/6000 (160s)
+  answer_only_1.5b/1.5b part 38: 2496/6000 (164s)
+  answer_only_1.5b/1.5b part 39: 2560/6000 (168s)
+  answer_only_1.5b/1.5b part 40: 2624/6000 (172s)
+  answer_only_1.5b/1.5b part 41: 2688/6000 (176s)
+  answer_only_1.5b/1.5b part 42: 2752/6000 (180s)
+  answer_only_1.5b/1.5b part 43: 2816/6000 (184s)
+  answer_only_1.5b/1.5b part 44: 2880/6000 (188s)
+  answer_only_1.5b/1.5b part 45: 2944/6000 (192s)
+  answer_only_1.5b/1.5b part 46: 3008/6000 (195s)
+  answer_only_1.5b/1.5b part 47: 3072/6000 (199s)
+  answer_only_1.5b/1.5b part 48: 3136/6000 (203s)
+  answer_only_1.5b/1.5b part 49: 3200/6000 (207s)
+  answer_only_1.5b/1.5b part 50: 3264/6000 (211s)
+  answer_only_1.5b/1.5b part 51: 3328/6000 (215s)
+  answer_only_1.5b/1.5b part 52: 3392/6000 (219s)
+  answer_only_1.5b/1.5b part 53: 3456/6000 (223s)
+  answer_only_1.5b/1.5b part 54: 3520/6000 (227s)
+  answer_only_1.5b/1.5b part 55: 3584/6000 (231s)
+  answer_only_1.5b/1.5b part 56: 3648/6000 (235s)
+  answer_only_1.5b/1.5b part 57: 3712/6000 (238s)
+  answer_only_1.5b/1.5b part 58: 3776/6000 (242s)
+  answer_only_1.5b/1.5b part 59: 3840/6000 (246s)
+  answer_only_1.5b/1.5b part 60: 3904/6000 (250s)
+  answer_only_1.5b/1.5b part 61: 3968/6000 (254s)
+  answer_only_1.5b/1.5b part 62: 4032/6000 (258s)
+  answer_only_1.5b/1.5b part 63: 4096/6000 (262s)
+  answer_only_1.5b/1.5b part 64: 4160/6000 (266s)
+  answer_only_1.5b/1.5b part 65: 4224/6000 (270s)
+  answer_only_1.5b/1.5b part 66: 4288/6000 (304s)
+  answer_only_1.5b/1.5b part 67: 4352/6000 (308s)
+  answer_only_1.5b/1.5b part 68: 4416/6000 (312s)
+  answer_only_1.5b/1.5b part 69: 4480/6000 (316s)
+  answer_only_1.5b/1.5b part 70: 4544/6000 (320s)
+  answer_only_1.5b/1.5b part 71: 4608/6000 (324s)
+  answer_only_1.5b/1.5b part 72: 4672/6000 (328s)
+  answer_only_1.5b/1.5b part 73: 4736/6000 (332s)
+  answer_only_1.5b/1.5b part 74: 4800/6000 (335s)
+  answer_only_1.5b/1.5b part 75: 4864/6000 (339s)
+  answer_only_1.5b/1.5b part 76: 4928/6000 (343s)
+  answer_only_1.5b/1.5b part 77: 4992/6000 (348s)
+  answer_only_1.5b/1.5b part 78: 5056/6000 (352s)
+  answer_only_1.5b/1.5b part 79: 5120/6000 (356s)
+  answer_only_1.5b/1.5b part 80: 5184/6000 (360s)
+  answer_only_1.5b/1.5b part 81: 5248/6000 (364s)
+  answer_only_1.5b/1.5b part 82: 5312/6000 (367s)
+  answer_only_1.5b/1.5b part 83: 5376/6000 (372s)
+  answer_only_1.5b/1.5b part 84: 5440/6000 (376s)
+  answer_only_1.5b/1.5b part 85: 5504/6000 (379s)
+  answer_only_1.5b/1.5b part 86: 5568/6000 (383s)
+  answer_only_1.5b/1.5b part 87: 5632/6000 (387s)
+  answer_only_1.5b/1.5b part 88: 5696/6000 (422s)
+  answer_only_1.5b/1.5b part 89: 5760/6000 (426s)
+  answer_only_1.5b/1.5b part 90: 5824/6000 (429s)
+  answer_only_1.5b/1.5b part 91: 5888/6000 (433s)
+  answer_only_1.5b/1.5b part 92: 5952/6000 (437s)
+  answer_only_1.5b/1.5b part 93: 6000/6000 (440s)
+{
+ "decision": "D167",
+ "set": "answer_only_1.5b",
+ "reader": "1.5b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039",
+ "n": 6000,
+ "parts": 94,
+ "seconds": 440.0625686645508,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "not kept (D167 uses p1 in R6-4 only)"
+ }
+}

@@ -88,3 +88,10 @@
 [01:09:27] start r6_states_fact_terse_random_1.5b (timeout 28235s): uv run python -m physcal.eval.followup_r6 states --set fact_terse --reader random_1.5b --cap 6.7
 [01:18:31] end r6_states_fact_terse_random_1.5b: exit 0
 [01:18:31] r6_states_fact_terse_random_1.5b: 2 temperature pauses, 61s paused of 546s; tonight so far 22 pauses, 664s of 5675s (D143)
+[01:18:33] commit 'Follow-up (D167, exploratory): R6 states, fact_terse read by random_1.5b': pushed
+[01:18:52] host VRAM readings (MiB): 728 728 728 728 728 728 728 728
+[01:18:52] GPU at 65.40C, memory.used 728 MiB
+[01:18:54] disk: 21 GiB free on MLStorage
+[01:18:54] start r6_states_answer_only_1.5b_1.5b (timeout 27668s): uv run python -m physcal.eval.followup_r6 states --set answer_only_1.5b --reader 1.5b --cap 6.7
+[01:26:15] end r6_states_answer_only_1.5b_1.5b: exit 0
+[01:26:15] r6_states_answer_only_1.5b_1.5b: 2 temperature pauses, 60s paused of 443s; tonight so far 24 pauses, 724s of 6118s (D143)
