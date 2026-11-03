@@ -14,7 +14,7 @@ After this paper's experiments were frozen, we read the same kind of cross-fitte
 Within problems it discriminated more strongly there than on the fine-tuned model (\pv{post.probe.native} against
 \pv{post.probe.sft}), but the same probe on a random-weights copy of the architecture, reading the same text, largely
 matched it (\pv{post.probe.random}).
-Between it and the untrained Qwen2.5-Math-7B-Instruct, the model's own verbalized verdict discriminated better at the
+Between it and the untrained \pv{post.model.large}, the model's own verbalized verdict discriminated better at the
 larger size, while we observed no improvement in this probe metric between the two sizes under these conditions.
 The conditions are not matched (response format, training, decoding, sampler and problems all differ), so this is not
 evidence about what fine-tuning does to the model; it motivates a separate investigation.

@@ -191,6 +191,8 @@ def build(S: Sources) -> Macros:
     # ---- the post-freeze exploratory comparison (D166, R6-1): the follow-up track's item 3 (D157-D162), not a result
     # of this paper's frozen experiments; the 7B's numbers stay out (reserved for a separate paper)
     fs = S.json(A, "results/followup/scale/results.json")
+    fu = S.yaml(A, "configs/followup.yaml")
+    add("post.model.large", fu["scale"]["kaggle"]["repo_id"].split("/")[-1], "followup.yaml scale.kaggle repo_id (D157)")
     add("post.probe.native", num(fs["models"]["1.5b"]["readouts"]["probe"]["pairwise_accuracy"]),
         "followup scale results.json models.1.5b probe pairwise_accuracy (D162)")
     add("post.probe.random", num(fs["models"]["1.5b"]["readouts"]["probe_random"]["pairwise_accuracy"]),
