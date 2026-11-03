@@ -912,3 +912,166 @@ appended here.
   - D165's rule flags one of six checks: the net scale effect on D162's sets, +0.003 → −0.001. Its CI contains 0
     both times, so no conclusion changes.
   - **R6-2 is complete.**
+
+### D167. Pre-registration of R6-3 (a common candidate bank), R6-4 (a format × weights factorial) and R6-5 (probe controls), for paper #2. Recorded before any of their code, items or GPU output exists (2026-11-03, ~12:30 IST)
+- **Status:** exploratory track, paper #2 (not paper #1; D148's freeze is unchanged). Every rule below is fixed now.
+  - **Changes:** any later change gets its own D-entry, written before the data it affects.
+  - **Correction:** none of the three is Holm-corrected. Each states its own primary quantity and reading.
+- **Facts fixed before this entry** (counts and token lengths only, no readout; `results/followup/scale`, X2's tapes):
+  - **the 599 problems kept by both Kaggle models:** 4,369 answered 7B samples (mean 998 tokens) and 4,683 answered
+    native-1.5B samples (925 tokens). Truncated: 410 and 56;
+  - **the problems kept by both the native 1.5B (Kaggle) and the SFT 1.5B (X2, the same 1,176 candidates):** 347,
+    with 2,722 native traces (903 tokens) and 2,766 SFT terse completions (196 tokens), each with exactly one
+    `<answer>…</answer>`;
+  - **the prompts:** 225 tokens in the native frame, 971 in the SFT's (`v4_worked_example`, X2's prompt);
+  - **R6-4's identical-candidate subset (rule below):** 93 problems, 323 candidates, 248 pairs.
+- **What the audit (D164, D165) fixes here:**
+  1. **R6-3's problems are the 599 that are mixed for both models** (D164 item 2). Every pair is then scored by both
+     readers, so the pass-count mix is identical by construction and needs no standardization.
+  2. **R6-3's primary pairs are within one source** (both answers by the same model). A text reader matches the
+     random-weights probe at 0.66–0.67 (D164 §3), so style separates the sources, and the 7B is right more often
+     (51% vs 41% per sample). Cross-source pairs would then reward a style detector. They are reported, as secondary.
+  3. **Length-matched pairs (completion token counts within 10% of the longer, D164's rule) are a pre-specified
+     secondary in all three.** Length's own readout falls to 0.51–0.54 there.
+  4. **Per-problem weighting is primary everywhere** (X2's metric). Pair weighting is a secondary (D165: it does not
+     change D162's reading).
+  5. **Truncated samples have no box, so no probe position.** R6-3 reports them separately through P(yes) only
+     (truncation covers 44% of the 7B's kept problems, D164 1(b)).
+  6. **The surface reference is a text classifier.** D164's A5-style classifier equals the random-weights probe, so
+     R6-5 adds a richer one.
+- **Common to all three:**
+  - **The metric:** X2's within-problem pairwise accuracy (ties and missing 0.5), the mean over problems.
+  - **CIs:** a bootstrap over problems (B = 10,000, seed 0), paired whenever the same problems are compared.
+  - **The probe:** `x2_analysis.crossfit_confidence` with `scale.probe`. That is 5 folds by `GroupKFold` over
+    problems; the (layer, C ∈ {0.001, 0.01, 0.1, 1}) choice by inner grouped CV on the training folds only; all 29
+    layers; refit, then score the held-out fold.
+  - **The readers** are the local 4-bit copies, the same as every earlier readout. GPU readouts go through the
+    follow-up queue (D157's guards: temperature, stall, free space, VRAM gate), batch 1 for hidden states.
+  - **The CPU analysis** runs after the GPU stages, with the GPU idle: 4 jobs × 1 BLAS thread (as the cached
+    probes, D159–D162).
+  - **The candidates:** every item set is built on CPU, frozen as JSONL with a sha256 manifest, and committed
+    before any GPU stage reads it.
+- **R6-3. A common candidate bank: the 7B and the native 1.5B read the same answers.**
+  - **The bank:** every answered sample of both models on the 599 problems (9,052 answers), with its source, label
+    (correct within 1%) and the native frame (D151's prompt).
+  - **The readers:** the 7B and the native 1.5B, each teacher-forced on every bank answer: its own (D162's readouts,
+    reused) and the other model's (new).
+  - **The readouts per reader:**
+    - direct P(yes) (D151 / D157's verification turn; the log-odds);
+    - the cross-fitted probe at the token holding the last box's closing brace, fit on the reader's states for the
+      whole bank. Both readers use the same items in the same order, so the folds are identical;
+    - reader-independent references: length, and D164's A5-style text classifier cross-fitted on the bank.
+  - **Reused own-answer states and verdicts:** D162's, read by the same code and copies. A spot check re-extracts the
+    first 16 own answers per reader; their states must match the stored ones within fp16 rounding (max relative
+    difference ≤ 1e-2 at every layer), or the own answers are re-read too.
+  - **No random-weights control here:** both readers see identical text, so the surface is held fixed. The 7B's
+    random copy is also deleted (D163).
+  - **The primary quantity:** reader 7B − reader 1.5B, paired over the 599, on the within-source pairs (the two
+    sources' within-source pairs pooled per problem), for P(yes) and, separately, for the probe.
+  - **Secondary:**
+    - per source (7B answers only, 1.5B answers only), giving a 2 × 2 of reader × source and the interaction
+      (own − other);
+    - cross-source pairs; all pairs; length-matched within-source pairs; pair weighting;
+    - **truncated samples, separately:** each reader's P(yes) on the 466 truncated samples, as within-problem
+      pairwise accuracy of (correct answer, truncated) and (incorrect answer, truncated) pairs, and the mean log-odds
+      per class.
+  - **Reading:**
+    - **"the verdict's size effect holds on identical inputs"** if P(yes) 7B − 1.5B has a CI above 0;
+    - **for the probe:** "no reader difference on identical inputs" if its CI contains 0; "the 7B's states carry more
+      / less" if its CI is above / below 0.
+- **R6-4. A format × weights factorial at 1.5B.**
+  - **The weights:** the native Qwen2.5-Math-1.5B-Instruct (D78's 4-bit copy) and the fine-tuned SFT model
+    (`results/sft/qwen2.5-math-1.5b-instruct/merged`, 4-bit at load, X2's reader). They have the same architecture.
+  - **The surface control:** D160's 1.5B random-weights copy, a third reader.
+  - **The presentations, each with its own frame:**
+    - **native:** the native 1.5B's chain-of-thought traces, with D151's CoT system prompt and the problem without its
+      `<steps>` sentence;
+    - **terse:** the SFT model's completions, with X2's prompt (`physcal.prompt.build_messages(text,
+      "v4_worked_example")`) and the full problem text.
+  - **The problems:** the 347 mixed for both the native and the SFT 1.5B. Every reader reads both banks.
+  - **The positions,** one forward pass each, in the completion:
+    - **P2 (primary), the first token after the final answer:** the token holding the closing brace of the last
+      `\boxed{}` (native; D151's position), or the token holding the `<` of `</answer>` (terse);
+    - **P1, the final answer's last token:** the token holding the last character of the box's content, or of the
+      `<answer>` block's content. If P1 and P2 fall on one token, that is counted.
+  - **The probes:** one per cell (3 readers × 2 presentations × 2 positions), cross-fitted on that cell's bank.
+    Within a presentation, the readers share items and folds.
+  - **The primary set, identical candidates in both presentations (93 problems, 323 candidates, 248 pairs):**
+    - per problem, correct native traces are matched to correct terse traces in sample order (as many as the smaller
+      count);
+    - each incorrect native trace is matched to the first unmatched incorrect terse trace whose value agrees within
+      1% (greedy, sample order);
+    - a matched (native trace, terse trace) is one candidate, with one label;
+    - a problem enters if it has ≥ 1 correct and ≥ 1 incorrect candidate. Pairs are (correct, incorrect) candidates;
+    - each cell scores a candidate by its trace in that presentation (the out-of-fold probe value from the full-bank
+      fit).
+  - **Secondary:** the full banks (all pairs of each bank, 347 problems), P1, length-matched pairs, pair weighting.
+  - **The effects (P2, the primary set; paired bootstrap over problems):**
+    - the weights effect in each presentation: W_N = SFT/native − native/native, W_T = SFT/terse − native/terse;
+    - the presentation effect for each weight set: P_native = native/terse − native/native, P_SFT = SFT/terse −
+      SFT/native;
+    - the main effects W = (W_N + W_T) / 2 and P = (P_native + P_SFT) / 2;
+    - the interaction I = W_T − W_N;
+    - the surface part of the presentation effect: random/terse − random/native.
+  - **The interpretation table (fixed now):**
+
+| W's CI excludes 0 | P's CI excludes 0 | reading |
+|---|---|---|
+| yes | no | **the weights factor dominates: fine-tuning is implicated** |
+| no | yes | **the presentation factor dominates: format / readout** |
+| yes | yes | both; the larger by \|W\| − \|P\|, with its bootstrap CI (descriptive) |
+| no | no | neither factor is shown |
+
+  - **Always reported:** the interaction ("the factors interact" if I's CI excludes 0), and P net of its surface
+    part (descriptive).
+  - **A plumbing anchor:** the native weights on the native bank at P2 re-extract D160's states for the same answers.
+    The first 16 must match within fp16 rounding (as in R6-3).
+- **R6-5. Probe controls on the native traces** (both Kaggle models, D162's kept answers, D162's probe as the reference).
+  - **(a) A richer text classifier,** cross-fitted on the probe's folds with D164's selection:
+    - **the features:**
+      - TF-IDF word uni- and bigrams (whitespace tokens, min_df 3, sublinear tf) per field (problem, answer,
+        reasoning; the text the probe can see, D164);
+      - 15 hand features from the same text:
+        - lengths: completion tokens; reasoning characters; lines;
+        - numbers: all numbers; distinct numbers; the significant digits of the box's number; log10 of the box's
+          |value| (0 → −12);
+        - units: whether the box holds a unit; `\text{` occurrences;
+        - expressions: `=` signs; LaTeX operators (`\frac \sqrt \cdot \times \left \pi`); `\boxed` occurrences;
+        - hesitation markers: case-insensitive counts of "wait", "re-check", "recheck", "double-check", "let me",
+          "however", "mistake", "actually", "verify", "again";
+        - placement: the box's start over the completion's length; the problem's depth;
+    - **the models:** A5's grid. The logistic models use TF-IDF plus the standardized hand features; the GBTs use
+      each field's 1,000 most frequent terms plus the raw hand features;
+    - **the quantity:** probe − text (rich), paired, on all pairs and length-matched.
+  - **(b) The random-weights probe:** D160's, reported beside (no new run).
+  - **(c) An answer-tokens-only probe:**
+    - the same frame, with the completion replaced by `\boxed{<the box's content>}` alone;
+    - the state at its closing brace; cross-fitted with the probe's protocol;
+    - **the quantity:** full trace − answer only (paired);
+    - beside it, D164's A5-style classifier on the problem and answer fields only (CPU).
+  - **(d) A reasoning swap:**
+    - **the donor:** for every kept answer a, the lowest-sample-index answered sample of the same problem with the
+      opposite label;
+    - **the swapped text:** the donor's completion up to its last `\boxed{`, then `\boxed{` + a's box content + `}`;
+    - **the state:** at that closing brace;
+    - **the score:** the probe fold model in which a's problem is held out, refit with the cached fold choices
+      (layer, C) on the original states. The refit must reproduce the cached out-of-fold values within 1e-3 (max
+      |Δp|); otherwise it is refit under the cached thread settings (4 jobs);
+    - **reported:**
+      - how much the probe moves: the median |p_swap − p_orig|, and the mean signed change for correct and for
+        incorrect answers;
+      - pairwise accuracy on swapped texts, labelled by a's (the box's) correctness. Below 0.5 means the probe follows
+        the reasoning;
+      - original − swapped (paired);
+      - D164's text classifier on the swapped texts (its fold models, refit with its recorded choices) as the surface
+        reference.
+  - **Reading:**
+    - **(a)** "the probe reads more than a rich text reader" if probe − rich text has a CI above 0;
+    - **(c)** "the reasoning carries the signal" if full − answer only has a CI above 0; "the answer alone carries it"
+      if answer only's CI is above 0.5 and full − answer only's contains 0;
+    - **(d)** "the probe tracks the answer" if swapped pairwise accuracy has a CI above 0.5; "it tracks the
+      reasoning" if below 0.5; otherwise neither.
+- **The build (next, CPU only):**
+  - `physcal/eval/followup_r6.py` (item sets, readout stages, analysis), `configs/followup.yaml` `r6`,
+    `tests/test_followup_r6.py` and a queue script;
+  - with GPU-time estimates, laptop against Kaggle. **Nothing runs on the GPU until you say so.**
