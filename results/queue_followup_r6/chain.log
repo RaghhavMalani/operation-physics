@@ -278,3 +278,6 @@
 [06:10:18] commit 'Follow-up (D167, exploratory): R6 states, swap_7b read by 7b': pushed
 [06:10:21] disk: 21 GiB free on MLStorage
 [06:10:21] start r6_analyze (timeout 43200s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_r6 analyze
+[23:08:28] R6 analysis resume (D169): the cached fits are reused; PID 5785
+[23:08:29] disk: 21 GiB free on MLStorage
+[23:08:29] start r6_analyze_resume (timeout 43200s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_r6 analyze

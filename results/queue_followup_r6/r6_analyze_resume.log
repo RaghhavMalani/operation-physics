@@ -1,0 +1,22 @@
+R6-3: start (0s)
+  bank_text: from the cache
+  bank_probe_7b: from the cache
+  bank_probe_1.5b: from the cache
+R6-4: start (18s)
+  fact_native_1.5b_p2: from the cache
+  fact_native_1.5b_p1: from the cache
+  fact_native_sft_p2: from the cache
+  fact_native_sft_p1: from the cache
+  fact_native_random_1.5b_p2: from the cache
+  fact_native_random_1.5b_p1: from the cache
+  fact_terse_1.5b_p2: from the cache
+  fact_terse_1.5b_p1: from the cache
+  fact_terse_sft_p2: from the cache
+  fact_terse_sft_p1: from the cache
+  fact_terse_random_1.5b_p2: from the cache
+  fact_terse_random_1.5b_p1: from the cache
+R6-5 7b: start (34s)
+  rich_text_7b: fitted in 1515s
+  text_answer_only_7b: fitted in 426s
+  answer_only_probe_7b: fitted in 4537s
+R6-5 1.5b: start (6576s)
