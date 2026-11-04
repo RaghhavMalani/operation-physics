@@ -20,3 +20,6 @@ R6-5 7b: start (34s)
   text_answer_only_7b: fitted in 426s
   answer_only_probe_7b: fitted in 4537s
 R6-5 1.5b: start (6576s)
+  rich_text_1.5b: fitted in 1209s
+  text_answer_only_1.5b: fitted in 360s
+  answer_only_probe_1.5b: fitted in 1448s
