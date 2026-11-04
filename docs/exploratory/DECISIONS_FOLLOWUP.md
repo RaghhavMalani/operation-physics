@@ -1239,3 +1239,70 @@ appended here.
   - **Commits:** the script commits only at its end, so the session watching it must commit and push when `R6-5 7b` is
     saved. The script's own commit covers `R6-5 1.5b`.
   - **`results.json` is rewritten from the start:** for ~30 s it lacks R6-4. Git holds the saved copy.
+
+## 2026-11-04 night: Kaggle-first (your instructions at ~23:10 IST)
+
+### D171. From now on follow-up experiments are designed Kaggle-first: one self-contained notebook per experiment on "GPU T4 x2" that generates, reads out and analyzes, saves chunks so a session cutoff can resume, and returns only a small results zip. R6-6's draft plan follows it; nothing is built or run (2026-11-04, ~23:20 IST)
+- **The decision is yours.** Below are the rules it implies, for your review. Numbered rules can be changed by a later
+  entry.
+- **Scope:**
+  - **It applies to** every follow-up experiment designed from now on, starting with R6-6.
+  - **It does not apply to** R6-3, R6-4 and R6-5: they finish locally, as launched (D169, D170).
+  - **Paper #1** is untouched (D148).
+  - **It replaces, going forward only:** D157's "the readouts stay local" and D167's recommendation of the laptop.
+- **The rules:**
+  1. **One notebook per experiment, all three parts in it:** generation, readouts, analysis. The laptop builds, tests on
+     CPU and ingests the zip. There is no local GPU stage and no local analysis stage.
+  2. **Self-contained means** that a run needs only Internet access, the repo at a pinned commit, pinned weights, and, for a
+     resume, the previous version's output. This reading of "self-contained" is an assumption (the plan's decision 1).
+  3. **Every stage resumes, not only sampling** (D157's item 10 applied throughout):
+     - work is saved in atomic chunks, with a done marker and sha256 per stage;
+     - a re-run skips what is finished, and refuses another commit or config;
+     - a cutoff loses at most one chunk.
+  4. **The notebook stops itself.** No chunk starts unless its projected end is before session start + 9.5 h (D157's
+     rule, clean in both runs). Kaggle's 12 h limit is never the plan, because no source confirms that output survives it.
+  5. **Two output tiers:**
+     - **The resume tier** (`/kaggle/working`, under ~15 GB and ~300 files): chunks and states. It never enters the repo.
+     - **The results zip** (under 50 MB, for the repo): `results.json`, a per-item score table, gzipped completions, the
+       config, the environment, logs and a sha256 manifest.
+     - **Hidden states, weights and adapters** do not come back. A rerun regenerates them.
+     - **The completions come back** because every rollout is logged (CLAUDE.md); they are small (4.4 MB gzipped for
+       1,176 problems × 8).
+  6. **One stack per experiment.** Every number compared in an experiment comes from the same notebook. Baselines are
+     measured there, not cited from local runs. Local numbers are context only (D167's comparability rule).
+  7. **Pre-registration is unchanged.** A D-entry fixes the rules before any code. The notebook pins a commit that holds
+     it. Stop rules read timing and format only, never correctness.
+  8. **The ingest stays, as a check** (CPU, seconds): the zip's allow-list and manifest, a re-grade with the local parser,
+     and the headline CIs recomputed from the per-item table, which must equal `results.json`.
+  9. **Tests before any run:** the stage runner gets kill-and-resume tests on CPU, every stage runs on a tiny model on
+     CPU, and a pin test ties the notebook's commit to the working tree.
+  10. **Quota:** an experiment is sized for at most 2 sessions where possible. CPU work overlaps GPU work, because an idle
+      GPU still spends the weekly quota.
+- **What this costs, stated now:**
+  - **Comparability:** R6-6's numbers cannot be read directly against the local R6-3 to R6-5 numbers (T4 fp16 against
+    4-bit on the 4060).
+  - **Quota:** ~30 h a week, floating, with R6-6a at about half of it.
+  - **CPU:** probe fits run on a smaller machine than the laptop, and its size is not established (below).
+  - **A new stack:** fp16 HF + PEFT on T4 has never run here.
+  - **Your time:** each session and resume is started by hand.
+- **What it gains:**
+  - the readouts read the copy that sampled, which removes D157's difference 3;
+  - no VRAM spill, heat or driver-reset handling (the WSL and laptop rules);
+  - 7.5 GB-scale states stay off the laptop;
+  - the laptop is free overnight.
+- **What is not established (secondary sources, not Kaggle's docs; searched 2026-11-04):**
+  - sessions of 12 h and ~20 GB of output are widely reported, and ~30 h a week varies;
+  - sources conflict on 2 cores / 13 GB against 4 cores / ~30 GB, and vLLM logged 2.83 GiB of RAM available during the 7B
+    load;
+  - ~500 output files rests on forum reports;
+  - **nothing confirms that `/kaggle/working` survives a crash or a timeout.** A smoke session settles this before any
+    real run (the plan's §6).
+- **R6-6's draft plan:** `docs/exploratory/r6_6_kaggle_plan.md`.
+  - **It is a draft, not a pre-registration,** written before any R6-3, R6-4 or R6-5 number was read. D165's rule stands:
+    the go decision comes after their readings.
+  - **R6-6a** is distillation, **R6-6b** the replication, one notebook each.
+  - **Two controls are proposed beyond D165's list:** a text-distilled arm and a shuffled-target arm. They need your
+    decision, with the other decisions in the plan's §1.
+  - **R6-6a's estimate:** ~13.5 h (12–18 h), 2 sessions. Only sampling's rate is measured; the rest are assumptions until
+    the smoke session.
+- **Nothing was built or run for this entry.** D165's "nothing of R6-6 is built" still holds.
