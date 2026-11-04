@@ -1,0 +1,120 @@
+W1103 23:16:18.981000 29064 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W1103 23:16:18.998000 29064 .venv/lib/python3.11/site-packages/torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.10.3: Fast Qwen2 patching. Transformers: 5.17.0.
+   \\   /|    NVIDIA GeForce RTX 4060 Laptop GPU. Num GPUs = 1. Max memory: 7.996 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.14.1+cu130. CUDA: 8.9. CUDA Toolkit: 13.0. Triton: 3.8.0
+\        /    Bfloat16 = TRUE. FA [Xformers = None. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:00<00:50,  6.67it/s]Loading weights:  13%|█▎        | 45/339 [00:00<00:01, 214.99it/s]Loading weights:  29%|██▉       | 98/339 [00:00<00:00, 339.67it/s]Loading weights:  44%|████▍     | 149/339 [00:00<00:00, 400.64it/s]Loading weights:  58%|█████▊    | 198/339 [00:00<00:00, 430.12it/s]Loading weights:  72%|███████▏  | 244/339 [00:00<00:00, 436.97it/s]Loading weights:  86%|████████▋ | 293/339 [00:00<00:00, 452.32it/s]Loading weights: 100%|██████████| 339/339 [00:00<00:00, 403.24it/s]
+unsloth_4bit loader check: {'loader': 'unsloth_4bit', 'tokenizer_matches': {'vocab': True, 'chat_template': True, 'eos_token_id': True, 'backend': False}, 'bnb_4bit_linear_modules': 196}
+  swap_7b/7b part 0: 64/6133 (64s)
+  swap_7b/7b part 1: 128/6133 (110s)
+  swap_7b/7b part 2: 192/6133 (169s)
+  swap_7b/7b part 3: 256/6133 (220s)
+  swap_7b/7b part 4: 320/6133 (276s)
+  swap_7b/7b part 5: 384/6133 (324s)
+  swap_7b/7b part 6: 448/6133 (371s)
+  swap_7b/7b part 7: 512/6133 (417s)
+  swap_7b/7b part 8: 576/6133 (468s)
+  swap_7b/7b part 9: 640/6133 (518s)
+  swap_7b/7b part 10: 704/6133 (565s)
+  swap_7b/7b part 11: 768/6133 (643s)
+  swap_7b/7b part 12: 832/6133 (690s)
+  swap_7b/7b part 13: 896/6133 (739s)
+  swap_7b/7b part 14: 960/6133 (791s)
+  swap_7b/7b part 15: 1024/6133 (834s)
+  swap_7b/7b part 16: 1088/6133 (877s)
+  swap_7b/7b part 17: 1152/6133 (927s)
+  swap_7b/7b part 18: 1216/6133 (971s)
+  swap_7b/7b part 19: 1280/6133 (1023s)
+  swap_7b/7b part 20: 1344/6133 (1072s)
+  swap_7b/7b part 21: 1408/6133 (1123s)
+  swap_7b/7b part 22: 1472/6133 (1179s)
+  swap_7b/7b part 23: 1536/6133 (1224s)
+  swap_7b/7b part 24: 1600/6133 (1311s)
+  swap_7b/7b part 25: 1664/6133 (1353s)
+  swap_7b/7b part 26: 1728/6133 (1397s)
+  swap_7b/7b part 27: 1792/6133 (1449s)
+  swap_7b/7b part 28: 1856/6133 (1495s)
+  swap_7b/7b part 29: 1920/6133 (1548s)
+  swap_7b/7b part 30: 1984/6133 (1592s)
+  swap_7b/7b part 31: 2048/6133 (1673s)
+  swap_7b/7b part 32: 2112/6133 (1717s)
+  swap_7b/7b part 33: 2176/6133 (1768s)
+  swap_7b/7b part 34: 2240/6133 (1813s)
+  swap_7b/7b part 35: 2304/6133 (1861s)
+  swap_7b/7b part 36: 2368/6133 (1909s)
+  swap_7b/7b part 37: 2432/6133 (1958s)
+  swap_7b/7b part 38: 2496/6133 (2001s)
+  swap_7b/7b part 39: 2560/6133 (2052s)
+  swap_7b/7b part 40: 2624/6133 (2102s)
+  swap_7b/7b part 41: 2688/6133 (2155s)
+  swap_7b/7b part 42: 2752/6133 (2205s)
+  swap_7b/7b part 43: 2816/6133 (2284s)
+  swap_7b/7b part 44: 2880/6133 (2330s)
+  swap_7b/7b part 45: 2944/6133 (2376s)
+  swap_7b/7b part 46: 3008/6133 (2418s)
+  swap_7b/7b part 47: 3072/6133 (2470s)
+  swap_7b/7b part 48: 3136/6133 (2518s)
+  swap_7b/7b part 49: 3200/6133 (2567s)
+  swap_7b/7b part 50: 3264/6133 (2616s)
+  swap_7b/7b part 51: 3328/6133 (2661s)
+  swap_7b/7b part 52: 3392/6133 (2720s)
+  swap_7b/7b part 53: 3456/6133 (2771s)
+  swap_7b/7b part 54: 3520/6133 (2822s)
+  swap_7b/7b part 55: 3584/6133 (2867s)
+  swap_7b/7b part 56: 3648/6133 (2916s)
+  swap_7b/7b part 57: 3712/6133 (2964s)
+  swap_7b/7b part 58: 3776/6133 (3011s)
+  swap_7b/7b part 59: 3840/6133 (3064s)
+  swap_7b/7b part 60: 3904/6133 (3138s)
+  swap_7b/7b part 61: 3968/6133 (3183s)
+  swap_7b/7b part 62: 4032/6133 (3225s)
+  swap_7b/7b part 63: 4096/6133 (3272s)
+  swap_7b/7b part 64: 4160/6133 (3318s)
+  swap_7b/7b part 65: 4224/6133 (3364s)
+  swap_7b/7b part 66: 4288/6133 (3408s)
+  swap_7b/7b part 67: 4352/6133 (3455s)
+  swap_7b/7b part 68: 4416/6133 (3509s)
+  swap_7b/7b part 69: 4480/6133 (3584s)
+  swap_7b/7b part 70: 4544/6133 (3637s)
+  swap_7b/7b part 71: 4608/6133 (3684s)
+  swap_7b/7b part 72: 4672/6133 (3770s)
+  swap_7b/7b part 73: 4736/6133 (3818s)
+  swap_7b/7b part 74: 4800/6133 (3866s)
+  swap_7b/7b part 75: 4864/6133 (3921s)
+  swap_7b/7b part 76: 4928/6133 (3967s)
+  swap_7b/7b part 77: 4992/6133 (4045s)
+  swap_7b/7b part 78: 5056/6133 (4091s)
+  swap_7b/7b part 79: 5120/6133 (4144s)
+  swap_7b/7b part 80: 5184/6133 (4190s)
+  swap_7b/7b part 81: 5248/6133 (4238s)
+  swap_7b/7b part 82: 5312/6133 (4290s)
+  swap_7b/7b part 83: 5376/6133 (4340s)
+  swap_7b/7b part 84: 5440/6133 (4388s)
+  swap_7b/7b part 85: 5504/6133 (4445s)
+  swap_7b/7b part 86: 5568/6133 (4502s)
+  swap_7b/7b part 87: 5632/6133 (4578s)
+  swap_7b/7b part 88: 5696/6133 (4660s)
+  swap_7b/7b part 89: 5760/6133 (4712s)
+  swap_7b/7b part 90: 5824/6133 (4789s)
+  swap_7b/7b part 91: 5888/6133 (4838s)
+  swap_7b/7b part 92: 5952/6133 (4893s)
+  swap_7b/7b part 93: 6016/6133 (4944s)
+  swap_7b/7b part 94: 6080/6133 (4998s)
+  swap_7b/7b part 95: 6133/6133 (5039s)
+{
+ "decision": "D167",
+ "set": "swap_7b",
+ "reader": "7b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-7B-Instruct-bnb-4bit/snapshots/2ab7fb373c247ef5933d034f016efefc66608458",
+ "n": 6133,
+ "parts": 96,
+ "seconds": 5039.1704795360565,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "not kept (D167 uses p1 in R6-4 only)"
+ }
+}

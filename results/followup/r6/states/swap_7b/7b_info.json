@@ -1,0 +1,13 @@
+{
+ "decision": "D167",
+ "set": "swap_7b",
+ "reader": "7b",
+ "reader_dir": "/home/flash2404/operation-physics/.cache/huggingface/hub/models--unsloth--Qwen2.5-Math-7B-Instruct-bnb-4bit/snapshots/2ab7fb373c247ef5933d034f016efefc66608458",
+ "n": 6133,
+ "parts": 96,
+ "seconds": 5039.1704795360565,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "not kept (D167 uses p1 in R6-4 only)"
+ }
+}

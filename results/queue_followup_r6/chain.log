@@ -246,3 +246,32 @@
 [04:35:23] guard(26817): stage continued after 30s paused (GPU at 63.30C <= 75C)
 [04:45:53] end r6_states_answer_only_7b_7b: exit 0
 [04:45:53] r6_states_answer_only_7b_7b: 4 temperature pauses, 120s paused of 1685s; tonight so far 54 pauses, 1626s of 17968s (D143)
+[04:45:55] commit 'Follow-up (D167, exploratory): R6 states, answer_only_7b read by 7b': pushed
+[04:46:13] host VRAM readings (MiB): 506 506 506 506 506 506 506 506
+[04:46:13] GPU at 65.50C, memory.used 506 MiB
+[04:46:15] disk: 21 GiB free on MLStorage
+[04:46:15] start r6_states_swap_7b_7b (timeout 15227s): uv run python -m physcal.eval.followup_r6 states --set swap_7b --reader 7b --cap 7.0
+[04:55:46] guard(29050): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[04:56:16] guard(29050): stage continued after 30s paused (GPU at 63.00C <= 75C)
+[05:07:17] guard(29050): GPU at 87.50C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[05:07:47] guard(29050): stage continued after 30s paused (GPU at 63.00C <= 75C)
+[05:13:18] guard(29050): GPU at 87.30C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[05:13:48] guard(29050): stage continued after 30s paused (GPU at 62.80C <= 75C)
+[05:23:49] guard(29050): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[05:24:19] guard(29050): stage continued after 30s paused (GPU at 62.80C <= 75C)
+[05:37:51] guard(29050): GPU at 87.70C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[05:38:21] guard(29050): stage continued after 30s paused (GPU at 62.90C <= 75C)
+[05:44:52] guard(29050): GPU at 87.30C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[05:45:22] guard(29050): stage continued after 30s paused (GPU at 63.30C <= 75C)
+[05:48:22] guard(29050): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[05:48:52] guard(29050): stage continued after 30s paused (GPU at 63.10C <= 75C)
+[05:52:23] guard(29050): GPU at 87.50C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[05:52:53] guard(29050): stage continued after 30s paused (GPU at 62.90C <= 75C)
+[06:01:24] guard(29050): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[06:01:54] guard(29050): stage continued after 30s paused (GPU at 67.30C <= 75C)
+[06:02:54] guard(29050): GPU at 87.30C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[06:03:24] guard(29050): stage continued after 30s paused (GPU at 67.80C <= 75C)
+[06:04:54] guard(29050): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[06:05:24] guard(29050): stage continued after 30s paused (GPU at 67.70C <= 75C)
+[06:10:16] end r6_states_swap_7b_7b: exit 0
+[06:10:16] r6_states_swap_7b_7b: 11 temperature pauses, 330s paused of 5043s; tonight so far 65 pauses, 1956s of 23011s (D143)
