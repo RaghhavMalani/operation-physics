@@ -1367,4 +1367,4 @@ appended here.
   - **R6-5 (d):** R6-6a's student is the native 1.5B, so the row "tracks the reasoning" applies: add the swap to S5.
   - **R6-3:** a 7B student becomes an option, costed separately.
   - **R6-4:** "neither" has no row in §5. W ≈ 0 gives no reason to add the SFT weights as a second student.
-- **The tests:** `tests/test_followup_r6.py` passes (21). The full suite: see the report.
+- **The tests:** the full suite passes (814 passed, 1 skipped), with D170's fix and the two new tests.

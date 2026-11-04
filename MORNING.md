@@ -98,8 +98,8 @@ R6-5 (a) and (c) read the same on length-matched pairs. R6-5 (b), the random-wei
   - Sourcing the queue library from a one-off shell changed directory and the first commit attempt failed, with nothing
     staged or written. The commit then went through under the same lock.
   - I briefly told you the 1.5B reader was poor on truncated samples. It is the 7B. The write-up has it right.
-- **Tests:** `tests/test_followup_r6.py` passes (21, two of them new). The full suite is not confirmed yet: a first run hit
-  my own 580 s limit without a result, and a second is running.
+- **Tests:** the full suite passes: 814 passed, 1 skipped, in 623 s. It covers D170's fix and this report's two new tests.
+  A first run was cut off by my own 580 s limit, with no result.
 - **The state:** nothing is running, and the GPU and CPU are free. Your untracked `PHASES_10-15.md` is untouched.
 
 ## 6. Recommendation
