@@ -6,15 +6,17 @@ pre-registered as a hypothesis or confirmatory. The plan and every analysis rule
 before the data they affect: D152 (item 3's decoding), D153 (item 3's local stop), D157 (item 3 on Kaggle) and D158
 (the readouts' memory settings). D159 records the 7B readouts' run. D160 (written before their data) adds the controls,
 D161 one reproduction retry, and D162 records the controls' run. D164 (plan pushed before its numbers) audits D162's
-table for confounds without a GPU: `physcal/eval/followup_audit.py`, `results/followup/audit/`.
+table for confounds without a GPU: `physcal/eval/followup_audit.py`, `results/followup/audit/`. D165–D167 pre-register
+R6-3 to R6-5 for paper #2, D168–D170 record their run, and D172 records their readings.
 
 | item | code | config | results |
 |---|---|---|---|
 | 1. uncertainty-guided test-time compute | `physcal/eval/followup_ttc.py` | `configs/followup.yaml` `ttc` | `results/followup/ttc/{x2,mc_a}.json` |
 | 2. exact arithmetic on the model's own lines | `physcal/eval/followup_arith.py` | `arith` | `results/followup/arith/results.json` |
 | 3. scale check of the epistemic wall | `physcal/eval/followup_scale.py` | `scale` | `results/followup/scale/` |
+| 4. R6-3 to R6-5 (paper #2) | `physcal/eval/followup_r6.py` | `r6` | `results/followup/r6/` |
 
-Tests: `tests/test_followup.py`. CIs are 95% bootstrap intervals over problems (item 1, item 3) or over pairs (item 2,
+Tests: `tests/test_followup.py`, `tests/test_followup_r6.py`. CIs are 95% bootstrap intervals over problems (item 1, item 3) or over pairs (item 2,
 and MC-A in item 1).
 
 ## Short version
@@ -38,7 +40,7 @@ and MC-A in item 1).
      [−0.0018, +0.0006]. Descriptively it beats RSS and X1 at depths 1–2 and loses at depths 4–5.
    - **What this shows:** the model's arithmetic slips are not where the forecast loss is. Its wrong formulas and wrong
      chains are, and its sloppy aggregation partly offsets them (#35's pattern).
-3. **Scale moves the model's own verdict, not what a linear probe can read.**
+3. **Scale moves the model's own verdict, and barely moves what a linear probe can read** (item 4 has the paired test).
    - **The setup:** the 7B and the off-the-shelf 1.5B were sampled the same way on Kaggle (D157, D160) and read
      locally (D159–D162). Only the model's size differs.
    - **7B − native 1.5B, within-problem pairwise accuracy** (unpaired, D151's primary):
@@ -59,6 +61,26 @@ and MC-A in item 1).
        The probe beats it by +0.089 / +0.084, and by +0.101 / +0.102 on length-matched pairs.
      - **One qualification:** self-consistency's size gain is mostly the pass-count mix: +0.076 paired, +0.023
        [+0.004, +0.043] standardized.
+4. **R6-3 to R6-5: the probe reads more than text, by less than §3 suggested, and R6-4's primary test shows neither
+   weights nor presentation.** All exploratory, under D167's pre-registered readings (D172).
+   - **R6-3, the 7B and the 1.5B reading identical answers:**
+     - P(yes) +0.094 [+0.075, +0.112]: **"the verdict's size effect holds on identical inputs".**
+     - Probe +0.022 [+0.011, +0.034]: **"the 7B's states carry more".** It is small, and its CI contains 0 on
+       length-matched pairs.
+   - **R6-4, format × weights at 1.5B: "neither factor is shown"** on the primary set of identical candidates (93
+     problems): W +0.001 [−0.048, +0.052], P −0.029 [−0.148, +0.094]. Every probe there reads 0.54–0.59, random weights
+     included.
+     - **On the full banks (secondary),** the fine-tuned weights read native traces as well as the native weights do:
+       W −0.001 [−0.016, +0.013]. Terse completions give every reader 0.52–0.53.
+     - **The large presentation effect** there (−0.238) mixes presentation with which answers each bank holds.
+   - **R6-5, probe controls:**
+     - **"The probe reads more than a rich text reader"** at both sizes: +0.054 [+0.035, +0.072] and +0.059 [+0.040,
+       +0.079]. That is down from D164's +0.09, because the rich reader reaches 0.70.
+     - **"The reasoning carries the signal"** at both sizes: +0.098 and +0.111 over an answer-only probe, which itself
+       reads 0.65.
+     - **The reasoning swap splits by model:** the 7B reads "neither" (0.480 [0.453, 0.506]) and the 1.5B "it tracks the
+       reasoning" (0.391 [0.364, 0.420]). Both models' probes fall for correct and incorrect answers alike, so the swap
+       may partly measure the mismatch itself.
 
 ## 1. Uncertainty-guided test-time compute (offline)
 
@@ -475,36 +497,193 @@ only in the weights.
 - **The planning estimate was not what ran.** It assumed 1,500–3,000 tokens / s on an A100-class GPU. Kaggle's
   2 × T4 sampled at 568 tokens / s on the 20 timed candidates (D158), and the whole job took 5.0 h.
 
-## Paper #2's next experiments: R6-3 to R6-5, pre-registered and built, not run (D165–D167)
+## Paper #2's next experiments: R6-3 to R6-5, the results (D165–D172)
 
 The round-6 review (`REVIEW_SYNTHESIS_ROUND6_2026-11-03.md`, D165) asks what the probe gap between the native and the
 fine-tuned 1.5B means. The information may be lost, displaced, not linearly readable, or only inferable from the text.
-D167 pre-registered three experiments before any of their code existed. They were then built and tested on CPU.
-Nothing has run on the GPU.
-- **R6-3, a common candidate bank:**
-  - **the bank:** every answer of both models on the 599 shared problems (9,052);
-  - **the readers:** the 7B and the native 1.5B, each teacher-forced on all of them;
-  - **the comparison:** P(yes) and a probe on identical question–answer pairs. The primary pairs are within one
-    source, because surface style separates the sources (§3's audit);
-  - **truncated samples** are reported separately, through P(yes).
-- **R6-4, a format × weights factorial at 1.5B:**
-  - **the factors:** the native vs the fine-tuned weights, against native traces (CoT frame) vs terse completions (X2's
-    frame), with a random-weights reader as the surface control;
-  - **the primary set:** the 93 problems where both presentations hold the same candidate answers (323 candidates,
-    248 pairs);
-  - **the readings:** an interpretation table fixed in advance (weights vs presentation), plus the interaction.
-- **R6-5, probe controls on the native traces:**
-  - a richer text classifier (bigrams + 15 hand features: lengths, numbers, units, expressions, hesitation);
-  - an answer-tokens-only probe;
-  - a reasoning swap: the same box after the reasoning of an opposite-label answer, scored by the probe's own fold
-    models. Their refits reproduce the cached values exactly.
-- **GPU time (laptop, measured rates):** 6.9 h in all, with 7.9 GB of states:
-  - R6-3: 3.4 h;
-  - R6-4: 1.2 h;
-  - R6-5: 2.3 h.
-- **Kaggle:** estimated 7–10 h of wall time plus setup, because the reused local readouts would have to be re-read on
-  the T4s to stay comparable. The laptop is recommended (D167).
-- **The CPU analysis afterwards:** about 10 h at 4 jobs.
+D167 pre-registered three experiments and their readings before any of their code existed.
+- **The run:** the GPU stages ran on the night of 2026-11-03/04 (D168). The CPU analysis was paused once (D169), a crash
+  was fixed before the resume (D170), and it finished on 2026-11-05 at 01:49 IST. D172 records the readings.
+- **The metric:** X2's within-problem pairwise accuracy, weighted per problem. CIs are 95% bootstraps over problems
+  (B = 10,000, seed 0), paired where the same problems are compared.
+- **The status:** exploratory, and none of the three is Holm-corrected. Quoted readings are D167's, applied to D167's
+  text.
+- **The data:** `results/followup/r6/results.json`, plus `r6_4_pair_weighted.json` for one secondary added afterwards
+  (D172).
+
+| experiment | quantity | result | D167's reading |
+|---|---|---|---|
+| R6-3 | P(yes), reader 7B − 1.5B | +0.094 [+0.075, +0.112] | "the verdict's size effect holds on identical inputs" |
+| R6-3 | probe, reader 7B − 1.5B | +0.022 [+0.011, +0.034] | "the 7B's states carry more" |
+| R6-4 | weights W; presentation P (identical candidates) | +0.001 [−0.048, +0.052]; −0.029 [−0.148, +0.094] | "neither factor is shown" |
+| R6-4 | interaction | −0.047 [−0.138, +0.043] | no interaction shown |
+| R6-5 (a) | probe − rich text, 7B; 1.5B | +0.054 [+0.035, +0.072]; +0.059 [+0.040, +0.079] | "the probe reads more than a rich text reader", both |
+| R6-5 (c) | full − answer only, 7B; 1.5B | +0.098 [+0.074, +0.122]; +0.111 [+0.088, +0.135] | "the reasoning carries the signal", both |
+| R6-5 (d) | swapped pairwise accuracy, 7B | 0.480 [0.453, 0.506] | neither |
+| R6-5 (d) | swapped pairwise accuracy, 1.5B | 0.391 [0.364, 0.420] | "it tracks the reasoning" |
+
+### R6-3: the 7B and the native 1.5B read the same 9,052 answers
+
+The 599 problems mixed for both models. The primary pairs (13,044) are within one source. Length reads 0.619 and D164's
+text classifier 0.683 on the same pairs.
+
+| readout | reader 7B | reader 1.5B | 7B − 1.5B |
+|---|---|---|---|
+| direct P(yes) | 0.692 | 0.599 | **+0.094 [+0.075, +0.112]** |
+| hidden-state probe | 0.777 | 0.755 | **+0.022 [+0.011, +0.034]** |
+
+| secondary | P(yes), 7B − 1.5B | probe, 7B − 1.5B |
+|---|---|---|
+| the 7B's answers only | +0.052 [+0.026, +0.077] | +0.015 [−0.002, +0.032] |
+| the 1.5B's answers only | +0.130 [+0.105, +0.155] | +0.032 [+0.017, +0.047] |
+| cross-source pairs | +0.136 [+0.118, +0.155] | +0.014 [+0.004, +0.024] |
+| all pairs | +0.119 [+0.102, +0.136] | +0.018 [+0.009, +0.027] |
+| length-matched, within source (564 problems) | +0.114 [+0.083, +0.143] | +0.011 [−0.011, +0.032] |
+| pair-weighted, within source | +0.092 [+0.074, +0.110] | +0.021 [+0.010, +0.032] |
+
+- **The verdict's size effect survives identical inputs.** It keeps most of §3's +0.110, and it holds in every row
+  above.
+- **The probe's difference is real on the primary pairs, but small and less robust.**
+  - It is about a quarter of the verdict's.
+  - Its CI contains 0 on the 7B's answers alone and on length-matched pairs.
+  - §3's "no scale effect" (−0.005 [−0.031, +0.020]) compared each model on its own answers, so it still stands for
+    that comparison. R6-3 adds the paired comparison on the same inputs.
+- **Neither reader favours its own answers.**
+
+| | the 7B's answers | the 1.5B's answers |
+|---|---|---|
+| P(yes), reader 7B | 0.689 | 0.699 |
+| P(yes), reader 1.5B | 0.638 | 0.569 |
+| probe, reader 7B | 0.767 | 0.789 |
+| probe, reader 1.5B | 0.751 | 0.757 |
+
+  - **The interaction (own − other):** P(yes) −0.078 [−0.111, −0.045]; probe −0.017 [−0.038, +0.005].
+  - **Where it comes from:** the 1.5B's verdict is at its weakest on its own answers.
+- **The 7B's verdict does not recognize unfinished answers** (truncated samples, through P(yes) only; 280 problems).
+
+| reader | correct above truncated | incorrect above truncated | mean log-odds: correct / incorrect / truncated |
+|---|---|---|---|
+| 7B | 0.420 [0.378, 0.461] | 0.214 [0.185, 0.244] | −1.48 / −2.00 / −1.49 |
+| 1.5B | 0.932 [0.910, 0.952] | 0.879 [0.856, 0.900] | +3.00 / +2.79 / +1.92 |
+
+  - The 7B rates a truncated sample like a correct answer, and above an incorrect one in 79% of pairs.
+  - The 1.5B says yes to nearly everything, but less to truncated samples.
+  - 410 of the 466 truncated samples are the 7B's own.
+
+### R6-4: format × weights at 1.5B
+
+**The primary set** (P2; identical candidates: 93 problems, 323 candidates, 248 pairs):
+
+| reader | native presentation | terse presentation |
+|---|---|---|
+| native weights | 0.564 [0.478, 0.650] | 0.558 [0.470, 0.647] |
+| SFT weights | 0.588 [0.502, 0.672] | 0.536 [0.446, 0.625] |
+| random weights | 0.561 [0.480, 0.640] | 0.548 [0.460, 0.635] |
+| length | 0.575 [0.488, 0.659] | 0.582 [0.504, 0.657] |
+
+- **The reading is "neither factor is shown".**
+  - **W:** +0.001 [−0.048, +0.052].
+  - **P:** −0.029 [−0.148, +0.094].
+  - **The interaction:** −0.047 [−0.138, +0.043], so no interaction is shown.
+  - **P net of its surface part:** −0.016 [−0.158, +0.126].
+- **"Neither" is not "no effect".**
+  - W's CI is narrow enough to exclude a weights effect of the size of the gap (~0.22). P's CI is too wide to say much.
+  - Every cell here reads 0.54–0.59, random weights and length included (no paired test), so there is little signal
+    for either factor to move.
+- **This set is selected.** An incorrect candidate enters only if both models reached the same wrong value within 1%. So
+  it holds shared errors, not typical ones. That this is why every readout is low is an interpretation, not a tested
+  result.
+- **Its secondaries agree:** P1 and pair weighting both give "neither factor is shown" (W −0.005 and −0.004; P −0.020
+  and −0.048).
+
+**The full banks** (secondary; P2; 347 problems, all pairs of each bank):
+
+| reader | native presentation | terse presentation |
+|---|---|---|
+| native weights | 0.765 [0.740, 0.791] | 0.532 [0.501, 0.564] |
+| SFT weights | 0.770 [0.744, 0.794] | 0.526 [0.494, 0.559] |
+| random weights | 0.671 [0.642, 0.699] | 0.520 [0.487, 0.552] |
+
+| effect | all pairs (347) | length-matched (291) |
+|---|---|---|
+| W | −0.001 [−0.016, +0.013] | +0.005 [−0.014, +0.025] |
+| W on native traces | +0.004 [−0.009, +0.017] | +0.010 [−0.019, +0.038] |
+| W on terse completions | −0.007 [−0.033, +0.020] | +0.001 [−0.028, +0.031] |
+| P | −0.238 [−0.276, −0.199] | −0.212 [−0.259, −0.165] |
+| interaction | −0.011 [−0.040, +0.019] | −0.009 [−0.050, +0.034] |
+| surface part of P | −0.151 [−0.193, −0.110] | −0.067 [−0.121, −0.015] |
+| P net of surface | −0.087 [−0.138, −0.037] | −0.145 [−0.211, −0.077] |
+
+- **W is the clean comparison here.** Within a presentation every reader reads byte-identical text. The fine-tuned
+  weights read native traces as well as the native weights do, and the native weights read terse completions no better
+  than the fine-tuned ones. X2's gap reappears across the diagonal (0.765 against 0.526).
+- **P is not clean here.** The banks hold different answers, in different frames, with different lengths. So P mixes
+  presentation with which answers each bank holds.
+  - D167's table was fixed for the primary set. The analysis also prints "the presentation factor dominates" for the
+    full banks; that is a description of a secondary, not R6-4's reading.
+  - The primary set's CI for P stops at −0.148, short of −0.238. But its native cell starts at 0.564, so a drop of that
+    size had no room to appear.
+- **Pair weighting and P1 change none of this:** on the full banks, P is −0.239 pair-weighted and −0.248 at P1, and W
+  stays within ±0.01.
+- **Not computed:** length-matched pairs on the 93-problem set (D172).
+
+### R6-5: probe controls on the native traces
+
+| readout | 7B, all pairs (844) | 1.5B, all pairs (766) | 7B, length-matched (677) | 1.5B, length-matched (648) |
+|---|---|---|---|---|
+| hidden-state probe | 0.753 | 0.758 | 0.694 | 0.723 |
+| rich text classifier | 0.699 | 0.699 | 0.633 | 0.655 |
+| D164's text classifier | 0.663 | 0.673 | 0.593 | 0.621 |
+| random-weights probe (D160) | 0.664 | 0.673 | 0.592 | 0.621 |
+| answer-only probe | 0.655 | 0.647 | 0.626 | 0.628 |
+| text classifier on problem + answer | 0.527 | 0.532 | 0.516 | 0.533 |
+| probe on swapped texts | 0.480 | 0.391 | 0.467 | 0.403 |
+| D164's classifier on swapped texts | 0.347 | 0.324 | 0.393 | 0.356 |
+| **probe − rich text** | **+0.054 [+0.035, +0.072]** | **+0.059 [+0.040, +0.079]** | **+0.060 [+0.027, +0.094]** | **+0.068 [+0.037, +0.101]** |
+| rich text − D164's classifier | +0.036 [+0.018, +0.053] | +0.025 [+0.008, +0.042] | +0.040 [+0.008, +0.071] | +0.035 [+0.004, +0.065] |
+| **full − answer only** | **+0.098 [+0.074, +0.122]** | **+0.111 [+0.088, +0.135]** | **+0.067 [+0.033, +0.101]** | **+0.096 [+0.060, +0.130]** |
+| original − swapped | +0.273 [+0.241, +0.306] | +0.366 [+0.331, +0.401] | +0.227 [+0.185, +0.268] | +0.320 [+0.277, +0.362] |
+
+- **(a) and (b): the probe reads more than a rich text reader, at both sizes, on all pairs and length-matched.**
+  - **The margin is smaller than §3's.** A richer reader takes it from +0.089 / +0.084 to +0.054 / +0.059.
+  - **The surface is no longer capped at 0.66–0.67.** The rich reader sits above the random-weights probe, so that probe
+    no longer marks all the surface there is.
+  - **This is a lower bound on the surface.** It is one feature set, and a stronger reader could narrow the margin
+    further.
+- **(c): the reasoning carries the signal, at both sizes, on all pairs and length-matched.**
+  - "The answer alone carries it" does not apply: it needs full − answer only's CI to contain 0.
+  - **The answer alone still carries a lot:** 0.655 / 0.647, about 60% of the full probe's distance from chance. A text
+    classifier on the same fields reads 0.527 / 0.532.
+  - **That gap cannot be attributed yet.** No random-weights answer-only probe exists. The text classifier treats a
+    number as a word, not a size, so it is a weak reference.
+- **(d): the two models differ.** The 7B reads "neither" and the 1.5B "it tracks the reasoning".
+  - **The 7B is borderline on length-matched pairs:** 0.467 [0.434, 0.5003] still contains 0.5.
+  - **The two all-pairs CIs do not overlap,** but no contrast between the models was registered.
+  - **The probe moves a lot:** the median |Δp| is 0.42 (7B) and 0.29 (1.5B).
+  - **The text classifier follows the donor's reasoning further than either probe** (0.347 / 0.324).
+  - **The refit gate passed exactly:** max |Δp| is 0.0 for both models.
+- **The swap is not a clean test of "follows the reasoning".**
+  - A swapped text's box disagrees with the reasoning above it, and no probe was fit on such texts.
+  - **Both classes fall.** The mean change is −0.519 (correct boxes) and −0.259 (incorrect boxes) at 7B, and −0.433 and
+    −0.141 at 1.5B. A probe that only followed the reasoning would raise the incorrect boxes, which now follow correct
+    reasoning.
+  - So part of the drop may be a penalty for the disagreement itself. That is an interpretation: a same-label swap would
+    separate the two, and none was registered.
+
+### What the three say about the gap
+
+| D165's option | evidence | status |
+|---|---|---|
+| lost from the weights | W ≈ 0 on identical text (full banks, a secondary); ±0.05 on the primary set | **not supported** as a reader limit. The fine-tuned weights still read native traces |
+| displaced | terse stays at 0.50–0.53 at both P1 and P2 | **not shown** at these two positions. Others are untested |
+| not linearly readable | every probe here is linear | **not tested** |
+| only inferable from the text | the probe beats a rich text reader by ~0.06, on length-matched pairs too | **not the whole story,** though the margin shrinks as the text reader improves |
+
+- **The likeliest place for the gap is the text presented, not the weights reading it,** but this is not shown. Terse
+  completions give every reader 0.52–0.53, and R6-5 (c) puts +0.10 of the signal in the reasoning, of which terse
+  completions hold far less (196 tokens against 903). The test built to isolate presentation (the primary set) could
+  not resolve it.
+- **Limits:** one model family, 4-bit readers, one synthetic domain, and 93 problems in R6-4's primary set.
 
 ## What this means for a follow-up
 
@@ -519,19 +698,27 @@ Nothing has run on the GPU.
   the derivative (formula) and the chain, as #35 found.
   - **The promising variant:** exact symbolic differentiation of the model's own chain (#35's "exact sensitivities":
     +51% of the RSS-to-σ\* gap), together with re-derived intermediates (E_chain helps at depths 1–2).
-- **Scale:** size helps the model judge its own answer, not what a linear probe reads.
+- **Scale:** size helps the model judge an answer, and helps what a linear probe reads only slightly.
   - **The 7B's own P(yes)** separates its right answers from its wrong ones better than the 1.5B's (+0.110), with
-    everything else equal.
+    everything else equal. On identical answers the gap holds (+0.094, R6-3).
   - **A probe on the hidden states** reads the same at both sizes (0.75–0.76), and most of it is surface: random
     weights reach 0.66–0.67, and so does an A5-style text classifier.
     - The probe's margin over both is ~0.09 at either size, and ~0.10 on length-matched pairs (D164). It reads
-      something the text features do not, but no more of it at 7B.
+      something the text features do not, but little more of it at 7B: +0.022 on identical answers (R6-3).
+    - **A richer text reader reaches 0.70,** which leaves a margin of ~0.06 (R6-5). So "surface" was understated, and
+      a stronger reader could narrow the margin further.
   - **Self-consistency's gain from size** is mostly that the 7B solves more of each problem. With the pass-count mix
     held fixed, it is +0.023 (D164).
   - **The SFT format's wall** (0.53–0.54 for every single-sample readout) comes mostly from the format, training and
     decoding, not from the model's size.
+    - **The reader's weights are not the limit:** the fine-tuned weights read native traces at 0.77 (R6-4, full banks).
+    - **Whether presentation alone causes it is not shown:** R6-4's primary set reads "neither factor is shown".
   - **A follow-up worth running:** what in the native answers makes the surface so informative (length, hedging,
     re-checks, where the box sits). Also whether an SFT format that keeps those signs keeps the probe's 0.76.
+- **Probe to verbal confidence (R6-6):** R6-3 to R6-5 leave its premise standing. The probe (0.75–0.78) reads more than
+  the model's own verdict (0.60–0.69 on R6-3's pairs) and more than the rich text reader.
+  - **Its text-distilled arm matters:** much of the probe's reading is still surface.
+  - **The plan:** `docs/exploratory/r6_6_kaggle_plan.md`, a draft. The go decision is yours (D165).
 
 ## Process notes and limits
 
@@ -558,8 +745,17 @@ Nothing has run on the GPU.
     no others for self-consistency. Such a problem is never kept, and it is now left out of that readout.
   - The plan's sensitivity rule flags a sign change around 0 as a change. It fired twice, both on a quantity whose CI
     contains 0 throughout (§3).
+- **R6-3 to R6-5 (D168–D172):**
+  - **The GPU stages:** 6.39 h against an estimated 6.92 h, with 65 temperature pauses (33 min).
+  - **The CPU analysis:** ~5.6 h, then a stop for a shutdown between R6-4 and R6-5 (D169). The resume took 2 h 41 min,
+    against an estimate of 4–5 h. It reused all 15 cached fits, and R6-3 and R6-4 came back unchanged.
+  - **A crash found before the resume:** a local variable hid the `cached()` helper, so R6-5 would have died at its
+    first fit. A dry run on the real inputs passed after the fix (D170).
+  - **A pre-registered secondary was left out:** R6-4's pair weighting was never computed. It was added afterwards from
+    the cached fits, and it changes no reading (D172).
 - **Everything here is exploratory:**
   - item 1 re-reads one model's samples;
   - item 2 re-reads one model's logs;
-  - item 3 is two Kaggle sampling runs (the 7B and the native 1.5B), with local readouts and controls.
-  - None of it is in the paper, and no hypothesis was tested.
+  - item 3 is two Kaggle sampling runs (the 7B and the native 1.5B), with local readouts and controls;
+  - item 4 re-reads those samples, and X2's, under readings fixed in advance (D167), without multiplicity correction.
+  - None of it is in the paper, and no confirmatory hypothesis was tested.

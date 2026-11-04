@@ -744,6 +744,11 @@ def factorial_effects(pa: dict, sc: dict) -> dict:
         stats["surface (random/terse - random/native)"] = lambda d: float(np.mean(S(d)))
         stats["P net of surface"] = lambda d: float(np.mean((P_n(d) + P_s(d)) / 2 - S(d)))
     out = {k: boot_paired(arrays, f, sc["bootstrap"], sc["seed"]) for k, f in stats.items()}
+    return _factorial_reading(out)
+
+
+def _factorial_reading(out: dict) -> dict:
+    """D167's interpretation table, added to a dict of effects."""
     w, p = _side(out["W"]) != 0, _side(out["P"]) != 0
     out["reading"] = {(True, False): "the weights factor dominates: fine-tuning is implicated",
                       (False, True): "the presentation factor dominates: format / readout",
@@ -751,6 +756,32 @@ def factorial_effects(pa: dict, sc: dict) -> dict:
                       (False, False): "neither factor is shown"}[(w, p)]
     out["the factors interact"] = _side(out["interaction"]) != 0
     return out
+
+
+def pair_weighted_effects(pa: dict, n: dict, sc: dict) -> dict:
+    """D172: D167's effects with each pair weighing the same. Every cell is AU._pw's Σ n·pa / Σ n, with n[frame] the
+    pairs per problem in that frame (the two banks hold different pairs), and the effects are the same contrasts of
+    those cells. Bootstrap over problems, the ratio recomputed per replicate (R6-3's secondary)."""
+    m = len(next(iter(pa.values())))
+    ix = np.random.default_rng(sc["seed"]).integers(0, m, (sc["bootstrap"], m))
+    point = {k: float(AU._pw(v, n[k[1]])[0]) for k, v in pa.items()}
+    reps = {k: AU._pw(v, n[k[1]], ix) for k, v in pa.items()}
+
+    def effects(c: dict) -> dict:
+        w_n, w_t = c[("sft", "native")] - c[("1.5b", "native")], c[("sft", "terse")] - c[("1.5b", "terse")]
+        p_n, p_s = c[("1.5b", "terse")] - c[("1.5b", "native")], c[("sft", "terse")] - c[("sft", "native")]
+        w, p = (w_n + w_t) / 2, (p_n + p_s) / 2
+        e = {"W_native": w_n, "W_terse": w_t, "P_native_weights": p_n, "P_sft_weights": p_s, "W": w, "P": p,
+             "interaction": w_t - w_n, "|W| - |P|": abs(w) - abs(p)}
+        if ("random_1.5b", "native") in c:
+            s = c[("random_1.5b", "terse")] - c[("random_1.5b", "native")]
+            e |= {"surface (random/terse - random/native)": s, "P net of surface": p - s}
+        return e
+
+    est, boot = effects(point), effects(reps)
+    out = {k: {"value": float(v), "ci95": np.percentile(boot[k], [2.5, 97.5]).tolist(), "n_problems": m}
+           for k, v in est.items()}
+    return {"cells": {f"{r}/{f}": v for (r, f), v in point.items()}, "effects": _factorial_reading(out)}
 
 
 def candidate_pa(cands: list[dict], conf: dict, frame: str) -> tuple[list, np.ndarray]:
@@ -818,6 +849,51 @@ def analyze_factorial(cfg: dict) -> dict:
                              "effects": factorial_effects(pa_f, sc)}
         res["full_banks"][pos] = full
     res["p1_is_p2_share"] = {f"{f}/{r}": p1_is_p2_share(f"fact_{f}", r, cfg) for f in banks for r in readers}
+    return res
+
+
+def analyze_factorial_pair_weighted(cfg: dict) -> dict:
+    """D172: the pair-weighting secondary D167 lists for R6-4, which analyze_factorial never computed. It reads the
+    cached fits only and writes its own file, so results.json stays as the registered run left it. Gate: the same
+    fits, per-problem weighted, must give back results.json's cells exactly."""
+    sc, rel = cfg["scale"], cfg["audit"]["length_match_rel"]
+    readers, frames = ("1.5b", "sft", "random_1.5b"), ("native", "terse")
+    saved = json.loads((r6_dir(cfg) / "results.json").read_text())["R6-4"]
+    banks = {f: load_set(f"fact_{f}", cfg) for f in frames}
+    cands = load_candidates(cfg)
+    groups = {f: by_problem(b) for f, b in banks.items()}
+    keys_f = list(groups["native"])
+    by: dict = {}
+    for c in cands:
+        by.setdefault(tuple(c["key"]), []).append(c)
+    n_cand = np.array([sum(c["correct"] for c in v) * sum(not c["correct"] for c in v) for v in by.values()], dtype=float)
+
+    def gate(pa: dict, ref: dict) -> None:
+        for (r, f), v in pa.items():
+            if float(np.mean(v)) != ref["cells"][f"{r}/{f}"]["pairwise_accuracy"]:
+                raise SystemExit(f"R6-4 pair weighting: {r}/{f} does not give back results.json's cell")
+
+    res: dict = {"decision": "D172 (exploratory, paper #2)", "primary": {}, "full_banks": {}}
+    for pos in POS:
+        conf = {(r, f): json.loads((r6_dir(cfg) / "cache" / f"fact_{f}_{r}_{pos}.json").read_text())["conf"]
+                for r in readers for f in frames}
+        pa = {k: candidate_pa(cands, c, k[1])[1] for k, c in conf.items()}
+        gate(pa, saved["primary"][pos])
+        res["primary"][pos] = {"n_problems": len(n_cand), "n_pairs": int(n_cand.sum()),
+                               **pair_weighted_effects(pa, {f: n_cand for f in frames}, sc)}
+        res["full_banks"][pos] = {}
+        for variant, ok in (("all pairs", None),
+                            ("length-matched", lambda a, b: AU.length_matched(a["n_tokens"], b["n_tokens"], rel))):
+            pa_f = {k: per_problem(groups[k[1]], keys_f, c, ok) for k, c in conf.items()}
+            keep = np.all([~np.isnan(v) for v in pa_f.values()], axis=0)
+            pa_f = {k: v[keep] for k, v in pa_f.items()}
+            gate(pa_f, saved["full_banks"][pos][variant])
+            n = {f: n_pairs(groups[f], keys_f, ok)[keep] for f in frames}
+            res["full_banks"][pos][variant] = {"n_problems": int(keep.sum()),
+                                               "n_pairs": {f: int(n[f].sum()) for f in frames},
+                                               **pair_weighted_effects(pa_f, n, sc)}
+    path = r6_dir(cfg) / "r6_4_pair_weighted.json"
+    path.write_text(json.dumps(res, indent=1, default=float))
     return res
 
 
@@ -1017,7 +1093,8 @@ def analyze(cfg: dict | None = None) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("action", choices=["items", "estimate", "stages", "states", "yes", "analyze"])
+    ap.add_argument("action", choices=["items", "estimate", "stages", "states", "yes", "analyze",
+                                               "r6_4_pair_weighted"])
     ap.add_argument("--set", help="states / yes: the item set")
     ap.add_argument("--reader", choices=READERS, help="states / yes: the reader")
     ap.add_argument("--cap", type=float, help="states / yes: the VRAM cap in GiB")
@@ -1034,6 +1111,8 @@ def main() -> None:
         print(json.dumps(run_states(args.set, args.reader, args.cap, cfg), indent=1))
     elif args.action == "yes":
         print(json.dumps(run_yes(args.set, args.reader, args.cap, cfg), indent=1))
+    elif args.action == "r6_4_pair_weighted":
+        analyze_factorial_pair_weighted(cfg)
     else:
         analyze(cfg)
 

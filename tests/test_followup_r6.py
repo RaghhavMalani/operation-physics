@@ -142,6 +142,31 @@ def test_factorial_effects_read_the_dominant_factor():
     assert "surface (random/terse - random/native)" not in out2
 
 
+def test_pair_weighted_effects_equal_the_plain_ones_when_every_problem_has_the_same_pairs():
+    rng = np.random.default_rng(1)
+    n = 40
+    pa = {(r, f): rng.random(n) for r in ("1.5b", "sft", "random_1.5b") for f in ("native", "terse")}
+    out = R6.pair_weighted_effects(pa, {f: np.full(n, 3.0) for f in ("native", "terse")}, SC)
+    plain = R6.factorial_effects(pa, SC)
+    for k, v in out["effects"].items():
+        if isinstance(v, dict):
+            assert v["value"] == pytest.approx(plain[k]["value"]) and v["ci95"] == pytest.approx(plain[k]["ci95"])
+    assert out["effects"]["reading"] == plain["reading"]
+    assert out["effects"]["the factors interact"] == plain["the factors interact"]
+
+
+def test_pair_weighted_effects_weight_each_frame_by_its_own_pairs():
+    pa = {("1.5b", "native"): np.array([1.0, 0.0]), ("1.5b", "terse"): np.array([1.0, 0.0]),
+          ("sft", "native"): np.array([1.0, 0.0]), ("sft", "terse"): np.array([0.0, 1.0])}
+    n = {"native": np.array([3.0, 1.0]), "terse": np.array([1.0, 3.0])}
+    out = R6.pair_weighted_effects(pa, n, SC)
+    assert out["cells"] == {"1.5b/native": 0.75, "1.5b/terse": 0.25, "sft/native": 0.75, "sft/terse": 0.75}
+    assert out["effects"]["W_native"]["value"] == 0.0 and out["effects"]["W_terse"]["value"] == 0.5
+    assert out["effects"]["P_native_weights"]["value"] == -0.5 and out["effects"]["P_sft_weights"]["value"] == 0.0
+    assert out["effects"]["|W| - |P|"]["value"] == 0.0
+    assert "P net of surface" not in out["effects"]
+
+
 def test_candidate_pa_scores_each_candidate_by_its_trace_in_the_frame():
     cands = [{"key": ["f", 1, 1], "native_id": "n0", "terse_id": "t0", "correct": True},
              {"key": ["f", 1, 1], "native_id": "n1", "terse_id": "t1", "correct": False}]

@@ -1306,3 +1306,65 @@ appended here.
   - **R6-6a's estimate:** ~13.5 h (12–18 h), 2 sessions. Only sampling's rate is measured; the rest are assumptions until
     the smoke session.
 - **Nothing was built or run for this entry.** D165's "nothing of R6-6 is built" still holds.
+
+## 2026-11-05 night: D167's readings (your instruction at ~23:08 IST on 2026-11-04)
+
+### D172. D167's readings for R6-3, R6-4 and R6-5, and one pre-registered secondary the analysis had left out (2026-11-05, ~02:15 IST)
+- **Status:** exploratory track, paper #2. D148's freeze holds. Nothing here is Holm-corrected (D167). The write-up is in
+  `docs/exploratory/followup_feasibility.md`.
+- **The run:** D169's resume, unchanged, from 23:08:29 to 01:49:34 IST (exit 0, `bb14f8f`), with D170's fix.
+  - **Before it:** D170's checks (15 of 15 fits hash-match the states; R6-3 and R6-4 rebuild with 0 differences).
+  - **After it:** R6-3 and R6-4 in `results.json` equal the saved copy, and R6-5's 7B block equals `4d1ae87`. No value is
+    non-finite. The swap's refit gate gives max |Δp| = 0.0 for both models.
+- **The readings, applied to D167's text:**
+
+| experiment | quantity | result | reading |
+|---|---|---|---|
+| R6-3 | P(yes), reader 7B − 1.5B, within-source | +0.094 [+0.075, +0.112] | "the verdict's size effect holds on identical inputs" |
+| R6-3 | probe, reader 7B − 1.5B, within-source | +0.022 [+0.011, +0.034] | "the 7B's states carry more" |
+| R6-4 | W; P (P2, identical candidates) | +0.001 [−0.048, +0.052]; −0.029 [−0.148, +0.094] | "neither factor is shown" |
+| R6-4 | interaction I | −0.047 [−0.138, +0.043] | "the factors interact" does not apply |
+| R6-4 | P net of surface (descriptive) | −0.016 [−0.158, +0.126] | – |
+| R6-5 (a), 7B | probe − rich text, all pairs; length-matched | +0.054 [+0.035, +0.072]; +0.060 [+0.027, +0.094] | "the probe reads more than a rich text reader" on both |
+| R6-5 (a), 1.5B | the same | +0.059 [+0.040, +0.079]; +0.068 [+0.037, +0.101] | the same, on both |
+| R6-5 (c), 7B | full − answer only, all pairs; length-matched | +0.098 [+0.074, +0.122]; +0.067 [+0.033, +0.101] | "the reasoning carries the signal" on both |
+| R6-5 (c), 1.5B | the same | +0.111 [+0.088, +0.135]; +0.096 [+0.060, +0.130] | the same, on both |
+| R6-5 (d), 7B | swapped pairwise accuracy, all pairs; length-matched | 0.480 [0.453, 0.506]; 0.467 [0.434, 0.5003] | neither, on both |
+| R6-5 (d), 1.5B | the same | 0.391 [0.364, 0.420]; 0.403 [0.371, 0.436] | "it tracks the reasoning" on both |
+
+- **D170's two notes on the code's labels changed nothing here:**
+  - **(c):** the case D167 does not cover (answer only above 0.5, full − answer only below 0) did not occur.
+  - **(a):** each variant is reported separately, and they agree.
+- **The code's reading on R6-4's secondaries is not a reading.** D167 fixed the table for the primary set. The analysis
+  also labels the full banks "the presentation factor dominates". There, the two banks hold different answers, so the
+  label describes a secondary and P is not a clean presentation effect. W is clean, because within a presentation the
+  readers read identical text.
+- **A pre-registered secondary was left out by the analysis.**
+  - **The fault:** D167 lists pair weighting among R6-4's secondaries. `analyze_factorial` never computed it, and I did
+    not notice until reading the results.
+  - **The fix:** `analyze_factorial_pair_weighted` (`python -m physcal.eval.followup_r6 r6_4_pair_weighted`), with two
+    new tests. Each cell is `AU._pw`'s Σ n·pa / Σ n, as in R6-3, and each presentation uses its own pair counts on the
+    full banks. Bootstrap: B = 10,000, seed 0.
+  - **Its inputs:** the cached fits only. It writes `results/followup/r6/r6_4_pair_weighted.json`, so `results.json`
+    stays as the registered run left it.
+  - **The order is a deviation:** this was computed after R6-4's other numbers were read. D167 fixed the quantity, so no
+    choice was open except the weights on the full banks, which follow the definition above.
+  - **The checks:** the same fits, per-problem weighted, give back `results.json`'s cells exactly (a gate in the code). A
+    separate plain-loop calculation gives the same primary cells and the same CI for P.
+  - **The result:** no reading changes. Primary set (P2): W −0.004 [−0.047, +0.040], P −0.048 [−0.177, +0.080], "neither
+    factor is shown". Full banks (P2): W −0.001 [−0.016, +0.014], P −0.239 [−0.277, −0.200].
+- **Not computed: length-matched pairs on R6-4's 93-problem set.** D167 lists "length-matched pairs" without naming a
+  set, and the analysis runs them on the full banks. On the matched set a candidate has two traces, so a pair would have
+  to match in both presentations, leaving few of the 248 pairs. I did not add this.
+- **What goes beyond the readings (interpretations, labelled as such in the write-up):**
+  - R6-4's primary set keeps only wrong values both models reached, and that may be why every readout there is low.
+  - The swap may partly measure the mismatch between box and reasoning: both classes fall in both models. No same-label
+    swap was registered.
+  - The answer-only probe's 0.65 has no random-weights reference, so it cannot be attributed to the weights yet.
+- **R6-6 is not decided here.** The go decision stays yours (D165), with the six decisions in the plan's §1. Against the
+  plan's §5:
+  - **R6-5 (a):** C − D is the headline contrast.
+  - **R6-5 (d):** R6-6a's student is the native 1.5B, so the row "tracks the reasoning" applies: add the swap to S5.
+  - **R6-3:** a 7B student becomes an option, costed separately.
+  - **R6-4:** "neither" has no row in §5. W ≈ 0 gives no reason to add the SFT weights as a second student.
+- **The tests:** `tests/test_followup_r6.py` passes (21). The full suite: see the report.
