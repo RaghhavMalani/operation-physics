@@ -1155,3 +1155,46 @@ appended here.
   - the tests: 18 pass (one new, for the cache).
 - **The analysis starts only if every GPU stage finished:** 4 jobs × 1 BLAS thread, nice 19, the GPU hidden
   (`CPU_ENV`).
+
+## 2026-11-04 midday: the analysis is paused for a shutdown (your instruction at ~11:38 IST)
+
+### D169. D167's CPU analysis is stopped at the boundary between R6-4 and R6-5: R6-3 and R6-4 are done and saved, R6-5 is not started. The resume command (2026-11-04, ~11:50 IST)
+- **The rule (your instruction):** let the running fit finish only if it ends within ~10 min, otherwise stop; the
+  cached fits stay.
+- **What happened:**
+  - at 11:38 the running fit was R6-4's last cell (`fact_terse_random_1.5b_p1`, started 11:36). Its siblings took
+    195–556 s;
+  - it finished at 11:44 (483 s). R6-4's effects were computed and `results.json` was saved with R6-3 and R6-4;
+  - R6-5 (7B) had just started its first fit, the rich text classifier, with nothing cached;
+  - at 11:45 the chain (PID 2366) and the analysis's process group were stopped (SIGTERM): the analysis, its 4 loky
+    workers and the resource tracker;
+  - afterwards no R6, guard or queue process remained, no GPU process, and `/dev/shm` was empty.
+- **Done and saved** (`results/followup/r6/results.json`, atomic writes; `results/followup/r6/cache/`, 15 fits):
+  - **R6-3**, every quantity D167 lists:
+    - the fits: the bank text classifier (1,300 s); the 7B reader's probe (9,778 s); the 1.5B reader's probe
+      (3,043 s);
+    - the spot checks; every pair filter; the reader × source table; pair weighting; the truncated readout.
+  - **R6-4**, all 12 probe cells (3 readers × 2 presentations × 2 positions; 195–774 s each), with the effects, the
+    interpretation table and the checks, on the primary set and the full banks.
+- **Left:** R6-5 for the 7B and the 1.5B:
+  - the rich text classifier, the answer-only probe, the answer-only text classifier and the reasoning swap. The swap
+    needs no new fit beyond the five cached fold refits (exact, D167);
+  - the estimate is ~4–5 h of CPU at the same settings (the 7B answer-only probe ~1.5 h, the rich classifiers ~1 h
+    each);
+  - **then:** the write-up and D167's readings (one D-entry), after which R6-6 is decided (D165).
+- **The resume command** (no GPU stage):
+
+  ```bash
+  setsid nohup scripts/resume_followup_r6_analysis.sh >> results/queue_followup_r6/nohup.log 2>&1 < /dev/null &
+  ```
+
+  - It runs the queue's analysis stage alone, with the identical `CPU_ENV`: `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+    MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19`. The probes' 4 jobs come from `configs/followup.yaml`
+    (`scale.probe.n_jobs`), as in the first run.
+  - It keeps the disk guard and the queue lock, and commits + pushes `results.json` and the cache at the end. The
+    log is `results/queue_followup_r6/r6_analyze_resume.log`.
+  - **What it reuses:** R6-3's and R6-4's fits come from the cache (checked by input hash), so those parts are rebuilt
+    in minutes and the numbers are identical.
+  - **Its dry run** (`DRY_RUN=1`) prints the same command as the first run's `start r6_analyze` line.
+- **Also committed:** an ignore rule for the hidden-state parts (`results/followup/r6/states/*/*/`, 7.5 GB, local),
+  which were untracked but not ignored. Their `*_info.json` files stay tracked.

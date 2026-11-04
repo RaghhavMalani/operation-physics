@@ -275,3 +275,6 @@
 [06:05:24] guard(29050): stage continued after 30s paused (GPU at 67.70C <= 75C)
 [06:10:16] end r6_states_swap_7b_7b: exit 0
 [06:10:16] r6_states_swap_7b_7b: 11 temperature pauses, 330s paused of 5043s; tonight so far 65 pauses, 1956s of 23011s (D143)
+[06:10:18] commit 'Follow-up (D167, exploratory): R6 states, swap_7b read by 7b': pushed
+[06:10:21] disk: 21 GiB free on MLStorage
+[06:10:21] start r6_analyze (timeout 43200s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_r6 analyze

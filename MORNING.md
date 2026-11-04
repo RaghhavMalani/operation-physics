@@ -70,10 +70,12 @@ Written on 2026-11-04 at ~07:55 IST. The GPU work had ended at 06:10, and the CP
   2–11 pauses per stage. The guard's 30 s pauses handled it.
 - **My session watcher** raised one false "silent" alarm on the CPU analysis, a long fit that prints only when done.
   The watcher now ignores the analysis.
-- **The state now:**
-  - the GPU is free;
-  - the queue chain (PID 2366) is alive, running the analysis, and exits when it finishes;
-  - nothing else runs.
+- **The state at ~07:55:** the GPU was free, and the chain (PID 2366) was running the analysis.
+- **Update, 11:45 IST: the analysis is paused for a shutdown (D169).**
+  - **Done and saved:** R6-3 and R6-4 (`results/followup/r6/results.json`, 15 cached fits).
+  - **Left:** R6-5 (~4–5 h of CPU).
+  - **To resume:** `setsid nohup scripts/resume_followup_r6_analysis.sh >> results/queue_followup_r6/nohup.log 2>&1 < /dev/null &`
+  - Nothing runs.
 
 ## 4. Recommendation
 
