@@ -76,10 +76,20 @@ Written on 2026-11-04 at ~07:55 IST. The GPU work had ended at 06:10, and the CP
   - **Left:** R6-5 (~4–5 h of CPU).
   - **To resume:** `setsid nohup scripts/resume_followup_r6_analysis.sh >> results/queue_followup_r6/nohup.log 2>&1 < /dev/null &`
   - Nothing runs.
+- **Update, ~21:45 IST: the resume is checked, fixed and held at your instruction (D170).**
+  - **Nothing ran:** the analysis was not launched. R6-5 is still not started, and no result changed.
+  - **Intact:** all 15 cached fits hash-match the states on disk, and R6-3 and R6-4 rebuild from them with 0 differences
+    from `results.json`.
+  - **R6-4 has no cells left.** All 12 are done, so only R6-5 remains.
+  - **A crash found before launch:** R6-5 would have died at its first fit (a local variable hid the `cached()` helper).
+    Fixed by a 3-line rename, with a regression test; the cached fits stay valid.
+  - **A dry run of R6-5's whole path on the real inputs passed** (both models, 220 s, no readout printed or saved; the
+    refit gate's gap is 0.0). The heavy fits ran on ~450 answers, so their full-size time and memory are untested.
+  - **To resume:** the same command as above, when you say.
 
 ## 4. Recommendation
 
-- **Let the analysis finish (~16:00 IST).** Until then, no GPU job and no multi-core CPU job: the probes' numbers depend
-  on the thread settings (D97).
+- **Resume when you are ready:** ~4–5 h of CPU. While it runs, no GPU job and no multi-core CPU job: the probes' numbers
+  depend on the thread settings (D97).
 - **Then:** the write-up (`docs/exploratory/followup_feasibility.md`) and a D-entry with D167's readings. R6-6 is
   decided after those (D165).

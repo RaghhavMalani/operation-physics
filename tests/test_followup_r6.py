@@ -327,3 +327,14 @@ def test_the_analysis_cache_refits_only_when_its_inputs_change(tmp_path):
     assert R6.cached(cfg, "toy", ["toy", x], fit) == ({"a": 0.25}, {"folds": [1]}) and len(calls) == 1
     R6.cached(cfg, "toy", ["toy", x + 1], fit)
     assert len(calls) == 2
+
+
+def test_no_analysis_function_shadows_the_cache_helper():
+    """D170: analyze_controls bound a local `cached` (the probe's JSON) and then called `cached(...)`, so R6-5 would have
+    died at its first fit. Every function that calls the helper must see the module's."""
+    import symtable
+
+    mod = symtable.symtable(open(R6.__file__).read(), R6.__file__, "exec")
+    callers = [f for f in mod.get_children() if f.get_type() == "function" and "cached" in f.get_identifiers()]
+    assert {f.get_name() for f in callers} >= {"analyze_bank", "analyze_factorial", "analyze_controls"}
+    assert not [f.get_name() for f in callers if f.lookup("cached").is_local()]

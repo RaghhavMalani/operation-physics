@@ -906,8 +906,8 @@ def analyze_controls(model: str, cfg: dict) -> dict:
     items = probe_order_items(model, rows, cfg)
     corr = {_key_sample(it): it["correct"] for it in items}
     index, _, cache = A.probe_inputs(model, "hidden", corr, cfg)
-    cached = json.loads(cache.read_text())
-    probe = {(tuple(k), s): v for k, s, v in cached["conf"]}
+    probe_cache = json.loads(cache.read_text())
+    probe = {(tuple(k), s): v for k, s, v in probe_cache["conf"]}
     groups_k = by_problem(items)
     keys = list(groups_k)
     conf = {"probe": {it["id"]: probe[_key_sample(it)] for it in items}}
@@ -948,7 +948,7 @@ def analyze_controls(model: str, cfg: dict) -> dict:
         raise SystemExit(f"swap_{model}: not in the probe's order")
     orig_layers, _ = F.load_hidden(model, cfg)
     p_orig, p_swap = np.full(len(items), np.nan), np.full(len(items), np.nan)
-    for te, layer, f in refit_fold_probes(orig_layers, index, cached["info"]["folds"], cfg):
+    for te, layer, f in refit_fold_probes(orig_layers, index, probe_cache["info"]["folds"], cfg):
         p_orig[te], p_swap[te] = f(orig_layers[layer][te]), f(sw_layers[layer][te])
     cached_vals = np.array([conf["probe"][it["id"]] for it in items])
     gap = float(np.abs(p_orig - cached_vals).max())

@@ -1198,3 +1198,44 @@ appended here.
   - **Its dry run** (`DRY_RUN=1`) prints the same command as the first run's `start r6_analyze` line.
 - **Also committed:** an ignore rule for the hidden-state parts (`results/followup/r6/states/*/*/`, 7.5 GB, local),
   which were untracked but not ignored. Their `*_info.json` files stay tracked.
+
+## 2026-11-04 night: the resume is checked, fixed, and held (your instructions at ~21:30 and ~21:40 IST)
+
+### D170. Before D169's resume: R6-3 and R6-4 are intact and R6-4 is complete, R6-5 would have crashed at its first fit (fixed, a rename), and the resume is held at your instruction. Recorded before any R6-5 number exists (2026-11-04, ~21:45 IST)
+- **The state:** the analysis was not launched. Your pause (~21:40) came during the pre-launch checks, so no fit ran, no
+  fit was interrupted, and `results.json` and `cache/` are unchanged. D169's resume command stands.
+- **Integrity, read-only (your request):**
+  - all 29 tracked files under `cache/`, `items/` and `results.json` equal their HEAD blobs;
+  - all 15 cached fits: their `inputs_sha256`, recomputed from the states on disk, match. So the 7.5 GB of gitignored
+    states are the fits' inputs, byte for byte;
+  - R6-3 and R6-4, rebuilt from those fits through a `cached` that can neither fit nor write (30 s): 0 differences
+    from `results.json`, compared exactly, every field but `seconds`.
+- **R6-4 has no remaining cells.** All 12 are fitted and hash-matched, as D169 says. Only R6-5 is left.
+- **The bug:** `analyze_controls` bound a local `cached` (the probe's JSON, since the D167 build). D168 then added calls
+  to the module's `cached()` in the same function. Python treats the name as local throughout, so the first call raises
+  `TypeError: 'dict' object is not callable`.
+  - **Why it was not seen:** D169's stop came seconds after R6-5 started, before that line; no test ran the function.
+  - **What the unfixed resume would have done:** rebuild R6-3 and R6-4, then stop at once as BLOCKED, with nothing lost.
+- **The fix, an implementation change only (no rule, no number):** the local is renamed `probe_cache` (3 lines). Cache
+  keys hash the inputs, not the code, so all 15 fits stay valid.
+  - **A regression test:** `test_no_analysis_function_shadows_the_cache_helper`; it flags the pre-fix module. The R6
+    tests: 19 pass.
+- **A dry run of R6-5's whole path on the real inputs passed for both models (121 s + 99 s; no readout seen):**
+  - **Run as they will be:** the states (all finite, the right shapes), the five fold refits and their gate, the
+    text-swap models, the pairs, the bootstraps, the readings. `swap_refit_gap` is 0.0 for both (the gate is 1e-3).
+  - **Reduced:** the three heavy fits ran through their real code on ~450 answers with a trimmed grid, padded with
+    placeholders, and their outputs were serialized. So their full-size time and memory are not tested.
+  - **Nothing was read:** it printed only counts, shapes, key names and the gate, and saved no readout. It wrote nothing
+    under `results/` (a scratch script, not committed).
+- **Two of the code's reading labels are looser or tighter than D167's text.** Fixed now, before the data: **the write-up
+  applies D167's text**, not the labels, and the code is left as it is.
+  - **(c):** the label says "the answer alone carries it" whenever answer-only's CI is above 0.5 and full − answer-only's
+    is not above 0. D167 also needs that second CI to contain 0. If it lies below 0, D167's reading does not apply, and
+    the write-up says so.
+  - **(a):** the label needs the CI above 0 on both all pairs and length-matched. D167 names both as the quantity and
+    gives one rule, so the write-up reports each separately and states the reading for each.
+- **For the resume:**
+  - **The command is D169's, unchanged,** with its `CPU_ENV`.
+  - **Commits:** the script commits only at its end, so the session watching it must commit and push when `R6-5 7b` is
+    saved. The script's own commit covers `R6-5 1.5b`.
+  - **`results.json` is rewritten from the start:** for ~30 s it lacks R6-4. Git holds the saved copy.
