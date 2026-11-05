@@ -1751,3 +1751,4 @@ appended here.
   session is projected from measured rates. With the ingest fix, this re-pins the notebooks.
 - **Still to check on Kaggle, no quota needed:** version 2's Output tab (the folder, or only the zip?), both versions' status
   badges, and the quota used and left.
+- **The notebooks now pin `6d856a7d261f`.** The five suites that touch this code pass. The full suite was not re-run for this entry.
