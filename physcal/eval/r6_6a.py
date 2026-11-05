@@ -1071,6 +1071,10 @@ def spawn(cmds: list[tuple[list[str], dict]], log_path: Path, stall_s: float, lo
                 log(f"STALL: no output for {stall_s / 60:.0f} min; killing {cmd[3:6]}")
                 os.killpg(p.pid, signal.SIGKILL)
                 p.wait()
+        try:                                            # a child left behind (a vLLM worker) must not keep a GPU
+            os.killpg(p.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
         t.join(timeout=60)
         codes[i] = p.returncode
     ts = [threading.Thread(target=one, args=(i, c, e)) for i, (c, e) in enumerate(cmds)]

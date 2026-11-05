@@ -529,6 +529,20 @@ def test_spawn_returns_exit_codes_and_kills_a_silent_child(tmp_path):
     assert any("STALL" in x for x in lines)
 
 
+def test_spawn_leaves_no_child_of_a_finished_process_behind(tmp_path):
+    import sys
+    import time
+
+    pid_file = tmp_path / "pid"
+    code = ("import subprocess, sys; p = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); "
+            f"open({str(pid_file)!r}, 'w').write(str(p.pid))")
+    assert M.spawn([([sys.executable, "-c", code], {})], tmp_path / "l.log", 60, lambda m: None) == [0]
+    pid = int(pid_file.read_text())
+    time.sleep(0.5)
+    state = Path(f"/proc/{pid}/stat")
+    assert not state.exists() or state.read_text().split(") ")[1][0] == "Z"
+
+
 # ------------------------------------------------------------------------------------------- the notebooks
 PINNED = ("physcal/eval/r6_6a.py", "physcal/eval/kaggle_stages.py", "physcal/eval/followup_kaggle.py",
           "physcal/eval/followup_scale.py", "physcal/eval/followup_r6.py", "physcal/eval/followup_r6_controls.py",
