@@ -670,6 +670,26 @@ text classifier 0.683 on the same pairs.
   - So part of the drop may be a penalty for the disagreement itself. That is an interpretation: a same-label swap would
     separate the two, and none was registered.
 
+### D173's two controls at 1.5B (D173, D174)
+
+Two local controls, run after R6-5 as a recorded exception to D171. 1.5B only; they compare with R6-5's 1.5B numbers.
+
+| quantity | result | reading |
+|---|---|---|
+| mismatch cost M (box replaced by another wrong value, reasoning fixed) | −0.099 [−0.124, −0.075] | "a mismatch alone lowers the probe" |
+| correct box against wrong box after one identical wrong reasoning | 0.608 [0.581, 0.635] | "with the reasoning fixed, the probe prefers the correct box" |
+| trained − random-weights answer-only probe | +0.113 [+0.082, +0.144] | "the trained weights add to the box alone" |
+
+- **The swap's "both classes fall" is explained.** Incorrect boxes do rise with the correct reasoning (+0.222), and the
+  box's disagreement costs more (−0.363). R6-5 (d)'s reading at 1.5B stands, because both sides of its pairs are mismatched.
+- **The answer-only signal is the weights', not the box's surface:** 0.647 trained against 0.533 random. The random-weights
+  surface sits in the reasoning text (0.673).
+- **Post-hoc, an interpretation:** the cost looks like a copy cost. A box within 1% of the reasoning's value but written
+  differently costs about as much (−0.14 to −0.18) as a different wrong value (−0.20), while an identical string costs
+  nothing on average.
+- **A property of the swapped texts:** they end on a plain `}`, while over half of the originals merge the brace with the
+  next characters. This adds noise to R6-5 (c) and (d) with mean 0, and changes no reading (D174).
+
 ### What the three say about the gap
 
 | D165's option | evidence | status |

@@ -1453,3 +1453,68 @@ appended here.
   - a second manifest for the new set, so D167's frozen manifest and `results.json` are not touched;
   - the results go to `results/followup/r6/controls_d173.json`.
 - **Nothing of R6-6 is built yet.** Its pre-registration follows the readings, and its code follows that.
+
+### D174. D173's readings: a mismatch alone lowers the probe, the probe prefers the correct box with the reasoning fixed, and the trained weights add to the box alone. Post-hoc: the mismatch cost looks like a copy cost, and the state at the brace sits on a different token in swapped texts (2026-11-05, ~10:40 IST)
+- **Status:** exploratory track, paper #2. Nothing here is Holm-corrected. 1.5B only, local 4-bit copies, so these numbers
+  compare with R6-5's 1.5B numbers and with nothing R6-6a will measure.
+- **The run:** `scripts/queue_r6_controls.sh`, 09:06 to 10:12 IST, exit 0 (`adea2f9`).
+  - **GPU:** 1,314 s (six 30-s temperature pauses, 87–89 °C) and 404 s. **CPU:** 1,591 s, of which the random-weights fit
+    took 1,515 s.
+  - **Both gates passed:** the refit reproduces the cached out-of-fold values exactly (max |Δp| = 0.0), and R6-5's
+    `swap_movement` for 1.5B is reproduced exactly.
+- **The readings, applied to D173's text:**
+
+| quantity | result | reading |
+|---|---|---|
+| (e) mismatch cost M, 360 problems | −0.099 [−0.124, −0.075] | "a mismatch alone lowers the probe" |
+| (f) correct box against wrong box, reasoning fixed, 648 problems | 0.608 [0.581, 0.635] | "with the reasoning fixed, the probe prefers the correct box" |
+| (h) trained − random answer-only, all pairs, 766 problems | +0.113 [+0.082, +0.144] | "the trained weights add to the box alone" |
+
+- **Beside them:**
+  - **(e):** D164's text classifier gives M = −0.001 [−0.003, +0.000], so that surface reader sees no cost.
+  - **(g), descriptive, on 489 problems:** `correct` against `diff_value` texts 0.912 [0.896, 0.927]; the original texts
+    0.760 [0.741, 0.779]; R6-5's swap 0.402 [0.368, 0.438].
+  - **(g), R6-5's mean changes split exactly:**
+
+| | box effect | reasoning effect | R6-5's change |
+|---|---|---|---|
+| correct boxes | −0.178 | −0.256 | −0.433 |
+| incorrect boxes | −0.363 | +0.222 | −0.141 |
+
+  - **(h):** random answer-only 0.533 [0.510, 0.557], trained 0.647 [0.624, 0.668]; length-matched, the difference is
+    +0.097 [+0.056, +0.138]. Random full trace − random answer-only: +0.139 [+0.109, +0.169].
+- **What this settles:**
+  - **D172's interpretation holds.** The incorrect boxes do rise with the correct reasoning (+0.222). The box's own
+    disagreement (−0.363) outweighs it, so "both classes fall".
+  - **D167's reading of R6-5 (d) at 1.5B stands.** Both sides of its pairs are mismatched, as D173 said.
+  - **R6-5 (c)'s open question closes at 1.5B.** The 0.65 of the answer-only probe is mostly the trained weights, not the
+    box's surface. The random-weights surface sits in the reasoning text (0.673), not in the box (0.533).
+- **Post-hoc diagnostics (not registered, not readings; `scripts/diag_d173.py`, `results/followup/r6/controls_d173_diagnostics.json`).**
+  The placebos were meant to stay near 0, and they did not: mean e is −0.119 (`correct`) and −0.071 (`same_value`). So I
+  looked before writing this:
+  - **It is the string, not the value.** Where a's box is the same string as d's, mean e is −0.006 and +0.009. Where the
+    string differs but the value is within 1%, it is −0.180 and −0.140, close to `diff_value`'s −0.197.
+  - **So the cost looks like a copy cost.** The probe reacts to a box that is not the reasoning's own string, by about as
+    much for 287 against 289 as for a different wrong value. This is an interpretation.
+  - **M is conservative.** With only identical-string placebos, M = −0.172 [−0.205, −0.140] (182 problems, 452 answers). In
+    log-odds, M = −1.11 [−1.31, −0.91]. The same-value donors also start higher (0.38 against 0.30), so in p they have
+    more room to fall.
+- **A property of the texts I had not noticed, in R6-5 (c) and (d) as well as here:**
+  - **The fault:** a swapped or answer-only text ends at `}`, but in 437 of 800 checked originals the brace shares a token
+    with what follows (`}\`, `}\n`, `}.`). So the state "at the brace" is on a different token, and in the original it
+    has seen one more character.
+  - **Its size:** on identical strings with a plain `}` token, e is 0 up to numerics (n = 655, mean −8e-7, max 0.026).
+    With a merged token it is noise of mean |e| 0.105 and mean −0.0001 (n = 760).
+  - **What it changes:** no reading. M subtracts two swapped texts, and the mean is 0. It does add noise to (d), and no
+    number recorded so far is changed by it.
+  - **R6-6a's fix:** every swap comparison is made against the donor's own text cut at its box (D175).
+- **What changes in R6-6a, by D173's mapping:**
+  - **(e):** S5's swap test carries both sets, opposite-label and `diff_value`.
+  - **(h):** an answer-only probe joins the references (one short pass in S2).
+  - **(f):** the write-up only.
+- **Limits:**
+  - (f) has no random-weights reference of its own. The box's surface at random weights (0.533) suggests little, but
+    that is a different quantity.
+  - The 7B got neither control.
+  - The placebo's failure was found after the data. The registered M stands as the reading, and the identical-string M
+    is a diagnostic.

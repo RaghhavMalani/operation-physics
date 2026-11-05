@@ -32,3 +32,5 @@
 [09:46:22] disk: 21 GiB free on MLStorage
 [09:46:22] start d173_analyze (timeout 10800s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_r6_controls analyze
 [10:12:53] end d173_analyze: exit 0
+[10:12:55] commit 'Follow-up (D173, exploratory): the two controls' analysis': pushed
+[10:12:55] D173 chain done: 2 of 2 stages
