@@ -1518,3 +1518,113 @@ appended here.
   - The 7B got neither control.
   - The placebo's failure was found after the data. The registered M stands as the reading, and the identical-string M
     is a diagnostic.
+
+## 2026-11-05 midday: R6-6a's pre-registration
+
+### D175. Pre-registration of R6-6a: can what a probe reads be moved into a cheap verbal confidence, beyond what direct labels and surface text give? Recorded before any of its code, pool or Kaggle output exists (2026-11-05, ~10:55 IST)
+- **Status:** exploratory track, paper #2. D148's freeze holds. Nothing is Holm-corrected (D167). D171's rules apply. Your
+  decisions are in D173, and D174's readings set the additions marked below. **Nothing here runs without your go.**
+- **The model:** `Qwen/Qwen2.5-Math-1.5B-Instruct` at D160's pinned revision, fp16, on "GPU T4 x2", sampled with D157's
+  decoding (vLLM, k = 8, 3,072 new tokens, the same seed rule on this pool's indices).
+- **The pool (fresh; built and frozen on the laptop, CPU):**
+  - 2,400 problems, generator 1.1.0, split train. Problem i is cell i mod 12 (kinematics, dynamics, energy × depths 1–4),
+    seed 70,000,000 + i.
+  - The build must show that no seed and no problem text is shared with X2's pool or any frozen set in `data/eval_sets`.
+  - **Splits, fixed before sampling, by problem:**
+    - **held-out template:** every problem whose question sentence is "Determine {sym}, the {desc}…" (~800). Test only;
+    - the rest, permuted with seed 0: the first 1,000 **train**, the next 120 **validation**, all others **ID test**
+      (~480).
+- **Answers:** a sample is answered if D154's grade gives a value and it is not truncated. Truncated samples are counted
+  per split, not read. All arms score the same frozen answers, so every comparison is paired.
+- **The verbal confidence:** the yes-vs-no log-odds at D151's verification turn (X4's reading: system, problem, the
+  completion, the verification text W0, the generation prompt, "Verdict:"). P(yes) is its sigmoid. The head is float32.
+- **The arms:**
+
+| arm | training target | seeds |
+|---|---|---|
+| A: no training | none: the base model's P(yes) | – |
+| B: direct supervised | the correct / incorrect label | 0, 1, 2 |
+| C: probe-distilled | the out-of-fold probe P(correct) | 0, 1, 2 |
+| D: text-distilled | the out-of-fold rich-text P(correct) | 0, 1, 2 |
+| E: shuffled | C's targets shuffled within each problem (seed 0) | 0 |
+
+- **Training, identical in every arm, with no tuning:**
+  - **Items:** the first 6,000 answered train samples in pool order (all of them if fewer).
+  - **Loss:** binary cross-entropy of the log-odds against the target.
+  - **Adapter:** LoRA r = 16, α = 32, dropout 0, on q, k, v, o, gate, up, down. Adapter weights fp32, the base fp16 and
+    frozen, fp16 autocast with a gradient scaler.
+  - **Optimizer:** AdamW, learning rate 1e-4, no weight decay, 5% linear warmup then linear decay, gradient norm clipped at
+    1.0, batch 16, one epoch. A seed sets the LoRA init and the item order, so arms with one seed share an order.
+- **The teachers (CPU, on train problems only; test problems never enter a target):**
+  - **Probe:** logistic regression on every layer's state at the box's closing brace. 5 outer folds by problem, (layer, C)
+    by inner CV, as `x2_analysis.crossfit_confidence`.
+  - **Rich text:** `followup_r6.crossfit_rich`, D167's features and grid.
+  - **For the references:** each is refit on all train answers, with its selection redone there, and applied to validation
+    and test.
+- **The metrics:**
+  - **Primary:** X2's within-problem pairwise accuracy on the ID test, on problems with both classes. Per problem; an arm
+    with seeds is the mean of its seeds' per-problem values; paired bootstrap over problems, B = 10,000, seed 0.
+  - **Secondary, on all answered test items:** Brier, and selective risk (AURC: the mean over coverage of the error rate
+    among the most confident answers), with the same bootstrap.
+  - **Also:** all of the above on the held-out template set; the spread across seeds; truncated counts.
+- **The readings (ID test, pairwise accuracy):**
+
+| contrast | CI above 0 | CI contains 0 | CI below 0 |
+|---|---|---|---|
+| B − A | direct supervision helps | labels do not help | labels hurt |
+| C − A | distillation helps | distillation does not help | distillation hurts |
+| C − B | the probe's target adds to labels | labels are enough | labels beat the probe's target |
+| **C − D (headline, R6-5 (a))** | it moves more than surface | distillation is surface transfer | the text target moves more |
+| E − A (a check) | **the setup leaks: stop and diagnose** | as expected | as expected: shuffled targets cost the verdict's own signal |
+
+  - B is trained on the truth and C on a noisy estimate of it, so C − B at or below 0 is a plausible, valid result.
+  - The same table is reported on the held-out template set, as a second column of readings.
+- **The references, not arms, on the same test items:** the probe and the rich-text classifier themselves; **the
+  answer-only probe (added by D174 (h)):** D167's answer-only text, one short pass in S2, selected and fit on all train
+  answers; self-consistency at k = 8 (the cost reference); length.
+- **Held-out wording (decision 3, secondary):** arms A, B, C, D, seed 0, on the ID test, with the verification text W1:
+  > Please review the work you just did. Does the number in your \boxed{} agree with the true answer to within 1%? Finish
+  > with a single line: "Verdict: yes" if it does, or "Verdict: no" if it does not.
+
+  Reported as pairwise accuracy and the same contrasts, with no reading of their own.
+- **The swap test (secondary; both sets added by D174 (e)):** arms A, B, C, D, seed 0, W0, on the first 100 ID-test
+  problems with both classes, in pool order:
+  - `opposite`: R6-5 (d)'s text for each answer;
+  - `diff_value`: D173's text, for incorrect answers with such a donor;
+  - `own_cut`: each answer's own completion cut after its box. **D174's fix:** swaps are compared with this, not the
+    original, so the tail and the brace's token match on both sides.
+  - **Reported:** pairwise accuracy on `opposite`, labelled by the box, with D167's three-way wording (below 0.5 "tracks
+    the reasoning", above "tracks the answer", otherwise neither); the box effect p(a ← d) − p(d cut) for `diff_value`.
+- **Stop rules (D171: timing and format only, never correctness):**
+  - D157's gate: at least 50% answered on the first timed candidates;
+  - a non-finite loss, state or logit stops that stage;
+  - no chunk starts unless its projected end is before session start + 9.5 h.
+- **Validation is a report, not a gate.** Each run's cross-entropy against the labels on validation answers is recorded. A
+  run above 1.0 (worse than any constant guess) is labelled diverged: it stays in, and the readings are also given
+  without it. No run is retrained on this.
+- **The stages (assumed rates are replaced by the smoke session's):**
+
+| stage | what | GPU | hours |
+|---|---|---|---|
+| S0 | venv, repo, weights | – | 0.1 (D160: 2 min) |
+| S1 | sampling, 2,400 × 8, vLLM | both | 4.2 (measured, D160) |
+| S2 | P(yes) and states in one pass, ~18,700 answers; the short answer-only pass | both | 1.8 |
+| S3 | teachers and references, CPU, during arm B | – | overlapped |
+| S4 | 10 LoRA runs, 2 at a time | both | 4.2 |
+| S5 | test scoring, W1, swaps | both | 3.8 |
+| S6 | analysis, results zip | – | 0.2 |
+| | **in all** | | **~14 (12–19), 2 sessions** |
+
+- **What comes back (D171's zip):** `results.json`, a per-answer score table, gzipped completions, the config, the
+  environment, logs, timings, a sha256 manifest. States and adapters stay in the resume tier.
+- **The smoke session (decision 6), ~45 minutes, before any of this:**
+  - **Its own 48 problems** (seed 70,100,000 + i, disjoint from the pool), so no R6-6a problem is touched before the run.
+  - **It runs every stage's real code** on them, then answers the three open questions: does output survive a crash, what
+    is the machine, and what are the real rates (fp16 HF + PEFT LoRA on T4, without overflow).
+  - **What it may change:** rates, batch sizes, chunk sizes and token budgets. Anything else is a new D-entry before data.
+  - **If the measured rates need more than 2 sessions,** that goes to you before the run.
+  - Its numbers on 48 problems are plumbing, never results.
+- **The build (next, CPU):** `physcal/eval/kaggle_stages.py`, `physcal/eval/r6_6a.py`, `configs/r6_6a.yaml`, the frozen pools,
+  `notebooks/kaggle_r6_6a.ipynb`, `notebooks/kaggle_r6_6a_smoke.ipynb`, and tests: kill-and-resume, a tiny Qwen through
+  every stage on CPU, and a pin test.
+- **R6-6b is not decided here** (decision 5).

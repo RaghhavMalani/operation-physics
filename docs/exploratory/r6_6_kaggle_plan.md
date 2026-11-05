@@ -1,10 +1,9 @@
-# R6-6 on Kaggle: draft plan (D171; exploratory, paper #2; nothing built, nothing run)
+# R6-6 on Kaggle: plan (D171; exploratory, paper #2)
 
-**Status: a draft, not a pre-registration.**
+**Status: R6-6a's rules are now fixed by D175, which overrides this draft wherever they differ.**
 - **The workflow** it follows is D171 in `docs/exploratory/DECISIONS_FOLLOWUP.md`.
-- **Written before any R6-3, R6-4 or R6-5 number was read.** The go decision still waits for those results (D165). §5
-  says how each reading changes this plan.
-- **Before any code or run:** your decisions in §1, then a pre-registration D-entry that fixes the rules below.
+- **Written before any R6-3, R6-4 or R6-5 number was read.** §5 says how each reading changes this plan.
+- **§1's six decisions are accepted as written** (D173). R6-6b's model is still open.
 - **Paper #1 is untouched** (D148's freeze).
 
 R6-6 is two experiments (D165). They get one notebook each:
