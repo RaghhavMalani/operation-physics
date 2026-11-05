@@ -924,23 +924,33 @@ def cpu_rate(rc: dict) -> dict:
 
 
 def projection(ctx: Ctx) -> dict:
-    """The full run's hours per stage from the rates this smoke session measured (D175: replaces the assumptions)."""
-    f = ctx.rc["smoke"]["full"]
-    tp = json.loads((K.scale_dir(ctx.root, ctx.rc["name"]) / "throughput.json").read_text())
-    n_answers = len(items(ctx))
-    gpus = ctx.rc["session"]["gpus"]
-    read = sum(r["seconds"] for r in ctx.run.ledger(S2).values())
-    score = ctx.run.ledger(S5)
-    score_n = sum(len(json.loads(ctx.run.path(S5, k).read_text())) for k in score)
-    train = [_run_summary(ctx, n) for n in run_names(ctx.rc)]
-    s_step = float(np.median([t["s_per_step"] for t in train]))
-    h = {"S1 sampling": tp["s_per_problem"] * f["problems"] / 3600,
-         "S2 reading": read / n_answers * f["answers"] / gpus / 3600,
-         "S4 training": s_step * f["train_steps"] * f["runs"] / gpus / 3600,
-         "S5 scoring": sum(r["seconds"] for r in score.values()) / max(score_n, 1) * f["score_items"] / gpus / 3600}
-    return {"hours": h, "total_gpu_hours": sum(h.values()), "sessions": sum(h.values()) / ctx.rc["full_session_hours"],
-            "train": train, "s_per_step_median": s_step,
-            "read_s_per_answer_per_gpu": read / n_answers, "throughput": tp}
+    """The full run's hours per stage from the rates this smoke session measured (D175: replaces the assumptions). A stage
+    that did not get to run has no rate, and is listed as missing."""
+    f, gpus = ctx.rc["smoke"]["full"], ctx.rc["session"]["gpus"]
+    h, res = {}, {}
+    tp_path = K.scale_dir(ctx.root, ctx.rc["name"]) / "throughput.json"
+    if tp_path.exists():
+        res["throughput"] = json.loads(tp_path.read_text())
+        h["S1 sampling"] = res["throughput"]["s_per_problem"] * f["problems"] / 3600
+    read = ctx.run.ledger(S2) if (ctx.root / S2).exists() else {}
+    if read and sampling_done(ctx):
+        n = sum(len(json.loads(str(np.load(ctx.run.path(S2, k))["ids"]))) for k in read)
+        res["read_s_per_answer_per_gpu"] = sum(r["seconds"] for r in read.values()) / n
+        h["S2 reading"] = res["read_s_per_answer_per_gpu"] * f["answers"] / gpus / 3600
+    train = [_run_summary(ctx, n) for n in run_names(ctx.rc) if ctx.run.has(S4, f"{n}.pt")]
+    if train:
+        res |= {"train": train, "s_per_step_median": float(np.median([t["s_per_step"] for t in train]))}
+        h["S4 training"] = res["s_per_step_median"] * f["train_steps"] * f["runs"] / gpus / 3600
+    score = ctx.run.ledger(S5) if (ctx.root / S5).exists() else {}
+    if score:
+        n = sum(len(json.loads(ctx.run.path(S5, k).read_text())) for k in score)
+        res["score_s_per_item_per_gpu"] = sum(r["seconds"] for r in score.values()) / max(n, 1)
+        h["S5 scoring"] = res["score_s_per_item_per_gpu"] * f["score_items"] / gpus / 3600
+    teach = ctx.run.ledger(S3) if (ctx.root / S3).exists() else {}
+    res["teacher_chunks_s"] = {k: r["seconds"] for k, r in teach.items()}
+    missing = sorted({"S1 sampling", "S2 reading", "S4 training", "S5 scoring"} - set(h))
+    return res | {"hours": h, "total_gpu_hours": sum(h.values()), "sessions": sum(h.values()) / ctx.rc["full_session_hours"],
+                  "missing": missing}
 
 
 def _run_summary(ctx: Ctx, name: str) -> dict:
@@ -1125,8 +1135,6 @@ def drive(ctx: Ctx, launch, log=print) -> dict:
         return write_status()
     res = stage_analyze(ctx)
     log(f"S6: results.json written; {res['id_test']['pairwise']['n_problems']} ID-test problems with both classes")
-    if rc["mode"] == "smoke":
-        smoke_report(ctx)
     return write_status()
 
 
@@ -1168,6 +1176,8 @@ def run_cli(a: argparse.Namespace) -> int:
         extra = ["--arms", ",".join(arms)] if arms else []
         return spawn([(worker_cmd(stage, a, g, n, extra), {"CUDA_VISIBLE_DEVICES": str(g)}) for g in range(n)], log_path, stall, say)
     st = drive(ctx, launch, say)
+    if rc["mode"] == "smoke":                           # whatever drive reached: the rates are the point of the session
+        smoke_report(ctx)
     say("STATUS: " + json.dumps({k: st.get(k) for k in ("stopped_at", "done")}))
     return 0
 
@@ -1202,7 +1212,7 @@ def worker_cli(a: argparse.Namespace) -> int:
     return 0
 
 
-def main() -> None:
+def parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("action", choices=["pool", "download", "restore", "sample", "worker", "run", "pack", "ingest"])
     ap.add_argument("--mode", default="full", choices=["full", "smoke"])
@@ -1216,7 +1226,11 @@ def main() -> None:
     ap.add_argument("--arms", help="worker, S4: comma-separated arms")
     ap.add_argument("--enforce-eager", action="store_true")
     ap.add_argument("--zip", type=Path)
-    a = ap.parse_args()
+    return ap
+
+
+def main() -> None:
+    a = parser().parse_args()
     if a.action == "pool":
         print(json.dumps(build_pool(a.mode), indent=1))
     elif a.action == "download":

@@ -277,7 +277,6 @@ def full_run(tmp_path_factory, tiny):
         else:
             M.stage_score(ctx)
         return [0]
-    mp.setattr(M, "smoke_report", lambda c: None)
     status = M.drive(ctx, launch, lambda m: None)
     mp.undo()
     return ctx, status, calls
@@ -294,12 +293,7 @@ def test_drive_runs_every_stage_once_in_order_and_finishes(full_run):
 def test_a_second_session_after_the_end_repeats_no_stage(full_run):
     ctx, _, _ = full_run
     calls = []
-    orig = M.smoke_report
-    M.smoke_report = lambda c: None
-    try:
-        st = M.drive(ctx, lambda s, a: calls.append(s) or [0], lambda m: None)
-    finally:
-        M.smoke_report = orig
+    st = M.drive(ctx, lambda s, a: calls.append(s) or [0], lambda m: None)
     assert calls == [] and st["stopped_at"] is None
 
 
@@ -474,6 +468,65 @@ def test_the_status_of_a_stopped_rule_is_an_exit_code(tmp_path, monkeypatch):
     monkeypatch.setattr(M, "make_ctx", lambda *a: M.Ctx(tmp_path, {}, {}, None))
     a = type("A", (), dict(stage=M.S2, mode="smoke", out=tmp_path, session_start=1.0, model_dir=None, worker=0, workers=1))
     assert M.worker_cli(a) == M.EXIT_STOP
+
+
+def test_the_smoke_report_projects_the_full_run_from_measured_rates_and_lists_what_is_missing(full_run, tmp_path):
+    ctx, _, _ = full_run
+    sd = K.scale_dir(ctx.root, ctx.rc["name"])
+    tp = json.loads((sd / "throughput.json").read_text())
+    p = M.projection(ctx)
+    f = ctx.rc["smoke"]["full"]
+    assert p["missing"] == [] and p["hours"]["S1 sampling"] == pytest.approx(tp["s_per_problem"] * f["problems"] / 3600)
+    assert p["hours"]["S4 training"] == pytest.approx(p["s_per_step_median"] * f["train_steps"] * f["runs"] / 2 / 3600)
+    assert len(p["train"]) == 4 and p["train"][0]["adapter_mb"] > 0 and set(p["teacher_chunks_s"]) >= {"final_probe.json"}
+    early = _ctx(tmp_path / "r6_6a_smoke", ctx.load)        # a session stopped before any stage ran
+    assert M.projection(early)["missing"] == ["S1 sampling", "S2 reading", "S4 training", "S5 scoring"]
+
+
+def test_a_second_smoke_session_keeps_the_first_machine_report_and_counts_what_survived(tmp_path, monkeypatch):
+    rc = _rc()
+    root = tmp_path / rc["name"]
+    ctx = M.Ctx(root, rc, {}, S.Run(root, {"t": 1}, 0.0, 1.0, 1.25, now=lambda: 0.0))
+    monkeypatch.setattr(M, "machine_report", lambda: {"cpu_count": 4})
+    monkeypatch.setattr(M, "cpu_rate", lambda r: {"seconds": 1})
+    monkeypatch.setattr(M, "projection", lambda c: {"hours": {}})
+    M.smoke_report(ctx)
+    M.smoke_report(ctx)
+    assert (root / "smoke" / "machine.json").exists() and (root / "smoke" / "machine_second.json").exists()
+    (root / "filecount" / "f_0000").unlink()
+    r = M.survival_report(root, rc, {"restored": 3})
+    assert r["filecount_files"] == rc["smoke"]["file_test_n"] - 1 and r["filecount_expected"] == rc["smoke"]["file_test_n"]
+    assert re.fullmatch(M.OK_NAMES, "smoke/machine_second.json") and re.fullmatch(M.OK_NAMES, "smoke/survival.json")
+
+
+def test_the_machine_report_and_cpu_rate_run_here():
+    m = M.machine_report()
+    assert m["cpu_affinity"] >= 1 and m["mem_total"]
+    r = M.cpu_rate({"smoke": {"cpu_shape": [200, 16], "cpu_fits": 2}})
+    assert r["fits"] == 2 and r["seconds"] > 0
+
+
+def test_every_command_the_driver_and_the_notebook_build_parses():
+    a = M.parser().parse_args(["run", "--mode", "smoke", "--out", "/w", "--model-dir", "/m", "--session-start", "12.5"])
+    for stage, extra in ((M.S2, None), (M.S3, None), (M.S4, ["--arms", "B"]), (M.S5, None)):
+        b = M.parser().parse_args(M.worker_cmd(stage, a, 1, 2, extra)[3:])
+        assert b.action == "worker" and b.stage == stage and b.worker == 1 and b.workers == 2 and b.session_start == 12.5
+    assert M.parser().parse_args(M.worker_cmd(M.S4, a, 0, 2, ["--arms", "C,D,E"])[3:]).arms == "C,D,E"
+    for line in ("restore --out /w --src /kaggle/input --mode smoke", "download --model-dir /m --mode full", "pack --out /w --mode full"):
+        M.parser().parse_args(line.split())
+
+
+def test_spawn_returns_exit_codes_and_kills_a_silent_child(tmp_path):
+    import sys
+
+    log = tmp_path / "l.log"
+    ok = [sys.executable, "-c", "print('hello', flush=True)"]
+    bad = [sys.executable, "-c", "import sys; sys.exit(3)"]
+    assert M.spawn([(ok, {}), (bad, {})], log, 60, lambda m: None) == [0, 3]
+    assert "hello" in log.read_text()
+    lines = []
+    assert M.spawn([([sys.executable, "-c", "import time; time.sleep(120)"], {})], log, 1, lines.append) == [-9]
+    assert any("STALL" in x for x in lines)
 
 
 # ------------------------------------------------------------------------------------------- the notebooks
