@@ -1,0 +1,256 @@
+{
+ "decision": "D173 (exploratory, paper #2; an exception to D171)",
+ "threads": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1"
+ },
+ "control 1": {
+  "refit_gap": 0.0,
+  "swap_movement_reproduced": true,
+  "n_texts": 6803,
+  "box_effect_by_kind": {
+   "correct": {
+    "n": 2499,
+    "mean": -0.11925480476843706
+   },
+   "same_value": {
+    "n": 1177,
+    "mean": -0.07051344775087019
+   },
+   "diff_value": {
+    "n": 3127,
+    "mean": -0.19666848405242035
+   }
+  },
+  "(e) mismatch cost M": {
+   "n": 360,
+   "diff": -0.09949480362916988,
+   "ci95": [
+    -0.1240444804874817,
+    -0.07516658328084129
+   ],
+   "n_problems": 360
+  },
+  "text classifier": {
+   "box_effect_by_kind": {
+    "correct": {
+     "n": 2499,
+     "mean": -1.2484516048594605e-05
+    },
+    "same_value": {
+     "n": 1177,
+     "mean": 7.801765412006991e-05
+    },
+    "diff_value": {
+     "n": 3127,
+     "mean": -0.00016035985656403707
+    }
+   },
+   "mismatch cost M": {
+    "n": 360,
+    "diff": -0.00123901283625334,
+    "ci95": [
+     -0.00291331431237815,
+     0.0001826701142104233
+    ]
+   }
+  },
+  "(f) box with the reasoning fixed": {
+   "n_problems": 648,
+   "pairwise_accuracy": 0.6076688957475994,
+   "ci95": [
+    0.5805637002743483,
+    0.6354723936899863
+   ],
+   "p_one_sided_gt_half": 0.0
+  },
+  "(g) descriptive": {
+   "pairs": {
+    "original": {
+     "n_problems": 489,
+     "pairwise_accuracy": 0.759986366734833,
+     "ci95": [
+      0.7405751533742331,
+      0.7788345688479892
+     ],
+     "p_one_sided_gt_half": 0.0
+    },
+    "opposite": {
+     "n_problems": 489,
+     "pairwise_accuracy": 0.4024199045671438,
+     "ci95": [
+      0.3675097989093387,
+      0.4379865371506475
+     ],
+     "p_one_sided_gt_half": 1.0
+    },
+    "same_label": {
+     "n_problems": 489,
+     "pairwise_accuracy": 0.9117672119972734,
+     "ci95": [
+      0.8962024255850943,
+      0.9268774852306294
+     ],
+     "p_one_sided_gt_half": 0.0
+    }
+   },
+   "original - same_label": {
+    "n": 489,
+    "diff": -0.15178084526244034,
+    "ci95": [
+     -0.17260658089070666,
+     -0.13105508691206544
+    ]
+   },
+   "R6-5 change split": {
+    "correct boxes": {
+     "n": 2659,
+     "box_effect": -0.17757910336445995,
+     "reasoning_effect": -0.25584641876986386
+    },
+    "incorrect boxes": {
+     "n": 3341,
+     "box_effect": -0.36272382794642616,
+     "reasoning_effect": 0.2216534873341064
+    }
+   }
+  },
+  "reading": {
+   "(e)": "a mismatch alone lowers the probe",
+   "(f)": "with the reasoning fixed, the probe prefers the correct box"
+  }
+ },
+ "control 2": {
+  "by_variant": {
+   "all pairs": {
+    "n_problems": 766,
+    "readouts": {
+     "trained": {
+      "n_problems": 766,
+      "pairwise_accuracy": 0.6465523850967715,
+      "ci95": [
+       0.6241752274234325,
+       0.6683610230428116
+      ],
+      "p_one_sided_gt_half": 0.0
+     },
+     "random": {
+      "n_problems": 766,
+      "pairwise_accuracy": 0.5331351796593311,
+      "ci95": [
+       0.5095474131232127,
+       0.5566331165299017
+      ],
+      "p_one_sided_gt_half": 0.0023
+     },
+     "random_full": {
+      "n_problems": 766,
+      "pairwise_accuracy": 0.6726115359111442,
+      "ci95": [
+       0.6529923665506238,
+       0.6915851905383562
+      ],
+      "p_one_sided_gt_half": 0.0
+     }
+    },
+    "(h) trained - random": {
+     "n": 766,
+     "diff": 0.11341720543744042,
+     "ci95": [
+      0.08194080515147746,
+      0.14430053695760287
+     ]
+    },
+    "random_full - random": {
+     "n": 766,
+     "diff": 0.13947635625181318,
+     "ci95": [
+      0.10945512272576567,
+      0.168778427929048
+     ]
+    }
+   },
+   "length-matched": {
+    "n_problems": 648,
+    "readouts": {
+     "trained": {
+      "n_problems": 648,
+      "pairwise_accuracy": 0.6275666805759398,
+      "ci95": [
+       0.5980328510652585,
+       0.6577660280177641
+      ],
+      "p_one_sided_gt_half": 0.0
+     },
+     "random": {
+      "n_problems": 648,
+      "pairwise_accuracy": 0.5306430580736137,
+      "ci95": [
+       0.49944353710846773,
+       0.5607563336440651
+      ],
+      "p_one_sided_gt_half": 0.0273
+     },
+     "random_full": {
+      "n_problems": 648,
+      "pairwise_accuracy": 0.6206879283268172,
+      "ci95": [
+       0.5926641204303241,
+       0.6482192486011931
+      ],
+      "p_one_sided_gt_half": 0.0
+     }
+    },
+    "(h) trained - random": {
+     "n": 648,
+     "diff": 0.0969236225023262,
+     "ci95": [
+      0.056286589246658685,
+      0.13788602697456864
+     ]
+    },
+    "random_full - random": {
+     "n": 648,
+     "diff": 0.0900448702532036,
+     "ci95": [
+      0.048244293643599195,
+      0.1310046380445686
+     ]
+    }
+   }
+  },
+  "fit": {
+   "folds": [
+    {
+     "layer": 3,
+     "C": 0.001,
+     "inner_cv_auroc": 0.5999600906113735
+    },
+    {
+     "layer": 1,
+     "C": 0.001,
+     "inner_cv_auroc": 0.6316138597859617
+    },
+    {
+     "layer": 1,
+     "C": 0.001,
+     "inner_cv_auroc": 0.6124818649235385
+    },
+    {
+     "layer": 7,
+     "C": 0.001,
+     "inner_cv_auroc": 0.5994237025398215
+    },
+    {
+     "layer": 2,
+     "C": 0.001,
+     "inner_cv_auroc": 0.6033386337295961
+    }
+   ]
+  },
+  "reading": {
+   "(h)": "the trained weights add to the box alone"
+  }
+ }
+}

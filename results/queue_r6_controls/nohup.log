@@ -28,3 +28,7 @@
 [09:39:35] start d173_states_answer_only_1.5b_random_1.5b (timeout 12026s): uv run python -m physcal.eval.followup_r6 states --set answer_only_1.5b --reader random_1.5b --cap 6.4
 [09:46:18] end d173_states_answer_only_1.5b_random_1.5b: exit 0
 [09:46:18] d173_states_answer_only_1.5b_random_1.5b: 0 temperature pauses, 0s paused of 404s; tonight so far 6 pauses, 180s of 1718s (D143)
+[09:46:20] commit 'Follow-up (D173, exploratory): control states, answer_only_1.5b read by random_1.5b': pushed
+[09:46:22] disk: 21 GiB free on MLStorage
+[09:46:22] start d173_analyze (timeout 10800s): env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES= nice -n 19 uv run python -m physcal.eval.followup_r6_controls analyze
+[10:12:53] end d173_analyze: exit 0
