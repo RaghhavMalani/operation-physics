@@ -1,0 +1,14 @@
+{
+ "decision": "D173",
+ "sets": {
+  "swap_same_1.5b": {
+   "n": 6803,
+   "sha256": "fe7f32a25be9c6353af6ef7be76f22865023ebb599f0983604c5ba6ec5d8ff5a"
+  }
+ },
+ "kinds": {
+  "correct": 2499,
+  "same_value": 1177,
+  "diff_value": 3127
+ }
+}

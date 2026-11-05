@@ -48,6 +48,7 @@ GPU_STAGES = (
     ("states", "spot_7b", "7b"), ("states", "bank_1.5b", "7b"), ("yes", "bank_1.5b", "7b"), ("yes", "truncated", "7b"),
     ("states", "answer_only_7b", "7b"), ("states", "swap_7b", "7b"),
 )
+EXTRA_MANIFEST = "manifest_d173.json"  # D173's set is frozen apart, so D167's manifest stays as it was
 EXPERIMENT = {"spot": "R6-3", "bank": "R6-3", "truncated": "R6-3", "fact": "R6-4", "answer": "R6-5", "swap": "R6-5"}
 
 
@@ -262,7 +263,10 @@ def load_set(name: str, cfg: dict) -> list[dict]:
     """A frozen item set; its sha256 must match the manifest."""
     d = r6_dir(cfg) / "items"
     blob = (d / f"{name}.jsonl").read_text()
-    want = json.loads((d / "manifest.json").read_text())["sets"][name]["sha256"]
+    sets = json.loads((d / "manifest.json").read_text())["sets"]
+    if name not in sets and (d / EXTRA_MANIFEST).exists():
+        sets = json.loads((d / EXTRA_MANIFEST).read_text())["sets"]
+    want = sets[name]["sha256"]
     if _sha(blob) != want:
         raise SystemExit(f"items/{name}.jsonl does not match the manifest")
     return [json.loads(line) for line in blob.splitlines()]
