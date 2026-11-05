@@ -1,0 +1,41 @@
+# D175's smoke session: every stage's real code on 48 problems of its own, overlaid on configs/r6_6a.yaml. Plumbing and
+# rates only, never results. It may not change anything r6_6a.yaml marks as fixed.
+name: r6_6a_smoke
+candidates:
+  file: data/eval_sets/1.1.0+c735a0d4/r6_6a_smoke_pool.jsonl
+pool:
+  n: 48
+  seed_offset: 70100000
+  n_train: 22
+  n_validation: 2
+  chunk_size: 24
+arms:
+  B: [0]
+  C: [0]
+  D: [0]
+  E: [0]
+secondary_models: [A, B_0, C_0, D_0]
+swap_problems: 3
+session:
+  hours: 0.75                          # the smoke's own deadline: stops itself inside ~45 minutes
+  stall_minutes: 12                    # a hang must not spend the smoke's quota
+estimates_s:                           # a smoke chunk is small; the full run's estimates would not fit its deadline
+  read_part: 60
+  teacher: 120
+  train_run: 300
+  score_set: 60
+results:
+  zip_name: r6_6a_smoke_results.zip
+  ingest_dir: results/followup/r6_6a/smoke
+full_session_hours: 9.5
+smoke:
+  file_test_n: 400                     # does the output tab keep this many small files? (forum reports say ~500)
+  cpu_fits: 4                          # logistic fits timed at the real shape
+  cpu_shape: [4800, 1536]
+  full:                                # the real run's sizes, for the projection from measured rates
+    problems: 2400
+    answers: 18700
+    train_steps: 375
+    runs: 10
+    score_items: 110000                # test ~8,200 and validation ~770 x 10 runs, W1 ~3,200 x 4, the swaps ~2,000 x 4
+    probe_fits: 2900

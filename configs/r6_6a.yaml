@@ -1,0 +1,67 @@
+# D175 (EXPLORATORY, paper #2): R6-6a, probe-to-verbal-confidence distillation on Kaggle "GPU T4 x2". Every value here is
+# fixed by D175 unless marked "sizing": those are what the smoke session may change (rates, batches, chunks, budgets).
+decision: D175
+name: r6_6a                            # the run's directory under /kaggle/working, and the model key in the overlay
+model_from: 1.5b                       # scale.kaggle_models entry: the pinned repo, revision and sha256 (D160)
+candidates:
+  file: data/eval_sets/1.1.0+c735a0d4/r6_6a_pool.jsonl
+pool:
+  families: [kinematics, dynamics, energy]
+  depths: [1, 2, 3, 4]
+  n: 2400
+  seed_offset: 70000000
+  held_out_question: Determine         # the question sentence's first word
+  n_train: 1000
+  n_validation: 120                    # the rest of the non-held-out problems are the ID test
+  split_seed: 0
+  chunk_size: 48                       # sizing: problems per sampling chunk
+session:
+  hours: 9.5                           # D171 rule 4: no chunk may end after session start + 9.5 h
+  rate_margin: 1.25
+  stall_minutes: 45                    # sizing: a worker silent this long is killed
+  sampler_attempts: 2                  # the second with enforce_eager and NCCL_P2P_DISABLE=1 (D157)
+  gpus: 2
+packages: [vllm==0.29.0, pint==0.25.3, pyyaml==6.0.3, sympy==1.14.0, peft==0.21.2, scikit-learn==1.9.1, scipy==1.17.1,
+           joblib==1.6.0]              # resolved together on 2026-11-05: torch 2.13.0, transformers 5.22.1
+estimates_s:                           # sizing: a chunk's projected time before the session has measured one
+  read_part: 200
+  teacher: 1800
+  train_run: 3600
+  score_set: 900
+readout:
+  part_size: 512                       # sizing: answers per saved S2 part
+  token_budget: 16384                  # sizing: padded tokens per forward (reading)
+verify_w1: "Please review the work you just did. Does the number in your \\boxed{} agree with the true answer to within 1%? Finish with a single line: \"Verdict: yes\" if it does, or \"Verdict: no\" if it does not."
+arms:                                  # arm: seeds (A is the base model: no run)
+  B: [0, 1, 2]
+  C: [0, 1, 2]
+  D: [0, 1, 2]
+  E: [0]
+secondary_models: [A, B_0, C_0, D_0]   # the held-out wording and the swap test
+swap_problems: 100                     # the first ID-test problems with both classes, in pool order
+shuffle_seed: 0                        # arm E
+train:
+  items: 6000                          # the first answered train samples in pool order
+  rank: 16
+  alpha: 32
+  dropout: 0.0
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  learning_rate: 1.0e-4
+  weight_decay: 0.0
+  warmup_share: 0.05
+  max_grad_norm: 1.0
+  batch_size: 16
+  epochs: 1
+  token_budget: 8192                   # sizing: padded tokens per micro-batch
+  log_every: 20
+teachers:
+  n_jobs: null                         # null: the CPUs the process may use
+analysis:
+  bootstrap: 10000
+  seed: 0
+  diverged_bce: 1.0                    # D175: worse than any constant guess against the labels
+results:
+  zip_name: r6_6a_results.zip
+  max_zip_mb: 50
+  max_file_mb: 40
+  ingest_dir: results/followup/r6_6a/run

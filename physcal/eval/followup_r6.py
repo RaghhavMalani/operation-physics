@@ -948,24 +948,30 @@ class RichCandidate:
         return self.model.predict_proba(self._X(recs, H, False))[:, 1]
 
 
-def crossfit_rich(recs, H, y, groups, outer: int, inner: int, a5: dict, rt: dict) -> tuple[np.ndarray, list]:
-    """D164's cross-fit (outer folds = the probe's, inner selection over A5's grid by pooled AUROC) with RichCandidate."""
+def rich_fit(recs, H, y, groups, inner: int, a5: dict, rt: dict) -> tuple[RichCandidate, dict]:
+    """D164's selection with RichCandidate on the given answers: the grid's pooled AUROC under inner folds by problem;
+    the best candidate (ties: the earlier), fit on all of them."""
     from sklearn.metrics import roc_auc_score
 
-    grid, p, chosen = AU.text_grid(a5), np.full(len(y), np.nan), []
+    grid, scores = AU.text_grid(a5), []
+    for kind, hp in grid:
+        oof = np.zeros(len(y))
+        for a, b in AU._folds(groups, inner):
+            c = RichCandidate(kind, hp, a5, rt).fit([recs[i] for i in a], H[a], y[a])
+            oof[b] = c.raw([recs[i] for i in b], H[b])
+        scores.append(float(roc_auc_score(y, oof)))
+    j = max(range(len(grid)), key=lambda i: (scores[i], -i))
+    return RichCandidate(*grid[j], a5, rt).fit(recs, H, y), {"kind": grid[j][0], "hp": grid[j][1],
+                                                             "inner_cv_auroc": scores[j], "table": scores}
+
+
+def crossfit_rich(recs, H, y, groups, outer: int, inner: int, a5: dict, rt: dict) -> tuple[np.ndarray, list]:
+    """D164's cross-fit (outer folds = the probe's, inner selection over A5's grid by pooled AUROC) with RichCandidate."""
+    p, chosen = np.full(len(y), np.nan), []
     for tr, te in AU._folds(groups, outer):
-        r_tr, H_tr, g_tr = [recs[i] for i in tr], H[tr], [groups[i] for i in tr]
-        scores = []
-        for kind, hp in grid:
-            oof = np.zeros(len(tr))
-            for a, b in AU._folds(g_tr, inner):
-                c = RichCandidate(kind, hp, a5, rt).fit([r_tr[i] for i in a], H_tr[a], y[tr][a])
-                oof[b] = c.raw([r_tr[i] for i in b], H_tr[b])
-            scores.append(float(roc_auc_score(y[tr], oof)))
-        j = max(range(len(grid)), key=lambda i: (scores[i], -i))
-        c = RichCandidate(*grid[j], a5, rt).fit(r_tr, H_tr, y[tr])
+        c, info = rich_fit([recs[i] for i in tr], H[tr], y[tr], [groups[i] for i in tr], inner, a5, rt)
         p[te] = c.raw([recs[i] for i in te], H[te])
-        chosen.append({"kind": grid[j][0], "hp": grid[j][1], "inner_cv_auroc": scores[j], "table": scores})
+        chosen.append(info)
     return p, chosen
 
 
