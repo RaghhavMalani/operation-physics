@@ -1,0 +1,27 @@
+[09:06:46] D173 chain start: GPU deadline 13:00 IST (233 min left); chain PID 49180
+[09:07:03] host VRAM readings (MiB): 653 653 653 653 653 653 653 653
+[09:07:03] host use 653 MiB gives 6.8 GiB < 7.5: re-reading in 60 s
+[09:08:19] host VRAM readings (MiB): 652 652 652 652 652 652 652 652
+[09:08:19] host use 652 MiB gives 6.8 GiB < 7.5: re-reading in 60 s
+[09:09:36] host VRAM readings (MiB): 683 679 683 663 689 678 664 658
+[09:09:36] host use 678 MiB gives 6.8 GiB < 7.5: re-reading in 60 s
+[09:10:53] host VRAM readings (MiB): 629 629 629 629 629 629 629 629
+[09:10:53] host use 629 MiB gives 6.8 GiB < 7.5: re-reading in 60 s
+[09:12:10] host VRAM readings (MiB): 628 633 633 632 628 628 628 628
+[09:12:11] GPU at 53.50C, memory.used 628 MiB
+[09:12:12] disk: 21 GiB free on MLStorage
+[09:12:12] start d173_states_swap_same_1.5b_1.5b (timeout 13669s): uv run python -m physcal.eval.followup_r6 states --set swap_same_1.5b --reader 1.5b --cap 6.8
+[09:16:12] guard(50920): GPU at 87.10C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[09:16:42] guard(50920): stage continued after 30s paused (GPU at 64.80C <= 75C)
+[09:18:13] guard(50920): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[09:18:43] guard(50920): stage continued after 30s paused (GPU at 64.70C <= 75C)
+[09:21:43] guard(50920): GPU at 87.40C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[09:22:13] guard(50920): stage continued after 30s paused (GPU at 62.30C <= 75C)
+[09:27:14] guard(50920): GPU at 88.90C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[09:27:44] guard(50920): stage continued after 30s paused (GPU at 62.30C <= 75C)
+[09:29:14] guard(50920): GPU at 87.20C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[09:29:44] guard(50920): stage continued after 30s paused (GPU at 62.00C <= 75C)
+[09:31:14] guard(50920): GPU at 87.60C > 87C: stage stopped (continues at <= 75C, after 600s at most)
+[09:31:44] guard(50920): stage continued after 30s paused (GPU at 61.90C <= 75C)
+[09:34:05] end d173_states_swap_same_1.5b_1.5b: exit 0
+[09:34:05] d173_states_swap_same_1.5b_1.5b: 6 temperature pauses, 180s paused of 1314s; tonight so far 6 pauses, 180s of 1314s (D143)
