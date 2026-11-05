@@ -37,5 +37,5 @@ smoke:
     answers: 18700
     train_steps: 375
     runs: 10
-    score_items: 110000                # test ~8,200 and validation ~770 x 10 runs, W1 ~3,200 x 4, the swaps ~2,000 x 4
+    score_items: 133000                # test ~10,000 and validation ~940 x 10 runs, W1 ~3,900 x 4, the swaps ~2,000 x 4
     probe_fits: 2900
