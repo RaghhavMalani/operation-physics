@@ -23,11 +23,11 @@ session:
   gpus: 2
 packages: [vllm==0.29.0, pint==0.25.3, pyyaml==6.0.3, sympy==1.14.0, peft==0.21.2, scikit-learn==1.9.1, scipy==1.17.1,
            joblib==1.6.0]              # resolved together on 2026-11-05: torch 2.13.0, transformers 5.22.1
-estimates_s:                           # sizing: a chunk's projected time before the session has measured one
+estimates_s:                           # sizing: a chunk's projected time before the session has measured one (D177: measured)
   read_part: 200
   teacher: 1800
-  train_run: 3600
-  score_set: 900
+  train_run: 7650                      # 375 steps at the slower T4's 20.4 s / step
+  score_set: 2800                      # the largest set: ~6,075 held-out answers at 0.45 s
 readout:
   part_size: 512                       # sizing: answers per saved S2 part
   token_budget: 16384                  # sizing: padded tokens per forward (reading)
@@ -60,6 +60,7 @@ analysis:
   bootstrap: 10000
   seed: 0
   diverged_bce: 1.0                    # D175: worse than any constant guess against the labels
+  recompute_atol: 1.0e-12              # D177: the ingest's recomputation on another machine (numpy differs in the last bit)
 results:
   zip_name: r6_6a_results.zip
   max_zip_mb: 50

@@ -1,0 +1,29 @@
+{
+ "stopped_at": null,
+ "exit_codes": {
+  "s1_sample": [
+   0
+  ],
+  "s2_read": [
+   0,
+   0
+  ],
+  "s3_teachers": [
+   0
+  ],
+  "s4_train": [
+   0,
+   0
+  ],
+  "s5_score": [
+   0,
+   0
+  ]
+ },
+ "done": [
+  "s2_read",
+  "s3_teachers",
+  "s4_train",
+  "s5_score"
+ ]
+}

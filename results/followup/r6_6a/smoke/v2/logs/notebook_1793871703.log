@@ -1,0 +1,67 @@
+$ nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+Tesla T4, 580.178.04, 15360 MiB
+Tesla T4, 580.178.04, 15360 MiB
+
+$ nproc; free -g; df -h /tmp /kaggle/working
+4
+               total        used        free      shared  buff/cache   available
+Mem:              31           1          25           0           4          30
+Swap:              0           0           0
+Filesystem      Size  Used Avail Use% Mounted on
+overlay         8.0T  7.1T  967G  89% /
+/dev/loop2       20G  144K   20G   1% /kaggle/working
+
+$ git init -q /tmp/physcal/repo
+
+$ git -C /tmp/physcal/repo remote add origin https://github.com/RaghhavMalani/operation-physics.git
+
+$ git -C /tmp/physcal/repo sparse-checkout set --no-cone /physcal/ /configs/ /data/eval_sets/1.1.0+c735a0d4/r6_6a_pool.jsonl /data/eval_sets/1.1.0+c735a0d4/r6_6a_pool_manifest.json /data/eval_sets/1.1.0+c735a0d4/r6_6a_smoke_pool.jsonl /data/eval_sets/1.1.0+c735a0d4/r6_6a_smoke_pool_manifest.json
+
+$ git -C /tmp/physcal/repo fetch -q --depth 1 --filter=blob:none origin 5f685c71e59b0ce993fb313b1e0b12cf3e9d83ba
+
+$ git -C /tmp/physcal/repo checkout -q FETCH_HEAD
+
+$ git -C /tmp/physcal/repo rev-parse HEAD
+5f685c71e59b0ce993fb313b1e0b12cf3e9d83ba
+
+$ /usr/bin/python3 -m pip install -q uv==0.13.1
+
+$ /usr/bin/python3 -m uv venv -q --python 3.11 /tmp/physcal/venv
+
+$ /usr/bin/python3 -m uv pip install -q --python /tmp/physcal/venv/bin/python vllm==0.29.0 pint==0.25.3 pyyaml==6.0.3 sympy==1.14.0 peft==0.21.2 scikit-learn==1.9.1 scipy==1.17.1 joblib==1.6.0
+
+$ /tmp/physcal/venv/bin/python -c "import torch, vllm, peft, sklearn, transformers; print('torch', torch.__version__, 'cuda', torch.version.cuda, 'gpus', torch.cuda.device_count(), 'vllm', vllm.__version__, 'peft', peft.__version__, 'transformers', transformers.__version__, 'sklearn', sklearn.__version__)"
+torch 2.13.0+cu130 cuda 13.0 gpus 2 vllm 0.29.0 peft 0.21.2 transformers 5.22.1 sklearn 1.9.1
+
+$ /tmp/physcal/venv/bin/python -m physcal.eval.r6_6a restore --out /kaggle/working --src /kaggle/input --mode smoke
+restore: 472 files from /kaggle/input/notebooks/raghhavmalani/quoting-volatility-r6-6a-smoke/r6_6a_smoke
+{
+ "restored": {
+  "restored": 472,
+  "from": "/kaggle/input/notebooks/raghhavmalani/quoting-volatility-r6-6a-smoke/r6_6a_smoke"
+ },
+ "files_now": 473,
+ "filecount_files": 400,
+ "filecount_expected": 400,
+ "at": 1793871961.4323566
+}
+
+$ /tmp/physcal/venv/bin/python -m physcal.eval.r6_6a download --model-dir /tmp/physcal/qwen2.5-math-1.5b-instruct --mode smoke
+{
+ "repo_id": "Qwen/Qwen2.5-Math-1.5B-Instruct",
+ "revision": "aafeb0fc6f22cbf0eaeed126eff8be45b0360a35",
+ "weights_sha256": {
+  "model.safetensors": "08faf1e950173bb44c11d26df28c55da7237dc55c77dbc1cbae4a5d7584540d9"
+ }
+}
+
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+Fetching 7 files:  14%|█▍        | 1/7 [00:00<00:01,  5.10it/s]
+Fetching 7 files:  86%|████████▌ | 6/7 [00:00<00:00, 22.48it/s]
+Fetching 7 files: 100%|██████████| 7/7 [00:09<00:00,  1.34s/it]
+
+{"chunks_checked": 46}
+S1: 384 samples, 375 answered
+S6: results.json written; 7 ID-test problems with both classes
+STATUS: {"stopped_at": null, "done": ["s2_read", "s3_teachers", "s4_train", "s5_score"]}

@@ -1,0 +1,14 @@
+{
+ "cpu_count": 4,
+ "cpu_affinity": 4,
+ "cpu_model": "Model name:                              Intel(R) Xeon(R) CPU @ 2.00GHz",
+ "mem_total": "32869296 kB",
+ "mem_available": "31152024 kB",
+ "swap_total": "0 kB",
+ "cgroup_memory_max": "32212254720",
+ "cgroup_cpu_max": "400000 100000",
+ "df": "Filesystem      Size  Used Avail Use% Mounted on\noverlay         8.0T  7.1T  956G  89% /\n/dev/loop2       20G  351M   20G   2% /kaggle/working",
+ "gpus": "Tesla T4, 15360 MiB, 580.178.04\nTesla T4, 15360 MiB, 580.178.04",
+ "kernel": "6.18.55+",
+ "python": "3.11.17"
+}

@@ -1671,3 +1671,83 @@ appended here.
   stage's process group, so a leftover vLLM worker cannot hold a GPU. The five suites that touch it were re-run and pass
   (95 passed), including the new test for it.
 - **The notebooks pin `5f685c71e59b`,** which is on GitHub and holds D175.
+
+## 2026-11-05 afternoon: the smoke session is back (your instructions at ~16:25 IST)
+
+### D177. The smoke session's answers: output survives a Python exception, version 2 resumed from version 1, and the machine is 4 cores / 31 GiB. At the measured rates R6-6a does not fit two sessions: ~24 h of work, 4 sessions as built, 3 with a scheduler fix (2026-11-05, ~16:45 IST)
+- **Status:** exploratory track, paper #2. These are rates and plumbing on the smoke's own 48 problems, never results. You
+  accepted D175's choices. **The size of R6-6a is your decision (D175), and nothing below is applied yet.**
+- **What ran:** `notebooks/kaggle_r6_6a_smoke.ipynb` at `5f685c71e59b`, twice.
+  - **Version 1:** started 05:34:04 UTC (11:04 IST); its zip was written 31.0 min later. Every stage exited 0.
+  - **Version 2:** started 09:41:43 UTC (15:11 IST); its zip was written 5.0 min later.
+  - The zips are `~/kaggle_downloads/r6_6a_smoke_v1.zip` and `_v2.zip`, byte-identical to your downloads. They are ingested to
+    `results/followup/r6_6a/smoke/v1` and `v2`.
+- **A fault in my ingest, found by this ingest.**
+  - **What happened:** both zips were refused with "results.json does not follow from its tables".
+  - **The cause:** two values, both in one secondary smoke number, differed by 4e-17. Every other value was identical. That is
+    the last bit of a float, consistent with Kaggle's numpy 2.3.5 against the laptop's 2.4.6. D171 rule 8 said "must equal", which
+    cannot hold across machines, so the full run would have failed the same way.
+  - **The fix:** floats must agree within `analysis.recompute_atol` = 1e-12. NaN agrees with NaN. Strings, integers, keys and
+    lengths must still be equal. A difference of 1e-9 is refused (a test). This relaxes D171 rule 8 from exact to 1e-12.
+  - **After it:** both zips pass: 384 completions re-grade the same, and every number recomputes.
+- **What survived version 1's exception: everything.**
+  - Version 2 restored 472 files from version 1's attached output, including all 400 of the file-count test.
+  - All 46 chunks passed their sha256 check.
+  - **It is the state after the last step before the crash.** Version 2's copy of version 1's log holds the `pack` line, which
+    is absent from version 1's own zip. That line's sha256 (`88397fdb…`) is the zip you downloaded.
+  - So ~470 files came through. D171's ~500-file worry does not apply at R6-6a's ~200.
+- **What survived version 2's hard kill: the zip, at least.** It holds `survival.json`, so it was written in version 2 and reached
+  you. **The zips cannot show whether the rest of `/kaggle/working` came through.** No version 3 ran.
+- **What neither zip can show: that the crashes happened.** The crash cell runs after the zip is written, and it does not log.
+  The code leaves no other path, but the versions' Error badges are the direct evidence.
+- **Version 2 resumed from version 1, for a finished run:**
+  - the same pins were accepted, and `{"chunks_checked": 46}`;
+  - `exit_codes` is empty: no stage was launched, and the log has no chunk lines;
+  - S6 re-ran and `results.json`, `scores` and `rates.json` are byte-identical.
+  - **Not tested on Kaggle: resuming a half-finished stage.** The CPU tests cover it. R6-6a's first resume will be the first real
+    one.
+- **The machine (both versions):** 4 × Xeon 2.0 GHz, 31 GiB (cgroup limit 30 GiB), no swap, 2 × T4 of 15,360 MiB, driver 580.178.04,
+  20 GB in `/kaggle/working`. This settles D171's "2 cores / 13 GB against 4 cores / ~30 GB".
+- **fp16 HF + PEFT on T4 works:** no skipped scaler step in any of the 4 runs, no non-finite value, no out-of-memory, no stall.
+  Peak VRAM was not recorded. The longest context was 3,081 tokens against 3,460 in D160's answers, and the token budget bounds a
+  batch's memory either way.
+- **The measured rates:**
+
+| stage | D175 assumed | measured | full run, h (D175's) |
+|---|---|---|---|
+| S1 sampling | 6.2 s / problem | 5.92 s / problem | 3.95 (4.2) |
+| S2 reading | 0.3 s / pass | 0.37 s / answer per GPU | 0.95 (1.8) |
+| S4 training | ~50 min / run | 16.6–20.6 s / step: 1.7–2.1 h / run | **10.6 (4.2)** |
+| S5 scoring | 0.2 s / item | 0.45 s / item per GPU | **8.4 (3.8)** |
+| **in all** | | | **~24 (~14)** |
+
+  - **S5's rate is real, not a small-chunk artifact:** seconds fit 0.5 + 0.344 ms × tokens (R² 0.95), so 0.43 s at 1,245 tokens.
+  - **The two T4s differ by ~20%:** GPU 0 ran 20.3 s / step and 0.51 s / item, GPU 1 16.6 and 0.41. One session, so it may not recur.
+    `rates.json` uses GPU 0's step rate for both.
+  - **Reading through an adapter costs ~50% more than the base** (0.51 against 0.34 s / item on GPU 0).
+  - **S3 cannot be projected from 168 answers** (291 s). From the laptop's fits, scaled for size and the slower CPU, ~2.7 h, inside
+    arm B's window. That is an estimate.
+  - D176's warning held for S4 (10.9 h projected, 10.6 measured). Its ~21 h total was low, because S5 is slower than assumed too.
+- **Two sessions: no. Packing is worse than hours ÷ 9.5 suggests.** A run is one ~2 h chunk, the deadline rule refuses a run near a
+  session's end, and the driver holds C, D and E until arm B finishes. `scripts/sim_r6_6a_sessions.py` replays the driver's rules at these
+  rates, for the T4s as measured and for both at GPU 0's rate:
+
+| option | what changes | sessions | GPU hours | new smoke? |
+|---|---|---|---|---|
+| D175 as built | nothing | 4 / 4 | 27–28 | no |
+| **scheduler fix** | a free GPU takes the next run; no arm-B wait | **3 / 3** | **24–25** | no |
+| + merged adapters | how test scoring reads; rounds the adapter into fp16 | 3 / 3 | 21–22 | yes, ~15 min |
+| + merged, 2 seeds for B, C, D | one seed fewer | 2 / 3 | 17–18 | yes |
+| + merged, 4,000 training items | a third fewer items | 2 / 3 | 18–20 | yes |
+| 2 seeds and 4,000 items, not merged | both cuts | 2 / 2 | 18–19 | no |
+| + merged, 2 seeds and 4,000 items | both cuts | 2 / 2 | 15–16 | yes |
+
+  - **Only cutting both seeds and items reaches 2 sessions in both cases.** A single cut does so only with uneven T4s, ending at
+    9.1–9.3 h of 9.5 h. Unmerged, the double cut ends at 9.4 h with even T4s, so it has almost no margin.
+- **My recommendation: the scheduler fix alone, three sessions.** It keeps every D175 number: the same arms, seeds, items and
+  readings. It can be tested on CPU, so it needs no new smoke. It needs ~25 h of a ~30 h floating week. D171 rule 10 says 2 sessions
+  "where possible", and that is not possible here without cutting the design.
+- **Sizing applied now (D175 allows it):** `estimates_s.train_run` 3,600 → 7,650 s and `score_set` 900 → 2,800 s, so the first chunk of a
+  session is projected from measured rates. With the ingest fix, this re-pins the notebooks.
+- **Still to check on Kaggle, no quota needed:** version 2's Output tab (the folder, or only the zip?), both versions' status
+  badges, and the quota used and left.

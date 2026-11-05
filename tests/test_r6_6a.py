@@ -411,6 +411,20 @@ def test_results_hold_every_registered_block_and_the_zip_round_trips_through_the
     assert again == res
 
 
+def test_differences_allow_the_last_bit_and_nothing_more():
+    a = {"x": [0.1, {"y": 1}], "s": "reading", "n": 3, "z": float("nan")}
+    same = copy.deepcopy(a)
+    same["x"][0] += 4e-17
+    assert list(M.differences(a, same, 1e-12)) == []
+    off = copy.deepcopy(a)
+    off["x"][0] += 1e-9
+    assert [d[0] for d in M.differences(a, off, 1e-12)] == ["/x[0]"]
+    for k, v in (("s", "another reading"), ("n", 4), ("z", 0.5)):
+        assert [d[0] for d in M.differences(a, a | {k: v}, 1e-12)] == [f"/{k}"]
+    assert [d[0] for d in M.differences(a, {k: v for k, v in a.items() if k != "n"}, 1e-12)] == ["/n"]
+    assert [d[0] for d in M.differences(a, a | {"x": [0.1]}, 1e-12)] == ["/x"]
+
+
 def test_the_ingest_refuses_results_that_do_not_follow_from_their_tables(full_run, tmp_path, monkeypatch):
     ctx, _, _ = full_run
     M.pack(ctx, tmp_path)

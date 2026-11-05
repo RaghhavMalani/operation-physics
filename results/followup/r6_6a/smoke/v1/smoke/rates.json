@@ -1,0 +1,85 @@
+{
+ "throughput": {
+  "decision": "D157",
+  "n_candidates": 20,
+  "first_index": 0,
+  "seconds": 118.38267779350281,
+  "s_per_problem": 5.91913388967514,
+  "completion_tokens": 158502,
+  "tokens_per_s": 1338.895207933023,
+  "answered_share": 0.975,
+  "truncated_share": 0.0125,
+  "distinct_completions_per_problem": 8.0,
+  "min_answered_share": 0.5,
+  "health_ok": true
+ },
+ "read_s_per_answer_per_gpu": 0.36752219835917155,
+ "train": [
+  {
+   "run": "B_0",
+   "steps": 11,
+   "seconds": 226.64607214927673,
+   "skipped_steps": 0,
+   "s_per_step": 20.604188377206977,
+   "first_loss": 0.570643168874085,
+   "last_loss": 0.6545113027095795,
+   "adapter_mb": 73.859072
+  },
+  {
+   "run": "C_0",
+   "steps": 11,
+   "seconds": 222.8439781665802,
+   "skipped_steps": 0,
+   "s_per_step": 20.25854346968911,
+   "first_loss": 1.7375248074531555,
+   "last_loss": 0.6898893117904663,
+   "adapter_mb": 73.859072
+  },
+  {
+   "run": "D_0",
+   "steps": 11,
+   "seconds": 182.4063699245453,
+   "skipped_steps": 0,
+   "s_per_step": 16.582397265867755,
+   "first_loss": 0.9848713576793671,
+   "last_loss": 0.5406846404075623,
+   "adapter_mb": 73.859072
+  },
+  {
+   "run": "E_0",
+   "steps": 11,
+   "seconds": 224.47459840774536,
+   "skipped_steps": 0,
+   "s_per_step": 20.406781673431396,
+   "first_loss": 1.6869305968284607,
+   "last_loss": 0.7481575906276703,
+   "adapter_mb": 73.859072
+  }
+ ],
+ "s_per_step_median": 20.332662571560252,
+ "score_s_per_item_per_gpu": 0.4527496613708197,
+ "teacher_chunks_s": {
+  "probe_fold_0.json": 14.594416618347168,
+  "probe_fold_1.json": 10.314250230789185,
+  "probe_fold_2.json": 9.40213418006897,
+  "probe_fold_3.json": 9.755847930908203,
+  "probe_fold_4.json": 9.654829978942871,
+  "rich_fold_0.json": 35.848997831344604,
+  "rich_fold_1.json": 34.94888210296631,
+  "rich_fold_2.json": 34.6292610168457,
+  "rich_fold_3.json": 35.67806625366211,
+  "rich_fold_4.json": 35.966697216033936,
+  "final_probe.json": 11.343622922897339,
+  "final_rich.json": 39.04604411125183,
+  "final_answer_only.json": 10.241763591766357
+ },
+ "hours": {
+  "S1 sampling": 3.946089259783427,
+  "S2 reading": 0.954536820738404,
+  "S4 training": 10.58992842268763,
+  "S5 scoring": 8.363292355877642
+ },
+ "total_gpu_hours": 23.8538468590871,
+ "sessions": 2.5109312483249577,
+ "missing": []
+}

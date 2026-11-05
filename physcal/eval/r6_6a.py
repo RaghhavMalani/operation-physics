@@ -1018,9 +1018,28 @@ def _gz_rows(b: bytes) -> list[dict]:
     return [json.loads(x) for x in gzip.decompress(b).decode().splitlines()]
 
 
+def differences(a, b, atol: float, path: str = ""):
+    """Where two JSON values differ: yields (path, a, b). Floats agree within atol (another machine's numpy may differ in
+    the last bit, D177), and NaN agrees with NaN; everything else must be equal, keys and lengths included."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        for k in sorted(set(a) | set(b)):
+            if k in a and k in b:
+                yield from differences(a[k], b[k], atol, f"{path}/{k}")
+            else:
+                yield f"{path}/{k}", a.get(k), b.get(k)
+    elif isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
+        for i, (x, y) in enumerate(zip(a, b)):
+            yield from differences(x, y, atol, f"{path}[{i}]")
+    elif isinstance(a, float) and isinstance(b, float):
+        if not (abs(a - b) <= atol or (math.isnan(a) and math.isnan(b))):
+            yield path, a, b
+    elif a != b:
+        yield path, a, b
+
+
 def ingest(zip_path: Path, mode: str, dest: Path | None = None) -> dict:
     """D171 rule 8: the zip's allow-list and manifest, a re-grade with the local parser, and every number recomputed from
-    the per-answer tables, which must equal results.json."""
+    the per-answer tables, which must agree with results.json (analysis.recompute_atol)."""
     rc = mode_config(mode)
     files = S.read_zip(zip_path, re.compile(OK_NAMES), rc["results"]["max_file_mb"])
     done: dict = {"files": len(files)}
@@ -1035,8 +1054,9 @@ def ingest(zip_path: Path, mode: str, dest: Path | None = None) -> dict:
         saved = json.loads(files["results.json"])
         again = json.loads(json.dumps(results_from_tables(_gz_rows(files["scores.jsonl.gz"]), _gz_rows(files["swap_scores.jsonl.gz"]),
                                                           saved["counts"], rc), default=float))
-        if again != saved:
-            raise SystemExit("results.json does not follow from its tables")
+        bad = list(differences(saved, again, rc["analysis"]["recompute_atol"]))
+        if bad:
+            raise SystemExit(f"results.json does not follow from its tables: {len(bad)} values, first {bad[:3]}")
         done["results_recomputed"] = True
     out = Path(dest) if dest else REPO_ROOT / rc["results"]["ingest_dir"]
     for name, b in files.items():
@@ -1230,6 +1250,7 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--arms", help="worker, S4: comma-separated arms")
     ap.add_argument("--enforce-eager", action="store_true")
     ap.add_argument("--zip", type=Path)
+    ap.add_argument("--dest", type=Path, help="ingest: where to write, instead of results.ingest_dir")
     return ap
 
 
@@ -1249,7 +1270,7 @@ def main() -> None:
         ctx = make_ctx(a.mode, a.out, time.time(), None)
         print(json.dumps(pack(ctx, a.out), indent=1))
     elif a.action == "ingest":
-        print(json.dumps(ingest(a.zip, a.mode), indent=1))
+        print(json.dumps(ingest(a.zip, a.mode, a.dest), indent=1))
     elif a.action == "run":
         sys.exit(run_cli(a))
     elif a.action == "sample":
