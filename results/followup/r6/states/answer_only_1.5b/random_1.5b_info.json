@@ -1,0 +1,13 @@
+{
+ "decision": "D167",
+ "set": "answer_only_1.5b",
+ "reader": "random_1.5b",
+ "reader_dir": "/home/flash2404/operation-physics/results/followup/scale/1.5b/random_init_model",
+ "n": 6000,
+ "parts": 94,
+ "seconds": 400.9642539024353,
+ "positions": {
+  "p2": "the first token after the final answer",
+  "p1": "not kept (D167 uses p1 in R6-4 only)"
+ }
+}

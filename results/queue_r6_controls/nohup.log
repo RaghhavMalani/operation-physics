@@ -13,3 +13,18 @@
 [09:12:12] start d173_states_swap_same_1.5b_1.5b (timeout 13669s): uv run python -m physcal.eval.followup_r6 states --set swap_same_1.5b --reader 1.5b --cap 6.8
 [09:34:05] end d173_states_swap_same_1.5b_1.5b: exit 0
 [09:34:05] d173_states_swap_same_1.5b_1.5b: 6 temperature pauses, 180s paused of 1314s; tonight so far 6 pauses, 180s of 1314s (D143)
+[09:34:07] commit 'Follow-up (D173, exploratory): control states, swap_same_1.5b read by 1.5b': pushed
+[09:34:24] host VRAM readings (MiB): 1119 1119 1119 1119 1119 1119 1119 1119
+[09:34:24] host use 1119 MiB gives 6.4 GiB < 7.5: re-reading in 60 s
+[09:35:42] host VRAM readings (MiB): 1134 1134 1134 1134 1134 1134 1134 1134
+[09:35:42] host use 1134 MiB gives 6.3 GiB < 7.5: re-reading in 60 s
+[09:36:59] host VRAM readings (MiB): 1119 1180 1118 1118 1118 1118 1118 1118
+[09:36:59] host use 1118 MiB gives 6.4 GiB < 7.5: re-reading in 60 s
+[09:38:16] host VRAM readings (MiB): 1119 1119 1119 1119 1119 1119 1119 1119
+[09:38:16] host use 1119 MiB gives 6.4 GiB < 7.5: re-reading in 60 s
+[09:39:33] host VRAM readings (MiB): 1112 1112 1119 1119 1119 1119 1119 1119
+[09:39:34] GPU at 54.20C, memory.used 1119 MiB
+[09:39:35] disk: 21 GiB free on MLStorage
+[09:39:35] start d173_states_answer_only_1.5b_random_1.5b (timeout 12026s): uv run python -m physcal.eval.followup_r6 states --set answer_only_1.5b --reader random_1.5b --cap 6.4
+[09:46:18] end d173_states_answer_only_1.5b_random_1.5b: exit 0
+[09:46:18] d173_states_answer_only_1.5b_random_1.5b: 0 temperature pauses, 0s paused of 404s; tonight so far 6 pauses, 180s of 1718s (D143)
