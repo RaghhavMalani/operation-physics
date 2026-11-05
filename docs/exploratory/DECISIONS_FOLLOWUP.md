@@ -1368,3 +1368,88 @@ appended here.
   - **R6-3:** a 7B student becomes an option, costed separately.
   - **R6-4:** "neither" has no row in §5. W ≈ 0 gives no reason to add the SFT weights as a second student.
 - **The tests:** the full suite passes (814 passed, 1 skipped), with D170's fix and the two new tests.
+
+## 2026-11-05 morning: the R6-6 decisions and two local controls (your instructions at ~09:00 IST)
+
+### D173. Your six R6-6 decisions, and two controls for R6-5 at 1.5B, run locally as a recorded exception to D171. Plan and readings (2026-11-05, ~09:15 IST; recorded before any of their code or data exists)
+- **Status:** exploratory track, paper #2. D148's freeze holds. Nothing here is Holm-corrected (D167).
+- **Your decisions:**
+  - **All six recommendations in `docs/exploratory/r6_6_kaggle_plan.md` §1 are accepted as written:**
+    1. "self-contained" allows cloning the repo at a pinned commit and downloading pinned weights;
+    2. the verbal confidence is P(yes) from D151's verification turn;
+    3. held-out templates means both a problem question template (primary) and a verification-turn wording (secondary);
+    4. arms D (text-distilled) and E (shuffled) are added;
+    5. R6-6b's model is decided after R6-6a;
+    6. one short Kaggle smoke session runs before R6-6a.
+  - **R6-6a is pre-registered after these two controls,** using their readings (mapping below).
+  - **The order after that:** build the R6-6a notebook and prepare the ~45-minute smoke test, with run instructions. **The
+    full R6-6a is not run.**
+- **The exception to D171:**
+  - **It covers these two controls only.** Both need the local 4-bit states and the cached fold probes of R6-5, so a
+    Kaggle version would have to re-read everything (D167's comparability rule).
+  - D171 still governs every new experiment, including R6-6a and R6-6b.
+  - Their numbers compare with R6-5's 1.5B numbers, not with anything R6-6a will measure.
+  - **The 7B is not covered.** R6-5 (d)'s 7B reading ("neither") gets no control here.
+- **What is known as this is written:** R6-5's numbers (D172), and item counts from the frozen answers. No state of either
+  control exists.
+  - R6-5 (d) at 1.5B: 0.391 [0.364, 0.420]; mean change −0.433 (correct boxes), −0.141 (incorrect boxes).
+  - Of the 6,000 kept answers on 766 problems: 2,499 correct answers have another correct answer; of the 3,266 incorrect
+    ones with a donor, 3,127 have a donor with a different value, 1,177 one with the same value, and 1,038 have both.
+- **Why a plain same-label swap is not enough (found while counting):**
+  - A correct box after another correct reasoning is nearly that donor's own text, so a pairwise accuracy on it says
+    little.
+  - **The clean contrast holds the reasoning fixed.** In a ← d (d's completion up to its last `\boxed{`, then a's box),
+    only the box differs from d's own text. So e(a ← d) = p(a ← d) − p_orig(d) is the effect of replacing the box.
+- **Control 1: the same-label swap at 1.5B** (set `swap_same_1.5b`, read by the local 1.5B, state at the closing brace):
+  - **The texts, one per (a, kind), built exactly as R6-5 (d)'s:**
+    - `correct`: a correct, d the lowest-sample other correct answer (a placebo: the value does not change);
+    - `same_value`: a incorrect, d the lowest-sample other incorrect answer whose value is within 1% of a's (a placebo);
+    - `diff_value`: a incorrect, d the lowest-sample other incorrect answer whose value differs by more than 1% (**the
+      mismatch: the box disagrees with the reasoning, and neither is right, so the label does not change**).
+    - 6,803 texts by the counts above.
+  - **The score:** R6-5 (d)'s, unchanged: the probe fold model in which the problem is held out, refit with the cached
+    (layer, C). **Two gates:** the refit reproduces the cached out-of-fold values within 1e-3, and R6-5's
+    `swap_movement` for 1.5B is reproduced exactly.
+  - **(e), the primary quantity: the mismatch cost M.** Over incorrect answers with both kinds:
+    M_a = e(a ← d_diff) − e(a ← d_same); the mean per problem, then over problems; bootstrap over problems, B = 10,000,
+    seed 0.
+    - Beside it: the mean e per kind on all its texts, and M for D164's text classifier (its fold models, as in R6-5 (d))
+      as the surface reference.
+  - **(f), a secondary: the box with the reasoning fixed.**
+    - Per problem, d0 is the lowest-sample incorrect answer. The pairs: a correct box after d0 (R6-5's swap texts)
+      against a wrong box of a different value after d0 (`diff_value` with donor d0).
+    - Both boxes disagree with one identical reasoning, so only the box's correctness differs.
+    - Pairwise accuracy with X2's scoring (ties 0.5), per problem, CI as above.
+  - **(g), descriptive:** the pairwise accuracy of `correct` against `diff_value` texts, with the original and R6-5's swap
+    on the same pairs; and R6-5's mean changes split as p(a ← d) − p_orig(a) = e(a ← d) + [p_orig(d) − p_orig(a)].
+  - **Readings:**
+    - **(e):** "a mismatch alone lowers the probe" if M's CI is below 0; "no mismatch cost is shown" if it contains 0. Above
+      0: no reading, reported and diagnosed.
+    - **(f):** "with the reasoning fixed, the probe prefers the correct box" if the CI is above 0.5; "it prefers the wrong
+      box" if below; otherwise neither.
+  - **What this cannot do:** D167's reading of (d) stands as recorded. Both sides of an R6-5 pair are mismatched, so a
+    uniform penalty cancels in pairwise accuracy. (e) only tests D172's interpretation that "both classes fall" is a
+    penalty for the disagreement.
+- **Control 2: the random-weights answer-only probe at 1.5B:**
+  - **The states:** the frozen `answer_only_1.5b` set read by `random_1.5b` (D160's copy, 4-bit at load, as in R6-4), at p2.
+  - **The fit:** `crossfit_items`, R6-5 (c)'s protocol (folds by problem, layer and C by inner CV).
+  - **(h), the quantity:** trained answer-only − random answer-only, paired. All pairs is the reading's set;
+    length-matched is reported separately.
+  - **Beside it:** random answer-only's pairwise accuracy, and random full trace (D160's cached probe) − random answer-only.
+  - **Reading:**
+    - "the trained weights add to the box alone" if the CI is above 0;
+    - "the box's signal is surface" if the CI contains 0 and random answer-only's CI is above 0.5;
+    - otherwise no reading, reported.
+- **What each reading changes in R6-6a (fixed now). Neither control can change its arms or its primary metric:**
+  - **(e) "a mismatch alone lowers the probe":** S5's swap test on the students carries two sets, opposite-label and
+    `diff_value`. **"No mismatch cost is shown":** opposite-label only.
+  - **(h) "the trained weights add to the box alone":** R6-6a adds an answer-only probe as a reference (one short pass in
+    S2). **"The box's signal is surface":** no answer-only reference; arm D and the rich-text reference cover the surface.
+  - **(f):** goes to the write-up. It changes nothing in R6-6a.
+- **The run:** two GPU stages under D157 / D158's guards, then the CPU analysis at D97's settings with the GPU idle. From
+  R6-5's measured 1.5B stages (1,204 s and 440 s for 6,000 items): ~23 min and ~7 min of GPU, then ~30 min of CPU.
+- **The code (next):**
+  - `physcal/eval/followup_r6_controls.py`, tests, and `scripts/queue_r6_controls.sh`;
+  - a second manifest for the new set, so D167's frozen manifest and `results.json` are not touched;
+  - the results go to `results/followup/r6/controls_d173.json`.
+- **Nothing of R6-6 is built yet.** Its pre-registration follows the readings, and its code follows that.
