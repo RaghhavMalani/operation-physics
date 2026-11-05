@@ -7,7 +7,7 @@ before the data they affect: D152 (item 3's decoding), D153 (item 3's local stop
 (the readouts' memory settings). D159 records the 7B readouts' run. D160 (written before their data) adds the controls,
 D161 one reproduction retry, and D162 records the controls' run. D164 (plan pushed before its numbers) audits D162's
 table for confounds without a GPU: `physcal/eval/followup_audit.py`, `results/followup/audit/`. D165–D167 pre-register
-R6-3 to R6-5 for paper #2, D168–D170 record their run, and D172 records their readings.
+R6-3 to R6-5 for paper #2, D168–D170 record their run, and D172 records their readings. D173–D174 add two controls at 1.5B. D175–D176 pre-register and build R6-6a, which has not run.
 
 | item | code | config | results |
 |---|---|---|---|

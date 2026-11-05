@@ -4,6 +4,7 @@
 - **The workflow** it follows is D171 in `docs/exploratory/DECISIONS_FOLLOWUP.md`.
 - **Written before any R6-3, R6-4 or R6-5 number was read.** §5 says how each reading changes this plan.
 - **§1's six decisions are accepted as written** (D173). R6-6b's model is still open.
+- **R6-6a is built and has not run** (D176). The next step is the smoke session: `docs/exploratory/kaggle_instructions.md` §9.
 - **Paper #1 is untouched** (D148's freeze).
 
 R6-6 is two experiments (D165). They get one notebook each:

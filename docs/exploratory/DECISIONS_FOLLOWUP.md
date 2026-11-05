@@ -1628,3 +1628,46 @@ appended here.
   `notebooks/kaggle_r6_6a.ipynb`, `notebooks/kaggle_r6_6a_smoke.ipynb`, and tests: kill-and-resume, a tiny Qwen through
   every stage on CPU, and a pin test.
 - **R6-6b is not decided here** (decision 5).
+
+### D176. R6-6a is built and the smoke session is ready to run; nothing has run on Kaggle. A local pre-flight suggests D175's S4 estimate is too low (2026-11-05, ~12:00 IST)
+- **Status:** exploratory track, paper #2. D175's rules are unchanged. **The smoke session and R6-6a both wait for your go.**
+- **What is built:**
+  - `physcal/eval/kaggle_stages.py`: D171's shared stage runner (atomic chunks, ledgers with sha256, done markers, pins,
+    the self-deadline, restore, the zip and its checks);
+  - `physcal/eval/r6_6a.py`, `configs/r6_6a.yaml`, `configs/r6_6a_smoke.yaml`: the pools, every stage, the driver, the
+    rates report and the ingest. Sampling reuses `followup_kaggle.sample` unchanged, under a config overlay;
+  - `notebooks/kaggle_r6_6a.ipynb` and `notebooks/kaggle_r6_6a_smoke.ipynb`, from `scripts/make_r6_6a_notebooks.py`;
+  - the run steps: `docs/exploratory/kaggle_instructions.md` §9.
+- **The pools are frozen.** No seed or text is shared with X2's pool or any frozen set (checked at the build and by a test).
+  The splits are 1,000 train, 120 validation, 502 ID test and 778 held-out template (D175 said ~480 and ~800).
+- **The tests (D171 rule 9):**
+  - a real SIGKILL in the middle of a chunk, then a resume;
+  - a tiny Qwen through every stage on CPU, including a deadline stop and the next session's resume;
+  - the zip through the ingest, which refuses results that do not follow from their tables;
+  - a pin test: the notebooks' commit holds the code, the configs, the pools and D175.
+  - **What they do not cover:** vLLM, two real GPUs, and Kaggle itself. The smoke session does.
+- **Two faults the tests and a re-read caught before any run:**
+  - the full run's chunk estimates would have stopped S4 from ever starting inside the smoke's 45-minute deadline;
+  - a smoke stopped before S6 would never have written its rates. The report now runs whatever the session reached.
+- **A deviation from D171, for your review.** D171 says the laptop tests on CPU. I ran one local GPU pre-flight of ~5 min, a
+  build check rather than an experiment:
+  - **Why:** the tiny tests cannot exercise CUDA fp16, and a bug there would waste the smoke session.
+  - **What:** X2's merged SFT weights as a stand-in for the architecture, on fake ~1,900-token completions of the smoke
+    pool, through S2, S4 and S5's code. Nothing was kept, and no real sample or R6-6a problem's answer was read.
+  - **The result:** no fault. Log-odds and states are finite (max |state| 158), the adapter is fp32 (74 MB), no scaler step
+    was skipped, and the peak was 4.0 GiB.
+- **The warning from that pre-flight.** The 4060 took 32 s / step (16 answers of ~1,900 tokens) and 0.47 s / answer in S2.
+  - **Real lengths:** ~1,245 tokens per reading context (D160's 1.5B answers), and 97.6% answered.
+  - **If a T4 matched the 4060,** S4 would be ~2.2 h per run and ~10.9 h for the 10 runs on 2 GPUs, against D175's 4.2 h. That
+    gives ~21 h in all, more than 2 sessions (19 h).
+  - **This is a rough projection.** A T4's speed here is unknown, the pre-flight used small micro-batches, and the laptop
+    runs hot. The smoke session measures it. D175 already sends this to you if it holds.
+  - **The size of S5 was also low:** ~133,000 items, not ~87,000, because 97.6% of samples are answered. The smoke's
+    projection uses the new count.
+- **Also noted from the pre-flight:** two Adam steps at 1e-4 moved the log-odds by up to 3.3 on these fake texts, with one
+  warmup step. The full run has 19 warmup steps, and the smoke's ~11-step runs have one, so a smoke loss curve will look
+  rougher than the real one. The learning rate is fixed by D175. Changing it needs a D-entry before data, for every arm.
+- **The tests:** the full suite passes (873 passed, 1 skipped). One small change came after it: `spawn` now clears a finished
+  stage's process group, so a leftover vLLM worker cannot hold a GPU. The five suites that touch it were re-run and pass
+  (95 passed), including the new test for it.
+- **The notebooks pin `5f685c71e59b`,** which is on GitHub and holds D175.

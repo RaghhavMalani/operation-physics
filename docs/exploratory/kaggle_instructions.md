@@ -155,6 +155,66 @@ the same.
    MODEL=1.5b KAGGLE_ZIP=~/kaggle_downloads/followup_1.5b_scale.zip GPU_DEADLINE=09:00 setsid nohup scripts/queue_followup_kaggle.sh >> results/queue_followup_kaggle/nohup.log 2>&1 < /dev/null &
    ```
 
+## 9. R6-6a's smoke session (D175): ~45 minutes of quota, two short versions
+
+**What it is for.** Three questions, before the full R6-6a: does output survive a crash, what is the machine really, and
+what are the real rates (fp16 HF + PEFT LoRA on a T4)? It runs every stage's real code on 48 problems of its own. Its numbers
+are plumbing, never results.
+
+**Both versions end in an error on purpose.** That is the test: after each error, look at the Output tab.
+
+1. **A new notebook:** §2 with `notebooks/kaggle_r6_6a_smoke.ipynb`; name it e.g. `physcal-r6-6a-smoke`.
+2. **Settings:** §3 (**GPU T4 x2**, **Internet On**).
+3. **Version 1:** §4 (**Save Version** → **Save & Run All (Commit)**). In **Advanced Settings**, choose **Always save output
+   for this version**. It takes ~35–40 min and stops itself by 45 min. The log should show, in order:
+   - the GPU line, then `repo <commit> | mode smoke | driver …`;
+   - the torch / vLLM / peft line, then the weights' sha256 check;
+   - `throughput on 20 candidates: …`, then `S1: 384 samples, … answered`;
+   - `s2_read: part_…`, then `s4_train` steps (`step n/m: loss …, … s / step`), then `s5_score: …`;
+   - `S6: results.json written`, then `STATUS: {…}`;
+   - the last cell's `RuntimeError: version 1: the deliberate crash …`. The version shows **Error**. This is expected.
+4. **Check version 1's Output tab** (the notebook's page → the version → **Output**). Note three things for me:
+   - are there files at all?
+   - is `r6_6a_smoke_results.zip` there? **Download it.**
+   - how many files are in `r6_6a_smoke/filecount/`? (400 were written.)
+
+   **If the tab is empty,** stop here and tell me: a crash loses output, so R6-6a needs a mid-session copy to a private
+   dataset (the plan's §7). Version 2 cannot run.
+5. **Version 2:** open the notebook → **Edit** → right panel → **Input** → **+ Add Input** → **Your Work** (or **Notebook
+   Output Files**) → this notebook → version 1 → **Add**. Then **Save & Run All (Commit)** again, with the same Advanced
+   Setting. It takes ~8 min. The log should show:
+   - `restore: … files from …` and a JSON block with `filecount_files`;
+   - `{"chunks_checked": …}`: every chunk's sha256 came back intact;
+   - no `s2_read`, `s4_train` or `s5_score` chunk lines: every stage is skipped;
+   - `version 2: a hard kill of this kernel now`. The kernel dies and the version shows an error. This is expected.
+6. **Check version 2's Output tab** the same way, and download its `r6_6a_smoke_results.zip` if it is there. It is the better
+   zip, because it also holds `smoke/survival.json`.
+7. **Bring the zip back** (the newest one you have):
+
+   ```bash
+   cp /mnt/c/Users/<you>/Downloads/r6_6a_smoke_results.zip ~/kaggle_downloads/
+   ```
+
+   ```bash
+   uv run python -m physcal.eval.r6_6a ingest --mode smoke --zip ~/kaggle_downloads/r6_6a_smoke_results.zip
+   ```
+
+8. **Tell me:** the answers to step 4 for each version, and the GPU quota each used (the editor's right panel). I read
+   `results/followup/r6_6a/smoke/smoke/rates.json`, record the measured rates in a D-entry, and re-pin if sizing changes. If
+   the rates need more than 2 sessions, the choice comes to you before any run.
+
+**Do not start `notebooks/kaggle_r6_6a.ipynb` yet.** It waits for this session's answers and your go.
+
+**If something goes wrong:**
+
+| what you see | what it means | what to do |
+|---|---|---|
+| `STATUS` shows `stopped_at` and no `S6:` line | the 45-minute deadline came first, or a stage failed | the rates so far are still in the zip; carry on from step 4 and tell me |
+| `STOP RULE: non-finite …` | fp16 overflow | a real finding; carry on from step 4 and tell me |
+| `CUDA out of memory` | a batch budget is too large for a T4 | carry on from step 4 and tell me; budgets may change (D175) |
+| `this run was started with other pins` | the attached output is from another commit | attach the output of this notebook's version 1 only |
+| `attach one version only` | two versions are attached | remove one input |
+
 ## Troubleshooting
 
 | what you see | what it means | what to do |
