@@ -5643,9 +5643,9 @@ The follow-up log holds D151–D165 (the numbering is shared, D156), so the next
     (#39, D166); the Llama pilot as an exploratory NO-GO with its descriptive A6b slope (#38, D146). Tables `j`,
     `jsub` and `llama` move here.
 - **The rule (D150) holds:** every number is a `\pv` macro or sits in a generated table. `scripts/paper/macros.py`
-  gains about 150 values (prefixes `ra.`, `rb.`, `rc.`, `rd.`), each read from a committed result or config and listed
-  with its source in `macros.tex`. CI levels come from the source's own key (`ci90` / `ci95`). Every paragraph cites
-  its FINDINGS numbers or D-entries in a comment.
+  gains 187 values (prefixes `ra.`, `rb.`, `rc.`, `rd.`; 118 before), each read from a committed result or config and
+  listed with its source in `macros.tex`. Intervals print as "[90% CI lo, hi]", the level taken from the source's own
+  key (`ci90` / `ci95`). Every paragraph cites its FINDINGS numbers or D-entries in a comment.
 - **Two choices in the numbers:**
   - **The post-hoc scale (Act 1)** is D69's refit on 4-bit warm-up completions (×22.1 for the score; ×306 to reach
     nominal 1σ coverage on the calibration split), not #6's ×585, which was fitted on the bf16-merged warm-up model.
@@ -5653,7 +5653,8 @@ The follow-up log holds D151–D165 (the numbering is shared, D156), so the next
   - **Rounding:** values are formatted from the JSON, so a few last digits can differ from FINDINGS' hand-rounded text
     (S1b's upper CI bound prints +35.2 where #18 writes +35.3; the stored value is 0.35250…, rounded half-even). No
     verdict depends on it.
-- **The author line:** "Raghhav Malani, PES University, Bengaluru".
+- **The author line:** "Raghhav Malani, PES University, Bengaluru". The date line reads "Draft": with
+  `SOURCE_DATE_EPOCH=0` (D150's reproducible build) `\today` printed January 1, 1970.
 - **Acknowledgments** (`paper/sections/acknowledgments.tex`), verbatim: "The implementation used Claude Code (Anthropic)
   under the author's direction. Claude (Anthropic), Gemini (Google) and ChatGPT (OpenAI) were consulted as design
   reviewers."

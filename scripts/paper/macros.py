@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 
-from paperlib import Macros, Sources, ci, est_ci, integer, num, pct, pval
+from paperlib import Macros, Sources, ci, integer, num, pct, pval
 
 A = "macros"  # the artifact name in sources.json
 
@@ -218,13 +218,13 @@ def _level(key: str) -> str:
 
 
 def _ci_named(lo: float, hi: float, key: str, nd: int = 3, sign: bool = True) -> str:
-    """'95\\% CI [lo, hi]'."""
-    return f"{_level(key)} CI {ci(lo, hi, nd, sign)}"
+    """'[95\\% CI lo, hi]'."""
+    return f"[{_level(key)} CI {num(lo, nd, sign)}, {num(hi, nd, sign)}]"
 
 
 def _est(d: dict, key: str = "ci90", nd: int = 3, sign: bool = True, value: str = "value") -> str:
-    """'+0.816 (90\\% CI [+0.707, +0.923])' from a statistic dict."""
-    return f"{num(d[value], nd, sign)} ({_ci_named(*d[key], key, nd=nd, sign=sign)})"
+    """'+0.816 [90\\% CI +0.707, +0.923]' from a statistic dict."""
+    return f"{num(d[value], nd, sign)} {_ci_named(*d[key], key, nd=nd, sign=sign)}"
 
 
 def _span(values, fmt) -> str:
@@ -243,7 +243,7 @@ def _act1(S: Sources, add) -> None:
     add("ra.cov.uniform", pct(a["S1b"]["control"]), f"{rel} A.S1b.control (3-seed mean)")
     add("ra.cov.sft", pct(a["S1a"]["control"]), f"{rel} A.S1a.control")
     d = a["S1b"]
-    add("ra.cov.diff", f"{num(100 * d['diff'], 1, True)} percentage points ({_ci_named(*[100 * x for x in d['diff_ci']], 'ci95', nd=1)})",
+    add("ra.cov.diff", f"{num(100 * d['diff'], 1, True)} percentage points {_ci_named(*[100 * x for x in d['diff_ci']], 'ci95', nd=1)}",
         f"{rel} A.S1b.diff, diff_ci (problem-level bootstrap, 95%)")
     cross = b["tests"]["cov1"]["cross_differences"]
     add("ra.cov.pairs", f"{integer(sum(x > 0 for x in cross))} of {integer(len(cross))}", f"{rel} B.tests.cov1.cross_differences")
@@ -260,7 +260,7 @@ def _act1(S: Sources, add) -> None:
     s2 = a["S2"]
     add("ra.rho.split", num(s2["split"]), f"{rel} A.S2.split")
     add("ra.rho.uniform", num(s2["control"]), f"{rel} A.S2.control")
-    add("ra.rho.diff", f"{num(s2['diff'], 3, True)} ({_ci_named(*s2['diff_ci'], 'ci95')})", f"{rel} A.S2.diff, diff_ci")
+    add("ra.rho.diff", f"{num(s2['diff'], 3, True)} {_ci_named(*s2['diff_ci'], 'ci95')}", f"{rel} A.S2.diff, diff_ci")
     add("ra.rho.p", num(s2["p_one_sided"], 2), f"{rel} A.S2.p_one_sided")
     add("ra.rho.split.seeds", _span([r["rho"] for r in sp], lambda x: num(x, 2)), f"{rel} B.per_run.split.*.rho")
     rhos = b["tests"]["rho"]["cross_differences"]
@@ -291,13 +291,13 @@ def _act1(S: Sources, add) -> None:
     add("ra.eonec.rho", num(de["E1c"]["spearman_sigma_error"], 3), f"{rel} describe.E1c.spearman_sigma_error")
     add("ra.eoned.rho", num(de["E1d"]["spearman_sigma_error"], 3), f"{rel} describe.E1d.spearman_sigma_error")
     t = pl["tests"]["E1d"]
-    add("ra.eoned.diff", f"{num(t['diff'], 3, True)} ({_ci_named(*t['ci95'], 'ci95')})", f"{rel} tests.E1d.diff, ci95")
+    add("ra.eoned.diff", f"{num(t['diff'], 3, True)} {_ci_named(*t['ci95'], 'ci95')}", f"{rel} tests.E1d.diff, ci95")
     add("ra.eoned.cov", pct(de["E1d"]["coverage_1sigma"]), f"{rel} describe.E1d.coverage_1sigma")
     add("ra.eoned.sigma", pct(de["E1d"]["median_rel_sigma"], 2), f"{rel} describe.E1d.median_rel_sigma")
     fe = pl["family_E"]["E1d"]
-    add("ra.eoned.sft", f"{num(fe['P (vs SFT σ)']['mean_diff'], 3, True)} ({_ci_named(*fe['P (vs SFT σ)']['ci95'], 'ci95')})",
+    add("ra.eoned.sft", f"{num(fe['P (vs SFT σ)']['mean_diff'], 3, True)} {_ci_named(*fe['P (vs SFT σ)']['ci95'], 'ci95')}",
         f"{rel} family_E.E1d.P")
-    add("ra.eoned.afive", f"{num(fe['N (vs A5 σ)']['mean_diff'], 3, True)} ({_ci_named(*fe['N (vs A5 σ)']['ci95'], 'ci95')})",
+    add("ra.eoned.afive", f"{num(fe['N (vs A5 σ)']['mean_diff'], 3, True)} {_ci_named(*fe['N (vs A5 σ)']['ci95'], 'ci95')}",
         f"{rel} family_E.E1d.N")
     rel = "results/x3/pilot.json"
     add("ra.xthree.rho", num(S.json(A_, rel)["arms"]["a"]["describe"]["spearman_sigma_error"], 3), f"{rel} arms.a.describe.spearman_sigma_error")
@@ -331,15 +331,15 @@ def _act2(S: Sources, add) -> None:
     pr = rob["paired"]
     for k, name in (("probe - random_init_probe", "probe.random"), ("self_consistency - probe", "sc.probe"),
                     ("length - probe", "length.probe")):
-        add(f"rb.diff.{name}", f"{num(pr[k]['mean_diff'], 3, True)} ({_ci_named(*pr[k]['ci95'], 'ci95')})", f"{rel} paired.'{k}'")
+        add(f"rb.diff.{name}", f"{num(pr[k]['mean_diff'], 3, True)} {_ci_named(*pr[k]['ci95'], 'ci95')}", f"{rel} paired.'{k}'")
     ep = S.json(A_, "results/e1d_x2/results.json")["reported_paired"]["e1d - self_consistency"]
-    add("rb.diff.eoned.sc", f"{num(ep['mean_diff'], 3, True)} ({_ci_named(*ep['ci95'], 'ci95')})",
+    add("rb.diff.eoned.sc", f"{num(ep['mean_diff'], 3, True)} {_ci_named(*ep['ci95'], 'ci95')}",
         "results/e1d_x2/results.json reported_paired.'e1d - self_consistency'")
     sep = rob["methods"]["self_consistency"]["separated"]
     add("rb.sc.separated", num(sep["pairwise_accuracy"]), f"{rel} methods.self_consistency.separated")
     ac = e["e1d"]["across_problems"]
-    add("rb.eoned.across", num(ac["spearman_sigma_error"]["value"], 2), "results/e1d_x2/results.json methods.e1d.across_problems")
-    add("rb.xthree.across", num(e["x3_a"]["across_problems"]["spearman_sigma_error"]["value"], 2),
+    add("rb.eoned.across", num(ac["spearman_sigma_error"]["value"], 3), "results/e1d_x2/results.json methods.e1d.across_problems")
+    add("rb.xthree.across", num(e["x3_a"]["across_problems"]["spearman_sigma_error"]["value"], 3),
         "results/e1d_x2/results.json methods.x3_a.across_problems")
     # the cost (R5-8; FINDINGS #37)
     rel = "results/r5_diag/cost.json"
@@ -415,7 +415,7 @@ def _act3(S: Sources, add) -> None:
     gap = tl["rss_to_star_gap"]
     k6 = t["K6"]
     lo, hi = (x / gap for x in k6["ci90"])
-    add("rc.ksix.gap", f"{pct(k6['value'] / gap, 0)} ({_level('ci90')} CI [{pct(lo, 0)}, {pct(hi, 0)}])",
+    add("rc.ksix.gap", f"{pct(k6['value'] / gap, 0)} [{_level('ci90')} CI {pct(lo, 0)}, {pct(hi, 0)}]",
         f"{rel} rss_to_star_gap; confirmatory K6 value and ci90 over the gap")
     # the tail autopsy (R5-2) and the component swaps (R5-3)
     ps = tl["per_seed"]
@@ -523,12 +523,12 @@ def _generalization(S: Sources, add) -> None:
     p = S.json(A_, rel)
     go = S.json(A_, "results/stage_xm/go_dpos2/go.json")
     a = p["models"]["llama"]["arms"]["dpos2"]["sources"]["a"]
-    add("rd.xm.slope", f"{num(a['a6c_slope'], 3, True)} ({_ci_named(*a['a6c_ci90'], 'ci90')})", f"{rel} llama dpos2 a a6c_slope")
+    add("rd.xm.slope", f"{num(a['a6c_slope'], 3, True)} {_ci_named(*a['a6c_ci90'], 'ci90')}", f"{rel} llama dpos2 a a6c_slope")
     add("rd.xm.pairs", integer(a["a6c_n_pairs"]), f"{rel} llama dpos2 a a6c_n_pairs")
     add("rd.xm.cthree.pairs", integer(go["a6b_n_pairs"]), "results/stage_xm/go_dpos2/go.json a6b_n_pairs")
     add("rd.xm.go", "GO" if go["go"] else "NO-GO", "results/stage_xm/go_dpos2/go.json go")
     d = a["a6b_answered_pairs_slope"]
-    add("rd.xm.desc", f"{num(d['slope'], 3, True)} ({_ci_named(*d['ci90'], 'ci90')})", f"{rel} llama dpos2 a a6b_answered_pairs_slope")
+    add("rd.xm.desc", f"{num(d['slope'], 3, True)} {_ci_named(*d['ci90'], 'ci90')}", f"{rel} llama dpos2 a a6b_answered_pairs_slope")
     add("rd.xm.desc.pairs", integer(d["n"]), f"{rel} llama dpos2 a a6b_answered_pairs_slope.n")
     q = p["models"]["qwen_seed0"]["arms"]["dpos2"]["sources"]["a"]["a6b_answered_pairs_slope"]
     add("rd.xm.qwen", num(q["slope"], 3, True), f"{rel} qwen_seed0 dpos2 a a6b_answered_pairs_slope")

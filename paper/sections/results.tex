@@ -39,13 +39,13 @@ there.
 \paragraph{Split credit fixes coverage.}
 Split credit gives the tokens of $\sigma$ an advantage of their own (Section~\ref{sec:grpo}).
 With \pv{split.seeds} seeds per arm, it raises mean $1\sigma$ coverage from \pv{ra.cov.uniform} under uniform credit to
-\pv{ra.cov.split}, a difference of \pv{ra.cov.diff} (Figure~\ref{fig:headline}A); the warm-up model alone covers
+\pv{ra.cov.split} (Figure~\ref{fig:headline}A), a difference of \pv{ra.cov.diff}; the warm-up model alone covers
 \pv{ra.cov.sft}.
 Every split seed beats every uniform seed (\pv{ra.cov.pairs} cross-seed pairs; \pv{ra.cov.split.seeds} against
 \pv{ra.cov.uniform.seeds}).
 The collapse disappears: split credit states $\sigma = 0$ on \pv{ra.zero.split} of answers, with a median relative
 $\sigma$ of \pv{ra.sigma.split}.
-Accuracy does not change (\pv{ra.acc.split} against \pv{ra.acc.uniform}), so the pre-registered tests S1a, S1b and S3
+Accuracy holds (\pv{ra.acc.split} against \pv{ra.acc.uniform}), so the pre-registered tests S1a, S1b and S3
 are supported.
 Coverage nonetheless stays far below the nominal \pv{gate.nominal.one}.
 
@@ -107,7 +107,7 @@ Chance is one half.
 % and X3 within problems; D102); results/x2/robustness/results.json, results/e1d_x2/results.json; Table cost;
 % Figure headline B.
 \paragraph{Single completions.}
-Every readout of a single completion's own uncertainty lies between \pv{rb.single.span}
+Every readout of a single completion's own uncertainty lies in the range \pv{rb.single.span}
 (Figure~\ref{fig:headline}B).
 The warm-up model's stated $\sigma$ scores \pv{rb.acc.sftsigma} and split credit's \pv{rb.acc.splitsigma}; the A5
 text baseline's probability of correctness \pv{rb.acc.afivep} and its $\sigma$ \pv{rb.acc.afivesigma}; E1d's RL
@@ -221,7 +221,8 @@ At the held-out depth \pv{gen.heldoutdepth} it is below both (\pv{rc.dfive.k6} a
 slope there is \pv{rc.dfive.kone}.
 Depth \pv{gen.heldoutdepth} is extrapolation in chain length, one more step from the same three families, not to new
 physical laws.
-Single-depth slopes are fragile, so we give OLS and Theil--Sen side by side: by depth, the seed-mean slopes are
+Single-depth slopes are fragile, so we give OLS and Theil--Sen side by side: from depth \pv{rc.depth.first} to depth
+\pv{gen.heldoutdepth}, the seed-mean slopes are
 \pv{rc.depth.1}, \pv{rc.depth.2}, \pv{rc.depth.3}, \pv{rc.depth.4} and \pv{rc.depth.5}, and the number of pairs moved
 in the wrong direction rises from \pv{rc.rev.first} per seed at depth \pv{rc.depth.first} to \pv{rc.rev.last} of
 \pv{rc.depth.pairs} at depth \pv{gen.heldoutdepth}.
@@ -241,7 +242,7 @@ Their most common primary cause is a wrong value-dependent sensitivity: a wrong 
 Decimal shifts in copying $X$ into the answer (\pv{rc.tail.copy}) and the wrong chain (\pv{rc.tail.chain}) follow.
 The substitution errors tie the two error streams together: one wrong intermediate corrupts both $\mu$ and its
 sensitivity.
-Trimming the worst problems does not change the order of X1, D-pos-v2 and RSS.
+Dropping that worst \pv{rc.tail.worst} does not change the order of X1, D-pos-v2 and RSS.
 
 % R5-3 (a diagnostic, never a method), D133; FINDINGS #35; results/r5_diag/tail.json; Table swaps.
 \paragraph{Component swaps.}
