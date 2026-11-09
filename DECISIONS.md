@@ -5626,3 +5626,38 @@ The follow-up log holds D151–D165 (the numbering is shared, D156), so the next
   D146).
 - **Unchanged:** D148's experiment freeze. The log's entry count in `protocol.tex` (a generated value) rises to 151.
 
+
+### D178. Paper #1's results sections are drafted under D150's rules; the author line and an Acknowledgments section are added (your instruction, 2026-11-09; paper #2 / R6-6a paused until the arXiv posting)
+- **What is drafted** (`paper/sections/results.tex`, now in `tests/test_paper.py`'s drafted list):
+  - **Results I (§6, optimization):** the σ collapse under uniform credit (#6, #16); split credit against uniform credit,
+    3 vs 3 seeds (#16's pre-registered family S, #18's 3 vs 3 robustness analysis); ranking not fixed (S2, family N);
+    E1 and E1d, the learning-rate result labelled exploratory and scoped to the frozen-answer setting (R5-7, #25).
+  - **Results II (§7, epistemic):** R6-1's wording unchanged (D166); every single-completion readout against
+    self-consistency with its token and GPU-second cost (#19, #21, #22, #26, #37); X4's yes-rate on correct and
+    incorrect answers (#21).
+  - **Results III (§8, aleatoric):** the routes that failed (#17, #23, #27–#29); implicit (B-v2) against explicit
+    (D-pos-v2); R4-3's verdict with K6 / K7 / K8 in their own paragraph ("not rejected", never "tie"; K7 read only
+    descriptively); depth 5 with OLS and Theil–Sen (#34); the tail and the component swaps (#35); the RSS fallback as
+    post-hoc (#36); MC-A and MC-B as the two failed black-box routes (#31, #33, #37).
+  - **Generalization (§9, new):** R5-6 part J with the clamped comparator beside J1 and the 43-pair rank-flip caveat
+    (#39, D166); the Llama pilot as an exploratory NO-GO with its descriptive A6b slope (#38, D146). Tables `j`,
+    `jsub` and `llama` move here.
+- **The rule (D150) holds:** every number is a `\pv` macro or sits in a generated table. `scripts/paper/macros.py`
+  gains about 150 values (prefixes `ra.`, `rb.`, `rc.`, `rd.`), each read from a committed result or config and listed
+  with its source in `macros.tex`. CI levels come from the source's own key (`ci90` / `ci95`). Every paragraph cites
+  its FINDINGS numbers or D-entries in a comment.
+- **Two choices in the numbers:**
+  - **The post-hoc scale (Act 1)** is D69's refit on 4-bit warm-up completions (×22.1 for the score; ×306 to reach
+    nominal 1σ coverage on the calibration split), not #6's ×585, which was fitted on the bf16-merged warm-up model.
+    The corrected evals (D67) use the 4-bit base, so the paper uses the matching fit.
+  - **Rounding:** values are formatted from the JSON, so a few last digits can differ from FINDINGS' hand-rounded text
+    (S1b's upper CI bound prints +35.2 where #18 writes +35.3; the stored value is 0.35250…, rounded half-even). No
+    verdict depends on it.
+- **The author line:** "Raghhav Malani, PES University, Bengaluru".
+- **Acknowledgments** (`paper/sections/acknowledgments.tex`), verbatim: "The implementation used Claude Code (Anthropic)
+  under the author's direction. Claude (Anthropic), Gemini (Google) and ChatGPT (OpenAI) were consulted as design
+  reviewers."
+- **Still stubs:** the abstract, Introduction, Related work (R5-10), Discussion, the rest of Limitations, and the
+  appendices.
+- **Unchanged:** D148's experiment freeze (nothing was run), FINDINGS.md, every generated table. The log's entry count
+  in `protocol.tex` rises by one.

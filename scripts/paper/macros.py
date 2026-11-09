@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 
-from paperlib import Macros, Sources, ci, integer, num, pct
+from paperlib import Macros, Sources, ci, est_ci, integer, num, pct, pval
 
 A = "macros"  # the artifact name in sources.json
 
@@ -206,4 +206,329 @@ def build(S: Sources) -> Macros:
     fin = S.text(A, "FINDINGS.md")
     add("record.findings", integer(max(int(n) for n in re.findall(r"^## #(\d+)\.", fin, flags=re.M))),
         "FINDINGS.md: the highest '## #<n>.' header")
+    for part in (_act1, _act2, _act3, _generalization):
+        part(S, add)
     return M
+
+
+# ===================================================================================== the results sections (D178)
+def _level(key: str) -> str:
+    """A CI's level from the source's own key (ci95 / ci90), never typed."""
+    return pct(int(re.fullmatch(r"ci(\d+)", key).group(1)) / 100, 0)
+
+
+def _ci_named(lo: float, hi: float, key: str, nd: int = 3, sign: bool = True) -> str:
+    """'95\\% CI [lo, hi]'."""
+    return f"{_level(key)} CI {ci(lo, hi, nd, sign)}"
+
+
+def _est(d: dict, key: str = "ci90", nd: int = 3, sign: bool = True, value: str = "value") -> str:
+    """'+0.816 (90\\% CI [+0.707, +0.923])' from a statistic dict."""
+    return f"{num(d[value], nd, sign)} ({_ci_named(*d[key], key, nd=nd, sign=sign)})"
+
+
+def _span(values, fmt) -> str:
+    lo, hi = min(values), max(values)
+    return fmt(lo) if fmt(lo) == fmt(hi) else f"{fmt(lo)}--{fmt(hi)}"
+
+
+def _act1(S: Sources, add) -> None:
+    """Results I: uniform vs split credit, 3 vs 3 seeds (D71, FINDINGS #16, #18); the collapse (#6, #16); the post-hoc
+    scale (D69); E1 / E1d (#14, #16, #25; E1d exploratory, R5-7)."""
+    A_ = "macros"
+    rel = "results/corrected/robustness_3v3/report.json"
+    R = S.json(A_, rel)
+    a, b = R["A_problem_level_seed_mean"], R["B_seed_level"]
+    add("ra.cov.split", pct(a["S1b"]["split"]), f"{rel} A.S1b.split (3-seed mean)")
+    add("ra.cov.uniform", pct(a["S1b"]["control"]), f"{rel} A.S1b.control (3-seed mean)")
+    add("ra.cov.sft", pct(a["S1a"]["control"]), f"{rel} A.S1a.control")
+    d = a["S1b"]
+    add("ra.cov.diff", f"{num(100 * d['diff'], 1, True)} percentage points ({_ci_named(*[100 * x for x in d['diff_ci']], 'ci95', nd=1)})",
+        f"{rel} A.S1b.diff, diff_ci (problem-level bootstrap, 95%)")
+    cross = b["tests"]["cov1"]["cross_differences"]
+    add("ra.cov.pairs", f"{integer(sum(x > 0 for x in cross))} of {integer(len(cross))}", f"{rel} B.tests.cov1.cross_differences")
+    runs = b["per_run"]
+    sp, un = list(runs["split"].values()), list(runs["uniform"].values())
+    add("ra.cov.split.seeds", _span([r["cov1"] for r in sp], pct), f"{rel} B.per_run.split.*.cov1")
+    add("ra.cov.uniform.seeds", _span([r["cov1"] for r in un], pct), f"{rel} B.per_run.uniform.*.cov1")
+    add("ra.zero.split", _span([r["sigma_zero"] for r in sp], pct), f"{rel} B.per_run.split.*.sigma_zero")
+    add("ra.zero.uniform", _span([r["sigma_zero"] for r in un], pct), f"{rel} B.per_run.uniform.*.sigma_zero")
+    add("ra.sigma.split", _span([r["median_rel_sigma"] for r in sp], lambda x: pct(x, 2)), f"{rel} B.per_run.split.*.median_rel_sigma")
+    add("ra.sigma.uniform", _span([r["median_rel_sigma"] for r in un], lambda x: pct(x, 3)), f"{rel} B.per_run.uniform.*.median_rel_sigma")
+    add("ra.acc.split", pct(a["S3"]["split"]), f"{rel} A.S3.split")
+    add("ra.acc.uniform", pct(a["S3"]["control"]), f"{rel} A.S3.control")
+    s2 = a["S2"]
+    add("ra.rho.split", num(s2["split"]), f"{rel} A.S2.split")
+    add("ra.rho.uniform", num(s2["control"]), f"{rel} A.S2.control")
+    add("ra.rho.diff", f"{num(s2['diff'], 3, True)} ({_ci_named(*s2['diff_ci'], 'ci95')})", f"{rel} A.S2.diff, diff_ci")
+    add("ra.rho.p", num(s2["p_one_sided"], 2), f"{rel} A.S2.p_one_sided")
+    add("ra.rho.split.seeds", _span([r["rho"] for r in sp], lambda x: num(x, 2)), f"{rel} B.per_run.split.*.rho")
+    rhos = b["tests"]["rho"]["cross_differences"]
+    add("ra.rho.pairs", f"{integer(sum(x > 0 for x in rhos))} of {integer(len(rhos))}", f"{rel} B.tests.rho.cross_differences")
+    # family N on the corrected evals (D49, D50/A5, D67; FINDINGS #16)
+    rel = "results/corrected/side_by_side.json"
+    sbs = S.json(A_, rel)
+    corr = [v for k, v in sbs["per_seed"].items() if k.endswith("corrected")]
+    add("ra.nfail", f"{integer(sum(not t['supported'] for c in corr for t in c['N'].values()))} of "
+        f"{integer(sum(len(c['N']) for c in corr))}", f"{rel} per_seed.*corrected.N.*.supported")
+    add("ra.rho.afive", _span([c["N"]["N2"]["control"] for c in corr], lambda x: num(x, 2)), f"{rel} per_seed.*corrected.N.N2.control")
+    key = next(k for k in sbs["extra_headlines"] if k.startswith("#6"))
+    col = sbs["extra_headlines"][key]["corrected"]
+    add("ra.collapse.step", integer(int(re.search(r"step (\d+)", key).group(1))), f"{rel} extra_headlines '{key}'")
+    add("ra.collapse.zero", pct(col["sigma_zero"]), f"{rel} extra_headlines #6 corrected.sigma_zero")
+    add("ra.collapse.cov", pct(col["cov1"]), f"{rel} extra_headlines #6 corrected.cov1")
+    rel = "results/posthoc_calibration_4bit/posthoc_fit.json"
+    ph = S.json(A_, rel)
+    add("ra.posthoc.fit", num(ph["scales"]["crps_fit"], 1), f"{rel} scales.crps_fit (D69)")
+    add("ra.posthoc.cov", integer(round(ph["scales"]["coverage_matched"])), f"{rel} scales.coverage_matched (D69)")
+    # E1 / E1d (D52, D94, D101; FINDINGS #14, #16, #25)
+    rel = "results/e1/pilots/pilots.json"
+    pl = S.json(A_, rel)
+    add("ra.evaln", integer(pl["n_problems"]), f"{rel} n_problems (the frozen noise-free evaluation set, D67)")
+    de = pl["describe"]
+    add("ra.eone.rho", num(de["E1a (reference)"]["spearman_sigma_error"], 2), f"{rel} describe.E1a.spearman_sigma_error")
+    add("ra.eone.cov", pct(de["E1a (reference)"]["coverage_1sigma"]), f"{rel} describe.E1a.coverage_1sigma")
+    add("ra.eonec.rho", num(de["E1c"]["spearman_sigma_error"], 3), f"{rel} describe.E1c.spearman_sigma_error")
+    add("ra.eoned.rho", num(de["E1d"]["spearman_sigma_error"], 3), f"{rel} describe.E1d.spearman_sigma_error")
+    t = pl["tests"]["E1d"]
+    add("ra.eoned.diff", f"{num(t['diff'], 3, True)} ({_ci_named(*t['ci95'], 'ci95')})", f"{rel} tests.E1d.diff, ci95")
+    add("ra.eoned.cov", pct(de["E1d"]["coverage_1sigma"]), f"{rel} describe.E1d.coverage_1sigma")
+    add("ra.eoned.sigma", pct(de["E1d"]["median_rel_sigma"], 2), f"{rel} describe.E1d.median_rel_sigma")
+    fe = pl["family_E"]["E1d"]
+    add("ra.eoned.sft", f"{num(fe['P (vs SFT σ)']['mean_diff'], 3, True)} ({_ci_named(*fe['P (vs SFT σ)']['ci95'], 'ci95')})",
+        f"{rel} family_E.E1d.P")
+    add("ra.eoned.afive", f"{num(fe['N (vs A5 σ)']['mean_diff'], 3, True)} ({_ci_named(*fe['N (vs A5 σ)']['ci95'], 'ci95')})",
+        f"{rel} family_E.E1d.N")
+    rel = "results/x3/pilot.json"
+    add("ra.xthree.rho", num(S.json(A_, rel)["arms"]["a"]["describe"]["spearman_sigma_error"], 3), f"{rel} arms.a.describe.spearman_sigma_error")
+
+
+def _act2(S: Sources, add) -> None:
+    """Results II: within-problem correctness signals (D74, D89, D91, D92, D102; FINDINGS #19, #21, #22, #26, #37)."""
+    A_ = "macros"
+    x2 = S.json(A_, "results/x2/results.json")
+    add("rb.problems", integer(x2["n_kept"]), "results/x2/results.json n_kept")
+    add("rb.pairs", integer(x2["n_pairs"]), "results/x2/results.json n_pairs")
+    add("rb.candidates", integer(x2["n_candidates_sampled"]), "results/x2/results.json n_candidates_sampled")
+    rel = "results/x2/robustness/results.json"
+    rob = S.json(A_, rel)
+    m = {k: v["pairwise_accuracy"] for k, v in rob["methods"].items()}
+    add("rb.cilevel", _level("ci95"), f"{rel} methods.*.pairwise_accuracy.ci95")
+    xr = S.yaml(A_, "configs/x2_robustness.yaml")
+    add("rb.agree", _lv(xr["self_consistency"]["agree_tolerance"]), "configs/x2_robustness.yaml self_consistency.agree_tolerance")
+    acc = lambda d: f"{num(d['pairwise_accuracy'])} {ci(*d['ci95'], sign=False)}"
+    names = {"sft_sigma": "sftsigma", "split_sigma": "splitsigma", "a5_p": "afivep", "a5_sigma": "afivesigma",
+             "probe": "probe", "random_init_probe": "randominitprobe", "length": "length",
+             "self_consistency": "selfconsistency", "x4_sft": "xfoursft"}
+    for k, name in names.items():
+        add(f"rb.acc.{name}", acc(m[k]), f"{rel} methods.{k}.pairwise_accuracy, ci95")
+    e = S.json(A_, "results/e1d_x2/results.json")["methods"]
+    for k, name in (("e1d", "eoned"), ("x3_a", "xthreea")):
+        add(f"rb.acc.{name}", acc(e[k]["pairwise_accuracy"]), f"results/e1d_x2/results.json methods.{k}.pairwise_accuracy")
+    single = [m[k]["pairwise_accuracy"] for k in ("sft_sigma", "split_sigma", "a5_p", "a5_sigma", "x4_sft")]
+    single += [e[k]["pairwise_accuracy"]["pairwise_accuracy"] for k in ("e1d", "x3_a")]
+    add("rb.single.span", _span(single, num), f"{rel} + e1d_x2: the stated / self-reported readouts' range")
+    pr = rob["paired"]
+    for k, name in (("probe - random_init_probe", "probe.random"), ("self_consistency - probe", "sc.probe"),
+                    ("length - probe", "length.probe")):
+        add(f"rb.diff.{name}", f"{num(pr[k]['mean_diff'], 3, True)} ({_ci_named(*pr[k]['ci95'], 'ci95')})", f"{rel} paired.'{k}'")
+    ep = S.json(A_, "results/e1d_x2/results.json")["reported_paired"]["e1d - self_consistency"]
+    add("rb.diff.eoned.sc", f"{num(ep['mean_diff'], 3, True)} ({_ci_named(*ep['ci95'], 'ci95')})",
+        "results/e1d_x2/results.json reported_paired.'e1d - self_consistency'")
+    sep = rob["methods"]["self_consistency"]["separated"]
+    add("rb.sc.separated", num(sep["pairwise_accuracy"]), f"{rel} methods.self_consistency.separated")
+    ac = e["e1d"]["across_problems"]
+    add("rb.eoned.across", num(ac["spearman_sigma_error"]["value"], 2), "results/e1d_x2/results.json methods.e1d.across_problems")
+    add("rb.xthree.across", num(e["x3_a"]["across_problems"]["spearman_sigma_error"]["value"], 2),
+        "results/e1d_x2/results.json methods.x3_a.across_problems")
+    # the cost (R5-8; FINDINGS #37)
+    rel = "results/r5_diag/cost.json"
+    c = S.json(A_, rel)
+    pp = c["x2"]["per_problem"]
+    add("rb.k", integer(c["x2"]["k"]), f"{rel} x2.k")
+    add("rb.tokens.k", integer(round(pp["tokens_k"])), f"{rel} x2.per_problem.tokens_k")
+    add("rb.tokens.one", integer(round(pp["tokens_one"])), f"{rel} x2.per_problem.tokens_one")
+    add("rb.cost.ratio", num(pp["tokens_k"] / pp["tokens_one"], 1), f"{rel} x2.per_problem tokens_k / tokens_one")
+    add("rb.seconds.k", num(pp["seconds_k"], 2), f"{rel} x2.per_problem.seconds_k")
+    add("rb.seconds.one", num(pp["seconds_one"], 2), f"{rel} x2.per_problem.seconds_one")
+    # X4 (D89, D91; FINDINGS #21)
+    rel = "results/x4/results.json"
+    x4 = S.json(A_, rel)
+    dg = x4["diagnostics"]["sft"]
+    add("rb.xfour.verdict", pct(dg["share_wrote_verdict"], 0), f"{rel} diagnostics.sft.share_wrote_verdict")
+    add("rb.xfour.yes.correct", pct(dg["natural_yes_rate_correct"]), f"{rel} diagnostics.sft.natural_yes_rate_correct")
+    add("rb.xfour.yes.incorrect", pct(dg["natural_yes_rate_incorrect"]), f"{rel} diagnostics.sft.natural_yes_rate_incorrect")
+    add("rb.xfour.pyes.correct", num(dg["mean_p_yes_correct"]), f"{rel} diagnostics.sft.mean_p_yes_correct")
+    add("rb.xfour.pyes.incorrect", num(dg["mean_p_yes_incorrect"]), f"{rel} diagnostics.sft.mean_p_yes_incorrect")
+    add("rb.xfour.p", num(x4["holm"]["sft"]["p"]), f"{rel} holm.sft.p")
+    add("rb.xfour.threshold", num(x4["holm"]["sft"]["threshold"], 4), f"{rel} holm.sft.threshold")
+    add("rb.xfour.tokens", integer(int(x4["tokens"]["sft"]["generated"]["median"])), f"{rel} tokens.sft.generated.median")
+    add("rb.xfour.factor", num(x4["meta"]["perturbed"]["perturb_factor"], 2), f"{rel} meta.perturbed.perturb_factor")
+    add("rb.xfour.perturbed", num(x4["methods"]["perturbed"]["pairwise_accuracy"]), f"{rel} methods.perturbed.pairwise_accuracy")
+    au = x4["methods"]["sft"]["auroc_across_problems"]
+    add("rb.xfour.auroc", f"{num(au['auroc'])} {ci(*au['ci95'], sign=False)}", f"{rel} methods.sft.auroc_across_problems")
+
+
+def _act3(S: Sources, add) -> None:
+    """Results III: implicit vs explicit and R4-3 (D118, D125; FINDINGS #32); depth 5 (#34); the tail and the swaps
+    (#35); the RSS fallback (#36, post-hoc); MC-A (#31) and MC-B (#33, #37); the routes that failed (#17, #23, #27-#29)."""
+    A_ = "macros"
+    rel = "results/stage_r4/confirmatory/results.json"
+    r = S.json(A_, rel)
+    t = r["main"]["tests"]
+    for k in ("K1", "K2", "K3", "K4"):
+        add(f"rc.{k.lower()}", _est(t[k]), f"{rel} main.tests.{k} (ci90)")
+    for k in ("K5", "K6", "K7", "K8"):
+        add(f"rc.{k.lower()}", _est(t[k], nd=4), f"{rel} main.tests.{k} (ci90)")
+        add(f"rc.{k.lower()}.p", pval(t[k]["p_one_sided"]), f"{rel} main.tests.{k}.p_one_sided")
+    add("rc.ksix.seeds", ", ".join(num(v, 4, True) for _, v in sorted(t["K6"]["per_seed"].items())), f"{rel} main.tests.K6.per_seed")
+    crit = r["main"]["criteria"]
+    add("rc.cthree", _est(crit["dpos2_a"]["a6b"]), f"{rel} main.criteria.dpos2_a.a6b (ci90)")
+    add("rc.ctwo", num(r["main"]["criteria"]["dpos2_a"]["a6c"]["value"], 3, True), f"{rel} main.criteria.dpos2_a.a6c.value")
+    add("rc.kone.seeds", ", ".join(num(v["value"], 3, True) for _, v in sorted(t["K1"]["per_seed"].items())), f"{rel} K1.per_seed")
+    add("rc.p.confirmed", "confirmed" if r["primary"]["confirmed"] else "not confirmed", f"{rel} primary.confirmed")
+    sub = r["subsets"]
+    add("rc.dfive.kone", _est(sub["depth_5"]["tests"]["K1"]), f"{rel} subsets.depth_5.tests.K1")
+    for k in ("K6", "K7"):
+        add(f"rc.dfive.{k.lower()}", _est(sub["depth_5"]["tests"][k], nd=4), f"{rel} subsets.depth_5.tests.{k}")
+        add(f"rc.dfour.{k.lower()}", _est(sub["depths_1_4"]["tests"][k], nd=4), f"{rel} subsets.depths_1_4.tests.{k}")
+    regret = [v["share_in_worst"] for v in r["regret"].values()]
+    add("rc.regret.share", _span(regret, lambda x: pct(x, 0)), f"{rel} regret.*.share_in_worst")
+    # oracle-centred description, per seed and the references (D118 sec. 9)
+    rel = "results/stage_r4/confirmatory/stage_b_dpos2/results.json"
+    sb = S.json(A_, rel)
+    oc = [v["oracle_centred"] for v in sb["seeds"].values()]
+    add("rc.cov.seeds", _span([o["coverage_1"][0] for o in oc], lambda x: pct(x, 0)), f"{rel} seeds.*.oracle_centred.coverage_1")
+    add("rc.covtwo.seeds", _span([o["coverage_2"][0] for o in oc], lambda x: pct(x, 0)), f"{rel} seeds.*.oracle_centred.coverage_2")
+    add("rc.beta.seeds", _span([o["vol_beta"][0] for o in oc], lambda x: num(x, 2)), f"{rel} seeds.*.oracle_centred.vol_beta")
+    add("rc.mal.seeds", _span([o["median_abs_log_ratio"] for o in oc], lambda x: num(x, 2)), f"{rel} seeds.*.median_abs_log_ratio")
+    for n in ("rss", "x1", "sigma_star"):
+        o = sb["comparators"][n]["oracle_centred"]
+        key = {"rss": "rss", "x1": "xone", "sigma_star": "star"}[n]
+        add(f"rc.cov.{key}", pct(o["coverage_1"][0], 0), f"{rel} comparators.{n}.oracle_centred.coverage_1")
+        add(f"rc.beta.{key}", num(o["vol_beta"][0], 2), f"{rel} comparators.{n}.oracle_centred.vol_beta")
+        add(f"rc.mal.{key}", num(o["median_abs_log_ratio"], 2), f"{rel} comparators.{n}.oracle_centred.median_abs_log_ratio")
+    add("rc.xone.slope", num(sb["comparators"]["x1"]["a6c_all_pairs"]["slope"], 3, True), f"{rel} comparators.x1.a6c_all_pairs.slope")
+    # the RSS-to-sigma* gap K6 closes (D118 sec. 9; FINDINGS #32)
+    rel = "results/r5_diag/tail.json"
+    tl = S.json(A_, rel)
+    gap = tl["rss_to_star_gap"]
+    k6 = t["K6"]
+    lo, hi = (x / gap for x in k6["ci90"])
+    add("rc.ksix.gap", f"{pct(k6['value'] / gap, 0)} ({_level('ci90')} CI [{pct(lo, 0)}, {pct(hi, 0)}])",
+        f"{rel} rss_to_star_gap; confirmatory K6 value and ci90 over the gap")
+    # the tail autopsy (R5-2) and the component swaps (R5-3)
+    ps = tl["per_seed"]
+    add("rc.tail.worst", pct(next(iter(ps.values()))["n_worst"] / tl["n_problems"], 0), f"{rel} per_seed.*.n_worst / n_problems")
+    add("rc.tail.share", _span([v["worst_regret_share"] for v in ps.values()], lambda x: pct(x, 0)), f"{rel} per_seed.*.worst_regret_share")
+    pooled = tl["causes_worst_pooled"]
+    n = sum(pooled.values())
+    share = lambda pre: sum(k for c, k in pooled.items() if c.startswith(pre)) / n
+    add("rc.tail.formula", pct(share("sensitivity: value-dependent: formula"), 0), f"{rel} causes_worst_pooled (formula, with and without an expression)")
+    add("rc.tail.subst", pct(share("sensitivity: value-dependent: substitution (own wrong"), 0), f"{rel} causes_worst_pooled (own wrong intermediates)")
+    add("rc.tail.copy", pct(share("copy: decimal shift"), 0), f"{rel} causes_worst_pooled (decimal shifts)")
+    add("rc.tail.chain", pct(share("chain selection"), 0), f"{rel} causes_worst_pooled (chain selection)")
+    sw = tl["swaps"]
+    add("rc.swap.s.rss", _est(sw["S"]["minus_rss"], nd=4), f"{rel} swaps.S.minus_rss")
+    add("rc.swap.s.xone", _est(sw["S"]["minus_x1"], nd=4), f"{rel} swaps.S.minus_x1")
+    add("rc.swap.s.gap", pct(sw["S"]["share_of_rss_to_star_gap"], 0), f"{rel} swaps.S.share_of_rss_to_star_gap")
+    add("rc.swap.s.slope", num(sw["S"]["a6c_slope"]["value"], 2, True), f"{rel} swaps.S.a6c_slope")
+    add("rc.swap.stated.slope", num(sw["a"]["a6c_slope"]["value"], 3, True), f"{rel} swaps.a.a6c_slope (every pair)")
+    for k, name in (("L", "levels"), ("A", "aggregation"), ("C", "copy")):
+        add(f"rc.swap.{name}.gap", pct(sw[k]["share_of_rss_to_star_gap"], 0), f"{rel} swaps.{k}.share_of_rss_to_star_gap")
+    # per-depth slopes, OLS and Theil-Sen (D137 item 4; FINDINGS #34)
+    rel = "results/r5_diag/depth_ts.json"
+    dt = S.json(A_, rel)["arms"]
+    depths = sorted(next(iter(dt["dpos2"].values())), key=int)
+    mean = lambda arm, d, k: sum(s[d][k] for s in dt[arm].values()) / len(dt[arm])
+    for d in depths:
+        add(f"rc.depth.{d}", f"{num(mean('dpos2', d, 'ols'), 2, True)} / {num(mean('dpos2', d, 'theil_sen'), 2, True)}",
+            f"{rel} arms.dpos2.*.{d} ols / theil_sen (mean over seeds)")
+    add("rc.depth.first", integer(int(depths[0])), f"{rel} depths")
+    add("rc.rev.first", _span([s[depths[0]]["n_reversed"] for s in dt["dpos2"].values()], integer), f"{rel} dpos2 n_reversed, first depth")
+    add("rc.rev.last", _span([s[depths[-1]]["n_reversed"] for s in dt["dpos2"].values()], integer), f"{rel} dpos2 n_reversed, last depth")
+    add("rc.depth.pairs", integer(next(iter(dt["dpos2"].values()))[depths[-1]]["n"]), f"{rel} dpos2 n, last depth")
+    add("rc.btwo.ols", _span([mean("b2", d, "ols") for d in depths], lambda x: num(x, 2)), f"{rel} arms.b2 ols (seed means by depth)")
+    add("rc.btwo.ts", _span([mean("b2", d, "theil_sen") for d in depths], lambda x: num(x, 2)), f"{rel} arms.b2 theil_sen (seed means by depth)")
+    rel = "results/r5_diag/depth5.json"
+    d5 = S.json(A_, rel)
+    last = depths[-1]
+    for s, key in (("development", "dev"), ("frozen", "frozen")):
+        b = d5[s]["by_depth"][last]
+        add(f"rc.dfive.{key}.ols", num(b["slope"], 3, True), f"{rel} {s}.by_depth.{last}.slope")
+        add(f"rc.dfive.{key}.ts", num(b["theil_sen"]["slope"], 3, True), f"{rel} {s}.by_depth.{last}.theil_sen.slope")
+        add(f"rc.dfive.{key}.rev", integer(b["n_reversed"]), f"{rel} {s}.by_depth.{last}.n_reversed")
+    # the RSS fallback (R5-4, post-hoc exploratory; FINDINGS #36)
+    rel = "results/r5_diag/fallback_confirmatory.json"
+    fb = S.json(A_, rel)
+    add("rc.fb.bounds", f"[{num(fb['bounds'][0], 3)}, {num(fb['bounds'][1], 0)}]", f"{rel} bounds (D135)")
+    add("rc.fb.rate", _span(list(fb["fallback_rate"].values()), lambda x: pct(x, 0)), f"{rel} fallback_rate")
+    add("rc.fb.rss", _est(fb["minus_rss"], nd=4), f"{rel} minus_rss")
+    add("rc.fb.xone", _est(fb["minus_x1"], nd=4), f"{rel} minus_x1")
+    add("rc.fb.gap", pct(fb["share_of_rss_to_star_gap"], 0), f"{rel} share_of_rss_to_star_gap")
+    add("rc.fb.slope", _est(fb["a6c_slope"]), f"{rel} a6c_slope")
+    # MC-A (R4-4; FINDINGS #31) and MC-B (D119 / D122; FINDINGS #33, #37)
+    rel = "results/mc_a/a6c_pairs/results.json"
+    ma = S.json(A_, rel)
+    add("rc.mca.rss", _est(ma["stopping_rule"]["robust_minus_rss"], key="ci95", nd=4), f"{rel} stopping_rule.robust_minus_rss")
+    add("rc.mca.p", pval(ma["stopping_rule"]["robust_minus_rss"]["p_one_sided"]), f"{rel} stopping_rule p_one_sided")
+    add("rc.mca.oracle", _est(ma["oracle_minus_rss"], key="ci95", nd=4), f"{rel} oracle_minus_rss")
+    rel = "results/r5_diag/cost.json"
+    c = S.json(A_, rel)
+    mk = c["mc_a"]["a6c_pairs"]
+    kmax = max(mk["k"], key=int)
+    add("rc.mca.auroc", num(mk["k"][kmax]["raw_auroc"]), f"{rel} mc_a.a6c_pairs.k.{kmax}.raw_auroc")
+    add("rc.mca.k", integer(int(kmax)), f"{rel} mc_a.a6c_pairs.k")
+    free = list(mk["comparators_auroc"].values()) + [mk["stated_sigma_auroc"]]
+    add("rc.mca.free", num(max(free)), f"{rel} mc_a.a6c_pairs: the best free or single-sample AUROC")
+    add("rc.mca.tokens", integer(round(mk["k"][kmax]["extra_tokens_per_problem"])), f"{rel} mc_a.a6c_pairs.k.{kmax}.extra_tokens_per_problem")
+    sh = c["mcb_split"]["a6c_pairs"]["share"]
+    add("rc.mcb.interface", pct(sh["interface"]), f"{rel} mcb_split.a6c_pairs.share.interface")
+    add("rc.mcb.semantic", pct(sh["semantic"] / (sh["semantic"] + sh["correct"]), 0), f"{rel} mcb_split semantic / (semantic + correct)")
+    add("rc.mcb.correct", pct(sh["correct"]), f"{rel} mcb_split.a6c_pairs.share.correct")
+    rel = "results/mc_b/a6c_pairs/results.json"
+    mb = S.json(A_, rel)["tests"]
+    ms = [k for k in mb if re.fullmatch(r"M\d", k)]
+    add("rc.mcb.rejected", f"{integer(sum(mb[k]['holm']['rejected'] for k in ms))} of {integer(len(ms))}", f"{rel} tests.M*.holm.rejected")
+    add("rc.mcb.rss", _est(mb["M1"], key="ci95", nd=4), f"{rel} tests.M1 (MC-B - RSS)")
+    # stage B: SFT on sigma* (D104; FINDINGS #27)
+    rel = "results/stage_b/results.json"
+    sbt = S.json(A_, rel)["tests"]
+    add("rc.stageb.slope", _est(sbt["B2"], key="ci95"), f"{rel} tests.B2 (A6c slope)")
+    add("rc.stageb.rss", _est(sbt["B3"], key="ci95", nd=4), f"{rel} tests.B3 (expected crps_log - RSS)")
+
+
+def _generalization(S: Sources, add) -> None:
+    """R5-6 part J (D147-D149; FINDINGS #39) and the Llama pilot (D137, D139, D146; FINDINGS #38)."""
+    A_ = "macros"
+    rel = "results/r5_6/results.json"
+    r = S.json(A_, rel)
+    m = r["main"]
+    cr = m["criteria"]["dpos2_a"]
+    add("rd.jone", _est(cr["a6c"]), f"{rel} main.criteria.dpos2_a.a6c (J1)")
+    add("rd.cthree", _est(cr["a6b"]), f"{rel} main.criteria.dpos2_a.a6b (C3)")
+    add("rd.cthree.pairs", _span([v["n_pairs"] for v in cr["a6b"]["per_seed"].values()], integer), f"{rel} criteria.dpos2_a.a6b.per_seed.n_pairs")
+    add("rd.p.confirmed", "confirmed" if r["primary"]["confirmed"] else "not confirmed", f"{rel} primary.confirmed")
+    add("rd.jtwo", _est(m["tests"]["J2"]), f"{rel} main.tests.J2")
+    for k, name in (("J3", "jthree"), ("J4", "jfour")):
+        add(f"rd.{name}", _est(m["tests"][k], nd=4), f"{rel} main.tests.{k}")
+        add(f"rd.{name}.holm", "rejected" if m["tests"][k]["holm"]["rejected"] else "not rejected", f"{rel} main.tests.{k}.holm")
+    add("rd.clamped", _est(m["comparators"]["clamped"]["sensitivity"]), f"{rel} main.comparators.clamped.sensitivity")
+    rf = r["splits"]["rank_flip_sensitivity"]
+    add("rd.flip.pairs", integer(rf["n_pairs"]), f"{rel} splits.rank_flip_sensitivity.n_pairs")
+    add("rd.flip.dpos", num(rf["slopes"]["dpos2_a"]["sensitivity"]["value"], 3, True), f"{rel} splits.rank_flip_sensitivity dpos2_a")
+    add("rd.flip.clamped", num(rf["slopes"]["comparator_clamped"]["sensitivity"]["value"], 3, True), f"{rel} splits.rank_flip_sensitivity clamped")
+    # the Llama pilot
+    rel = "results/stage_xm/pilot/results.json"
+    p = S.json(A_, rel)
+    go = S.json(A_, "results/stage_xm/go_dpos2/go.json")
+    a = p["models"]["llama"]["arms"]["dpos2"]["sources"]["a"]
+    add("rd.xm.slope", f"{num(a['a6c_slope'], 3, True)} ({_ci_named(*a['a6c_ci90'], 'ci90')})", f"{rel} llama dpos2 a a6c_slope")
+    add("rd.xm.pairs", integer(a["a6c_n_pairs"]), f"{rel} llama dpos2 a a6c_n_pairs")
+    add("rd.xm.cthree.pairs", integer(go["a6b_n_pairs"]), "results/stage_xm/go_dpos2/go.json a6b_n_pairs")
+    add("rd.xm.go", "GO" if go["go"] else "NO-GO", "results/stage_xm/go_dpos2/go.json go")
+    d = a["a6b_answered_pairs_slope"]
+    add("rd.xm.desc", f"{num(d['slope'], 3, True)} ({_ci_named(*d['ci90'], 'ci90')})", f"{rel} llama dpos2 a a6b_answered_pairs_slope")
+    add("rd.xm.desc.pairs", integer(d["n"]), f"{rel} llama dpos2 a a6b_answered_pairs_slope.n")
+    q = p["models"]["qwen_seed0"]["arms"]["dpos2"]["sources"]["a"]["a6b_answered_pairs_slope"]
+    add("rd.xm.qwen", num(q["slope"], 3, True), f"{rel} qwen_seed0 dpos2 a a6b_answered_pairs_slope")

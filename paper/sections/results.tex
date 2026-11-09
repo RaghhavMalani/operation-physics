@@ -1,8 +1,8 @@
-% Sections: the three acts of the results. NOT drafted yet (docs/paper_outline.md sections 4-6). The tables and the
-% figure below are generated from committed results (scripts/paper/build.py) and placed where the text will use them.
+% Sections: the results, three acts and generalization (drafted 2026-11-09, D178; docs/paper_outline.md sections 4-6).
+% Every claim cites its source in a comment; every number is \pv{...} (paper/generated/macros.tex) or sits in a
+% generated table or figure.
 \section{Optimization: $\sigma$ rides on the answer's advantage}
 \label{sec:act1}
-\todo{To be written (docs/paper\_outline.md, section 4; FINDINGS \#6, \#14, \#16, \#18, \#25).}
 
 \begin{figure}[t]
   \centering
@@ -17,6 +17,71 @@
   \label{fig:headline}
 \end{figure}
 
+% FINDINGS #6 (the collapse in training), #16 (the collapse on the evaluation set, as trained;
+% results/corrected/side_by_side.json); D67 (corrected evals); D69 (the post-hoc scale refit on 4-bit completions;
+% results/posthoc_calibration_4bit/posthoc_fit.json); D71 / FINDINGS #18 (the uniform seeds at the matched step).
+\paragraph{The failure.}
+This section and the next use the frozen noise-free evaluation set of \pv{ra.evaln} problems, with every adapter evaluated as
+trained (Section~\ref{sec:methods}).
+With sequence-level credit, the tokens of $\sigma$ share the answer's advantage, and the proper scoring rule did not
+keep the stated $\sigma$ honest.
+Trained beyond the matched step to step \pv{ra.collapse.step}, the uniform-credit policy states $\sigma = 0$ on
+\pv{ra.collapse.zero} of the evaluation answers, and its $1\sigma$ coverage falls to \pv{ra.collapse.cov}.
+The score does not favour this, since it is proper; the collapse is a property of the optimization.
+At the matched step (\pv{grpo.step}) it is partial: across the three uniform-credit seeds, $\sigma = 0$ on
+\pv{ra.zero.uniform} of answers and the median relative $\sigma$ is \pv{ra.sigma.uniform}.
+The warm-up model's own $\sigma$ is as narrow: a single scale factor fitted on the calibration split multiplies it by
+\pv{ra.posthoc.fit} to maximize the score, and would need \pv{ra.posthoc.cov} to reach nominal $1\sigma$ coverage
+there.
+
+% FINDINGS #16 (family S, pre-registered, D62's seed-mean rule), #18 (3 vs 3 seeds, D71: a robustness analysis, not
+% the verdict); results/corrected/robustness_3v3/report.json; Figure headline A.
+\paragraph{Split credit fixes coverage.}
+Split credit gives the tokens of $\sigma$ an advantage of their own (Section~\ref{sec:grpo}).
+With \pv{split.seeds} seeds per arm, it raises mean $1\sigma$ coverage from \pv{ra.cov.uniform} under uniform credit to
+\pv{ra.cov.split}, a difference of \pv{ra.cov.diff} (Figure~\ref{fig:headline}A); the warm-up model alone covers
+\pv{ra.cov.sft}.
+Every split seed beats every uniform seed (\pv{ra.cov.pairs} cross-seed pairs; \pv{ra.cov.split.seeds} against
+\pv{ra.cov.uniform.seeds}).
+The collapse disappears: split credit states $\sigma = 0$ on \pv{ra.zero.split} of answers, with a median relative
+$\sigma$ of \pv{ra.sigma.split}.
+Accuracy does not change (\pv{ra.acc.split} against \pv{ra.acc.uniform}), so the pre-registered tests S1a, S1b and S3
+are supported.
+Coverage nonetheless stays far below the nominal \pv{gate.nominal.one}.
+
+% FINDINGS #16 (S2 not supported; family N fails on every seed), #18 (rho: 9 / 9 cross-seed pairs, not a seed-level
+% significance claim, R2-4); D49, D50/A5 (RL calibration is judged against the text baselines on the same answers).
+\paragraph{It does not fix ranking.}
+The wider $\sigma$ says almost nothing about which answers are wrong.
+Its Spearman correlation with the error is \pv{ra.rho.split} against uniform credit's \pv{ra.rho.uniform}, a
+difference of \pv{ra.rho.diff} with one-sided $p = \pv{ra.rho.p}$, so S2 is not supported.
+Every split seed's correlation (\pv{ra.rho.split.seeds}) exceeds every uniform seed's (\pv{ra.rho.pairs} cross-seed
+pairs), but the values are tiny, and three seeds per arm cannot make this a seed-level significance claim.
+We judge RL calibration against text baselines (A5) that read the problem, the answer and its reasoning and predict
+the error of the same answers.
+Their $\sigma$ correlates with the error at \pv{ra.rho.afive} per seed, and split credit's $\sigma$ loses
+\pv{ra.nfail} pre-registered comparisons with it (family N: coverage error, correlation and score, per seed).
+
+% D52, FINDINGS #14, #16 (E1, corrected); D94, D101, FINDINGS #25 (the E1c / E1d pilots, one seed each); R5-7 (E1d is
+% exploratory and scoped to the frozen-answer setting); results/e1/pilots/pilots.json; FINDINGS #20 (X3,
+% results/x3/pilot.json).
+\paragraph{Learning $\sigma$ with the answer fixed (exploratory).}
+E1 takes credit assignment out of the question: the answer is fixed and only the $\sigma$ suffix is sampled
+(Section~\ref{sec:grpo}).
+At learning rate \pv{eone.lr}, E1 widens $\sigma$ ($1\sigma$ coverage \pv{ra.eone.cov}), but its correlation with the
+error stays at \pv{ra.eone.rho}; scaling the advantages by the batch instead of the group standard deviation (E1c)
+leaves it at \pv{ra.eonec.rho}.
+At \pv{eone.lrd} (E1d) the correlation rises to \pv{ra.eoned.rho}, \pv{ra.eoned.diff} above E1's, the level that a
+supervised student of the A5 text baseline reaches on the same base and adapter (X3, \pv{ra.xthree.rho}).
+E1d's $\sigma$ stays narrow (median \pv{ra.eoned.sigma}, $1\sigma$ coverage \pv{ra.eoned.cov}), and its mean
+$\crpslog$, though above that of the warm-up model's $\sigma$ (\pv{ra.eoned.sft}), stays below the A5 baseline's
+(\pv{ra.eoned.afive}).
+We treat this as exploratory and scoped to the frozen-answer setting: it is a single-seed pilot on noise-free
+problems, the suffix is at most \pv{eone.suffix} tokens, and the learning rate is untested on whole completions, where
+the answer moves too.
+Its correlation also ranks problems, not answers: within a problem, E1d's $\sigma$ is at chance
+(Section~\ref{sec:act2}).
+
 \section{Within-problem correctness signals on the fine-tuned model}
 \label{sec:act2}
 % R6-1 (D166): the claim, scoped to the evaluated checkpoint and its elicitation conditions; FINDINGS #19, #22, #37.
@@ -26,18 +91,239 @@ stronger discrimination.
 This is specific to the evaluated checkpoint and elicitation conditions and does not establish that small language
 models generally lack accessible answer-correctness information.
 
-\todo{The rest to be written (docs/paper\_outline.md, section 5; FINDINGS \#7, \#19--\#22, \#26, \#37).}
+% D74 (X2), FINDINGS #19; results/x2/results.json; physcal/eval/x2_pairs.py (pairwise accuracy, ties 0.5); R3-7, R5-8
+% (CIs are bootstrapped over problems, never over pairs).
+\paragraph{Holding difficulty fixed.}
+A correlation between $\sigma$ and the error across problems can come from difficulty alone: a readout that knows
+which problems are hard ranks them without knowing whether a given answer is right.
+To hold difficulty fixed, we sample $k = \pv{rb.k}$ answers from the warm-up model for each of \pv{rb.candidates}
+problems and keep the \pv{rb.problems} problems that have both right and wrong answers, \pv{rb.pairs} right--wrong
+pairs in all.
+A readout's pairwise accuracy on a problem is the share of its pairs in which the right answer gets more confidence
+(ties count half); we average it over problems and bootstrap \pv{rb.cilevel} intervals over problems.
+Chance is one half.
+
+% FINDINGS #19 (X2: stated sigma, A5, the probe and its random-init control), #22 (length; D92, post-hoc), #26 (E1d
+% and X3 within problems; D102); results/x2/robustness/results.json, results/e1d_x2/results.json; Table cost;
+% Figure headline B.
+\paragraph{Single completions.}
+Every readout of a single completion's own uncertainty lies between \pv{rb.single.span}
+(Figure~\ref{fig:headline}B).
+The warm-up model's stated $\sigma$ scores \pv{rb.acc.sftsigma} and split credit's \pv{rb.acc.splitsigma}; the A5
+text baseline's probability of correctness \pv{rb.acc.afivep} and its $\sigma$ \pv{rb.acc.afivesigma}; E1d's RL
+$\sigma$ suffix \pv{rb.acc.eoned} and X3's supervised suffix \pv{rb.acc.xthreea}.
+E1d and X3 agree to the third decimal: RL with clean credit and supervised distillation of the text baseline land in
+the same place.
+Answer length alone reaches \pv{rb.acc.length}.
+A linear probe on the hidden state at the ``$\pm$'' token reaches \pv{rb.acc.probe}, but the same probe on a randomly
+initialized copy of the architecture, reading the same tokens, reaches \pv{rb.acc.randominitprobe}.
+The difference, \pv{rb.diff.probe.random}, does not exclude zero, so the probe does not show that the model represents
+its own error; nor is it distinguishable from length (\pv{rb.diff.length.probe}).
+
+% D89, D91 (X4), FINDINGS #21; results/x4/results.json.
+\paragraph{Self-verification.}
+Asked to check its own answer, the model writes a verdict on \pv{rb.xfour.verdict} of answers, and the verdict is
+``yes'' on \pv{rb.xfour.yes.correct} of the correct answers and \pv{rb.xfour.yes.incorrect} of the incorrect ones.
+Its renormalized probability of ``yes'' is slightly higher on the incorrect answers (\pv{rb.xfour.pyes.incorrect}
+against \pv{rb.xfour.pyes.correct}).
+Within problems it reaches \pv{rb.acc.xfoursft}, which is not Holm-supported (one-sided $p = \pv{rb.xfour.p}$ against
+a threshold of \pv{rb.xfour.threshold}).
+The check is short (a median of \pv{rb.xfour.tokens} generated tokens) and behaves like a test of whether the final
+line matches the steps: multiplying the final value by \pv{rb.xfour.factor} lowers $P(\text{yes})$ on right and wrong
+answers alike, and the ranking does not move (\pv{rb.xfour.perturbed}).
+Across problems it is anti-informative, with an AUROC of \pv{rb.xfour.auroc} for correctness.
+
+% FINDINGS #22 (self-consistency; D92, post-hoc exploratory; configs/x2_robustness.yaml), #26 (E1d against it), #37
+% (the cost, R5-8; results/r5_diag/cost.json); Tables cost, costmca.
+\paragraph{Sample agreement, at a cost.}
+Scoring each answer by the share of the problem's other samples that agree with it within \pv{rb.agree} gives the one
+strong within-problem signal: \pv{rb.acc.selfconsistency}, \pv{rb.diff.sc.probe} above the probe; E1d's difference
+from it is \pv{rb.diff.eoned.sc}.
+It needs the other samples.
+At \pv{rb.tokens.k} generated tokens per problem against \pv{rb.tokens.one} for one answer, it costs \pv{rb.cost.ratio}
+times the tokens (\pv{rb.seconds.k} against \pv{rb.seconds.one} GPU-seconds per problem; Table~\ref{tab:cost}), and the
+cost grows linearly with $k$.
+The same trade-off appears on A6c for MC-A's spread over re-asked, perturbed copies (Section~\ref{sec:act3}): at
+$k = \pv{rc.mca.k}$ its AUROC for a wrong answer is \pv{rc.mca.auroc}, against \pv{rc.mca.free} for the best signal
+that needs no extra generation, at \pv{rc.mca.tokens} extra tokens per problem (Table~\ref{tab:costmca}).
+
+% FINDINGS #20 (X3), #25 (E1d on the evaluation set), #26 (across the X2 answers): between-problem ranking is
+% difficulty prediction.
+\paragraph{Across problems is a different question.}
+Across all the sampled answers, E1d's and X3's $\sigma$ correlate with the error at \pv{rb.eoned.across} and
+\pv{rb.xthree.across} (on the evaluation set, \pv{ra.eoned.rho} and \pv{ra.xthree.rho}).
+Both rank which problems are hard; neither ranks the answers to one problem.
 
 \input{generated/tables/cost}
 \input{generated/tables/cost_mca}
 
 \section{Propagation of measurement noise: structure is not forecast quality}
 \label{sec:act3}
-\todo{To be written (docs/paper\_outline.md, section 6; FINDINGS \#17, \#23, \#27--\#39).}
 
+% FINDINGS #17, #23 (X1: no A6c propagation), #27 (stage B, D104, 3 seeds; results/stage_b/results.json), #28 (stage
+% C, D106), #29 (stage D, D109); R4-1 (the training data never contained the behaviour); stage_b_dpos2 comparators.
+\paragraph{Routes that did not propagate.}
+Three training routes failed before the recipe of Section~\ref{sec:dpos}.
+Supervised fine-tuning on $\sigstar$ itself (stage B, three seeds) taught the model to read the stated percentages,
+not to propagate them: its A6c slope is \pv{rc.stageb.slope}, and its expected score is below RSS
+(\pv{rc.stageb.rss}).
+$\sigma$-only RL with the predictive reward (stage C) learned to copy the smallest stated percentage, and an explicit
+propagation line trained on data without value-dependent derivatives (stage D) learned exponent templates rather than
+derivatives; both scored below RSS and X1 in their single-seed pilots.
+None of these training sets contained the behaviour.
+The text model X1 does not propagate either: its A6c slope on the frozen set is \pv{rc.xone.slope}.
+
+% D113 (the R4-1 arms), D118 / D125 (R4-3: K4, K5, K8), FINDINGS #30, #32; results/r5_diag/depth_ts.json (B-v2's
+% Theil-Sen slopes, #34); Table confirmatory.
+\paragraph{Implicit versus explicit.}
+Both arms train on the same mixed-level problems; only D-pos-v2 writes its sensitivities (Section~\ref{sec:dpos}).
+On the frozen set, the implicit arm B-v2 learns where the noise is but not how much: its A6c slope is \pv{rc.k4} (K4),
+short of C2's practical threshold of \pv{stat.practical}, and its expected score is below RSS (K8, \pv{rc.k8}).
+The explicit arm's expected score is above B-v2's (K5, \pv{rc.k5}, Holm-rejected).
+Per depth, B-v2's Theil--Sen slopes (\pv{rc.btwo.ts}) lie well below its OLS slopes (\pv{rc.btwo.ols}): a few pairs
+carry the latter.
+
+% D118, D125 (P = K1 and C2 and C3), FINDINGS #32; results/stage_r4/confirmatory/results.json and stage_b_dpos2/
+% (oracle-centred description per seed); Table confirmatory; Figure headline C.
+\paragraph{The confirmatory verdict.}
+The primary hypothesis P is \pv{rc.p.confirmed} (Table~\ref{tab:confirmatory}).
+D-pos-v2's answer $\sigma$ has an A6c slope of \pv{rc.k1} (K1, Holm-rejected; per seed \pv{rc.kone.seeds}), above C2's
+\pv{stat.practical}, and an A6b slope on computation-correct pairs of \pv{rc.cthree}, inside $\pm\pv{stat.margin}$
+(C3).
+All three of its $\sigma$ values propagate: the line's $X$ (b) at \pv{rc.k2} and the exact value from the line's own
+terms (c) at \pv{rc.k3}.
+Problem by problem, the stated $\sigma$ is close to $\sigstar$.
+Per seed, the median $|\ln(\sigma/\sigstar)|$ is \pv{rc.mal.seeds} (RSS \pv{rc.mal.rss}, X1 \pv{rc.mal.xone}), the
+slope of $\ln\sigma$ on $\ln\sigstar$ is \pv{rc.beta.seeds} (RSS \pv{rc.beta.rss}, X1 \pv{rc.beta.xone}), and $1\sigma$
+coverage is \pv{rc.cov.seeds} (\pv{rc.cov.star} for $\sigstar$ itself on the same problems).
+
+% D118 sec. 12 (the secondaries with equal prominence), D133 ("not rejected" is not equivalence; never "ties"),
+% FINDINGS #32 (K6, K7, the gap); results/r5_diag/tail.json (rss_to_star_gap).
+\paragraph{The score secondaries, with equal prominence.}
+Propagating noise does not buy a better expected score.
+Against RSS, D-pos-v2's difference is \pv{rc.k6} (K6, one-sided $p = \pv{rc.k6.p}$): not rejected, with per-seed
+estimates of both signs (\pv{rc.ksix.seeds}).
+Failure to reject is not equivalence; the interval allows a small loss or a small gain.
+Measured against the gap between RSS and $\sigstar$, D-pos-v2 closes \pv{rc.ksix.gap} of it.
+Against X1 the estimate is negative, \pv{rc.k7} (K7, $p = \pv{rc.k7.p}$).
+K7 tested whether D-pos-v2 beats X1, so we read the negative estimate descriptively only: X1 scores better.
+The learned $\sigma$ follows $\sigstar$ more closely than either heuristic and yet is not shown to forecast better than
+either; propagating the noise correctly and forecasting well are different properties.
+
+% D118 (the pre-specified depth split, outside Holm), FINDINGS #32; D137 item 4 and FINDINGS #34 (per-depth slopes are
+% fragile: report OLS and Theil-Sen); R5-8 (depth 5 is chain-length extrapolation); results/r5_diag/depth_ts.json,
+% results/r5_diag/depth5.json.
+\paragraph{Depth \pv{gen.heldoutdepth}, and fragile per-depth slopes.}
+The pre-specified depth split, outside the Holm family, locates the loss.
+At the trained depths, D-pos-v2 is ahead of RSS (\pv{rc.dfour.k6}) and not distinguishable from X1
+(\pv{rc.dfour.k7}).
+At the held-out depth \pv{gen.heldoutdepth} it is below both (\pv{rc.dfive.k6} and \pv{rc.dfive.k7}), while its A6c
+slope there is \pv{rc.dfive.kone}.
+Depth \pv{gen.heldoutdepth} is extrapolation in chain length, one more step from the same three families, not to new
+physical laws.
+Single-depth slopes are fragile, so we give OLS and Theil--Sen side by side: by depth, the seed-mean slopes are
+\pv{rc.depth.1}, \pv{rc.depth.2}, \pv{rc.depth.3}, \pv{rc.depth.4} and \pv{rc.depth.5}, and the number of pairs moved
+in the wrong direction rises from \pv{rc.rev.first} per seed at depth \pv{rc.depth.first} to \pv{rc.rev.last} of
+\pv{rc.depth.pairs} at depth \pv{gen.heldoutdepth}.
+For one and the same adapter, the depth-\pv{gen.heldoutdepth} OLS slope is \pv{rc.dfive.dev.ols} on the development
+set and \pv{rc.dfive.frozen.ols} on the frozen set, with \pv{rc.dfive.dev.rev} and \pv{rc.dfive.frozen.rev} reversed
+pairs; Theil--Sen gives \pv{rc.dfive.dev.ts} and \pv{rc.dfive.frozen.ts}.
+A few high-leverage reversed pairs decide the OLS slope, so we claim neither that the model propagates nor that it
+fails to propagate at a single depth.
+
+% R5-2 (a descriptive autopsy), D133; FINDINGS #35; results/r5_diag/tail.json; Table tail.
+\paragraph{Where the loss is: the tail.}
+The regret against $\sigstar$ is concentrated: the worst \pv{rc.tail.worst} of problems hold \pv{rc.tail.share} of
+each seed's expected-score regret (Table~\ref{tab:tail}).
+Their most common primary cause is a wrong value-dependent sensitivity: a wrong formula for the derivative
+(\pv{rc.tail.formula}), or the right formula with the model's own wrong intermediates substituted
+(\pv{rc.tail.subst}).
+Decimal shifts in copying $X$ into the answer (\pv{rc.tail.copy}) and the wrong chain (\pv{rc.tail.chain}) follow.
+The substitution errors tie the two error streams together: one wrong intermediate corrupts both $\mu$ and its
+sensitivity.
+Trimming the worst problems does not change the order of X1, D-pos-v2 and RSS.
+
+% R5-3 (a diagnostic, never a method), D133; FINDINGS #35; results/r5_diag/tail.json; Table swaps.
+\paragraph{Component swaps.}
+Replacing one component of D-pos-v2's $\sigma$ at a time with its exact value shows which one costs the score
+(Table~\ref{tab:swaps}).
+With exact sensitivities, and the model's own levels, aggregation and copy, the $\sigma$ beats RSS
+(\pv{rc.swap.s.rss}) and X1 (\pv{rc.swap.s.xone}), closes \pv{rc.swap.s.gap} of the RSS-to-$\sigstar$ gap, and its A6c
+slope rises to \pv{rc.swap.s.slope}.
+Exact levels (\pv{rc.swap.levels.gap} of the gap), exact aggregation (\pv{rc.swap.aggregation.gap}) or an exact copy
+(\pv{rc.swap.copy.gap}) close little or none of it.
+This counterfactual locates the loss; it is not a method, since no model here computes exact sensitivities.
+The swaps' slopes use every pair, with an unanswered member at the floor, so D-pos-v2's own row reads
+\pv{rc.swap.stated.slope} rather than K1's estimate on answered pairs.
+
+% R5-4 (post-hoc exploratory; bounds chosen on the development sets and frozen first, D135); FINDINGS #36;
+% results/r5_diag/fallback_confirmatory.json; Figure headline C.
+\paragraph{A post-hoc guardrail: the RSS fallback.}
+A fallback that replaces D-pos-v2's $\sigma$ by RSS whenever their ratio leaves \pv{rc.fb.bounds} (bounds chosen on
+the development sets and fixed before this single application) fires on \pv{rc.fb.rate} of problems per seed.
+It lifts the expected score above RSS (\pv{rc.fb.rss}) and X1 (\pv{rc.fb.xone}) and closes \pv{rc.fb.gap} of the gap,
+but it erases most of the measured propagation: the A6c slope falls to \pv{rc.fb.slope}.
+It is post-hoc and exploratory, it does not change K6 or K7, and a guardrail of this kind has to report both numbers.
+
+% D113 sec. 7 / R4-4 (MC-A, a pre-registered diagnostic), FINDINGS #31; D119 / D122 (MC-B), FINDINGS #33, #37;
+% results/mc_a/a6c_pairs/results.json, results/mc_b/a6c_pairs/results.json, results/r5_diag/cost.json.
+\paragraph{Two black-box routes that failed: MC-A and MC-B.}
+Executing the computation instead of predicting $\sigma$ did not help either (Section~\ref{sec:mc}).
+MC-A, which re-asks B-v2 on $k = \pv{mca.k}$ perturbed copies, does not beat RSS: the robust spread's difference is
+\pv{rc.mca.rss} (one-sided $p = \pv{rc.mca.p}$), so the pre-registered stopping rule fired and $k$ was not increased.
+The model's own arithmetic errors swamp the input noise: the same perturbations pushed through the exact chain beat
+RSS by \pv{rc.mca.oracle}, so the bound is attainable at this $k$ when the computation is exact.
+The raw spread is a better correctness signal (Section~\ref{sec:act2}), not a better $\sigma$.
+MC-B, in which the base model writes the problem's program, fails twice: \pv{rc.mcb.interface} of its programs fail at
+the interface (no program, a wrong signature, or rejected), and of the programs that run, \pv{rc.mcb.semantic} compute
+the wrong chain; \pv{rc.mcb.correct} are correct.
+None of its pre-registered tests is rejected (\pv{rc.mcb.rejected}); against RSS its expected score differs by
+\pv{rc.mcb.rss}.
+
+% The tables of this section: FINDINGS #32 (R4-3), #35 (the tail and the swaps); scripts/paper/tables.py.
 \input{generated/tables/confirmatory}
 \input{generated/tables/tail}
 \input{generated/tables/swaps}
-\input{generated/tables/llama}
+
+\section{Generalization: Jacobians outside the training range, and a second model}
+\label{sec:generalization}
+
+% D147-D149 (R5-6 part J, pre-registered; 3 seeds per arm, frozen J set), FINDINGS #39; D147 sec. 10 (the clamped
+% comparator; the subgroups are descriptive, outside Holm); D166 (R6-1: report the clamped comparator and the 43-pair
+% caveat); D148 (part U not run, the freeze); results/r5_6/results.json; Tables j, jsub.
+\paragraph{Fresh Jacobians.}
+The J set keeps trained chains and magnitudes in range, but places one given's sensitivity outside every value that
+chain had in training (Section~\ref{sec:pairs}).
+P$_J$ is \pv{rd.p.confirmed} (Table~\ref{tab:j}): D-pos-v2's J-sensitivity slope is \pv{rd.jone} (J1), and its
+J-invariance slope is \pv{rd.cthree} (C3), on \pv{rd.cthree.pairs} computation-correct pairs per seed.
+The explicit arm's slope exceeds the implicit arm's by \pv{rd.jtwo} (J2).
+Again there is no score gain: against RSS \pv{rd.jthree} (J3, \pv{rd.jthree.holm}) and against X1 \pv{rd.jfour} (J4,
+\pv{rd.jfour.holm}).
+The clamped comparator qualifies J1.
+A propagator that is exact but clips every sensitivity into its chain's training range already reaches
+\pv{rd.clamped}, so most of the set's contrast is reachable inside the training range.
+D-pos-v2 exceeds it most where the dominant given was never dominant for that chain in training (\pv{rd.flip.dpos}
+against \pv{rd.flip.clamped}; Table~\ref{tab:jsub}), but that subgroup rests on \pv{rd.flip.pairs} pairs and is
+descriptive, outside the Holm family.
+The claim is therefore narrow: propagation through Jacobians outside the training range of trained chains.
+New formulas, compositions and physics were not tested.
+
+% R5-5, D137 (the go rule), D139, D146 (the NO-GO accepted as pre-registered; item 1, the descriptive A6b slope);
+% FINDINGS #38; results/stage_xm/pilot/results.json, results/stage_xm/go_dpos2/go.json; Table llama.
+\paragraph{A second model family: an exploratory pilot that returned NO-GO.}
+We repeated both recipes on \pv{model.llama} with one seed, on the frozen A6c and A6b sets, with R4-3's criterion as a
+pre-registered go rule for running more seeds (Table~\ref{tab:llama}).
+K1 and C2 replicate: D-pos-v2's A6c slope is \pv{rd.xm.slope} on \pv{rd.xm.pairs} pairs.
+C3 cannot be measured, since only \pv{rd.xm.cthree.pairs} A6b pairs are computation-correct, so the go rule returned
+\pv{rd.xm.go} and no further seeds were run.
+We report this as a replication that failed at one seed, for that reason, with the same prominence a success would
+have had.
+Descriptively, outside the go rule, the A6b slope on all \pv{rd.xm.desc.pairs} answered pairs is \pv{rd.xm.desc}:
+inside $\pm\pv{stat.margin}$ but excluding zero, so on this model the stated relative $\sigma$ shrinks slightly as the
+target grows, where it should stay flat (\pv{model.base}'s single-seed estimate is \pv{rd.xm.qwen}).
+We claim neither scale invariance nor any other cross-model result for \pv{model.llama}.
+
+% The tables of this section: FINDINGS #39 (part J), #38 (the Llama pilot); scripts/paper/tables.py.
 \input{generated/tables/j_results}
 \input{generated/tables/j_subgroups}
+\input{generated/tables/llama}

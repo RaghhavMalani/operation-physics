@@ -13,7 +13,7 @@ from physcal.config import REPO_ROOT
 
 PAPER = REPO_ROOT / "paper"
 GEN = PAPER / "generated"
-DRAFTED = ("setup", "methods", "protocol")  # the sections drafted so far; the others are marked stubs
+DRAFTED = ("setup", "methods", "protocol", "results", "acknowledgments")  # drafted so far; the others are stubs
 
 
 def _strip_comments(tex: str) -> str:
