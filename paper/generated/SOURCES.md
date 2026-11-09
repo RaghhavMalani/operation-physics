@@ -1,6 +1,6 @@
 # Sources of the paper's generated values, tables and figures
 
-Built from commit `ff69c4ea6089` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
+Built from commit `a697f881b6ce` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
 
 ## fig_headline
 
@@ -17,7 +17,7 @@ Built from commit `ff69c4ea6089` by `scripts/paper/build.py`; every source is tr
 
 ## macros
 
-- `DECISIONS.md` @ `bbca7607a4f2`
+- `DECISIONS.md` @ `1bb01363045a`
 - `FINDINGS.md` @ `d3660390b89c`
 - `configs/base_4bit.yaml` @ `3d9d1725e751`
 - `configs/base_llama32_3b_4bit.yaml` @ `584299a76a2e`
@@ -34,6 +34,7 @@ Built from commit `ff69c4ea6089` by `scripts/paper/build.py`; every source is tr
 - `configs/sft_r4.yaml` @ `065e0c38b078`
 - `configs/stage_a.yaml` @ `00f62e8a0ad3`
 - `configs/stage_r4.yaml` @ `8fa9146fcc1c`
+- `configs/x2_robustness.yaml` @ `c7291ff675c1`
 - `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6_pairs_manifest.json` @ `a4667a2fef54`
 - `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6b_pairs_manifest.json` @ `f42552284794`
 - `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6c_pairs_manifest.json` @ `e413b9b471bf`
@@ -43,12 +44,33 @@ Built from commit `ff69c4ea6089` by `scripts/paper/build.py`; every source is tr
 - `physcal/env/formulas/dynamics.py` @ `1df5803da9d5`
 - `physcal/env/formulas/energy.py` @ `352ee72aefc0`
 - `physcal/env/formulas/kinematics.py` @ `73721bf1f2b0`
+- `results/corrected/robustness_3v3/report.json` @ `5b7f31dbb19a`
+- `results/corrected/side_by_side.json` @ `b9a8512e60fd`
+- `results/e1/pilots/pilots.json` @ `c2daacc801f0`
+- `results/e1d_x2/results.json` @ `76cbe85fed92`
 - `results/followup/scale/results.json` @ `b68d85d2fbab`
+- `results/mc_a/a6c_pairs/results.json` @ `4db218bcbb76`
+- `results/mc_b/a6c_pairs/results.json` @ `d62ebf030557`
 - `results/phase12_sft_data_r4/manifest.json` @ `f305c1b4036e`
+- `results/posthoc_calibration_4bit/posthoc_fit.json` @ `6b6c1bf10e14`
+- `results/r5_6/results.json` @ `6195c81bfe0a`
+- `results/r5_diag/cost.json` @ `364d31ae15dd`
+- `results/r5_diag/depth5.json` @ `75f5d52149ba`
+- `results/r5_diag/depth_ts.json` @ `ab365fa9134f`
+- `results/r5_diag/fallback_confirmatory.json` @ `2cc736cb35b2`
 - `results/r5_diag/tail.json` @ `d92087ff65fd`
 - `results/sigma_star_gate_final/gate.json` @ `a7d0943a955d`
 - `results/stage_a/results.json` @ `e25937f751cb`
+- `results/stage_b/results.json` @ `00758962d5bf`
+- `results/stage_r4/confirmatory/results.json` @ `dc002a81d4ba`
+- `results/stage_r4/confirmatory/stage_b_dpos2/results.json` @ `95a86e29ad9b`
 - `results/stage_r4/dpos2/seed0/summary.json` @ `dcf5e628d3e5`
+- `results/stage_xm/go_dpos2/go.json` @ `2dda03c154a5`
+- `results/stage_xm/pilot/results.json` @ `ff891cafc25d`
+- `results/x2/results.json` @ `24cb4f28b8a2`
+- `results/x2/robustness/results.json` @ `4730bb6195fc`
+- `results/x3/pilot.json` @ `c0ebb47d8317`
+- `results/x4/results.json` @ `6894fd3e7498`
 
 ## tab_confirmatory
 
