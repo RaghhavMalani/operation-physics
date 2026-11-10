@@ -35,7 +35,8 @@ def file_sha256(path: Path) -> str:
 
 
 def write_atomic(path: Path, text: str) -> None:
-    tmp = path.with_name(path.name + ".tmp")
+    """The temporary name is per process: two workers writing the same file (a fresh run's pins) cannot collide (D180)."""
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
     tmp.write_text(text)
     os.replace(tmp, path)
 

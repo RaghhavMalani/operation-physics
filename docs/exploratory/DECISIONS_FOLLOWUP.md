@@ -1790,4 +1790,8 @@ appended here.
     must.
 - **The Kaggle checks D177 left open** (version 2's Output tab, the versions' status badges, the GPU quota) are still to
   come from you. Session 1 needs about 10 h of quota left (§10 of `kaggle_instructions.md`).
+- **A race the new two-process test found (fixed before the re-pin):** `write_atomic` used one temporary name per
+  file, so two processes creating a fresh run directory at the same moment both wrote `run.json.tmp`, and the second
+  rename failed. On Kaggle the driver creates the run before it launches workers, so it could not fire there, but the
+  temporary name is now per process.
 - **Errata:** commit `4425478` (paper #1) says "887 passed"; the suite printed 888 passed.
