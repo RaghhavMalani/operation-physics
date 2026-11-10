@@ -26,10 +26,9 @@ them. For an arXiv upload, keep the `.bbl` (`tectonic --keep-intermediates main.
 - **No number is typed into the drafted sections** (`tests/test_paper.py` checks it). Every claim cites a FINDINGS
   number or a D-entry in a LaTeX comment.
 
-## Status (2026-11-09)
+## Status (2026-11-10)
 
-- **Drafted:** Setup (§3), Methods (§4), Evaluation protocol (§5), the results (§6 optimization, §7 within-problem
-  correctness signals, §8 propagation of measurement noise, §9 generalization; D178), Acknowledgments, and one
-  exploratory paragraph in Limitations (D166).
-- **Stubs:** the abstract, Introduction, Related work (references to be verified first, R5-10), Discussion, the rest
-  of Limitations, appendices.
+- **Drafted:** the abstract and every section (D150, D166, D178, D179), except the appendices (the pre-registration
+  ledger and reproducibility), which are still stubs.
+- **References:** each checked against its arXiv / Crossref / venue record in `REFERENCES_CHECK.md` (D179). Add a
+  reference only after checking it there.

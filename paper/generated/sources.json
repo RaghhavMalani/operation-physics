@@ -13,7 +13,7 @@
    "scripts/figures/headline.py": "1c607f96235d"
   },
   "macros": {
-   "DECISIONS.md": "1bb01363045a",
+   "DECISIONS.md": "5fa0ee5fe351",
    "FINDINGS.md": "d3660390b89c",
    "configs/base_4bit.yaml": "3d9d1725e751",
    "configs/base_llama32_3b_4bit.yaml": "584299a76a2e",
@@ -138,13 +138,13 @@
    "results/r5_diag/tail.json": "d92087ff65fd"
   }
  },
- "commit": "a697f881b6ce8dd4d0ec7e7b2dc437c38eee4979",
+ "commit": "288fb1458911a5e12c9f01c58c94f86533380ee9",
  "figures": [
   "headline.png",
   "headline.pdf",
   "headline_data.json"
  ],
- "n_macros": 305,
+ "n_macros": 311,
  "tables": [
   "confirmatory",
   "cost",
