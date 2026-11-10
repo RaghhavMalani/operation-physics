@@ -1794,4 +1794,6 @@ appended here.
   file, so two processes creating a fresh run directory at the same moment both wrote `run.json.tmp`, and the second
   rename failed. On Kaggle the driver creates the run before it launches workers, so it could not fire there, but the
   temporary name is now per process.
+- **The notebooks pin `4cdd62c6e333`,** which holds this entry's code and the fix above. The run steps are in
+  `kaggle_instructions.md` §10.
 - **Errata:** commit `4425478` (paper #1) says "887 passed"; the suite printed 888 passed.

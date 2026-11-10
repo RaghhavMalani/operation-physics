@@ -203,7 +203,7 @@ are plumbing, never results.
    `results/followup/r6_6a/smoke/smoke/rates.json`, record the measured rates in a D-entry, and re-pin if sizing changes. If
    the rates need more than 2 sessions, the choice comes to you before any run.
 
-**Do not start `notebooks/kaggle_r6_6a.ipynb` yet.** It waits for this session's answers and your go.
+**The full run is §10** (D180). The smoke above is done (D177).
 
 **If something goes wrong:**
 
@@ -214,6 +214,73 @@ are plumbing, never results.
 | `CUDA out of memory` | a batch budget is too large for a T4 | carry on from step 4 and tell me; budgets may change (D175) |
 | `this run was started with other pins` | the attached output is from another commit | attach the output of this notebook's version 1 only |
 | `attach one version only` | two versions are attached | remove one input |
+
+## 10. R6-6a, the full run (D175, D180): three sessions of ~9 h, one after another
+
+**What it is.** D175's design unchanged, with D180's scheduler: a free GPU takes the next run. Each session stops itself by
+9.5 h, saves its chunks to the Output tab, and the next session resumes from them. D177's rates give three sessions:
+
+| session | what it should do | ends at |
+|---|---|---|
+| 1 | setup; S1 sampling (~4 h); S2 reading (~1 h); S3 teachers (CPU) while both GPUs train B_0, B_1, B_2 | ~8.5 h |
+| 2 | C, D, E (seven runs, ~2 h each, both GPUs) | ~9 h |
+| 3 | the last runs if any, S5 scoring (~8 h of GPU work over 2 GPUs), S6 analysis, the zip | ~6–9.6 h |
+
+In all, ~24–25 h of GPU quota (a T4 x2 session counts its wall time once).
+
+**Before session 1: three checks, then tell me the answers** (they need no quota):
+1. **Smoke version 2's Output tab:** is the `r6_6a_smoke` folder there, or only the zip?
+2. **The status badges** of smoke versions 1 and 2: both **Error**, or something else?
+3. **Your GPU quota** (kaggle.com → your profile → **Settings**, or the editor's right panel): hours used, hours left, and
+   when it resets.
+
+**Plan it around the quota.** Start a session only with **at least 10 h left**: a session can take 9.5 h plus ~15 min of
+setup and packing. If fewer than 10 h are left, wait for the reset. The three sessions can span a reset; a later session
+needs only the earlier version's output, which does not expire with the quota.
+
+### Session 1
+
+1. **A new notebook:** §2 with `notebooks/kaggle_r6_6a.ipynb` (pinned to `4cdd62c6e333`); name it e.g. `physcal-r6-6a`.
+2. **Settings:** §3 (**GPU T4 x2**, **Internet On**). **No input attached:** session 1 starts fresh.
+3. **Run:** §4 (**Save Version** → **Save & Run All (Commit)**). In **Advanced Settings**, choose **Always save output for
+   this version**. You can close the browser: it runs in the background.
+4. **What the log should show, in order:**
+   - the GPU line, then `repo 4cdd62c… | mode full | driver …`;
+   - `restore: no previous run under /kaggle/input`, then the weights' sha256 check;
+   - sampling for ~4 h, then `S1: … samples, … answered`;
+   - `s2_read: part_…` lines for ~1 h;
+   - then the teachers and arm B together: `s4_train: … step n/375: loss …` from both GPUs, `s4_train: B_0.pt in … s`;
+   - `s4_train: … chunks wait for an earlier stage` (C, D and E waiting for the teachers), then
+     `… would end after the deadline; stopping here`;
+   - `STATUS: {… "stopped_at": "s4_train" …}`. **This is the expected end of session 1**, at ~8.5 h. The version should
+     show **Complete**, not Error.
+5. **After it ends:** open the version's **Output** tab. The `r6_6a` folder should be there with `s1_sample`, `s2_read`,
+   `s3_teachers` and `s4_train` (three `B_*.pt` files). **Download `r6_6a_results.zip`** as a backup (partial: samples and
+   status only).
+6. **Tell me:** the `STATUS` line, the session's run time, and the quota it used. I check the status and the rates before
+   you start session 2.
+
+### Session 2 and 3 (after I have read session 1)
+
+Open the same notebook → **Edit** → right panel → **Input** → **+ Add Input** → **Your Work** → this notebook → **the
+latest version** → **Add**, then remove any older version from the inputs, and **Save & Run All (Commit)** with the same
+Advanced Setting. The log should show `restore: … files from …` and `{"chunks_checked": …}` before any new chunk. Session 3
+ends with `S6: results.json written` and `stopped_at: null`; bring its zip back as in §7:
+
+```bash
+uv run python -m physcal.eval.r6_6a ingest --mode full --zip ~/kaggle_downloads/r6_6a_results.zip
+```
+
+**If something goes wrong:**
+
+| what you see | what it means | what to do |
+|---|---|---|
+| the version shows **Error** or stops well before 8 h | a crash | download the zip if there is one, and tell me before session 2 |
+| `chunks wait for an earlier stage that will not finish` early in the session | the teachers (S3) stopped | tell me; the next session resumes S3 |
+| `STOP RULE: non-finite …` | fp16 overflow in a run | tell me; it is a finding, and the other runs continue |
+| `this run was started with other pins` | the attached output is from another commit | attach only this notebook's latest version |
+| `attach one version only` | two versions are attached | remove the older one |
+| `STALL` then a retry | D157's automatic retry | nothing |
 
 ## Troubleshooting
 
