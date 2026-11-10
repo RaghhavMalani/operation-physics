@@ -314,6 +314,7 @@ def _act2(S: Sources, add) -> None:
     rob = S.json(A_, rel)
     m = {k: v["pairwise_accuracy"] for k, v in rob["methods"].items()}
     add("rb.cilevel", _level("ci95"), f"{rel} methods.*.pairwise_accuracy.ci95")
+    add("rb.sc.v", num(m["self_consistency"]["pairwise_accuracy"]), f"{rel} methods.self_consistency (point; D179)")
     xr = S.yaml(A_, "configs/x2_robustness.yaml")
     add("rb.agree", _lv(xr["self_consistency"]["agree_tolerance"]), "configs/x2_robustness.yaml self_consistency.agree_tolerance")
     acc = lambda d: f"{num(d['pairwise_accuracy'])} {ci(*d['ci95'], sign=False)}"
@@ -378,6 +379,7 @@ def _act3(S: Sources, add) -> None:
     t = r["main"]["tests"]
     for k in ("K1", "K2", "K3", "K4"):
         add(f"rc.{k.lower()}", _est(t[k]), f"{rel} main.tests.{k} (ci90)")
+    add("rc.k1.v", num(t["K1"]["value"], 2, True), f"{rel} main.tests.K1.value (the point estimate, for the abstract; D179)")
     for k in ("K5", "K6", "K7", "K8"):
         add(f"rc.{k.lower()}", _est(t[k], nd=4), f"{rel} main.tests.{k} (ci90)")
         add(f"rc.{k.lower()}.p", pval(t[k]["p_one_sided"]), f"{rel} main.tests.{k}.p_one_sided")
@@ -417,6 +419,7 @@ def _act3(S: Sources, add) -> None:
     lo, hi = (x / gap for x in k6["ci90"])
     add("rc.ksix.gap", f"{pct(k6['value'] / gap, 0)} [{_level('ci90')} CI {pct(lo, 0)}, {pct(hi, 0)}]",
         f"{rel} rss_to_star_gap; confirmatory K6 value and ci90 over the gap")
+    add("rc.ksix.gap.v", pct(k6["value"] / gap, 0), f"{rel} rss_to_star_gap; K6 value over the gap (point; D179)")
     # the tail autopsy (R5-2) and the component swaps (R5-3)
     ps = tl["per_seed"]
     add("rc.tail.worst", pct(next(iter(ps.values()))["n_worst"] / tl["n_problems"], 0), f"{rel} per_seed.*.n_worst / n_problems")
@@ -467,6 +470,7 @@ def _act3(S: Sources, add) -> None:
     add("rc.fb.xone", _est(fb["minus_x1"], nd=4), f"{rel} minus_x1")
     add("rc.fb.gap", pct(fb["share_of_rss_to_star_gap"], 0), f"{rel} share_of_rss_to_star_gap")
     add("rc.fb.slope", _est(fb["a6c_slope"]), f"{rel} a6c_slope")
+    add("rc.fb.slope.v", num(fb["a6c_slope"]["value"], 2, True), f"{rel} a6c_slope.value (point; D179)")
     # MC-A (R4-4; FINDINGS #31) and MC-B (D119 / D122; FINDINGS #33, #37)
     rel = "results/mc_a/a6c_pairs/results.json"
     ma = S.json(A_, rel)
@@ -506,6 +510,9 @@ def _generalization(S: Sources, add) -> None:
     m = r["main"]
     cr = m["criteria"]["dpos2_a"]
     add("rd.jone", _est(cr["a6c"]), f"{rel} main.criteria.dpos2_a.a6c (J1)")
+    add("rd.jone.v", num(cr["a6c"]["value"], 2, True), f"{rel} main.criteria.dpos2_a.a6c.value (point; D179)")
+    add("rd.clamped.v", num(m["comparators"]["clamped"]["sensitivity"]["value"], 2, True),
+        f"{rel} main.comparators.clamped.sensitivity.value (point; D179)")
     add("rd.cthree", _est(cr["a6b"]), f"{rel} main.criteria.dpos2_a.a6b (C3)")
     add("rd.cthree.pairs", _span([v["n_pairs"] for v in cr["a6b"]["per_seed"].values()], integer), f"{rel} criteria.dpos2_a.a6b.per_seed.n_pairs")
     add("rd.p.confirmed", "confirmed" if r["primary"]["confirmed"] else "not confirmed", f"{rel} primary.confirmed")

@@ -5662,3 +5662,31 @@ The follow-up log holds D151–D165 (the numbering is shared, D156), so the next
   appendices.
 - **Unchanged:** D148's experiment freeze (nothing was run), FINDINGS.md, every generated table. The log's entry count
   in `protocol.tex` rises by one.
+
+### D179. Paper #1's Introduction, Related work, Discussion, Limitations and abstract are drafted under D150's rules; every reference is checked against its record (your instruction, 2026-11-10; R5-10)
+- **What is drafted** (all now in `tests/test_paper.py`'s drafted list; only the appendices remain stubs):
+  - **Introduction (§1):** the problem (a stated uncertainty honest per problem; a post-hoc scale as the baseline), the
+    testbed, the three acts with R6-1's verbatim wording for act 2, the central message (R5-1), and four narrow
+    contributions. It follows the claims-to-avoid table: the cost beside self-consistency, the clamped comparator
+    beside J1, "not shown to beat" for K6, CRPS rewards credited to DAR, the NO-GO pilot named.
+  - **Related work (§2):** calibration and verbalized confidence; RL with proper scoring rules (RLCR, Rewarding Doubt,
+    the confidence-prior paper, DAR); sampling, self-verification (Huang et al.) and program-aided reasoning (PAL, PoT);
+    JCGM 101 and Gneiting & Raftery.
+  - **Discussion (§10):** structure vs forecast; the two error streams; why sampling helps here (R6-1's scoped claim and
+    D165's alternative explanations); credit assignment for σ tokens; what would close the gap.
+  - **Limitations (§11):** one model family and scale (the Llama pilot exploratory, NO-GO); a synthetic domain; single-
+    seed and post-hoc results; what was not run (family H, D141; the finance metrics, R5-7); D166's exploratory
+    paragraph unchanged.
+  - **Abstract** (216 words), written last, from the final sections (`paper/sections/abstract.tex`).
+- **References (`paper/REFERENCES_CHECK.md`):** each checked in this session against the arXiv API record, Crossref or
+  the venue page, with title, authors, year and venue recorded.
+  - **Venues not in the arXiv record were opened:** RLCR and Rewarding Doubt on the ICLR 2026 pages.
+  - **One correction:** DeepSeekMath's entry lacked two of its 11 authors (Xiao Bi, Haowei Zhang).
+  - **Content:** every sentence describing a paper was written from its abstract, read in the session. DAR's reward was
+    confirmed as a leave-one-out empirical CRPS in its arXiv HTML.
+  - **Cited as preprints:** Groot & Valdenegro-Toro (its workshop venue is only "to appear" in the arXiv comment),
+    Kadavath et al., the confidence-prior paper, FermiEval, QuantSightBench and DAR.
+  - **Not cited, because not checked:** CARE-PPO, Turtel et al., Dr.GRPO / DAPO, and the four R4-9 references.
+- **New values:** six point estimates for the abstract and Introduction (`rc.k1.v`, `rc.ksix.gap.v`, `rc.fb.slope.v`,
+  `rb.sc.v`, `rd.jone.v`, `rd.clamped.v`), read from the same sources as their interval versions.
+- **Unchanged:** D148's experiment freeze (nothing was run), FINDINGS.md and every generated table.

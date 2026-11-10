@@ -1,10 +1,115 @@
-% Sections: Discussion and Limitations. NOT drafted yet (docs/paper_outline.md sections 7-8).
+% Sections: Discussion and Limitations (drafted 2026-11-10, D179; docs/paper_outline.md sections 7-8). Every claim
+% cites its source in a comment; every number is \pv{...}.
 \section{Discussion}
 \label{sec:discussion}
-\todo{To be written (docs/paper\_outline.md, section 7).}
+
+% R5-1 (the central tension), D118 sec. 12, FINDINGS #32 (vol beta per seed, K6, K7), #35 (the tail), #36 (the
+% fallback: post-hoc exploratory).
+\paragraph{Structure is not forecast quality.}
+The propagation result and the score result describe the same model.
+Problem by problem, D-pos-v2's $\sigma$ follows $\sigstar$ closely (the slope of $\ln\sigma$ on $\ln\sigstar$ is
+\pv{rc.beta.seeds} per seed) and moves with the source of the noise on fresh problems.
+Yet its expected score is not shown to beat RSS, a heuristic that ignores the values altogether, and X1 scores better
+descriptively.
+Both hold because the score is dominated by a tail: the worst \pv{rc.tail.worst} of problems carry \pv{rc.tail.share}
+of the regret.
+A $\sigma$ that is right on most problems and badly wrong on a few can lose to one that is moderately wrong everywhere.
+The RSS fallback shows the trade directly: it buys the score, closing \pv{rc.fb.gap} of the gap to $\sigstar$, by
+giving up most of the measured propagation (slope \pv{rc.fb.slope.v}).
+Evaluations of stated uncertainty should therefore report a structural test (does $\sigma$ move with the true
+uncertainty?) and a forecast score (does $\sigma$ beat simple references?) side by side; either alone would have told
+a different story here.
+
+% FINDINGS #35 (R5-3: the component swaps; R5-2: substitution of the model's own wrong intermediates), D133.
+\paragraph{Two error streams.}
+Measurement noise is handled once the structure is right.
+In the component swaps, making the levels or the copy exact changes little (\pv{rc.swap.levels.gap} and
+\pv{rc.swap.copy.gap} of the gap), and making the aggregation exact scores worse (\pv{rc.swap.aggregation.gap}),
+because on a few lines the model's own aggregate pulls an absurd root sum of squares back to a plausible size.
+The structure of the propagation (reading the levels, the root sum of squares, the copy into the answer) is right.
+What costs the forecast is reasoning error in the derivatives of value-dependent relations; exact sensitivities alone
+close \pv{rc.swap.s.gap}.
+The two streams are not independent.
+The same wrong intermediate corrupts both $\mu$ and its sensitivity, so a problem the model gets wrong tends also to be
+a problem whose $\sigma$ it gets wrong.
+
+% R6-1 (D166) and the round-6 synthesis (D165): the scoped claim and the alternative explanations; FINDINGS #19, #22,
+% #37.
+\paragraph{Why sampling helps here and single readouts do not.}
+On the fine-tuned model and its terse format, the tested single-completion signals (the stated $\sigma$, a linear
+hidden-state probe, the model's own verdict) provide little within-problem discrimination, while agreement among
+samples provides stronger discrimination at \pv{rb.cost.ratio} times the tokens.
+A likely mechanism is that right answers cluster and wrong ones scatter, which only several samples can reveal.
+This does not show that the information is absent from the model.
+It may have been lost in fine-tuning, displaced to other tokens or layers, be present but not linearly readable, or be
+inferable only from a fuller text than the terse format provides.
+The exploratory comparison in Section~\ref{sec:limitations} is compatible with some of these explanations and settles
+none of them.
+
+% FINDINGS #6, #16, #18 (credit assignment), #25 (E1d: exploratory, frozen-answer setting, R5-7).
+\paragraph{Credit assignment for the tokens of $\sigma$.}
+A proper scoring rule was necessary but not sufficient.
+With sequence-level credit the tokens of $\sigma$ were rewarded for the answer, and the policy collapsed.
+Separating their credit prevented the collapse but did not teach ranking at the learning rate tested; a larger learning
+rate with the answer held fixed taught ranking between problems, though not within them, in a single-seed pilot.
+Whether that carries over to joint training of the answer and $\sigma$ is open.
+
+% FINDINGS #35 (the exact-sensitivity counterfactual), #36 (fallbacks trade propagation away), #31 (MC-A's oracle),
+% #33, #37 (MC-B's interface and semantic failures); docs/paper_outline.md sec. 7 (the executor sequence).
+\paragraph{What would close the gap.}
+Exact sensitivities, not a fallback, improve both numbers at once: the $\sigma$ beats RSS and X1, and its slope rises
+towards one.
+Two routes lead there: better derivatives from the model, or an executor that computes the chain.
+MC-A's oracle shows that the bound is reachable when the computation is exact, and MC-B shows what stands in the way:
+first the interface, then the semantics of the program.
+An executor would need semantic validity first, then tests of its execution, then sampling of its inputs; we leave it
+to future work.
 
 \section{Limitations}
 \label{sec:limitations}
+
+% R5-5, D137, D146 (the NO-GO; the descriptive A6b slope, D146 item 1); FINDINGS #38; CLAUDE.md hard constraints (one
+% laptop GPU).
+\paragraph{One model family, one scale.}
+Every confirmatory result is on \pv{model.bits}-bit \pv{model.base} with LoRA adapters, trained on a single laptop
+GPU.
+The replication on \pv{model.llama} is an exploratory single-seed pilot whose pre-registered go rule returned
+\pv{rd.xm.go}: its invariance control could not be measured (\pv{rd.xm.cthree.pairs} computation-correct pairs), and
+its descriptive invariance slope, \pv{rd.xm.desc}, excludes zero.
+We make no cross-model claim, and none about larger models.
+
+% R5-7 (optics cut), R5-8 (depth 5), D148 (the freeze; part U not run), D54 (the noise cap), D112 (A6c is
+% in-distribution for the R4 arms), FINDINGS #34, #39.
+\paragraph{A synthetic domain.}
+The problems come from \pv{gen.nfamilies} formula families of mechanics; a planned held-out optics family was cut.
+Depth \pv{gen.heldoutdepth} is extrapolation in chain length within the same families.
+Part J moves the Jacobians of trained chains, not formulas, compositions or physics; the test on unseen compositions
+was not run before the experiment freeze.
+Measurement noise is relative Gaussian noise on each given, at most \pv{gen.maxlevel}, and the problem text states its
+level; real measurements and real word problems are less tidy.
+The A6c construction is in-distribution for the arms trained on mixed-level data, and estimates on the development
+and frozen sets differ at single depths.
+
+% docs/paper_outline.md sec. 8 (seeds); R5-7 (E1d exploratory); D92 (X2 robustness, post-hoc); D133 (R5-2 to R5-4).
+\paragraph{Single-seed and post-hoc results.}
+Several results rest on one seed and are exploratory: E1 and its learning-rate pilots, the supervised $\sigma$ student
+(X3), stages C and D, the first mixed-level pilot and the cross-model pilot.
+The comparisons with three seeds per arm (split and uniform credit, stage B, R4-3 and part J) support conclusions about
+these seeds, not seed-level significance.
+The self-consistency comparison, the tail autopsy, the component swaps and the RSS fallback were analysed post hoc,
+and are labelled where they appear.
+
+% docs/paper_outline.md sec. 8 (statistics; not run); D141 (family H not run: the model it was written for was never
+% built); R5-7 (Kelly and finance metrics cut).
+\paragraph{Statistics and what was not run.}
+Within-problem tests use answers sampled at $T = 1$ from the warm-up model, while the $\sigma$ suffixes were trained on
+greedy prefixes.
+X1's score difference from RSS has no committed confidence interval.
+The originally pre-registered hypotheses on an RL-trained stated-$\sigma$ model with a depth and noise curriculum
+(conditional calibration against post-hoc and conformal correction, decision value, stress tests) were not run,
+because that model was never built; the pre-registration ledger lists them as not run.
+Betting and other finance metrics were cut.
+
 % R6-1 (D166): one explicitly exploratory paragraph on a comparison made after this paper's experiments were frozen
 % (D148): the follow-up track's item 3 (D157-D162; results/followup/scale/results.json). The 7B numbers are reserved
 % for a separate paper.
@@ -18,6 +123,3 @@ Between it and the untrained \pv{post.model.large}, the model's own verbalized v
 larger size, while we observed no improvement in this probe metric between the two sizes under these conditions.
 The conditions are not matched (response format, training, decoding, sampler and problems all differ), so this is not
 evidence about what fine-tuning does to the model; it motivates a separate investigation.
-
-\todo{To be written (docs/paper\_outline.md, section 8): one model family; a synthetic domain; single-seed pilots;
-fresh Jacobians only (D148); the Llama pilot's descriptive invariance slope.}

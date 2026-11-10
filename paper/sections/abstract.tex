@@ -1,0 +1,19 @@
+% Abstract (drafted 2026-11-10, last, from the final sections; D179). FINDINGS #16, #18 (act 1), R6-1 / D166 and
+% #19, #22, #37 (act 2, the scoped wording), #32, #35 (act 3), #38 (the NO-GO pilot); R5-1 (the central message).
+A numerical answer with a stated uncertainty is useful only if the uncertainty is honest problem by problem.
+We study this with a generator of multi-step physics problems that knows each problem's true uncertainty $\sigstar$,
+sets measurement noise independently of chain depth, and builds counterfactual pairs that separate propagation from
+surface reading.
+Training \pv{model.base} against a proper scoring rule, we find three things.
+First, with sequence-level credit the stated $\sigma$ collapses; giving its tokens their own advantage raises
+$1\sigma$ coverage from \pv{ra.cov.uniform} to \pv{ra.cov.split}, but $\sigma$ still does not rank errors.
+Second, on the fine-tuned model and its terse format, the tested single-completion signals (stated $\sigma$, a
+hidden-state probe, self-verification) provide little within-problem discrimination between correct and incorrect
+answers; agreement among samples discriminates better, at \pv{rb.cost.ratio} times the tokens.
+Third, trained on visible sensitivity derivations, the model states a $\sigma$ that propagates measurement noise on
+fresh problems in a pre-registered test (slope \pv{rc.k1.v}, ideal one), yet its expected score is not shown to beat a
+root-sum-square heuristic: it closes \pv{rc.ksix.gap.v} of the gap to $\sigstar$, and the loss lies in derivatives of
+value-dependent relations.
+Learning how uncertainty propagates is not the same as forecasting it well.
+Results are for one small model on a synthetic benchmark; an exploratory replication on a second model family returned
+NO-GO.

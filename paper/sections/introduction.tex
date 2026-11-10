@@ -1,5 +1,81 @@
-% Section: Introduction. NOT drafted yet (docs/paper_outline.md sec. 1; R5-1 framing).
+% Section: Introduction (drafted 2026-11-10, D179; docs/paper_outline.md sec. 1; R5-1 framing). Every claim cites its
+% source in a comment; every number is \pv{...}.
 \section{Introduction}
 \label{sec:intro}
-\todo{To be written. Outline: the question; why a benchmark with known $\sigstar$; the three findings, one per panel
-of Figure~\ref{fig:headline}; contributions stated narrowly (docs/paper\_outline.md, section 1).}
+
+% CLAUDE.md research framing ("where should an LLM's numeric uncertainty come from, and can RL teach a single stated
+% sigma that tracks the true uncertainty problem by problem?"); D49, D50 (pooled coverage can be met by an
+% uninformative sigma; the post-hoc scale is the standing baseline, Phase 9.5 step 1).
+A language model that answers a numerical question can also state how uncertain the answer is, writing
+``$\mu \pm \sigma$'' with a unit.
+Such a statement is useful only if it is honest problem by problem: wide when the answer is likely to be wrong or the
+inputs are noisy, narrow when neither holds.
+Pooled calibration does not establish this.
+A single scale factor applied after training can bring a model's intervals to nominal coverage on average while
+saying nothing about which problems are uncertain, so we treat such a factor as a baseline that every learned
+uncertainty must beat.
+We ask where a model's numeric uncertainty should come from, and whether training can make one stated $\sigma$ track
+the true uncertainty of each problem.
+
+% CLAUDE.md research framing (sigma* known per problem; noise dialled independently of depth); D51, D54, D57
+% (generator 2.0.0, the gate); D58, D59, D95, D147 (the pair sets); FINDINGS #12, #23.
+Answering that needs problems whose correct uncertainty is known one by one, which real datasets do not provide.
+We build a procedural generator of multi-step physics problems (\pv{gen.nfamilies} formula families, chains of up to
+\pv{gen.maxdepth} steps) in which each given can carry stated measurement noise of up to \pv{gen.maxlevel}.
+The generator computes each problem's true predictive uncertainty $\sigstar$ by Monte Carlo through the chain, and it
+sets the noise independently of the chain's depth.
+A problem's error then has two separable sources: a mistake in the reasoning, which makes the answer wrong whatever
+the inputs, and noise in the givens, whose effect $\sigstar$ describes exactly.
+Counterfactual pairs of problems isolate the second.
+Within a pair, the displayed values and the multiset of noise levels are identical and only the given carrying the
+high level changes, so a reader of surface features cannot move its $\sigma$, while an exact propagator moves it by the
+change in $\ln\sigstar$.
+
+% docs/paper_outline.md sec. 1 (three findings, one per panel); FINDINGS #6, #16, #18 (act 1); R6-1 / D166, FINDINGS
+% #19, #22, #37 (act 2, the scoped wording); FINDINGS #32, #35, #36, #39 (act 3).
+We train \pv{model.base} with supervised fine-tuning and reinforcement learning against a proper scoring rule, and
+report three findings, one per panel of Figure~\ref{fig:headline}.
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Optimization (Section~\ref{sec:act1}).} With sequence-level credit, a proper scoring rule did not stop
+  the stated $\sigma$ from collapsing towards zero. Giving the tokens of $\sigma$ their own advantage raises $1\sigma$
+  coverage from \pv{ra.cov.uniform} to \pv{ra.cov.split}, but the wider $\sigma$ still does not rank errors.
+  \item \textbf{Within-problem correctness signals (Section~\ref{sec:act2}).} On the fine-tuned \pv{model.base} model
+  and its terse response format, the tested single-completion uncertainty signals provide little within-problem
+  discrimination between correct and incorrect answers; sample agreement provides stronger discrimination, at
+  \pv{rb.cost.ratio} times the tokens of one answer. This is specific to the evaluated checkpoint and elicitation
+  conditions and does not establish that small language models generally lack accessible answer-correctness
+  information.
+  \item \textbf{Propagation of measurement noise (Sections~\ref{sec:act3} and~\ref{sec:generalization}).} Trained on
+  visible sensitivity derivations, the model states a $\sigma$ that propagates measurement noise on fresh problems
+  (a noise-allocation slope of \pv{rc.k1.v} against an ideal of one), and through Jacobians outside the training
+  range of trained chains (\pv{rd.jone.v}, although a propagator clamped to the training range already reaches
+  \pv{rd.clamped.v}). Yet its expected score is not shown to beat the root-sum-square heuristic: it closes
+  \pv{rc.ksix.gap.v} of the gap between that heuristic and $\sigstar$. The loss sits in derivatives of value-dependent
+  relations.
+\end{enumerate}
+
+% R5-1 (the central message; equal prominence for D-pos-v2's confirmed propagation and its unsupported score
+% secondaries); D118 sec. 12; FINDINGS #32.
+The central message is a tension: learning how uncertainty should propagate is not the same as forecasting it well.
+The confirmed propagation result and the unsupported score comparisons come from the same pre-registered run, and we
+report them with equal prominence.
+
+% docs/paper_outline.md sec. 1 (contributions, stated narrowly) and its claims-to-avoid table; CLAUDE.md prior work
+% (CRPS as an RL reward is not new; silent GRPO groups are known); R5-5, D146 (the cross-model pilot is a NO-GO).
+Our contributions are narrow:
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item a benchmark of physics problems with a known per-problem $\sigstar$, measurement noise set independently of
+  depth, and counterfactual pair sets that separate propagation from surface reading (Section~\ref{sec:setup});
+  \item an experimental separation of reasoning errors from measurement noise, with a within-problem test that holds
+  difficulty fixed (Sections~\ref{sec:act2} and~\ref{sec:act3});
+  \item the gap between propagation and forecast quality, located by a tail autopsy and by exact-component swaps
+  (Section~\ref{sec:act3});
+  \item a pre-registered protocol with a dated public decision log, in which amendments are labelled and negative
+  results are reported with the same prominence as positive ones (Section~\ref{sec:protocol}).
+\end{itemize}
+Scoring a continuous answer with a CRPS reward is not new~\citep{park2026dar}, and agreement among samples is a known
+confidence signal~\citep{wang2023selfconsistency}; what is new here is a single stated $\sigma$ evaluated against a
+known $\sigstar$.
+Every claim is scoped to \pv{model.bits}-bit \pv{model.base} with LoRA, this synthetic benchmark and these training
+procedures; an exploratory one-seed replication on a second model family returned NO-GO
+(Section~\ref{sec:generalization}).

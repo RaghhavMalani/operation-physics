@@ -1,5 +1,59 @@
-% Section: Related work. NOT drafted yet (docs/paper_outline.md sec. 2). Every reference is verified before it is
-% cited (R5-10, R4-9).
+% Section: Related work (drafted 2026-11-10, D179; docs/paper_outline.md sec. 2). Every reference was checked against
+% its arXiv / Crossref / venue record in this session: paper/REFERENCES_CHECK.md (R5-10, R4-9). References the outline
+% lists but that were not checked are not cited.
 \section{Related work}
 \label{sec:related}
-\todo{To be written after the references in docs/paper\_outline.md, section 2, are verified (R5-10).}
+
+% D179 (checked references: kadavath2022know, tian2023justask, xiong2024express, groot2024overconfidence,
+% epstein2025fermieval, qin2026quantsight; their arXiv abstracts); CLAUDE.md prior work.
+\paragraph{Calibration and verbalized confidence.}
+Language models can estimate whether their own answers are correct, for example by stating the probability that a
+proposed answer is true~\citep{kadavath2022know}.
+For models fine-tuned with human feedback, confidences stated in words are often better calibrated than the model's
+token probabilities~\citep{tian2023justask}, but stated confidences tend to be overconfident, and consistency among
+several sampled answers can help~\citep{xiong2024express}.
+Language and vision-language models are mostly overconfident when they verbalize uncertainty, and vision-language
+models are poorly calibrated when they state a mean and standard deviation or an interval for a numerical
+answer~\citep{groot2024overconfidence}.
+Intervals that models construct around their own numerical estimates cover the truth far less often than their
+nominal level~\citep{epstein2025fermieval}, including in quantitative forecasting~\citep{qin2026quantsight}.
+These works evaluate pooled calibration against outcomes; because the right uncertainty of each question is unknown,
+they cannot test whether a stated interval tracks it.
+Our generator knows each problem's $\sigstar$, so we can ask that per problem, and our pair sets ask whether $\sigma$
+moves when only the source of noise moves.
+
+% D179 (damani2026rlcr, baniharouni2026doubt, wang2026pitfalls, park2026dar; checked); CLAUDE.md prior work (CRPS
+% as an RL reward is not new; DAR's uncertainty is rollout spread); FINDINGS #6, #16 (our sigma collapse).
+\paragraph{Reinforcement learning with proper scoring rules.}
+RLCR adds a Brier score on a stated confidence to a binary correctness reward, and proves that a bounded proper
+scoring rule in the reward yields answers that are both accurate and calibrated~\citep{damani2026rlcr}.
+Rewarding Doubt trains a stated confidence on factual questions with the logarithmic scoring
+rule~\citep{baniharouni2026doubt}.
+Both target the probability that an answer is correct, not a distribution over a continuous quantity.
+Confidence-aware RL is limited by the model's confidence prior before RL, which can concentrate on a few high values and
+persist through training~\citep{wang2026pitfalls}; under sequence-level credit we observe a related failure, a stated
+$\sigma$ collapsing towards zero (Section~\ref{sec:act1}).
+For LLM regression, DAR scores the empirical distribution of several sampled predictions and credits each prediction
+by its leave-one-out contribution~\citep{park2026dar}.
+A CRPS-type reward is therefore not our contribution: in DAR the uncertainty is the spread of rollouts, whereas we
+train a single stated $\sigma$ and score it against a known $\sigstar$.
+
+% D179 (wang2023selfconsistency, huang2024selfcorrect, gao2023pal, chen2023pot; checked); FINDINGS #21, #22, #33, #37.
+\paragraph{Sampling, self-verification and executable computation.}
+Self-consistency samples several reasoning paths and takes the most consistent answer~\citep{wang2023selfconsistency};
+we use the agreement among samples as a correctness signal and report its cost beside its discrimination.
+Without external feedback, models struggle to correct their own reasoning, and their performance can even degrade
+when they try~\citep{huang2024selfcorrect}; our self-verification probe is consistent with this, since the model
+accepts almost all of its own answers.
+Program-aided reasoning delegates the computation to an interpreter~\citep{gao2023pal,chen2023pot}.
+Our MC-B applies that idea to uncertainty: the model writes the problem's program and the program is run on perturbed
+inputs.
+These works limit MC-B's novelty, and MC-B failed (Section~\ref{sec:act3}).
+
+% D179 (jcgm101, gneiting2007strictly; checked); D15, D29 (the scoring rule); D51 (sigma* by Monte Carlo).
+\paragraph{Uncertainty propagation and proper scoring.}
+Our $\sigstar$ follows the metrological practice of propagating distributions through a measurement model by Monte
+Carlo~\citep{jcgm101}, and the root-sum-square heuristic is the first-order rule for a product of first powers.
+Our reward and evaluation score is a strictly proper scoring rule in the sense of Gneiting and
+Raftery~\citep{gneiting2007strictly}, so an honest $\sigma$ is optimal in expectation; whether optimization finds it
+is the question of Section~\ref{sec:act1}.
