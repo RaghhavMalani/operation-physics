@@ -5,6 +5,7 @@ import copy
 import itertools
 import json
 import re
+import threading
 from pathlib import Path
 
 import numpy as np
@@ -232,6 +233,7 @@ def _rc():
     rc["readout"].update(part_size=64, token_budget=4096)
     rc["train"].update(batch_size=16, token_budget=4096, log_every=5)
     rc["teachers"]["n_jobs"] = 1
+    rc["session"]["poll_seconds"] = 0.05
     return rc
 
 
@@ -285,9 +287,10 @@ def full_run(tmp_path_factory, tiny):
 def test_drive_runs_every_stage_once_in_order_and_finishes(full_run):
     ctx, status, calls = full_run
     assert status["stopped_at"] is None and status["done"] == [M.S2, M.S3, M.S4, M.S5]
-    assert [c[0] for c in calls] == [M.S1, M.S2, M.S3, M.S4, M.S4, M.S5] or \
-        [c[0] for c in calls] == [M.S1, M.S2, M.S4, M.S3, M.S4, M.S5]
-    assert (M.S4, ("B",)) in calls and (M.S4, ("C", "D", "E")) in calls
+    assert sorted(c[0] for c in calls) == [M.S1, M.S2, M.S3, M.S4, M.S5]   # S3 and S4 start together (D180)
+    assert calls[:2] == [(M.S1, None), (M.S2, None)] and calls[-1] == (M.S5, None) and (M.S4, None) in calls
+    assert not list(ctx.root.rglob("*.claim"))                            # a finished stage leaves no claim
+    assert not ctx.run.has(M.S3, M.TEACHERS_STOPPED)
 
 
 def test_a_second_session_after_the_end_repeats_no_stage(full_run):
@@ -295,6 +298,42 @@ def test_a_second_session_after_the_end_repeats_no_stage(full_run):
     calls = []
     st = M.drive(ctx, lambda s, a: calls.append(s) or [0], lambda m: None)
     assert calls == [] and st["stopped_at"] is None
+
+
+def test_s5_takes_the_largest_set_first(full_run):
+    ctx, _, _ = full_run
+    order = M.score_order(ctx)
+    sizes = [len(M.score_set(ctx, k[:-5].split("__")[1])) for k in order]
+    assert sorted(order) == sorted(M.all_score_chunks(ctx.rc)) and sizes == sorted(sizes, reverse=True)
+
+
+def test_s4_trains_b_at_once_and_waits_for_the_teachers_only_while_they_may_finish(tmp_path, tiny, monkeypatch):
+    """D180: with S3 marked stopped, a worker trains B and stops instead of waiting; once S3 is done, C to E follow."""
+    ctx = _ctx(tmp_path / "r6_6a_smoke", tiny)
+    monkeypatch.setattr(M, "train_items", lambda c: [{"correct": True}])
+    monkeypatch.setattr(M, "targets", lambda c, arm, its: np.ones(1))
+    monkeypatch.setattr(M, "train_one", lambda c, its, t, seed: {"seed": seed})
+    runs = [f"{n}.pt" for n in M.run_names(ctx.rc)]
+    S.write_atomic(ctx.run.path(M.S3, M.TEACHERS_STOPPED), "{}")
+    assert not M.stage_train(ctx)
+    assert {k for k in runs if ctx.run.has(M.S4, k)} == {k for k in runs if not M.needs_teachers(k)}
+    ctx.run.path(M.S3, M.TEACHERS_STOPPED).unlink()
+    ctx.run.finish(M.S3, [])
+    assert M.stage_train(ctx) and all(ctx.run.has(M.S4, k) for k in runs)
+
+
+def test_s4_waits_for_teachers_that_finish_later(tmp_path, tiny, monkeypatch):
+    """A worker with no ready run polls until S3's done marker appears, then takes the next run."""
+    ctx = _ctx(tmp_path / "r6_6a_smoke", tiny)
+    monkeypatch.setattr(M, "train_items", lambda c: [{"correct": True}])
+    monkeypatch.setattr(M, "targets", lambda c, arm, its: np.ones(1))
+    monkeypatch.setattr(M, "train_one", lambda c, its, t, seed: {"seed": seed})
+    for k in [f"{n}.pt" for n in M.run_names(ctx.rc, ("B",))]:
+        ctx.run.save(M.S4, k, lambda tmp: tmp.write_text("b"))
+    done = threading.Timer(0.3, lambda: ctx.run.finish(M.S3, []))
+    done.start()
+    assert M.stage_train(ctx) and all(ctx.run.has(M.S4, f"{n}.pt") for n in M.run_names(ctx.rc))
+    done.join()
 
 
 def test_states_and_log_odds_are_saved_for_every_answer_and_are_finite(full_run):

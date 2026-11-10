@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -97,6 +98,62 @@ def test_two_workers_share_a_stage_through_their_own_ledgers(tmp_path):
     b.chunks("s", ["y"], _writer([]), 1.0, log=lambda m: None)
     assert set(a.ledger("s")) == {"x", "y"}
     assert set(a.finish("s", ["x", "y"])["chunks"]) == {"x", "y"}
+
+
+def test_two_processes_share_a_queue_and_take_each_chunk_once(tmp_path):
+    """D180: two real worker processes on one ordered list; every chunk is written once, by whichever worker was free."""
+    root = tmp_path / "w"
+    code = textwrap.dedent(f"""
+        import sys, time
+        from pathlib import Path
+        from physcal.eval import kaggle_stages as S
+        r = S.Run(Path({str(root)!r}), {{"commit": "a"}}, time.time(), 1.0, 1.25, sys.argv[1])
+        def write(key, tmp):
+            time.sleep(0.15)
+            tmp.write_text(key + sys.argv[1])
+        assert r.queue("s", [f"k{{i}}" for i in range(12)], write, 1.0, log=lambda m: None) in (True, False)
+    """)
+    env = {**os.environ, "PYTHONPATH": os.getcwd()}
+    ps = [subprocess.Popen([sys.executable, "-c", code, w], env=env) for w in ("g0", "g1")]
+    assert [p.wait() for p in ps] == [0, 0]
+    keys = [f"k{i}" for i in range(12)]
+    per = {w: [json.loads(x)["key"] for x in (root / "s" / f"ledger_{w}.jsonl").read_text().splitlines()] for w in ("g0", "g1")}
+    assert sorted(per["g0"] + per["g1"]) == sorted(keys) and per["g0"] and per["g1"]
+    r = _run(root)
+    assert set(r.finish("s", keys)["chunks"]) == set(keys) and not list((root / "s").glob("*.claim"))
+
+
+def test_the_queue_waits_while_a_key_may_become_ready_and_stops_when_it_cannot(tmp_path):
+    r, calls, ready = _run(tmp_path / "w"), [], {"b": False}
+
+    def sleep(s):                                       # the earlier stage finishes during the third poll
+        calls.append("poll")
+        if calls.count("poll") == 3:
+            ready["b"] = True
+    assert r.queue("s", ["a", "b"], _writer(calls), 1.0, ready=lambda k: k == "a" or ready["b"], waiting=lambda: True,
+                   poll_s=0, log=lambda m: None, sleep=sleep)
+    assert calls == ["a", "poll", "poll", "poll", "b"]
+    r2, calls2 = _run(tmp_path / "w2"), []
+    assert not r2.queue("s", ["a", "b"], _writer(calls2), 1.0, ready=lambda k: k == "a", waiting=lambda: False,
+                        log=lambda m: None, sleep=lambda s: calls2.append("poll"))
+    assert calls2 == ["a"]
+    clock = Clock()
+    r3, calls3 = _run(tmp_path / "w3", clock=clock), []
+    assert not r3.queue("s", ["a", "b"], _writer(calls3, clock, 2000.0), 1000.0, ready=lambda k: k == "a",
+                        waiting=lambda: True, log=lambda m: None, sleep=lambda s: calls3.append("poll"))
+    assert calls3 == ["a"]                              # waiting is pointless once no chunk could end before the deadline
+
+
+def test_a_claim_holds_its_chunk_until_cleared_and_restore_leaves_claims_behind(tmp_path):
+    r, calls = _run(tmp_path / "w"), []
+    assert r.claim("s", "a") and not r.claim("s", "a")
+    assert not r.queue("s", ["a", "b"], _writer(calls), 1.0, log=lambda m: None) and calls == ["b"]
+    src = tmp_path / "input" / "v1"
+    shutil.copytree(tmp_path / "w", src / "w")
+    assert S.restore(tmp_path / "w2" / "w", src, log=lambda m: None)["restored"] >= 1
+    assert not list((tmp_path / "w2").rglob("*.claim"))
+    assert r.clear_claims("s") == 2 and r.queue("s", ["a", "b"], _writer(calls), 1.0, log=lambda m: None)
+    assert calls == ["b", "a"]
 
 
 def test_a_hard_kill_mid_chunk_loses_only_that_chunk(tmp_path):

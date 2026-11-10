@@ -1752,3 +1752,42 @@ appended here.
 - **Still to check on Kaggle, no quota needed:** version 2's Output tab (the folder, or only the zip?), both versions' status
   badges, and the quota used and left.
 - **The notebooks now pin `6d856a7d261f`.** The five suites that touch this code pass. The full suite was not re-run for this entry.
+
+## 2026-11-10: the size of R6-6a (your decision)
+
+### D180. R6-6a runs as D175 built it, with D177's scheduler fix: three sessions, every D175 number kept. The fix is built and CPU-tested, and the notebooks are re-pinned; nothing has run (2026-11-10)
+- **Status:** exploratory track, paper #2. Your choice, from D177's table: "scheduler fix (3 sessions), keeping every D175
+  number". The arms, seeds, training items, learning rate, readings, sets and analysis are unchanged. So are the sizing
+  values D177 set.
+- **What changes: who runs what, and when.** The results cannot depend on it: every run and every scored set is
+  determined by its own seed and inputs, whichever GPU takes it.
+  - **S4, one launch, a shared queue.** Both GPU workers start with the teachers (S3, CPU). Each takes the next run nobody
+    has, in D175's order (B_0 … E_0), through an atomic claim file. B trains on labels, so it starts at once. A C, D or E
+    run is ready when S3's done marker exists. Before, the driver waited for all of B, then split C, D and E statically
+    (`[w::2]`), which left a GPU idle.
+  - **A worker with no ready run waits** (polling every `session.poll_seconds` = 60 s, a sizing value, with a log line
+    every ten polls for the stall guard). It stops waiting when the driver marks S3 as stopped this session
+    (`s3_teachers/STOPPED.json`), or when no run could still end before the deadline.
+  - **S5, a shared queue, the largest set first.** A worker loads a model's adapter when its next chunk needs another one.
+    Before, models were split statically and in config order.
+  - **Claims:** the driver clears a stage's claims before launching it, so a claim left by a stopped or killed worker
+    cannot hold its chunk into the next session. `finish` clears them, and `restore` does not copy them.
+  - **S2 is unchanged** (static parts), as in D177's simulation.
+- **The plan this gives** (`scripts/sim_r6_6a_sessions.py`, D177's rates; unchanged since D177):
+  - T4s as measured: 3 sessions, 23.9 GPU-session hours, ending at 8.5 / 9.1 / 6.3 h.
+  - Both at the slower T4's rate: 3 sessions, 25.4 h, ending at 7.1 / 8.6 / 9.6 h. The last includes S6 and the zip
+    (~0.2 h), which run after the deadline check, inside Kaggle's 12 h limit.
+  - **Session 1:** setup, S1 sampling (~4 h), S2 reading (~1 h), then S3 on the CPU while both GPUs train the three B
+    runs. C cannot start before the deadline, so the session stops itself at ~8.5 h.
+- **The tests (D171 rule 9, CPU):**
+  - two real worker processes on one queue: every chunk is written exactly once, and both workers take some;
+  - a worker waits while a chunk may become ready and stops when it cannot (a stopped marker, or the deadline);
+  - a claim holds its chunk until cleared, and `restore` leaves claims behind;
+  - S4 trains B at once and the rest only after the teachers, and stops instead of waiting when S3 is marked stopped;
+  - S5's order is by set size;
+  - the tiny Qwen still runs every stage through `drive()`, now with S3 and S4 started together.
+  - `tests/test_kaggle_stages.py` and `tests/test_r6_6a.py` pass. Before the re-pin, only the two pin tests failed, as they
+    must.
+- **The Kaggle checks D177 left open** (version 2's Output tab, the versions' status badges, the GPU quota) are still to
+  come from you. Session 1 needs about 10 h of quota left (§10 of `kaggle_instructions.md`).
+- **Errata:** commit `4425478` (paper #1) says "887 passed"; the suite printed 888 passed.

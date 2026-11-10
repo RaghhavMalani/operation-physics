@@ -4,7 +4,8 @@ A run lives in one directory (`Run.root`), which is the notebook's resume tier. 
 logged with its time and sha256 in a per-worker ledger, then a DONE.json. A re-run skips what exists and refuses another
 commit or config (`pins`). No chunk starts unless its projected end is before session start + `hours` (D157's rule).
 `restore` brings a previous version's output back, checking every hash; `write_zip` / `read_zip` make and check the
-results zip (a sha256 manifest and an allow-list). Nothing here knows about any one experiment.
+results zip (a sha256 manifest and an allow-list). `queue` lets a stage's workers share one ordered list of chunks
+through claim files (D180). Nothing here knows about any one experiment.
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ import time
 import zipfile
 from pathlib import Path
 
-PINS, DONE, MANIFEST = "run.json", "DONE.json", "MANIFEST.json"
+PINS, DONE, MANIFEST, CLAIM = "run.json", "DONE.json", "MANIFEST.json", ".claim"
 
 
 class StageStop(RuntimeError):
@@ -97,6 +98,57 @@ class Run:
             log(f"{stage}: {key} in {self.times[stage][-1]:.0f} s")
         return True
 
+    # --------------------------------------------------------------------- a queue shared by a stage's workers (D180)
+    def _claim_path(self, stage: str, key: str) -> Path:
+        return self.dir(stage) / f"{key}{CLAIM}"
+
+    def claim(self, stage: str, key: str) -> bool:
+        """Takes `key` for this worker: an atomic create, so two workers never take the same chunk in a session."""
+        try:
+            fd = os.open(self._claim_path(stage, key), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            return False
+        with os.fdopen(fd, "w") as fh:
+            fh.write(json.dumps({"worker": self.worker, "at": self.now()}))
+        return True
+
+    def clear_claims(self, stage: str) -> int:
+        """Called before a stage's workers start: a claim left by a stopped or killed worker would hold its chunk."""
+        n = 0
+        for f in self.dir(stage).glob(f"*{CLAIM}"):
+            f.unlink(missing_ok=True)
+            n += 1
+        return n
+
+    def queue(self, stage: str, keys: list[str], write_one, est_s: float, ready=lambda key: True, waiting=lambda: False,
+              poll_s: float = 60.0, log=print, sleep=time.sleep) -> bool:
+        """Like `chunks`, but shared: each worker takes the first key in `keys` that is ready, missing and unclaimed, so a
+        free worker takes the next chunk. While no key is ready, the worker waits as long as `waiting()` says one may
+        become ready and a chunk could still start before the deadline, logging every ten polls (the stall guard). True
+        if every key exists."""
+        polls = 0
+        while True:
+            todo = [k for k in keys if not self.has(stage, k) and not self._claim_path(stage, k).exists()]
+            if not todo:
+                return all(self.has(stage, k) for k in keys)
+            key = next((k for k in todo if ready(k)), None)
+            if key is None:
+                if not (waiting() and self.may_start(stage, est_s)):
+                    log(f"{stage}: {len(todo)} chunks wait for an earlier stage that will not finish; stopping here")
+                    return False
+                if polls % 10 == 0:
+                    log(f"{stage}: {len(todo)} chunks wait for an earlier stage")
+                polls += 1
+                sleep(poll_s)
+                continue
+            if not self.may_start(stage, est_s):
+                log(f"{stage}: {key} would end after the deadline; stopping here")
+                return False
+            if not self.claim(stage, key):
+                continue
+            self.save(stage, key, lambda tmp, k=key: write_one(k, tmp))
+            log(f"{stage}: {key} in {self.times[stage][-1]:.0f} s")
+
     def ledger(self, stage: str) -> dict[str, dict]:
         """Every chunk the stage's ledgers record (the last line per key)."""
         out: dict = {}
@@ -120,6 +172,7 @@ class Run:
                                               "seconds": led.get(k, {}).get("seconds")} for k in keys},
                "seconds": sum(led[k]["seconds"] for k in keys if k in led)}
         write_atomic(self.path(stage, DONE), json.dumps(res, indent=1))
+        self.clear_claims(stage)
         return res
 
     def verify(self) -> dict:
@@ -138,7 +191,7 @@ class Run:
 
 
 def restore(root: Path, src: Path, log=print) -> dict:
-    """A previous version's output (mounted anywhere under `src`) copied into `root`; .tmp files are left behind. Hashes
+    """A previous version's output (mounted anywhere under `src`) copied into `root`; .tmp and claim files are left behind. Hashes
     are checked by the next Run.verify(). Refuses a second, different source."""
     root, src = Path(root), Path(src)
     pins = [p for p in src.rglob(PINS) if p.parent.name == root.name] if src.exists() else []
@@ -149,7 +202,7 @@ def restore(root: Path, src: Path, log=print) -> dict:
         raise SystemExit(f"restore: {len(pins)} runs under {src}; attach one version only: {pins}")
     base, n = pins[0].parent, 0
     for f in sorted(base.rglob("*")):
-        if f.is_file() and not f.name.endswith(".tmp"):
+        if f.is_file() and not f.name.endswith((".tmp", CLAIM)):
             dest = root / f.relative_to(base)
             if not dest.exists():
                 dest.parent.mkdir(parents=True, exist_ok=True)

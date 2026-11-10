@@ -21,6 +21,7 @@ session:
   stall_minutes: 45                    # sizing: a worker silent this long is killed
   sampler_attempts: 2                  # the second with enforce_eager and NCCL_P2P_DISABLE=1 (D157)
   gpus: 2
+  poll_seconds: 60                     # sizing (D180): how often a worker waiting for the teachers looks again
 packages: [vllm==0.29.0, pint==0.25.3, pyyaml==6.0.3, sympy==1.14.0, peft==0.21.2, scikit-learn==1.9.1, scipy==1.17.1,
            joblib==1.6.0]              # resolved together on 2026-11-05: torch 2.13.0, transformers 5.22.1
 estimates_s:                           # sizing: a chunk's projected time before the session has measured one (D177: measured)

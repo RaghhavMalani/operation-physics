@@ -47,6 +47,7 @@ S1, S2, S3, S4, S5 = "s1_sample", "s2_read", "s3_teachers", "s4_train", "s5_scor
 EXIT_STOP = 4                  # a stop rule fired: a non-finite value
 ONE_THREAD = {"OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}   # one per job (D97)
 FOLDS_PROBE, FOLDS_RICH = "probe_fold", "rich_fold"
+TEACHERS_STOPPED = "STOPPED.json"   # D180: the driver marks S3 as stopped this session; S4's waiting workers then exit
 FINALS = ("probe", "rich", "answer_only")
 OK_NAMES = (r"results\.json|status\.json|scores\.jsonl\.gz|swap_scores\.jsonl\.gz|completions\.jsonl\.gz|environment\.json"
             r"|throughput\.json|plan\.json|config/[a-z0-9_]+\.yaml|logs/[A-Za-z0-9_.-]+\.log"
@@ -628,7 +629,14 @@ def train_one(ctx: Ctx, its: list[dict], t: np.ndarray, seed: int) -> dict:
             "n_items": len(its), "seed": seed}
 
 
-def stage_train(ctx: Ctx, arms: tuple[str, ...], worker: int = 0, workers: int = 1) -> bool:
+def needs_teachers(key: str) -> bool:
+    """Arm B trains on the labels; C, D and E on the S3 teachers' values."""
+    return not key.startswith("B_")
+
+
+def stage_train(ctx: Ctx, arms: tuple[str, ...] | None = None) -> bool:
+    """D180's scheduler: every worker takes the next run nobody has, B first. A run that needs the teachers waits for
+    S3's done marker, and stops waiting if the driver marks S3 as stopped this session."""
     import torch
 
     its = train_items(ctx)
@@ -638,8 +646,11 @@ def stage_train(ctx: Ctx, arms: tuple[str, ...], worker: int = 0, workers: int =
         res = train_one(ctx, its, targets(ctx, arm, its), int(seed))
         with tmp.open("wb") as fh:
             torch.save(res, fh)
-    keys = [f"{n}.pt" for n in run_names(ctx.rc, arms)][worker::workers]
-    return ctx.run.chunks(S4, keys, write, ctx.rc["estimates_s"]["train_run"], log=ctx.log)
+    keys = [f"{n}.pt" for n in run_names(ctx.rc, arms)]
+    return ctx.run.queue(S4, keys, write, ctx.rc["estimates_s"]["train_run"],
+                         ready=lambda k: not needs_teachers(k) or ctx.run.done(S3),
+                         waiting=lambda: not ctx.run.has(S3, TEACHERS_STOPPED),
+                         poll_s=ctx.rc["session"]["poll_seconds"], log=ctx.log)
 
 
 # ------------------------------------------------------------------------------------------- S5: test scoring (GPU)
@@ -662,39 +673,43 @@ def score_set(ctx: Ctx, name: str) -> list[dict]:
     return in_split(its, "id_test" if name == "id_w1" else name)
 
 
-def stage_score(ctx: Ctx, worker: int = 0, workers: int = 1) -> bool:
-    """Every model on its sets, the adapter loaded once per model."""
+def score_order(ctx: Ctx) -> list[str]:
+    """D180: every S5 chunk, the largest set first (a stable sort, so the models keep their order within a size)."""
+    names = {k[:-5].split("__")[1] for k in all_score_chunks(ctx.rc)}
+    size = {n: len(score_set(ctx, n)) for n in names}
+    return sorted(all_score_chunks(ctx.rc), key=lambda k: -size[k[:-5].split("__")[1]])
+
+
+def stage_score(ctx: Ctx) -> bool:
+    """Every model on its sets. D180's scheduler: a worker takes the next chunk nobody has, the largest first, and loads
+    a model's adapter when its chunk needs another one."""
     import contextlib
 
     import torch
     from peft import get_peft_model
     from peft.utils import set_peft_model_state_dict
 
-    plan = list(score_keys(ctx.rc).items())[worker::workers]
-    if all(ctx.run.has(S5, f"{m}__{s}.json") for m, ss in plan for s in ss):
+    keys = score_order(ctx)
+    if all(ctx.run.has(S5, k) for k in keys):
         return True
     base = _model(ctx)
     tok = _tok(ctx)
     model = get_peft_model(base, lora_config(ctx.rc)).eval()
     r = make_reader(tok, base, ctx.scfg, ctx.device)
     w0, w1, budget = F.verify_text(ctx.scfg), ctx.rc["verify_w1"], ctx.rc["readout"]["token_budget"]
-    finished = True
-    for m, sets in plan:
-        keys = [f"{m}__{s}.json" for s in sets]
-        if all(ctx.run.has(S5, k) for k in keys):
-            continue
-        if m != "A":
+    loaded: list = [None]
+
+    def write(key: str, tmp: Path) -> None:
+        m, name = key[:-5].split("__")
+        if m != "A" and loaded[0] != m:
             with ctx.run.path(S4, f"{m}.pt").open("rb") as fh:
                 set_peft_model_state_dict(model, torch.load(fh, weights_only=False)["adapter"])
-
-        def write(key: str, tmp: Path, m=m) -> None:
-            name = key[:-5].split("__")[1]
-            its = score_set(ctx, name)
-            with model.disable_adapter() if m == "A" else contextlib.nullcontext():
-                lo, _ = read_log_odds(model, its, r, ctx.scfg, w1 if name == "id_w1" else w0, budget, ctx.device)
-            tmp.write_text(json.dumps(dict(zip([it["id"] for it in its], lo.tolist()))))
-        finished &= ctx.run.chunks(S5, keys, write, ctx.rc["estimates_s"]["score_set"], log=ctx.log)
-    return finished
+            loaded[0] = m
+        its = score_set(ctx, name)
+        with model.disable_adapter() if m == "A" else contextlib.nullcontext():
+            lo, _ = read_log_odds(model, its, r, ctx.scfg, w1 if name == "id_w1" else w0, budget, ctx.device)
+        tmp.write_text(json.dumps(dict(zip([it["id"] for it in its], lo.tolist()))))
+    return ctx.run.queue(S5, keys, write, ctx.rc["estimates_s"]["score_set"], log=ctx.log)
 
 
 # ------------------------------------------------------------------------------------------- S6: the analysis (CPU)
@@ -1126,6 +1141,7 @@ def drive(ctx: Ctx, launch, log=print) -> dict:
     def stage(name: str, keys_fn, arms=None) -> bool:
         if run.done(name):
             return True
+        run.clear_claims(name)
         status["exit_codes"][name] = launch(name, arms)
         keys = keys_fn()
         if not all(run.has(name, k) for k in keys):
@@ -1143,17 +1159,30 @@ def drive(ctx: Ctx, launch, log=print) -> dict:
         status["stopped_at"] = S2
         return write_status()
     teach: dict = {}
-    t3 = threading.Thread(target=lambda: teach.update(ok=stage(S3, lambda: teacher_keys(rc, folds))))
+    stopped = run.path(S3, TEACHERS_STOPPED)
+    stopped.unlink(missing_ok=True)
+
+    def teachers() -> None:
+        try:
+            teach["ok"] = stage(S3, lambda: teacher_keys(rc, folds))
+        finally:                                        # S4's waiting workers read this and stop waiting (D180)
+            if not teach.get("ok"):
+                S.write_atomic(stopped, json.dumps({"at": time.time()}))
+    t3 = threading.Thread(target=teachers)
     t3.start()                                          # D175: the teachers run on the CPU during arm B
-    if not run.done(S4) and not all(run.has(S4, f"{n}.pt") for n in run_names(rc, ("B",))):
-        launch(S4, ("B",))
+    runs = [f"{n}.pt" for n in run_names(rc)]
+    if not run.done(S4) and not all(run.has(S4, k) for k in runs):
+        run.clear_claims(S4)                            # D180: one launch; B first, C to E as soon as S3 is done
+        status["exit_codes"][S4] = launch(S4, None)
     t3.join()
     if not teach.get("ok"):
         status["stopped_at"] = S3
         return write_status()
-    if not stage(S4, lambda: [f"{n}.pt" for n in run_names(rc)], ("C", "D", "E")):
-        status["stopped_at"] = S4
-        return write_status()
+    if not run.done(S4):
+        if not all(run.has(S4, k) for k in runs):
+            status["stopped_at"] = S4
+            return write_status()
+        run.finish(S4, runs)
     if not stage(S5, lambda: all_score_chunks(rc)):
         status["stopped_at"] = S5
         return write_status()
@@ -1227,9 +1256,9 @@ def worker_cli(a: argparse.Namespace) -> int:
         elif a.stage == S3:
             stage_teachers(ctx)
         elif a.stage == S4:
-            stage_train(ctx, tuple(a.arms.split(",")), a.worker, a.workers)
+            stage_train(ctx, tuple(a.arms.split(",")) if a.arms else None)
         else:
-            stage_score(ctx, a.worker, a.workers)
+            stage_score(ctx)
     except S.StageStop as exc:
         print(f"STOP RULE: {exc}", flush=True)
         return EXIT_STOP
