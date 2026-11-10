@@ -11,7 +11,7 @@ Problem by problem, D-pos-v2's $\sigma$ follows $\sigstar$ closely (the slope of
 \pv{rc.beta.seeds} per seed) and moves with the source of the noise on fresh problems.
 Yet its expected score is not shown to beat RSS, a heuristic that ignores the values altogether, and X1 scores better
 descriptively.
-Both hold because the score is dominated by a tail: the worst \pv{rc.tail.worst} of problems carry \pv{rc.tail.share}
+Both can hold because the score is dominated by a tail: the worst \pv{rc.tail.worst} of problems carry \pv{rc.tail.share}
 of the regret.
 A $\sigma$ that is right on most problems and badly wrong on a few can lose to one that is moderately wrong everywhere.
 The RSS fallback shows the trade directly: it buys the score, closing \pv{rc.fb.gap} of the gap to $\sigstar$, by
@@ -30,8 +30,8 @@ The structure of the propagation (reading the levels, the root sum of squares, t
 What costs the forecast is reasoning error in the derivatives of value-dependent relations; exact sensitivities alone
 close \pv{rc.swap.s.gap}.
 The two streams are not independent.
-The same wrong intermediate corrupts both $\mu$ and its sensitivity, so a problem the model gets wrong tends also to be
-a problem whose $\sigma$ it gets wrong.
+When the model substitutes its own wrong intermediates, the same error corrupts both $\mu$ and its sensitivity, so on
+those problems the answer and its $\sigma$ fail together.
 
 % R6-1 (D166) and the round-6 synthesis (D165): the scoped claim and the alternative explanations; FINDINGS #19, #22,
 % #37.
@@ -48,7 +48,7 @@ none of them.
 
 % FINDINGS #6, #16, #18 (credit assignment), #25 (E1d: exploratory, frozen-answer setting, R5-7).
 \paragraph{Credit assignment for the tokens of $\sigma$.}
-A proper scoring rule was necessary but not sufficient.
+A proper scoring rule was not sufficient.
 With sequence-level credit the tokens of $\sigma$ were rewarded for the answer, and the policy collapsed.
 Separating their credit prevented the collapse but did not teach ranking at the learning rate tested; a larger learning
 rate with the answer held fixed taught ranking between problems, though not within them, in a single-seed pilot.
@@ -57,8 +57,8 @@ Whether that carries over to joint training of the answer and $\sigma$ is open.
 % FINDINGS #35 (the exact-sensitivity counterfactual), #36 (fallbacks trade propagation away), #31 (MC-A's oracle),
 % #33, #37 (MC-B's interface and semantic failures); docs/paper_outline.md sec. 7 (the executor sequence).
 \paragraph{What would close the gap.}
-Exact sensitivities, not a fallback, improve both numbers at once: the $\sigma$ beats RSS and X1, and its slope rises
-towards one.
+In the counterfactual of Section~\ref{sec:act3}, exact sensitivities, unlike the fallback, improve both numbers at once:
+the $\sigma$ beats RSS and X1, and its slope rises towards one.
 Two routes lead there: better derivatives from the model, or an executor that computes the chain.
 MC-A's oracle shows that the bound is reachable when the computation is exact, and MC-B shows what stands in the way:
 first the interface, then the semantics of the program.

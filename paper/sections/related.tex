@@ -54,6 +54,6 @@ These works limit MC-B's novelty, and MC-B failed (Section~\ref{sec:act3}).
 \paragraph{Uncertainty propagation and proper scoring.}
 Our $\sigstar$ follows the metrological practice of propagating distributions through a measurement model by Monte
 Carlo~\citep{jcgm101}, and the root-sum-square heuristic is the first-order rule for a product of first powers.
-Our reward and evaluation score is a strictly proper scoring rule in the sense of Gneiting and
-Raftery~\citep{gneiting2007strictly}, so an honest $\sigma$ is optimal in expectation; whether optimization finds it
+Our reward and evaluation score, the CRPS in log space, is strictly proper for log-normal beliefs in the sense of
+Gneiting and Raftery~\citep{gneiting2007strictly}, so an honest $\sigma$ is optimal in expectation; whether optimization finds it
 is the question of Section~\ref{sec:act1}.
