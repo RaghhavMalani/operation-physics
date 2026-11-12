@@ -1850,4 +1850,5 @@ appended here.
     and reads nothing once S3 is done;
   - the driver discards another run's cache and workers leave it alone;
   - the output-size report counts what is saved;
-  - the R6-6a, stage-runner and Kaggle-sampler suites pass, apart from the two pin tests, which pass after the re-pin.
+  - the R6-6a, stage-runner and Kaggle-sampler suites pass (75), the two pin tests after the re-pin.
+- **The notebooks pin `413b6545d2b9`.** §10 of `kaggle_instructions.md` holds the redone session 1's steps.

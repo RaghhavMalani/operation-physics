@@ -226,7 +226,8 @@ are plumbing, never results.
 | 2 | C, D, E (seven runs, ~2 h each, both GPUs) | ~9 h |
 | 3 | the last runs if any, S5 scoring (~8 h of GPU work over 2 GPUs), S6 analysis, the zip | ~6–9.6 h |
 
-In all, ~24–25 h of GPU quota (a T4 x2 session counts its wall time once).
+In all, ~24–25 h of GPU quota (a T4 x2 session counts its wall time once). With 22.5 h left after the first attempt
+(D181), the new session 1 and session 2 fit this week; session 3 waits for the weekly reset unless 10 h are left.
 
 **Before session 1: three checks, then tell me the answers** (they need no quota):
 1. **Smoke version 2's Output tab:** is the `r6_6a_smoke` folder there, or only the zip?
@@ -238,22 +239,31 @@ In all, ~24–25 h of GPU quota (a T4 x2 session counts its wall time once).
 setup and packing. If fewer than 10 h are left, wait for the reset. The three sessions can span a reset; a later session
 needs only the earlier version's output, which does not expire with the quota.
 
-### Session 1
+### Session 1 (redone after D181)
 
-1. **A new notebook:** §2 with `notebooks/kaggle_r6_6a.ipynb` (pinned to `4cdd62c6e333`); name it e.g. `physcal-r6-6a`.
-2. **Settings:** §3 (**GPU T4 x2**, **Internet On**). **No input attached:** session 1 starts fresh.
+The first session 1 (pinned to `4cdd62c6e333`) ran to its planned stop, but its version stuck in **Running** with
+**Output 0 B**. Its ~3.6 GB output, mostly S2's hidden states, could not be resumed by the fixed code anyway (D181).
+**Cancel that version** before you start (its output is not usable). If it has finished saving by then, download its
+`r6_6a_results.zip` first and tell me.
+
+1. **The notebook:** in the same notebook, **File** → **Import Notebook** → the new `notebooks/kaggle_r6_6a.ipynb`
+   (pinned to `413b6545d2b9`), or a new notebook (§2).
+2. **Settings:** §3 (**GPU T4 x2**, **Internet On**). **No input attached:** session 1 starts fresh. Remove any input
+   left from the first attempt.
 3. **Run:** §4 (**Save Version** → **Save & Run All (Commit)**). In **Advanced Settings**, choose **Always save output for
    this version**. You can close the browser: it runs in the background.
 4. **What the log should show, in order:**
-   - the GPU line, then `repo 4cdd62c… | mode full | driver …`;
+   - the GPU line, then `repo 413b654… | mode full | driver …`;
    - `restore: no previous run under /kaggle/input`, then the weights' sha256 check;
    - sampling for ~4 h, then `S1: … samples, … answered`;
    - `s2_read: part_…` lines for ~1 h;
    - then the teachers and arm B together: `s4_train: … step n/375: loss …` from both GPUs, `s4_train: B_0.pt in … s`;
    - `s4_train: … chunks wait for an earlier stage` (C, D and E waiting for the teachers), then
      `… would end after the deadline; stopping here`;
-   - `STATUS: {… "stopped_at": "s4_train" …}`. **This is the expected end of session 1**, at ~8.5 h. The version should
-     show **Complete**, not Error.
+   - `output: N files, X MB in /kaggle/working`, with X about 350 (S1's samples, three adapters; the states stay in
+     `/tmp`). A `WARNING` above 1,200 MB means something bulky reached the output: tell me before session 2;
+   - `STATUS: {… "stopped_at": "s4_train" …}`. **This is the expected end of session 1**, at ~7.5–8.5 h. The version
+     should show **Complete**, not Error. **Saving the output** should then take minutes, not hours.
 5. **After it ends:** open the version's **Output** tab. The `r6_6a` folder should be there with `s1_sample`, `s2_read`,
    `s3_teachers` and `s4_train` (three `B_*.pt` files). **Download `r6_6a_results.zip`** as a backup (partial: samples and
    status only).
