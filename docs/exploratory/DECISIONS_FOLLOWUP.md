@@ -1797,3 +1797,57 @@ appended here.
 - **The notebooks pin `4cdd62c6e333`,** which holds this entry's code and the fix above. The run steps are in
   `kaggle_instructions.md` §10.
 - **Errata:** commit `4425478` (paper #1) says "887 passed"; the suite printed 888 passed.
+
+## 2026-11-12: session 1's output did not save (your report)
+
+### D181. Session 1 ran to its planned stop, but Kaggle has not saved its output. What it left (~3.6 GB), why session 1 must be redone, and the fix: S2's hidden states go to an unsaved cache, so the output stays well under 1 GB (2026-11-12)
+- **Your report:** the notebook ended at ~27,070 s with `STATUS {"run_exit": 0, "stopped_at": "s4_train", "done":
+  ["s2_read", "s3_teachers"]}` and packed the zip (8.76 MB, 12 files). The version still shows **Running** at 50,166 s
+  with **Output 0 B**. Quota: 7 h 32 m used, matching the run time, so the stuck phase does not seem to use quota;
+  22 h 28 m left.
+- **What the session left in `/kaggle/working`** (computed from the code and D177's rates; not measured there):
+
+| what | size | files |
+|---|---|---|
+| `s2_read`: every answer's states at all 29 hidden-state layers × 1,536, fp16, twice (the brace and the answer-only pass) | **~3.25 GB** (~178 KB × ~18,250 answers) | ~36 parts + ledgers |
+| `s4_train`: B_0, B_1, B_2 (fp32 LoRA, r 16, 7 modules × 28 layers) | ~222 MB (74 MB each) | 3 + ledgers, claims |
+| `scale/r6_6a/samples`: S1's 18,700 completions | ~100 MB | ~50 chunks + meta |
+| `s3_teachers`, logs, status, environment, the zip | ~15 MB | ~30 |
+
+  **~3.6 GB in ~150 files.** The smoke's output (~300 MB, mostly 4 adapters, and 472 small files) saved within minutes,
+  so size is the obvious difference. Whether it is the cause cannot be shown from here; a web search found no
+  authoritative report of this symptom.
+- **Session 1 must be redone, whatever happens to the stuck version.**
+  - The fix below changes the pinned code, and a run refuses a folder made under another commit (D171 rule 3), so the
+    new notebook cannot resume session 1's folder.
+  - The only part worth recovering would be S1's samples (~4 h of the 7.5 h). They are in the zip
+    (`completions.jsonl.gz`), but the zip is inside the unsaved output.
+  - **If the save completes,** download the 8.76 MB zip before anything else. A checked import of S1's samples (every row
+    against the pool, its seed, prompt and grade, as `followup_kaggle.ingest` does) would then save ~4 h; it needs its
+    own D-entry and is not built.
+- **The fix: only small, resume-critical files are saved.**
+  - **S2:** each part keeps only its ids and log-odds in the output (small; S6 reads arm A's log-odds from them). The
+    states go to `<tmp>/physcal_cache/r6_6a/s2_read/` (on Kaggle `/tmp`, never saved), because only S3 reads them and S3
+    finished inside session 1.
+  - **If S3 is not done at a session's end,** the next session's driver finds the cache empty and reads the states again
+    (~1 h on both GPUs) before S3. Once S3 is done, nothing reads them again.
+  - **The driver owns the cache:** it discards a cache with other pins, and workers write into it. Writes are atomic,
+    with a per-process temporary name.
+  - **Kept in the output, because a later session needs them:** S1's samples (~100 MB), the adapters (74 MB each; ~740 MB
+    after session 2), the teachers' values, S5's scores, the logs and the zip.
+  - **Not done:** a Kaggle Dataset for the adapters. It needs an API token in the notebook and a second upload path. The
+    expected output (~0.35 GB after session 1, ~0.85 GB after sessions 2 and 3) is about the smoke's size to 3× it. If a
+    save stalls again at that size, the Dataset route comes next.
+  - **A size check:** the run prints `output: N files, X MB` at its end and warns above `results.max_output_mb` = 1,200 (a
+    sizing value).
+- **Nothing in D175 changes:** the stages compute exactly what they did. Only where S2's states are stored changes, and
+  that a later session may read them again.
+- **The quota plan:** 22.5 h left. The new session 1 (~7.5 h) and session 2 (~9 h) fit, leaving ~6 h. Session 3
+  (~6–9.6 h) waits for the weekly reset unless 10 h are left.
+- **The tests:**
+  - S2 saves only ids and log-odds in the output, and the states only in the cache;
+  - a new session with an empty cache reads the states again while S3 is not done, without rewriting the saved parts,
+    and reads nothing once S3 is done;
+  - the driver discards another run's cache and workers leave it alone;
+  - the output-size report counts what is saved;
+  - the R6-6a, stage-runner and Kaggle-sampler suites pass, apart from the two pin tests, which pass after the re-pin.

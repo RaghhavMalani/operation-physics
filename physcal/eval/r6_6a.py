@@ -24,9 +24,11 @@ import json
 import math
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from dataclasses import dataclass, field
@@ -104,15 +106,33 @@ class Ctx:
     device: str = "cuda"
     load: object = None              # () -> the base model; default: fp16 from model_dir
     log: object = print
+    cache: Path | None = None        # D181: bulky intermediates, outside the saved output; default: beside root (tests)
     _items: dict = field(default_factory=dict)
 
 
+def default_cache() -> Path:
+    """On Kaggle, /tmp: lost at the session's end and never saved as output (D181)."""
+    return Path(tempfile.gettempdir()) / "physcal_cache"
+
+
 def make_ctx(mode: str, out: Path, session_start: float, model_dir: Path | None, worker: str = "main", device: str = "cuda",
-             rc: dict | None = None) -> Ctx:
+             rc: dict | None = None, cache: Path | None = None) -> Ctx:
     rc = rc or mode_config(mode)
     root = Path(out) / rc["name"]
-    run = S.Run(root, pins(rc), session_start, rc["session"]["hours"], rc["session"]["rate_margin"], worker)
-    return Ctx(root, rc, scale_config(rc), run, model_dir, device)
+    p = pins(rc)
+    run = S.Run(root, p, session_start, rc["session"]["hours"], rc["session"]["rate_margin"], worker)
+    croot = Path(cache or default_cache()) / rc["name"]
+    if worker == "main":                                # the driver owns the cache: another run's is discarded
+        f = croot / S.PINS
+        if f.exists() and json.loads(f.read_text()) != p:
+            shutil.rmtree(croot)
+        croot.mkdir(parents=True, exist_ok=True)
+        S.write_atomic(f, json.dumps(p, indent=1, sort_keys=True))
+    return Ctx(root, rc, scale_config(rc), run, model_dir, device, cache=croot)
+
+
+def cache_dir(ctx: Ctx) -> Path:
+    return Path(ctx.cache) if ctx.cache else ctx.root.parent / f"{ctx.root.name}_cache"
 
 
 # ------------------------------------------------------------------------------------------- the pool (CPU, local)
@@ -399,26 +419,64 @@ def part_keys(n: int, size: int) -> list[str]:
     return [f"part_{i:04d}.npz" for i in range((n + size - 1) // size)]
 
 
+def states_path(ctx: Ctx, key: str) -> Path:
+    """D181: a part's hidden states (~90 MB at full size), which only S3 reads, live in the cache, not the output."""
+    return cache_dir(ctx) / S2 / key
+
+
+def states_ready(ctx: Ctx) -> bool:
+    """S3 needs every part's states; once S3 is done, nothing does."""
+    keys = part_keys(len(items(ctx)), ctx.rc["readout"]["part_size"])
+    return ctx.run.done(S3) or all(states_path(ctx, k).exists() for k in keys)
+
+
 def stage_read(ctx: Ctx, worker: int = 0, workers: int = 1) -> bool:
-    """P(yes) and every layer's state at the brace in one pass, plus the short answer-only pass, in saved parts."""
+    """P(yes) and every layer's state at the brace in one pass, plus the short answer-only pass. D181: each part's ids
+    and log-odds are saved in the output; its states go to the cache while S3 still needs them. A part is read again
+    only if one of those is missing (a new session's cache is empty)."""
     its, size = items(ctx), ctx.rc["readout"]["part_size"]
-    keys = part_keys(len(its), size)
-    mine = keys[worker::workers]
-    if all(ctx.run.has(S2, k) for k in mine):
+    need_states = not ctx.run.done(S3)
+    todo = [k for k in part_keys(len(its), size)[worker::workers]
+            if not ctx.run.has(S2, k) or (need_states and not states_path(ctx, k).exists())]
+    if not todo:
         return True
     model = _model(ctx).eval()
     tok = _tok(ctx)
     r = make_reader(tok, model, ctx.scfg, ctx.device)
     verify, budget = F.verify_text(ctx.scfg), ctx.rc["readout"]["token_budget"]
 
-    def write(key: str, tmp: Path) -> None:
+    def work(key: str) -> dict:
         i = int(key[5:9]) * size
         part = its[i:i + size]
-        lo, st = read_log_odds(model, part, r, ctx.scfg, verify, budget, ctx.device, states=True)
-        ao = answer_only_states(model, part, r, ctx.scfg, budget, ctx.device)
+        ids = json.dumps([it["id"] for it in part])
+        lo, st = read_log_odds(model, part, r, ctx.scfg, verify, budget, ctx.device, states=need_states)
+        if need_states:
+            ao = answer_only_states(model, part, r, ctx.scfg, budget, ctx.device)
+            p = states_path(ctx, key)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            tmp = p.with_name(f"{p.name}.{os.getpid()}.tmp")
+            with tmp.open("wb") as fh:
+                np.savez(fh, ids=ids, states=st, answer_only=ao)
+            os.replace(tmp, p)
+        return {"ids": ids, "log_odds": lo}
+
+    def write(key: str, tmp: Path) -> None:
         with tmp.open("wb") as fh:
-            np.savez(fh, ids=json.dumps([it["id"] for it in part]), log_odds=lo, states=st, answer_only=ao)
-    return ctx.run.chunks(S2, mine, write, ctx.rc["estimates_s"]["read_part"], log=ctx.log)
+            np.savez(fh, **work(key))
+    est = ctx.rc["estimates_s"]["read_part"]
+    for key in todo:
+        if not ctx.run.may_start(S2, est):
+            ctx.log(f"{S2}: {key} would end after the deadline; stopping here")
+            return False
+        if ctx.run.has(S2, key):                        # the log-odds are saved: only the states are missing
+            t0 = ctx.run.now()
+            work(key)
+            ctx.run.times.setdefault(S2, []).append(ctx.run.now() - t0)
+            ctx.log(f"{S2}: {key} states again in {ctx.run.times[S2][-1]:.0f} s")
+        else:
+            ctx.run.save(S2, key, lambda tmp, k=key: write(k, tmp))
+            ctx.log(f"{S2}: {key} in {ctx.run.times[S2][-1]:.0f} s")
+    return True
 
 
 def read_table(ctx: Ctx) -> dict[str, float]:
@@ -435,7 +493,7 @@ def load_layers(ctx: Ctx, ids: list[str], field_name: str = "states", layer: int
     want = {i: n for n, i in enumerate(ids)}
     arr = None
     for key in part_keys(len(items(ctx)), ctx.rc["readout"]["part_size"]):
-        z = np.load(ctx.run.path(S2, key))
+        z = np.load(states_path(ctx, key))
         pid = json.loads(str(z["ids"]))
         sel = [(j, want[i]) for j, i in enumerate(pid) if i in want]
         if not sel:
@@ -1123,7 +1181,13 @@ def spawn(cmds: list[tuple[list[str], dict]], log_path: Path, stall_s: float, lo
 def worker_cmd(stage: str, a: argparse.Namespace, w: int, n: int, extra: list[str] | None = None) -> list[str]:
     return [sys.executable, "-m", "physcal.eval.r6_6a", "worker", "--mode", a.mode, "--out", str(a.out), "--model-dir",
             str(a.model_dir), "--session-start", repr(a.session_start), "--stage", stage, "--worker", str(w),
-            "--workers", str(n)] + (extra or [])
+            "--workers", str(n), "--cache", str(getattr(a, "cache", None) or default_cache())] + (extra or [])
+
+
+def output_size(root: Path) -> dict:
+    """What the session leaves in the saved output (D181): every file under the run's output root."""
+    files = [f for f in Path(root).rglob("*") if f.is_file()]
+    return {"files": len(files), "mb": round(sum(f.stat().st_size for f in files) / 1e6, 1)}
 
 
 def drive(ctx: Ctx, launch, log=print) -> dict:
@@ -1155,9 +1219,15 @@ def drive(ctx: Ctx, launch, log=print) -> dict:
             status["stopped_at"] = S1
             return write_status()
     log(f"S1: {len(sampled_rows(ctx))} samples, {len(items(ctx))} answered")
-    if not stage(S2, lambda: part_keys(len(items(ctx)), rc["readout"]["part_size"])):
-        status["stopped_at"] = S2
-        return write_status()
+    parts = part_keys(len(items(ctx)), rc["readout"]["part_size"])
+    if not run.done(S2) or not states_ready(ctx):      # D181: a new session's cache lacks the states S3 still needs
+        run.clear_claims(S2)
+        status["exit_codes"][S2] = launch(S2, None)
+        if not all(run.has(S2, k) for k in parts) or not states_ready(ctx):
+            status["stopped_at"] = S2
+            return write_status()
+        if not run.done(S2):
+            run.finish(S2, parts)
     teach: dict = {}
     stopped = run.path(S3, TEACHERS_STOPPED)
     stopped.unlink(missing_ok=True)
@@ -1204,7 +1274,7 @@ def _environment(ctx: Ctx) -> None:
 
 
 def run_cli(a: argparse.Namespace) -> int:
-    ctx = make_ctx(a.mode, a.out, a.session_start, a.model_dir)
+    ctx = make_ctx(a.mode, a.out, a.session_start, a.model_dir, cache=a.cache)
     rc = ctx.rc
     (ctx.root / "logs").mkdir(exist_ok=True)
     log_path = ctx.root / "logs" / f"session_{int(a.session_start)}.log"
@@ -1231,6 +1301,10 @@ def run_cli(a: argparse.Namespace) -> int:
     st = drive(ctx, launch, say)
     if rc["mode"] == "smoke":                           # whatever drive reached: the rates are the point of the session
         smoke_report(ctx)
+    size = output_size(a.out)
+    say(f"output: {size['files']} files, {size['mb']} MB in {a.out}")
+    if size["mb"] > rc["results"]["max_output_mb"]:
+        say(f"WARNING: the output is above {rc['results']['max_output_mb']} MB; tell me before the next session (D181)")
     say("STATUS: " + json.dumps({k: st.get(k) for k in ("stopped_at", "done")}))
     return 0
 
@@ -1238,7 +1312,7 @@ def run_cli(a: argparse.Namespace) -> int:
 def sample_cli(a: argparse.Namespace) -> int:
     from transformers import AutoTokenizer
 
-    ctx = make_ctx(a.mode, a.out, a.session_start, a.model_dir)
+    ctx = make_ctx(a.mode, a.out, a.session_start, a.model_dir, worker="sampler", cache=a.cache)
     tok = AutoTokenizer.from_pretrained(str(a.model_dir))
     env = K._environment(a.model_dir)
     settings = {**env, "enforce_eager": a.enforce_eager, "decision": ctx.rc["decision"]}
@@ -1248,7 +1322,7 @@ def sample_cli(a: argparse.Namespace) -> int:
 
 def worker_cli(a: argparse.Namespace) -> int:
     dev = "cuda" if a.stage != S3 else "cpu"
-    ctx = make_ctx(a.mode, a.out, a.session_start, a.model_dir, f"w{a.worker}", dev)
+    ctx = make_ctx(a.mode, a.out, a.session_start, a.model_dir, f"w{a.worker}", dev, cache=a.cache)
     ctx.log = lambda m: print(m, flush=True)
     try:
         if a.stage == S2:
@@ -1280,6 +1354,8 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--enforce-eager", action="store_true")
     ap.add_argument("--zip", type=Path)
     ap.add_argument("--dest", type=Path, help="ingest: where to write, instead of results.ingest_dir")
+    ap.add_argument("--cache", type=Path, help="run, worker: where bulky intermediates go, never saved as output (D181); "
+                                               "default: <tmp>/physcal_cache")
     return ap
 
 
@@ -1296,7 +1372,7 @@ def main() -> None:
         if res["restored"] and a.mode == "smoke":
             print(json.dumps(survival_report(Path(a.out) / rc["name"], rc, res), indent=1))
     elif a.action == "pack":
-        ctx = make_ctx(a.mode, a.out, time.time(), None)
+        ctx = make_ctx(a.mode, a.out, time.time(), None, worker="pack")
         print(json.dumps(pack(ctx, a.out), indent=1))
     elif a.action == "ingest":
         print(json.dumps(ingest(a.zip, a.mode, a.dest), indent=1))

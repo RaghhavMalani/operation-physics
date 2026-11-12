@@ -66,4 +66,5 @@ results:
   zip_name: r6_6a_results.zip
   max_zip_mb: 50
   max_file_mb: 40
+  max_output_mb: 1200                  # D181: the run warns if /kaggle/working holds more (S1 ~100 MB, 10 adapters ~740 MB)
   ingest_dir: results/followup/r6_6a/run

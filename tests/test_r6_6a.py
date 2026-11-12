@@ -237,14 +237,14 @@ def _rc():
     return rc
 
 
-def _ctx(root, tiny, rc=None, worker="w0", clock=None, session_start=1000.0):
+def _ctx(root, tiny, rc=None, worker="w0", clock=None, session_start=1000.0, cache=None):
     rc = rc or _rc()
     sc = M.scale_config(rc)
     sc["scale"]["probe"].update(C=[0.1], folds=2)
     sc["audit"]["text"]["inner_folds"] = 2
     run = S.Run(root, {"commit": "t"}, session_start, rc["session"]["hours"], rc["session"]["rate_margin"], worker,
                 clock or (lambda: 1000.0))
-    return M.Ctx(Path(root), rc, sc, run, None, "cpu", tiny, lambda m: None)
+    return M.Ctx(Path(root), rc, sc, run, None, "cpu", tiny, lambda m: None, cache=cache)
 
 
 def _sample(ctx):
@@ -509,6 +509,42 @@ def test_a_deadline_stops_a_stage_with_a_status_and_the_next_session_resumes_it(
     assert ctx2.run.finish(M.S2, keys)["chunks"].keys() == set(keys)
 
 
+def test_s2_saves_only_ids_and_log_odds_in_the_output_and_the_states_in_the_cache(full_run):
+    """D181: the bulky hidden states never reach the saved output."""
+    ctx, _, _ = full_run
+    for key in M.part_keys(len(M.items(ctx)), ctx.rc["readout"]["part_size"]):
+        assert sorted(np.load(ctx.run.path(M.S2, key)).files) == ["ids", "log_odds"]
+        assert {"states", "answer_only"} <= set(np.load(M.states_path(ctx, key)).files)
+    assert not any("states" in str(f) for f in ctx.root.rglob("*")) and M.cache_dir(ctx) not in ctx.root.parents
+
+
+def test_a_new_session_reads_the_states_again_only_while_s3_needs_them(tmp_path, tiny):
+    root = tmp_path / "r6_6a_smoke"
+    ctx = _ctx(root, tiny, cache=tmp_path / "cache1")
+    _sample(ctx)
+    assert M.stage_read(ctx) and M.states_ready(ctx)
+    saved = ctx.run.ledger(M.S2)
+    ctx2 = _ctx(root, tiny, cache=tmp_path / "cache2", session_start=5000.0)   # a new session: an empty cache
+    assert not M.states_ready(ctx2) and M.stage_read(ctx2) and M.states_ready(ctx2)
+    assert ctx2.run.ledger(M.S2) == saved                                       # the saved parts were not rewritten
+    ctx2.run.finish(M.S3, [])
+    calls = tiny.calls
+    ctx3 = _ctx(root, tiny, cache=tmp_path / "cache3", session_start=9000.0)
+    assert M.states_ready(ctx3) and M.stage_read(ctx3) and tiny.calls == calls  # S3 is done: nothing is read again
+
+
+def test_the_driver_discards_another_runs_cache_and_workers_leave_it_alone(tmp_path):
+    croot = tmp_path / "cache" / "r6_6a_smoke"
+    croot.mkdir(parents=True)
+    (croot / S.PINS).write_text(json.dumps({"commit": "another"}))
+    (croot / "stale.npz").write_text("x")
+    M.make_ctx("smoke", tmp_path / "out", 0.0, None, worker="w0", cache=tmp_path / "cache")
+    assert (croot / "stale.npz").exists()
+    ctx = M.make_ctx("smoke", tmp_path / "out", 0.0, None, cache=tmp_path / "cache")
+    assert not (croot / "stale.npz").exists() and json.loads((croot / S.PINS).read_text()) == ctx.run.pins
+    assert M.cache_dir(ctx) == croot and M.output_size(tmp_path / "out")["files"] == 1          # only run.json
+
+
 def test_a_non_finite_state_is_a_stop_rule():
     with pytest.raises(S.StageStop):
         M._finite(np.array([1.0, np.inf]), "state")
@@ -518,8 +554,9 @@ def test_the_status_of_a_stopped_rule_is_an_exit_code(tmp_path, monkeypatch):
     def boom(*a):
         raise S.StageStop("non-finite loss at step 3")
     monkeypatch.setattr(M, "stage_read", boom)
-    monkeypatch.setattr(M, "make_ctx", lambda *a: M.Ctx(tmp_path, {}, {}, None))
-    a = type("A", (), dict(stage=M.S2, mode="smoke", out=tmp_path, session_start=1.0, model_dir=None, worker=0, workers=1))
+    monkeypatch.setattr(M, "make_ctx", lambda *a, **k: M.Ctx(tmp_path, {}, {}, None))
+    a = type("A", (), dict(stage=M.S2, mode="smoke", out=tmp_path, session_start=1.0, model_dir=None, worker=0, workers=1,
+                           cache=None))
     assert M.worker_cli(a) == M.EXIT_STOP
 
 
