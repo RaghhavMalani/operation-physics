@@ -239,43 +239,45 @@ In all, ~24–25 h of GPU quota (a T4 x2 session counts its wall time once). Wit
 setup and packing. If fewer than 10 h are left, wait for the reset. The three sessions can span a reset; a later session
 needs only the earlier version's output, which does not expire with the quota.
 
-### Session 1 (redone after D181)
+### Session 1: done (D182)
 
-The first session 1 (pinned to `4cdd62c6e333`) ran to its planned stop, but its version stuck in **Running** with
-**Output 0 B**. Its ~3.6 GB output, mostly S2's hidden states, could not be resumed by the fixed code anyway (D181).
-**Cancel that version** before you start (its output is not usable). If it has finished saving by then, download its
-`r6_6a_results.zip` first and tell me.
+The notebook pinned to `4cdd62c6e333` ran session 1 to its planned stop (S1, S2, S3 and arm B; ~7.5 h). Its output took
+hours to save (~3.6 GB, mostly S2's hidden states), but it saved. Its zip checks out (D182). It is **not** redone: session 2's
+restore step carries it over and drops the states.
 
-1. **The notebook:** in the same notebook, **File** → **Import Notebook** → the new `notebooks/kaggle_r6_6a.ipynb`
-   (pinned to `413b6545d2b9`), or a new notebook (§2).
-2. **Settings:** §3 (**GPU T4 x2**, **Internet On**). **No input attached:** session 1 starts fresh. Remove any input
-   left from the first attempt.
-3. **Run:** §4 (**Save Version** → **Save & Run All (Commit)**). In **Advanced Settings**, choose **Always save output for
-   this version**. You can close the browser: it runs in the background.
+### Session 2 (C, D, E; ~9 h; ~15 h of quota left before it)
+
+1. **The notebook:** open the same Kaggle notebook → **Edit** → **File** → **Import Notebook** → the new
+   `notebooks/kaggle_r6_6a.ipynb` (pinned to `241d9a0cf2a7`). It replaces the cells; this is required, since the old
+   cells would copy the 3.6 GB forward again.
+2. **Input:** right panel → **Input** → **+ Add Input** → **Your Work** → this notebook → **session 1's version** (the one
+   that ran ~7.5 h) → **Add**. Only that one version.
+3. **Settings:** §3 (**GPU T4 x2**, **Internet On**). **Run:** **Save Version** → **Save & Run All (Commit)**, with
+   **Always save output for this version**.
 4. **What the log should show, in order:**
-   - the GPU line, then `repo 413b654… | mode full | driver …`;
-   - `restore: no previous run under /kaggle/input`, then the weights' sha256 check;
-   - sampling for ~4 h, then `S1: … samples, … answered`;
-   - `s2_read: part_…` lines for ~1 h;
-   - then the teachers and arm B together: `s4_train: … step n/375: loss …` from both GPUs, `s4_train: B_0.pt in … s`;
-   - `s4_train: … chunks wait for an earlier stage` (C, D and E waiting for the teachers), then
-     `… would end after the deadline; stopping here`;
-   - `output: N files, X MB in /kaggle/working`, with X about 350 (S1's samples, three adapters; the states stay in
-     `/tmp`). A `WARNING` above 1,200 MB means something bulky reached the output: tell me before session 2;
-   - `STATUS: {… "stopped_at": "s4_train" …}`. **This is the expected end of session 1**, at ~7.5–8.5 h. The version
-     should show **Complete**, not Error. **Saving the output** should then take minutes, not hours.
-5. **After it ends:** open the version's **Output** tab. The `r6_6a` folder should be there with `s1_sample`, `s2_read`,
-   `s3_teachers` and `s4_train` (three `B_*.pt` files). **Download `r6_6a_results.zip`** as a backup (partial: samples and
-   status only).
-6. **Tell me:** the `STATUS` line, the session's run time, and the quota it used. I check the status and the rates before
-   you start session 2.
+   - the GPU line, then `repo 241d9a0… | mode full | driver …`;
+   - in the restore cell: `migrate: from 4cdd62c6e333: … files copied, 37 S2 parts slimmed (~3250 MB -> ~1 MB);
+     {"chunks_checked": …}`, then a JSON block with `"migrated": true` (a few minutes: it reads 3.6 GB);
+   - the run's `{"chunks_checked": …}`, then `S1: 19200 samples, … answered`;
+   - **no** `s2_read` or `s3_teachers` lines (both are done);
+   - `s4_train` steps from both GPUs: C_0, C_1, C_2, D_0, D_1, D_2, E_0, about 2 h each (one GPU takes four, the other
+     three);
+   - after the last run, possibly a few `s5_score: …` chunks until the deadline;
+   - `output: N files, X MB in /kaggle/working`, with X about 850. A `WARNING` above 1,200 MB: tell me;
+   - `STATUS: {… "stopped_at": "s5_score" …}` (or `"s4_train"` if a run was slow), at ~9–9.5 h. The version should show
+     **Complete**.
+5. **Saving the output** should take far less than session 1's (~4× less data); I cannot promise minutes.
+6. **Tell me:** the `STATUS` line, the run time, the quota used, the `output:` line, and how long the save took. Download
+   `r6_6a_results.zip` as a backup.
 
-### Session 2 and 3 (after I have read session 1)
+**If the restore cell fails** with `migrate: …` (a changed file, another commit), nothing has run: tell me before
+anything else.
 
-Open the same notebook → **Edit** → right panel → **Input** → **+ Add Input** → **Your Work** → this notebook → **the
-latest version** → **Add**, then remove any older version from the inputs, and **Save & Run All (Commit)** with the same
-Advanced Setting. The log should show `restore: … files from …` and `{"chunks_checked": …}` before any new chunk. Session 3
-ends with `S6: results.json written` and `stopped_at: null`; bring its zip back as in §7:
+### Session 3 (after I have read session 2)
+
+The same notebook, unchanged: replace the input with **session 2's version** only, then **Save & Run All (Commit)**. It
+ends with `S6: results.json written` and `stopped_at: null`. With ~6 h of quota left after session 2, it waits for your
+weekly reset unless 10 h are left. Bring its zip back as in §7:
 
 ```bash
 uv run python -m physcal.eval.r6_6a ingest --mode full --zip ~/kaggle_downloads/r6_6a_results.zip

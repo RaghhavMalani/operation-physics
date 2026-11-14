@@ -1899,4 +1899,6 @@ appended here.
     byte-identical, no claims, idempotent, and `restore` routes to it;
   - it refuses another commit, pool or config, a changed chunk, and unfinished teachers;
   - `migrate_from` names exactly `4cdd62c` and that commit's `r6_6a.yaml`;
-  - the R6-6a, stage-runner and Kaggle-sampler suites pass.
+  - the R6-6a, stage-runner and Kaggle-sampler suites pass (78), the two pin tests after the re-pin.
+- **The notebooks pin `241d9a0cf2a7`.** §10 of `kaggle_instructions.md` holds session 2's steps: import the new notebook,
+  attach session 1's version only.
