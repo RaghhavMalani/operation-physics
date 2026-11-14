@@ -1139,6 +1139,95 @@ def ingest(zip_path: Path, mode: str, dest: Path | None = None) -> dict:
     return done
 
 
+# ------------------------------------------------------------------------------------------- D182: carrying session 1 over
+S2_OLD_ARRAYS = {"ids", "log_odds", "states", "answer_only"}     # an S2 part before D181
+
+
+def migration_source(rc: dict, old: dict, new: dict) -> bool:
+    """D182: a run made at `migrate_from`'s commit, whose pins differ from this run's only by that commit and the listed
+    config hashes."""
+    m = rc.get("migrate_from")
+    if not m or old.get("commit") != m["commit"]:
+        return False
+    if any(old.get(k) != new.get(k) for k in ("decision", "mode", "pool")):
+        return False
+    oc, nc = old.get("configs", {}), new["configs"]
+    return set(oc) == set(nc) and all(oc[n] == m["configs"].get(n, nc[n]) for n in nc)
+
+
+def migrate(root: Path, base: Path, rc: dict, new_pins: dict, log=print) -> dict:
+    """D182: the run directory `base`, made at migrate_from's commit, carried into `root` under this commit's pins.
+    Every recorded chunk is checked against its ledger first. S2's parts keep their ids and log-odds and lose their
+    states (D181), which only S3 reads, so S3 must be done. Claims, temporary files and the old pins stay behind;
+    migration.json records each rewritten file's old and new sha256."""
+    root, base = Path(root), Path(base)
+    if (root / S.PINS).exists():
+        if json.loads((root / S.PINS).read_text()) != new_pins:
+            raise SystemExit(f"migrate: {root} holds a run with other pins")
+        log(f"migrate: {root} is already migrated")
+        return {"migrated": False}
+    old = json.loads((base / S.PINS).read_text())
+    if not migration_source(rc, old, new_pins):
+        raise SystemExit(f"migrate: {base} was not made at migrate_from's commit and configs")
+    if not (base / S3 / S.DONE).exists():
+        raise SystemExit("migrate: S3 is not done in the source, so the states it reads would be needed again")
+    checked = S.verify_tree(base)
+    s2 = S.records(base / S2) if (base / S2).is_dir() else {}
+    parts, copied = {}, 0
+    for f in sorted(base.rglob("*")):
+        rel = f.relative_to(base)
+        if not f.is_file() or f.name.endswith((".tmp", S.CLAIM)) or rel == Path(S.PINS):
+            continue
+        if rel.parts[0] == S2 and (f.name.startswith("ledger_") or f.name == S.DONE):
+            continue                                    # rewritten below for the slimmed parts
+        dest = root / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if rel.parts[0] == S2 and f.name in s2:
+            z = np.load(f)
+            if set(z.files) != S2_OLD_ARRAYS:
+                raise SystemExit(f"migrate: {f} holds {sorted(z.files)}, not an S2 part from before D181")
+            tmp = dest.with_name(f"{dest.name}.{os.getpid()}.tmp")
+            with tmp.open("wb") as fh:
+                np.savez(fh, ids=z["ids"], log_odds=z["log_odds"])
+            os.replace(tmp, dest)
+            parts[f.name] = {"old_sha256": s2[f.name]["sha256"], "sha256": S.file_sha256(dest),
+                             "old_bytes": f.stat().st_size, "bytes": dest.stat().st_size}
+        else:
+            shutil.copy2(f, dest)
+            copied += 1
+    if parts:
+        S.write_atomic(root / S2 / "ledger_migrated.jsonl", "".join(
+            json.dumps({"key": k, "seconds": s2[k].get("seconds") or 0.0, "sha256": v["sha256"], "at": s2[k].get("at"),
+                        "migrated_from_sha256": v["old_sha256"]}) + "\n" for k, v in sorted(parts.items())))
+    S.write_atomic(root / S.PINS, json.dumps(new_pins, indent=1, sort_keys=True))
+    run = S.Run(root, new_pins, time.time(), 1.0, 1.0, "migrate")
+    if (base / S2 / S.DONE).exists():
+        run.finish(S2, sorted(json.loads((base / S2 / S.DONE).read_text())["chunks"]))
+    rec = {"decision": "D182", "from": old, "to": new_pins, "source_chunks_checked": checked["chunks_checked"],
+           "files_copied": copied, "s2_parts": parts,
+           "s2_bytes": {"before": sum(v["old_bytes"] for v in parts.values()), "after": sum(v["bytes"] for v in parts.values())}}
+    S.write_atomic(root / "migration.json", json.dumps(rec, indent=1))
+    log(f"migrate: from {old['commit'][:12]}: {copied} files copied, {len(parts)} S2 parts slimmed "
+        f"({rec['s2_bytes']['before'] / 1e6:.0f} MB -> {rec['s2_bytes']['after'] / 1e6:.1f} MB); "
+        f"{json.dumps(run.verify())}")
+    return {"migrated": True} | {k: rec[k] for k in ("source_chunks_checked", "files_copied", "s2_bytes")}
+
+
+def restore_cli(a: argparse.Namespace) -> dict:
+    """A previous version's output: copied as it is (D171), or migrated if it was made at migrate_from's commit (D182)."""
+    rc = mode_config(a.mode)
+    root, src = Path(a.out) / rc["name"], Path(a.src)
+    found = [p for p in src.rglob(S.PINS) if p.parent.name == root.name] if src.exists() else []
+    if len(found) == 1:
+        old, new = json.loads(found[0].read_text()), pins(rc)
+        if old != new and migration_source(rc, old, new):
+            return migrate(root, found[0].parent, rc, new)
+    res = S.restore(root, src)
+    if res["restored"] and a.mode == "smoke":
+        res |= {"survival": survival_report(root, rc, res)}
+    return res
+
+
 # ------------------------------------------------------------------------------------------- the driver
 def spawn(cmds: list[tuple[list[str], dict]], log_path: Path, stall_s: float, log=print) -> list[int]:
     """Each command as its own process group, lines streamed to the log; one silent for stall_s is killed (D157)."""
@@ -1367,10 +1456,7 @@ def main() -> None:
         rc = mode_config(a.mode)
         print(json.dumps(K.download(a.model_dir, scale_config(rc), rc["name"]), indent=1))
     elif a.action == "restore":
-        rc = mode_config(a.mode)
-        res = S.restore(Path(a.out) / rc["name"], a.src)
-        if res["restored"] and a.mode == "smoke":
-            print(json.dumps(survival_report(Path(a.out) / rc["name"], rc, res), indent=1))
+        print(json.dumps(restore_cli(a), indent=1, default=str))
     elif a.action == "pack":
         ctx = make_ctx(a.mode, a.out, time.time(), None, worker="pack")
         print(json.dumps(pack(ctx, a.out), indent=1))

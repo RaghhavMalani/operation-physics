@@ -134,8 +134,12 @@ class Run:
                 return all(self.has(stage, k) for k in keys)
             key = next((k for k in todo if ready(k)), None)
             if key is None:
-                if not (waiting() and self.may_start(stage, est_s)):
-                    log(f"{stage}: {len(todo)} chunks wait for an earlier stage that will not finish; stopping here")
+                if not waiting():
+                    log(f"{stage}: {len(todo)} chunks wait for an earlier stage that stopped; stopping here")
+                    return False
+                if not self.may_start(stage, est_s):
+                    log(f"{stage}: {len(todo)} chunks wait for an earlier stage, and none could end before the "
+                        "deadline; stopping here")
                     return False
                 if polls % 10 == 0:
                     log(f"{stage}: {len(todo)} chunks wait for an earlier stage")
@@ -178,17 +182,35 @@ class Run:
 
     def verify(self) -> dict:
         """Every chunk any ledger or DONE.json records against its file; raises on a difference."""
-        n = 0
-        for d in sorted(p for p in self.root.iterdir() if p.is_dir()):
-            want = {k: r["sha256"] for k, r in self.ledger(d.name).items()}
-            if (d / DONE).exists():
-                want |= {k: r["sha256"] for k, r in json.loads((d / DONE).read_text())["chunks"].items()}
-            for k, h in want.items():
-                f = d / k
-                if not f.exists() or file_sha256(f) != h:
-                    raise SystemExit(f"{f}: missing or differs from its record")
-                n += 1
-        return {"chunks_checked": n}
+        return verify_tree(self.root)
+
+
+def records(stage_dir: Path) -> dict[str, dict]:
+    """A stage directory's chunk records: its ledgers (the last line per key), then its DONE.json, by key."""
+    out: dict = {}
+    for f in sorted(Path(stage_dir).glob("ledger_*.jsonl")):
+        for line in f.read_text().splitlines():
+            if line.strip():
+                r = json.loads(line)
+                out[r["key"]] = r
+    if (Path(stage_dir) / DONE).exists():
+        for k, r in json.loads((Path(stage_dir) / DONE).read_text())["chunks"].items():
+            if k in out and out[k]["sha256"] != r["sha256"]:
+                raise SystemExit(f"{stage_dir}: {k}'s ledger and DONE.json disagree")
+            out[k] = {**out.get(k, {}), "key": k, "sha256": r["sha256"]}
+    return out
+
+
+def verify_tree(root: Path) -> dict:
+    """Every chunk recorded under `root`'s stage directories against its file (any run directory, read-only)."""
+    n = 0
+    for d in sorted(p for p in Path(root).iterdir() if p.is_dir()):
+        for k, r in records(d).items():
+            f = d / k
+            if not f.exists() or file_sha256(f) != r["sha256"]:
+                raise SystemExit(f"{f}: missing or differs from its record")
+            n += 1
+    return {"chunks_checked": n}
 
 
 def restore(root: Path, src: Path, log=print) -> dict:

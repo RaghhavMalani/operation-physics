@@ -62,6 +62,10 @@ analysis:
   seed: 0
   diverged_bce: 1.0                    # D175: worse than any constant guess against the labels
   recompute_atol: 1.0e-12              # D177: the ingest's recomputation on another machine (numpy differs in the last bit)
+migrate_from:                          # D182: session 1 ran at this commit; `restore` carries its output over (S2 slimmed)
+  commit: 4cdd62c6e33316be44f621a1acba9a2e54b3b44b
+  configs:
+    r6_6a: 0ae41df6a5f200c8cbf3d8807c39af3b3165d81788d154838abf63c42c79521e
 results:
   zip_name: r6_6a_results.zip
   max_zip_mb: 50

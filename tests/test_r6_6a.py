@@ -2,6 +2,7 @@
 on CPU, with a kill and a resume (D171 rule 9). Nothing here touches a GPU or reads a real sample."""
 
 import copy
+import hashlib
 import itertools
 import json
 import re
@@ -543,6 +544,86 @@ def test_the_driver_discards_another_runs_cache_and_workers_leave_it_alone(tmp_p
     ctx = M.make_ctx("smoke", tmp_path / "out", 0.0, None, cache=tmp_path / "cache")
     assert not (croot / "stale.npz").exists() and json.loads((croot / S.PINS).read_text()) == ctx.run.pins
     assert M.cache_dir(ctx) == croot and M.output_size(tmp_path / "out")["files"] == 1          # only run.json
+
+
+# ------------------------------------------------------------------------------------------- D182: the migration
+def _old_run(base, rc):
+    """A run directory as commit 4cdd62c wrote it: S2's parts hold their states; S3 done; S4 part-way, with a claim and a
+    temporary file; S1's samples, logs and status beside them."""
+    new = M.pins(rc)
+    old = {**new, "commit": rc["migrate_from"]["commit"], "configs": {**new["configs"], **rc["migrate_from"]["configs"]}}
+    run = S.Run(base, old, 1000.0, 9.5, 1.25, "w0")
+    rng = np.random.default_rng(0)
+    for i in range(3):
+        ids = json.dumps([f"a{i}_{j}" for j in range(4)])
+        run.save(M.S2, M.part_keys(12, 4)[i], lambda tmp, ids=ids: np.savez(tmp.open("wb"), ids=ids, log_odds=rng.normal(size=4),
+                 states=rng.normal(size=(4, 29, 16)).astype(np.float16), answer_only=rng.normal(size=(4, 29, 16)).astype(np.float16)))
+    run.finish(M.S2, M.part_keys(12, 4))
+    run.save(M.S3, "probe_fold_0.json", lambda tmp: tmp.write_text('{"ids": [], "p": []}'))
+    run.finish(M.S3, ["probe_fold_0.json"])
+    run.save(M.S4, "B_0.pt", lambda tmp: tmp.write_bytes(b"adapter"))
+    run.claim(M.S4, "B_0.pt")
+    (base / M.S4 / "C_0.pt.tmp").write_bytes(b"half")
+    (base / "scale" / "r6_6a" / "samples").mkdir(parents=True)
+    (base / "scale" / "r6_6a" / "samples" / "chunk_000000.jsonl").write_text("{}\n")
+    (base / "logs").mkdir()
+    (base / "logs" / "session_1.log").write_text("log\n")
+    S.write_atomic(base / "status.json", '{"stopped_at": "s4_train"}')
+    return old, new
+
+
+def test_the_migration_carries_session_1_over_without_s2s_states(tmp_path):
+    rc = M.mode_config("full")
+    src, dst = tmp_path / "input" / "v1" / "r6_6a", tmp_path / "working" / "r6_6a"
+    old, new = _old_run(src, rc)
+    assert old != new and M.migration_source(rc, old, new)
+    res = M.migrate(dst, src, rc, new, log=lambda m: None)
+    assert res["migrated"] and res["s2_bytes"]["after"] < res["s2_bytes"]["before"] / 10
+    assert json.loads((dst / S.PINS).read_text()) == new
+    run = S.Run(dst, new, 0.0, 1.0, 1.0)
+    assert run.verify()["chunks_checked"] == 3 + 1 + 1 and run.done(M.S2) and run.done(M.S3) and not run.done(M.S4)
+    for key in M.part_keys(12, 4):
+        a, b = np.load(src / M.S2 / key), np.load(dst / M.S2 / key)
+        assert sorted(b.files) == ["ids", "log_odds"] and str(a["ids"]) == str(b["ids"])
+        assert np.array_equal(a["log_odds"], b["log_odds"])
+    rec = json.loads((dst / "migration.json").read_text())
+    assert {k: v["old_sha256"] for k, v in rec["s2_parts"].items()} == {k: r["sha256"] for k, r in S.records(src / M.S2).items()}
+    for rel in ("scale/r6_6a/samples/chunk_000000.jsonl", "logs/session_1.log", "status.json", f"{M.S4}/B_0.pt",
+                f"{M.S3}/probe_fold_0.json"):
+        assert (dst / rel).read_bytes() == (src / rel).read_bytes(), rel
+    assert not list(dst.rglob("*.claim")) and not list(dst.rglob("*.tmp"))
+    assert M.migrate(dst, src, rc, new, log=lambda m: None) == {"migrated": False}          # idempotent
+    a = type("A", (), dict(mode="full", out=tmp_path / "working2", src=tmp_path / "input"))
+    assert M.restore_cli(a)["migrated"] and (tmp_path / "working2" / "r6_6a" / "migration.json").exists()
+
+
+def test_the_migration_refuses_another_commit_a_changed_chunk_or_unfinished_teachers(tmp_path):
+    rc = M.mode_config("full")
+    old, new = _old_run(tmp_path / "a" / "r6_6a", rc)
+    assert not M.migration_source(rc, {**old, "commit": "0" * 40}, new)
+    assert not M.migration_source(rc, {**old, "pool": "other"}, new)
+    assert not M.migration_source(rc, {**old, "configs": {**old["configs"], "followup": "other"}}, new)
+    part = tmp_path / "a" / "r6_6a" / M.S2 / M.part_keys(12, 4)[0]
+    part.write_bytes(part.read_bytes()[:-1] + b"x")
+    with pytest.raises(SystemExit, match="differs from its record"):
+        M.migrate(tmp_path / "w1" / "r6_6a", tmp_path / "a" / "r6_6a", rc, new, log=lambda m: None)
+    _old_run(tmp_path / "b" / "r6_6a", rc)
+    (tmp_path / "b" / "r6_6a" / M.S3 / S.DONE).unlink()
+    with pytest.raises(SystemExit, match="S3 is not done"):
+        M.migrate(tmp_path / "w2" / "r6_6a", tmp_path / "b" / "r6_6a", rc, new, log=lambda m: None)
+    S.Run(tmp_path / "c" / "r6_6a", new, 0.0, 1.0, 1.0).save(M.S3, "x.json", lambda tmp: tmp.write_text("{}"))
+    a = type("A", (), dict(mode="full", out=tmp_path / "w3", src=tmp_path / "c"))       # this commit's run: copied as it is
+    assert M.restore_cli(a)["restored"] == 3 and not (tmp_path / "w3" / "r6_6a" / "migration.json").exists()
+
+
+def test_migrate_from_names_session_1s_commit_and_its_config():
+    """The allow-list is exactly what session 1 ran: commit 4cdd62c and that commit's r6_6a.yaml."""
+    import subprocess
+
+    m = M.mode_config("full")["migrate_from"]
+    cfg = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{m['commit']}:configs/r6_6a.yaml"], capture_output=True,
+                         check=True).stdout
+    assert m["configs"] == {"r6_6a": hashlib.sha256(cfg).hexdigest()}
 
 
 def test_a_non_finite_state_is_a_stop_rule():

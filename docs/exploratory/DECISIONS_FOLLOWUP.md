@@ -1852,3 +1852,51 @@ appended here.
   - the output-size report counts what is saved;
   - the R6-6a, stage-runner and Kaggle-sampler suites pass (75), the two pin tests after the re-pin.
 - **The notebooks pin `413b6545d2b9`.** §10 of `kaggle_instructions.md` holds the redone session 1's steps.
+
+## 2026-11-14: session 1 saved after all (your report)
+
+### D182. Session 1 is complete and checked; it is carried into the D181 code by a checked migration, so it is not redone and the slow save should not recur at full size. An end-to-end check on CPU reproduces the old code's results exactly (2026-11-14)
+- **Your report:** the first session 1 (the notebook pinned to `4cdd62c`, not D181's) finished saving after several extra
+  hours. `STATUS {"run_exit": 0, "stopped_at": "s4_train", "done": ["s2_read", "s3_teachers"]}`, ~7.5 h, 7 h 32 m of
+  quota (22 h 28 m left before it, so ~14 h 56 m now). The Output size on Kaggle was not given; D181 computed ~3.6 GB.
+- **The zip** (`r6_6a_results.zip`, 8.76 MB, sha256 `55cb3044…`; a copy is in `~/kaggle_downloads/r6_6a_session1_results.zip`):
+  - all 12 files match the manifest, and the ingest's checks pass (into a scratch directory; this is not the final
+    ingest). **All 19,200 completions (2,400 problems × 8) re-grade identically** with the local parser: 97.9% answered,
+    39.5% correct, 1.1% truncated;
+  - S1: 5.52 s / problem on the throughput test (D177 assumed 5.92). S2: 37 parts, 156 s mean per part per GPU (~48 min).
+    S3: 13 chunks, 12,486 s (~3.5 h; D177 estimated ~2.7 h);
+  - S4: B_0 6,899 s, B_1 7,686 s, B_2 6,845 s (17–22 s / step), all 375 steps, final losses 0.328, 0.442 and 0.343;
+  - no stall, retry, stop rule, OOM or non-finite value. C_0 correctly did not start (`would end after the deadline`);
+  - **one misleading log line:** a GPU with no ready run logged "wait for an earlier stage that will not finish". The
+    real reason was that no run could end before the deadline. The message now names which of the two applies.
+- **Why session 1 need not be redone.** Between `4cdd62c` and D181 the only changes are D181's storage of S2's states (and
+  how a later session reads them again) and one sizing line (`max_output_mb`). Sampling, reading, the teachers, training,
+  scoring and the analysis are the same code. So the restore step now migrates a run from exactly that commit
+  (`migrate_from` in `configs/r6_6a.yaml`):
+  - it refuses any other source: another commit, another pool, another config, or a run whose S3 is not done;
+  - it checks every recorded chunk of the source against its ledger first;
+  - S2's 37 parts keep their ids and log-odds and lose their states (~3.25 GB to ~1 MB). A new S2 ledger records each part's
+    new sha256 next to its old one;
+  - it copies everything else unchanged and leaves claims and temporary files behind;
+  - it writes this commit's pins, plus `migration.json` holding the old pins, the new pins and every rewritten hash.
+  - **This relaxes D171 rule 3 (pins) for one named commit only,** under these checks.
+- **The end-to-end check (CPU, the tiny Qwen; a one-off, not a permanent test):**
+  - a git worktree at `4cdd62c` ran the old code twice: once through every stage, and once to session 1's state (S1, S2,
+    S3, arm B), with real old-format S2 parts (states included) and the old pins;
+  - the new code migrated the second run and finished it with the new driver. Only S4 (C, D, E) and S5 were launched;
+  - **its `results.json` equals the old code's complete run in every value, at tolerance 0.**
+  - The first attempt differed in 85 values. The cause was my harness: the old run's teachers ran without the test
+    fixture's `text_grid` patch, so the "rich" teacher used another grid. B_0, C_0 and E_0 were already bit-identical.
+- **Will the slow save recur?**
+  - **With the old notebook, yes:** each session would restore ~3.6 GB into `/kaggle/working` and add 0.5 GB of adapters.
+  - **With this notebook,** session 2's output is ~0.85 GB: S1's samples ~100 MB, 10 adapters ~740 MB, the rest small.
+    That is ~4× less than session 1's. If the save time scales with size, it falls to roughly an hour; that is an
+    inference, not a measurement. The run prints the size at its end and warns above 1,200 MB.
+  - **Going further** would mean the adapters leaving the output (a Kaggle Dataset, or another precision, which changes
+    what is scored). Neither is done.
+- **Tests (CPU):**
+  - the migration carries a pre-D181 run over: S2 slimmed with equal ids and log-odds, records consistent, the other files
+    byte-identical, no claims, idempotent, and `restore` routes to it;
+  - it refuses another commit, pool or config, a changed chunk, and unfinished teachers;
+  - `migrate_from` names exactly `4cdd62c` and that commit's `r6_6a.yaml`;
+  - the R6-6a, stage-runner and Kaggle-sampler suites pass.
