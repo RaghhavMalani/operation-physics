@@ -1902,3 +1902,37 @@ appended here.
   - the R6-6a, stage-runner and Kaggle-sampler suites pass (78), the two pin tests after the re-pin.
 - **The notebooks pin `241d9a0cf2a7`.** §10 of `kaggle_instructions.md` holds session 2's steps: import the new notebook,
   attach session 1's version only.
+
+## 2026-11-16: session 2 is back (your report)
+
+### D183. Session 2 is complete and checked: the migration worked, all 10 LoRA runs exist, 3 of 46 scoring chunks are done. Session 3 needs ~7 h of quota and no code change (2026-11-16)
+- **The zip:** `r6_6a_results (1).zip` from your Downloads, copied to `~/kaggle_downloads/r6_6a_session2_results.zip`
+  (8,770,851 bytes, sha256 `ff976df5…`).
+  - All 15 files match the manifest, and the ingest's checks pass (into a scratch directory; not the final ingest).
+  - **All 19,200 completions re-grade identically**, and they are byte-identical to session 1's.
+- **STATUS:** `{"stopped_at": "s5_score", "done": ["s2_read", "s3_teachers", "s4_train"]}`, every exit code 0.
+- **The migration (D182) in practice:** `migrate: from 4cdd62c6e333: 77 files copied, 37 S2 parts slimmed (3351 MB ->
+  2.5 MB); {"chunks_checked": 53}`. The run's own check then found the same 53 chunks intact, and `S1: 19200 samples,
+  18791 answered`. No S2 or S3 stage ran again.
+- **S4:** all seven runs, 375 steps each.
+  - GPU 0 took C_0, C_2, D_1 and E_0 (18.8–19.2 s / step); GPU 1 took C_1, D_0 and D_2 (21.3 s / step).
+  - Times: 7,070–8,017 s per run.
+  - Final batch losses: C 0.369 / 0.429 / 0.462, D 0.497 / 0.487 / 0.501, E 0.643. E, whose targets are shuffled within
+    problems, is highest, as it should be. All are finite, and every one is below D175's divergence line of 1.0 (that rule
+    is applied to validation BCE in S6, not to training loss).
+  - The B adapters' hashes are unchanged from session 1.
+- **S5:** the largest chunks first, as D180 planned: B_0, B_1 and B_2 on the held-out set (2,376–2,657 s; ~0.39–0.44 s per
+  answer). Then C_0's would have ended after the deadline, so both workers stopped.
+- **The output: 137 files, 847.6 MB**, as D182 projected (~850 MB). No warning. How long the save took was not reported.
+- **Session 3, sized from the real sets** (18,791 answered; validation 933, ID test 3,927, held-out 6,084, W1 3,927, the
+  swaps 785 / 391 / 785) and session 2's measured rates:
+  - 43 scoring chunks remain, ~12.4–13.7 GPU-hours;
+  - D180's queue projects S5 to end at ~6.9 h, including ~0.35 h of setup;
+  - S6 at full size took 91 s on one laptop thread with synthetic values of the real shape, so a few minutes on Kaggle's
+    CPU;
+  - **~7 h of quota in all**, well inside the 9.5 h deadline.
+- **What session 3 needs:** the same notebook, unchanged (pinned to `241d9a0cf2a7`), with session 2's version as its only
+  input. Its restore is a plain copy (the pins match), not a migration.
+- **Quota:** not given in your report. ~15 h were left before session 2, which ran ~9.4 h, so ~5.5 h are probably left:
+  not enough. **Start session 3 after the weekly reset**, with at least 10 h left. A session that runs out of quota is
+  stopped by Kaggle, and a killed session's output may not be saved (D177).

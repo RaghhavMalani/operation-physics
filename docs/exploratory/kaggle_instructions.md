@@ -273,15 +273,36 @@ restore step carries it over and drops the states.
 **If the restore cell fails** with `migrate: …` (a changed file, another commit), nothing has run: tell me before
 anything else.
 
-### Session 3 (after I have read session 2)
+### Session 3: S5 scoring and S6, ~7 h (D183)
 
-The same notebook, unchanged: replace the input with **session 2's version** only, then **Save & Run All (Commit)**. It
-ends with `S6: results.json written` and `stopped_at: null`. With ~6 h of quota left after session 2, it waits for your
-weekly reset unless 10 h are left. Bring its zip back as in §7:
+**Start it after your weekly quota reset, with at least 10 h left.** Session 2 left ~5.5 h, and session 3 needs ~7 h.
+Nothing in the code changes.
 
-```bash
-uv run python -m physcal.eval.r6_6a ingest --mode full --zip ~/kaggle_downloads/r6_6a_results.zip
-```
+1. **The notebook:** the same Kaggle notebook, **unchanged** (pinned to `241d9a0cf2a7`). Do not re-import it.
+2. **Input:** right panel → **Input**: **remove session 1's version**, then **+ Add Input** → **Your Work** → this notebook
+   → **session 2's version** → **Add**. Only that one.
+3. **Run:** **Save Version** → **Save & Run All (Commit)**, with **Always save output for this version**.
+4. **What the log should show, in order:**
+   - `repo 241d9a0… | mode full | driver …`;
+   - in the restore cell: `restore: … files from …` (a plain copy, **not** `migrate:`), then the weights' check;
+   - the run's `{"chunks_checked": …}`, then `S1: 19200 samples, 18791 answered`;
+   - no `s2_read`, `s3_teachers` or `s4_train` lines;
+   - `s5_score: …` chunks from both GPUs for ~6.5 h, the largest first (held-out, then the ID test and W1, then
+     validation and the swaps);
+   - `S6: results.json written; … ID-test problems with both classes`;
+   - `output: … MB` (about 870) and `STATUS: {… "stopped_at": null …}`. The version should show **Complete**.
+5. **Bring the zip back** (§7): download `r6_6a_results.zip` from the Output tab, then
+
+   ```bash
+   cp "/mnt/c/Users/Raghh/Downloads/r6_6a_results.zip" ~/kaggle_downloads/r6_6a_results.zip
+   ```
+
+   ```bash
+   uv run python -m physcal.eval.r6_6a ingest --mode full --zip ~/kaggle_downloads/r6_6a_results.zip
+   ```
+
+   The ingest re-grades every completion and recomputes every number from the per-answer tables; it refuses a zip whose
+   results do not follow from them. If Windows names the download `r6_6a_results (2).zip`, use that name in the `cp`.
 
 **If something goes wrong:**
 
