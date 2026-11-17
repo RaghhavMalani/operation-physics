@@ -1,0 +1,126 @@
+$ nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+Tesla T4, 580.178.04, 15360 MiB
+Tesla T4, 580.178.04, 15360 MiB
+
+$ nproc; free -g; df -h /tmp /kaggle/working
+4
+               total        used        free      shared  buff/cache   available
+Mem:              31           1          25           0           4          30
+Swap:              0           0           0
+Filesystem      Size  Used Avail Use% Mounted on
+overlay         8.0T  7.1T  967G  89% /
+/dev/loop2       20G  140K   20G   1% /kaggle/working
+
+$ git init -q /tmp/physcal/repo
+
+$ git -C /tmp/physcal/repo remote add origin https://github.com/RaghhavMalani/operation-physics.git
+
+$ git -C /tmp/physcal/repo sparse-checkout set --no-cone /physcal/ /configs/ /data/eval_sets/1.1.0+c735a0d4/r6_6a_pool.jsonl /data/eval_sets/1.1.0+c735a0d4/r6_6a_pool_manifest.json /data/eval_sets/1.1.0+c735a0d4/r6_6a_smoke_pool.jsonl /data/eval_sets/1.1.0+c735a0d4/r6_6a_smoke_pool_manifest.json
+
+$ git -C /tmp/physcal/repo fetch -q --depth 1 --filter=blob:none origin 241d9a0cf2a7820eab3904af5d7db3b4f90bb0d1
+
+$ git -C /tmp/physcal/repo checkout -q FETCH_HEAD
+
+$ git -C /tmp/physcal/repo rev-parse HEAD
+241d9a0cf2a7820eab3904af5d7db3b4f90bb0d1
+
+$ /usr/bin/python3 -m pip install -q uv==0.13.1
+
+$ /usr/bin/python3 -m uv venv -q --python 3.11 /tmp/physcal/venv
+
+$ /usr/bin/python3 -m uv pip install -q --python /tmp/physcal/venv/bin/python vllm==0.29.0 pint==0.25.3 pyyaml==6.0.3 sympy==1.14.0 peft==0.21.2 scikit-learn==1.9.1 scipy==1.17.1 joblib==1.6.0
+
+$ /tmp/physcal/venv/bin/python -c "import torch, vllm, peft, sklearn, transformers; print('torch', torch.__version__, 'cuda', torch.version.cuda, 'gpus', torch.cuda.device_count(), 'vllm', vllm.__version__, 'peft', peft.__version__, 'transformers', transformers.__version__, 'sklearn', sklearn.__version__)"
+torch 2.13.0+cu130 cuda 13.0 gpus 2 vllm 0.29.0 peft 0.21.2 transformers 5.23.0 sklearn 1.9.1
+
+$ /tmp/physcal/venv/bin/python -m physcal.eval.r6_6a restore --out /kaggle/working --src /kaggle/input --mode full
+restore: 133 files from /kaggle/input/notebooks/raghhavmalani/quoting-volatility-r6-6a/r6_6a
+{
+ "restored": 133,
+ "from": "/kaggle/input/notebooks/raghhavmalani/quoting-volatility-r6-6a/r6_6a"
+}
+
+$ /tmp/physcal/venv/bin/python -m physcal.eval.r6_6a download --model-dir /tmp/physcal/qwen2.5-math-1.5b-instruct --mode full
+{
+ "repo_id": "Qwen/Qwen2.5-Math-1.5B-Instruct",
+ "revision": "aafeb0fc6f22cbf0eaeed126eff8be45b0360a35",
+ "weights_sha256": {
+  "model.safetensors": "08faf1e950173bb44c11d26df28c55da7237dc55c77dbc1cbae4a5d7584540d9"
+ }
+}
+
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+Fetching 7 files:  43%|████▎     | 3/7 [00:00<00:00, 22.52it/s]
+Fetching 7 files: 100%|██████████| 7/7 [00:07<00:00,  1.21s/it]
+Fetching 7 files: 100%|██████████| 7/7 [00:07<00:00,  1.06s/it]
+
+{"chunks_checked": 63}
+S1: 19200 samples, 18791 answered
+[1] 
+[0] 
+[1] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[1] Loading weights:   0%|          | 1/338 [00:01<06:43,  1.20s/it]
+[0] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[0] Loading weights:   0%|          | 1/338 [00:01<08:16,  1.47s/it]
+[1] Loading weights:  43%|████▎     | 147/338 [00:01<00:01, 155.38it/s]
+[0] Loading weights:  47%|████▋     | 159/338 [00:01<00:01, 133.64it/s]
+[1] Loading weights:  68%|██████▊   | 229/338 [00:01<00:00, 145.35it/s]
+[0] Loading weights:  65%|██████▍   | 219/338 [00:02<00:00, 127.37it/s]
+[1] Loading weights:  83%|████████▎ | 280/338 [00:02<00:00, 142.66it/s]
+[0] Loading weights:  76%|███████▌  | 257/338 [00:02<00:00, 126.18it/s]
+[1] Loading weights:  93%|█████████▎| 316/338 [00:02<00:00, 137.25it/s]
+[1] Loading weights: 100%|██████████| 338/338 [00:02<00:00, 126.13it/s]
+[0] Loading weights:  84%|████████▍ | 285/338 [00:02<00:00, 137.66it/s]
+[0] Loading weights:  92%|█████████▏| 311/338 [00:02<00:00, 148.47it/s]
+[0] Loading weights: 100%|██████████| 338/338 [00:02<00:00, 120.97it/s]
+[1] /tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3303: FutureWarning: `is_gradient_checkpointing` is deprecated and will be removed in v6. Use `is_activation_checkpointing` instead.
+[0] /tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3303: FutureWarning: `is_gradient_checkpointing` is deprecated and will be removed in v6. Use `is_activation_checkpointing` instead.
+[0]   warnings.warn(
+[1]   warnings.warn(
+[0] s5_score: C_1__held_out.json in 2349 s
+[1] s5_score: C_0__held_out.json in 2522 s
+[0] s5_score: C_2__held_out.json in 2351 s
+[1] s5_score: D_0__held_out.json in 2518 s
+[0] s5_score: D_1__held_out.json in 2350 s
+[1] s5_score: D_2__held_out.json in 2518 s
+[1] s5_score: B_0__id_test.json in 1604 s
+[0] s5_score: E_0__held_out.json in 2350 s
+[1] s5_score: B_0__id_w1.json in 1596 s
+[0] s5_score: B_1__id_test.json in 1502 s
+[1] s5_score: B_2__id_test.json in 1610 s
+[0] s5_score: C_0__id_test.json in 1502 s
+[0] s5_score: C_1__id_test.json in 1501 s
+[1] s5_score: C_0__id_w1.json in 1603 s
+[0] s5_score: C_2__id_test.json in 1500 s
+[1] s5_score: D_0__id_test.json in 1613 s
+[0] s5_score: D_0__id_w1.json in 1489 s
+[1] s5_score: D_1__id_test.json in 1614 s
+[0] s5_score: D_2__id_test.json in 1502 s
+[1] s5_score: E_0__id_test.json in 1614 s
+[1] s5_score: B_0__validation.json in 388 s
+[0] s5_score: A__id_w1.json in 956 s
+[1] s5_score: B_1__validation.json in 391 s
+[0] s5_score: B_2__validation.json in 367 s
+[1] s5_score: C_0__validation.json in 394 s
+[0] s5_score: C_1__validation.json in 368 s
+[1] s5_score: C_2__validation.json in 393 s
+[0] s5_score: D_0__validation.json in 367 s
+[1] s5_score: D_1__validation.json in 392 s
+[0] s5_score: D_2__validation.json in 368 s
+[0] s5_score: B_0__sw_opposite.json in 303 s
+[1] s5_score: E_0__validation.json in 394 s
+[0] s5_score: B_0__sw_own_cut.json in 299 s
+[1] s5_score: C_0__sw_opposite.json in 326 s
+[0] s5_score: C_0__sw_own_cut.json in 300 s
+[1] s5_score: D_0__sw_opposite.json in 327 s
+[0] s5_score: D_0__sw_own_cut.json in 299 s
+[1] s5_score: A__sw_opposite.json in 213 s
+[0] s5_score: A__sw_own_cut.json in 193 s
+[1] s5_score: B_0__sw_diff.json in 189 s
+[0] s5_score: C_0__sw_diff.json in 177 s
+[1] s5_score: D_0__sw_diff.json in 190 s
+[0] s5_score: A__sw_diff.json in 115 s
+S6: results.json written; 333 ID-test problems with both classes
+output: 183 files, 855.6 MB in /kaggle/working
+STATUS: {"stopped_at": null, "done": ["s2_read", "s3_teachers", "s4_train", "s5_score"]}

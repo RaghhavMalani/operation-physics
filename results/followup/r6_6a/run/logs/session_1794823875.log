@@ -1,0 +1,64 @@
+
+
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+Loading weights:   0%|          | 1/338 [00:01<06:43,  1.20s/it]
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+Loading weights:   0%|          | 1/338 [00:01<08:16,  1.47s/it]
+Loading weights:  43%|████▎     | 147/338 [00:01<00:01, 155.38it/s]
+Loading weights:  47%|████▋     | 159/338 [00:01<00:01, 133.64it/s]
+Loading weights:  68%|██████▊   | 229/338 [00:01<00:00, 145.35it/s]
+Loading weights:  65%|██████▍   | 219/338 [00:02<00:00, 127.37it/s]
+Loading weights:  83%|████████▎ | 280/338 [00:02<00:00, 142.66it/s]
+Loading weights:  76%|███████▌  | 257/338 [00:02<00:00, 126.18it/s]
+Loading weights:  93%|█████████▎| 316/338 [00:02<00:00, 137.25it/s]
+Loading weights: 100%|██████████| 338/338 [00:02<00:00, 126.13it/s]
+Loading weights:  84%|████████▍ | 285/338 [00:02<00:00, 137.66it/s]
+Loading weights:  92%|█████████▏| 311/338 [00:02<00:00, 148.47it/s]
+Loading weights: 100%|██████████| 338/338 [00:02<00:00, 120.97it/s]
+/tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3303: FutureWarning: `is_gradient_checkpointing` is deprecated and will be removed in v6. Use `is_activation_checkpointing` instead.
+/tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3303: FutureWarning: `is_gradient_checkpointing` is deprecated and will be removed in v6. Use `is_activation_checkpointing` instead.
+  warnings.warn(
+  warnings.warn(
+s5_score: C_1__held_out.json in 2349 s
+s5_score: C_0__held_out.json in 2522 s
+s5_score: C_2__held_out.json in 2351 s
+s5_score: D_0__held_out.json in 2518 s
+s5_score: D_1__held_out.json in 2350 s
+s5_score: D_2__held_out.json in 2518 s
+s5_score: B_0__id_test.json in 1604 s
+s5_score: E_0__held_out.json in 2350 s
+s5_score: B_0__id_w1.json in 1596 s
+s5_score: B_1__id_test.json in 1502 s
+s5_score: B_2__id_test.json in 1610 s
+s5_score: C_0__id_test.json in 1502 s
+s5_score: C_1__id_test.json in 1501 s
+s5_score: C_0__id_w1.json in 1603 s
+s5_score: C_2__id_test.json in 1500 s
+s5_score: D_0__id_test.json in 1613 s
+s5_score: D_0__id_w1.json in 1489 s
+s5_score: D_1__id_test.json in 1614 s
+s5_score: D_2__id_test.json in 1502 s
+s5_score: E_0__id_test.json in 1614 s
+s5_score: B_0__validation.json in 388 s
+s5_score: A__id_w1.json in 956 s
+s5_score: B_1__validation.json in 391 s
+s5_score: B_2__validation.json in 367 s
+s5_score: C_0__validation.json in 394 s
+s5_score: C_1__validation.json in 368 s
+s5_score: C_2__validation.json in 393 s
+s5_score: D_0__validation.json in 367 s
+s5_score: D_1__validation.json in 392 s
+s5_score: D_2__validation.json in 368 s
+s5_score: B_0__sw_opposite.json in 303 s
+s5_score: E_0__validation.json in 394 s
+s5_score: B_0__sw_own_cut.json in 299 s
+s5_score: C_0__sw_opposite.json in 326 s
+s5_score: C_0__sw_own_cut.json in 300 s
+s5_score: D_0__sw_opposite.json in 327 s
+s5_score: D_0__sw_own_cut.json in 299 s
+s5_score: A__sw_opposite.json in 213 s
+s5_score: A__sw_own_cut.json in 193 s
+s5_score: B_0__sw_diff.json in 189 s
+s5_score: C_0__sw_diff.json in 177 s
+s5_score: D_0__sw_diff.json in 190 s
+s5_score: A__sw_diff.json in 115 s

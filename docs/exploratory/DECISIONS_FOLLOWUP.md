@@ -1936,3 +1936,109 @@ appended here.
 - **Quota:** not given in your report. ~15 h were left before session 2, which ran ~9.4 h, so ~5.5 h are probably left:
   not enough. **Start session 3 after the weekly reset**, with at least 10 h left. A session that runs out of quota is
   stopped by Kaggle, and a killed session's output may not be saved (D177).
+
+## 2026-11-17: R6-6a's results (your report: session 3 finished)
+
+### D184. R6-6a's readings under D175. Every pre-registered contrast is decided, but the E − A check fired ("the setup leaks: stop and diagnose"). The post-hoc diagnosis finds no leak; it finds that within-problem shuffling does not make E a null. So no reading becomes a finding; C − E and C − D are recorded for a pre-registered follow-up (2026-11-17)
+- **Status:** exploratory track, paper #2. These are D175's readings, computed by the code D175 / D180–D182 pinned and
+  recomputed by the ingest. The diagnosis and every comparison not in D175's table are **post-hoc**, labelled as such.
+- **The run:**
+  - **Sessions:** three. Session 1 at `4cdd62c`, then sessions 2 and 3 at `241d9a0` after D182's migration. Their last
+    chunks ended 7.5, 9.3 and 6.3 h after each start (session 1 used 7 h 32 m of quota as reported).
+  - **The final zip:** `r6_6a_results.zip` (10,739,480 bytes, sha256 `608445e9…`; `~/kaggle_downloads/r6_6a_results.zip`).
+  - **The ingest** (D171 rule 8; into `results/followup/r6_6a/run`): all 20 files match the manifest, **all 19,200
+    completions re-grade identically**, and **every number in `results.json` recomputes from the per-answer tables**
+    within 1e-12.
+  - **STATUS:** `stopped_at: null`, with S2–S5 done and every exit code 0. Session 3 restored 133 files plainly, and 63
+    chunks checked.
+  - **S5:** all 46 scoring chunks. **S6:** `333 ID-test problems with both classes`. Output 855.6 MB. No stall, retry,
+    stop rule or non-finite value in any session.
+  - **Counts (answered / samples; truncated):** ID test 3,927 / 4,016 (40), held-out template 6,084 / 6,224 (77),
+    validation 933 / 960 (12), train 7,847 / 8,000 (76).
+- **Validation (a report, not a gate):** every trained run has validation BCE 0.41–0.54 (B 0.41–0.43, C 0.47, D 0.51,
+  E 0.54). None diverged.
+  - **The code also labels arm A "diverged"** (BCE 1.40: the untrained model says "yes" to nearly everything). D175's
+    rule is about trained runs, and A is not one. Diverged runs stay in anyway, so no reading changes. The block
+    `pairwise_without_diverged` drops A, so its contrasts with A are missing; it is not read.
+- **The primary: within-problem pairwise accuracy** (95% CIs, paired bootstrap over problems, B = 10,000):
+
+| | ID test (333 problems) | held-out template (505) |
+|---|---|---|
+| A: no training | 0.616 [0.586, 0.645] | 0.588 [0.563, 0.612] |
+| B: direct supervised (3 seeds) | **0.817** [0.792, 0.839] | **0.819** [0.800, 0.838] |
+| C: probe-distilled (3 seeds) | 0.787 [0.761, 0.811] | 0.785 [0.764, 0.805] |
+| D: text-distilled (3 seeds) | 0.734 [0.706, 0.760] | 0.715 [0.693, 0.738] |
+| E: shuffled (1 seed) | 0.718 [0.688, 0.746] | 0.702 [0.679, 0.726] |
+| reference: the probe | 0.761 | 0.763 |
+| reference: rich text | 0.719 | 0.704 |
+| reference: answer-only probe | 0.632 | 0.657 |
+| reference: self-consistency (k = 8) | 0.779 [0.747, 0.810] | 0.764 [0.737, 0.791] |
+| reference: length | 0.628 | 0.591 |
+
+  - **Seeds are tight:** B 0.812–0.823, C 0.782–0.790, D 0.731–0.736 (ID test); held-out similar.
+- **The pre-registered readings (D175's table, verbatim):**
+
+| contrast | ID test | reading | held-out template | reading |
+|---|---|---|---|---|
+| B − A | +0.201 [+0.169, +0.233] | direct supervision helps | +0.231 [+0.205, +0.259] | direct supervision helps |
+| C − A | +0.171 [+0.139, +0.203] | distillation helps | +0.197 [+0.169, +0.227] | distillation helps |
+| C − B | −0.030 [−0.046, −0.014] | labels beat the probe's target | −0.034 [−0.047, −0.021] | labels beat the probe's target |
+| **C − D (headline)** | **+0.053 [+0.035, +0.071]** | **it moves more than surface** | **+0.069 [+0.054, +0.085]** | **it moves more than surface** |
+| E − A (check) | **+0.102 [+0.071, +0.133]** | **the setup leaks: stop and diagnose** | **+0.115 [+0.088, +0.142]** | **the setup leaks: stop and diagnose** |
+
+  - **D175 anticipated C − B ≤ 0:** B trains on the truth and C on a noisy estimate of it.
+- **The secondaries, on all answered test items** (ID test; held-out in the same order and direction):
+  - **Brier:** A 0.446, B 0.129, C 0.143, D 0.155, E 0.166 (probe 0.150, rich 0.152, self-consistency 0.117).
+  - **AURC:** A 0.449, B 0.282, C 0.298, D 0.313, E 0.318 (self-consistency 0.265, probe 0.308, length 0.374).
+  - Every trained arm beats A on both, with CIs excluding 0.
+- **Held-out wording W1** (seed 0; no reading of its own): A 0.622, B 0.812, C 0.784, D 0.718. C − D +0.066 [+0.047, +0.085],
+  C − B −0.028 [−0.045, −0.011]: the W0 pattern holds under the other wording.
+- **The swap test** (seed 0, 100 problems):
+  - **`opposite`, read with D167's wording:** A 0.548 [0.466, 0.628], "neither". B_0 0.202, C_0 0.274 and D_0 0.276 all
+    read "tracks the reasoning", each with a CI below 0.5.
+  - **The box effect on `diff_value`** (77 answers): A −0.098, B −0.125, C −0.157, D −0.052, every CI below 0. Every arm
+    lowers P(yes) when another value is put in the box; D does so least.
+- **The check fired, so D175's rule applies: stop and diagnose.** No reading above is promoted to a finding until the
+  diagnosis explains E.
+- **The diagnosis (post-hoc; `scripts/r6_6a_diagnosis.py` → `results/followup/r6_6a/diagnosis_d184.json`, B = 2,000):**
+  - **(a) No leak of data.** The 6,000 training items come from 765 train problems. None of the 1,400 validation and
+    test problems shares a key or a text with them. The teachers read only train answers (`stage_teachers`), and E
+    (0.718) differs from C (0.790), so the shuffle took effect.
+  - **(b) What E learned.**
+
+| pairs (ID test) | E − A | C − E | C − D | D − E |
+|---|---|---|---|---|
+| all (D175) | +0.102 [+0.073, +0.134] | +0.069 [+0.050, +0.088] | +0.053 [+0.035, +0.072] | +0.016 [−0.002, +0.033] |
+| length-matched (\|ln ratio\| ≤ 0.1; 278 problems) | +0.119 [+0.071, +0.165] | +0.084 [+0.045, +0.124] | +0.024 [−0.005, +0.054] | +0.060 [+0.026, +0.093] |
+| length-discordant (the correct answer is longer; 270) | −0.040 [−0.086, +0.009] | +0.102 [+0.069, +0.135] | +0.169 [+0.139, +0.199] | −0.067 [−0.099, −0.035] |
+
+    The held-out template set agrees: E − A +0.115 / +0.148 / −0.010 and C − E +0.082 / +0.090 / +0.142.
+    - E's gain survives where length cannot help (length-matched pairs). It vanishes where length points the wrong way
+      (E 0.502 on discordant pairs).
+    - **The likeliest reading (a hypothesis, not tested):** shuffling within a problem keeps each problem's mean target,
+      i.e. its difficulty. E learns answer-level cues that mark hard problems (length among them), and those cues also
+      separate a wrong answer from a right one within a problem. **E is a difficulty-only control, not the null D175
+      assumed.** D175's check rested on that assumption.
+  - **(c) What survives against E (post-hoc, descriptive):**
+    - **C − E** +0.069 [+0.050, +0.088] (ID), +0.082 (held-out). It is positive on length-matched and on
+      length-discordant pairs too.
+    - **D − E** +0.016 [−0.002, +0.033] (ID), +0.013 [−0.005, +0.030] (held-out). The text-distilled arm's gain over A is
+      almost all reproduced by difficulty-only targets.
+    - **On discordant pairs, D (0.435 / 0.441) and the rich reader (0.488 / 0.480) fall below 0.5,** while C (0.604 /
+      0.652), B (0.707 / 0.725) and the probe (0.635 / 0.649) stay above it.
+    - **Against the references:** B − self-consistency +0.038 [+0.002, +0.075] (ID), +0.055 [+0.024, +0.087] (held-out),
+      at one sample's cost instead of eight. C − self-consistency +0.008 [−0.029, +0.047]. C − probe (its own teacher)
+      +0.025 [+0.007, +0.044]. D − rich +0.014 [−0.008, +0.037].
+- **What this means, in D175's terms:**
+  - **Pre-registered, decided, but not promoted to findings while the check stands:** labels help (B − A); distillation
+    helps (C − A); labels beat the probe's target (C − B); and the headline "it moves more than surface" (C − D).
+  - **What the diagnosis supports, post-hoc:** the setup does not leak data. The check's premise failed instead.
+    - Against the difficulty-only control, the probe-distilled verdict keeps an advantage the text-distilled verdict does
+      not.
+    - The headline's margin is partly a length artifact on the ID test (C − D on length-matched pairs +0.024, CI
+      containing 0), not on the held-out template set (+0.052).
+  - **Not shown:** that C's extra signal is answer-specific information the probe reads from the states, rather than
+    other cues correlated with difficulty. That needs a control D175 did not register.
+- **Next, if you want a claim (your decision):** a pre-registered replication with E as the reference and C − E as the
+  headline, or with E′ (each item's target replaced by its problem's mean). Seeds for E, matching C. None is built or run.
+- **Recorded, unchanged:** D175's table and wording, D148's freeze, paper #1.

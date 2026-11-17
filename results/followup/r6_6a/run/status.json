@@ -1,0 +1,15 @@
+{
+ "stopped_at": null,
+ "exit_codes": {
+  "s5_score": [
+   0,
+   0
+  ]
+ },
+ "done": [
+  "s2_read",
+  "s3_teachers",
+  "s4_train",
+  "s5_score"
+ ]
+}

@@ -1,0 +1,332 @@
+$ nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+Tesla T4, 580.178.04, 15360 MiB
+Tesla T4, 580.178.04, 15360 MiB
+
+$ nproc; free -g; df -h /tmp /kaggle/working
+4
+               total        used        free      shared  buff/cache   available
+Mem:              31           1          25           0           4          30
+Swap:              0           0           0
+Filesystem      Size  Used Avail Use% Mounted on
+overlay         8.0T  7.1T  967G  89% /
+/dev/loop2       20G  140K   20G   1% /kaggle/working
+
+$ git init -q /tmp/physcal/repo
+
+$ git -C /tmp/physcal/repo remote add origin https://github.com/RaghhavMalani/operation-physics.git
+
+$ git -C /tmp/physcal/repo sparse-checkout set --no-cone /physcal/ /configs/ /data/eval_sets/1.1.0+c735a0d4/r6_6a_pool.jsonl /data/eval_sets/1.1.0+c735a0d4/r6_6a_pool_manifest.json /data/eval_sets/1.1.0+c735a0d4/r6_6a_smoke_pool.jsonl /data/eval_sets/1.1.0+c735a0d4/r6_6a_smoke_pool_manifest.json
+
+$ git -C /tmp/physcal/repo fetch -q --depth 1 --filter=blob:none origin 241d9a0cf2a7820eab3904af5d7db3b4f90bb0d1
+
+$ git -C /tmp/physcal/repo checkout -q FETCH_HEAD
+
+$ git -C /tmp/physcal/repo rev-parse HEAD
+241d9a0cf2a7820eab3904af5d7db3b4f90bb0d1
+
+$ /usr/bin/python3 -m pip install -q uv==0.13.1
+
+$ /usr/bin/python3 -m uv venv -q --python 3.11 /tmp/physcal/venv
+
+$ /usr/bin/python3 -m uv pip install -q --python /tmp/physcal/venv/bin/python vllm==0.29.0 pint==0.25.3 pyyaml==6.0.3 sympy==1.14.0 peft==0.21.2 scikit-learn==1.9.1 scipy==1.17.1 joblib==1.6.0
+
+$ /tmp/physcal/venv/bin/python -c "import torch, vllm, peft, sklearn, transformers; print('torch', torch.__version__, 'cuda', torch.version.cuda, 'gpus', torch.cuda.device_count(), 'vllm', vllm.__version__, 'peft', peft.__version__, 'transformers', transformers.__version__, 'sklearn', sklearn.__version__)"
+torch 2.13.0+cu130 cuda 13.0 gpus 2 vllm 0.29.0 peft 0.21.2 transformers 5.23.0 sklearn 1.9.1
+
+$ /tmp/physcal/venv/bin/python -m physcal.eval.r6_6a restore --out /kaggle/working --src /kaggle/input --mode full
+migrate: from 4cdd62c6e333: 77 files copied, 37 S2 parts slimmed (3351 MB -> 2.5 MB); {"chunks_checked": 53}
+{
+ "migrated": true,
+ "source_chunks_checked": 53,
+ "files_copied": 77,
+ "s2_bytes": {
+  "before": 3350623050,
+  "after": 2499408
+ }
+}
+
+$ /tmp/physcal/venv/bin/python -m physcal.eval.r6_6a download --model-dir /tmp/physcal/qwen2.5-math-1.5b-instruct --mode full
+{
+ "repo_id": "Qwen/Qwen2.5-Math-1.5B-Instruct",
+ "revision": "aafeb0fc6f22cbf0eaeed126eff8be45b0360a35",
+ "weights_sha256": {
+  "model.safetensors": "08faf1e950173bb44c11d26df28c55da7237dc55c77dbc1cbae4a5d7584540d9"
+ }
+}
+
+Fetching 7 files:   0%|          | 0/7 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+Fetching 7 files:  14%|█▍        | 1/7 [00:00<00:00,  6.19it/s]
+Fetching 7 files:  57%|█████▋    | 4/7 [00:00<00:00, 16.15it/s]
+Fetching 7 files: 100%|██████████| 7/7 [00:10<00:00,  1.79s/it]
+Fetching 7 files: 100%|██████████| 7/7 [00:10<00:00,  1.45s/it]
+
+{"chunks_checked": 53}
+S1: 19200 samples, 18791 answered
+[0] 
+[1] 
+[1] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[0] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[0] Loading weights:   0%|          | 1/338 [00:00<02:31,  2.23it/s]
+[1] Loading weights:   8%|▊         | 28/338 [00:00<00:01, 257.52it/s]
+[1] Loading weights:  16%|█▌        | 54/338 [00:00<00:01, 162.80it/s]
+[0] Loading weights:  19%|█▉        | 64/338 [00:00<00:01, 148.09it/s]
+[1] Loading weights:  22%|██▏       | 73/338 [00:00<00:01, 157.16it/s]
+[0] Loading weights:  29%|██▊       | 97/338 [00:00<00:01, 154.27it/s]
+[1] Loading weights:  27%|██▋       | 90/338 [00:00<00:01, 131.96it/s]
+[0] Loading weights:  36%|███▌      | 122/338 [00:00<00:01, 157.02it/s]
+[1] Loading weights:  33%|███▎      | 111/338 [00:00<00:01, 144.58it/s]
+[1] Loading weights:  38%|███▊      | 127/338 [00:00<00:01, 144.03it/s]
+[0] Loading weights:  43%|████▎     | 144/338 [00:01<00:01, 143.99it/s]
+[1] Loading weights:  43%|████▎     | 147/338 [00:01<00:01, 129.78it/s]
+[0] Loading weights:  48%|████▊     | 163/338 [00:01<00:01, 120.51it/s]
+[1] Loading weights:  51%|█████     | 171/338 [00:01<00:01, 151.40it/s]
+[0] Loading weights:  53%|█████▎    | 178/338 [00:01<00:01, 118.49it/s]
+[1] Loading weights:  56%|█████▌    | 188/338 [00:01<00:01, 139.91it/s]
+[0] Loading weights:  58%|█████▊    | 195/338 [00:01<00:01, 117.10it/s]
+[1] Loading weights:  60%|██████    | 203/338 [00:01<00:01, 133.30it/s]
+[0] Loading weights:  62%|██████▏   | 209/338 [00:01<00:01, 117.40it/s]
+[1] Loading weights:  65%|██████▍   | 219/338 [00:01<00:00, 120.85it/s]
+[0] Loading weights:  68%|██████▊   | 231/338 [00:01<00:00, 133.61it/s]
+[1] Loading weights:  69%|██████▊   | 232/338 [00:01<00:00, 118.93it/s]
+[0] Loading weights:  73%|███████▎  | 246/338 [00:02<00:00, 122.85it/s]
+[1] Loading weights:  72%|███████▏  | 245/338 [00:01<00:00, 114.48it/s]
+[0] Loading weights:  79%|███████▉  | 267/338 [00:02<00:00, 136.34it/s]
+[1] Loading weights:  76%|███████▌  | 257/338 [00:01<00:00, 108.72it/s]
+[0] Loading weights:  83%|████████▎ | 282/338 [00:02<00:00, 136.26it/s]
+[1] Loading weights:  80%|███████▉  | 269/338 [00:02<00:00, 108.57it/s]
+[0] Loading weights:  90%|████████▉ | 303/338 [00:02<00:00, 149.48it/s]
+[0] Loading weights:  94%|█████████▍| 319/338 [00:02<00:00, 140.83it/s]
+[0] Loading weights: 100%|██████████| 338/338 [00:02<00:00, 133.70it/s]
+[1] Loading weights:  83%|████████▎ | 280/338 [00:02<00:00, 102.10it/s]
+[1] Loading weights:  90%|████████▉ | 303/338 [00:02<00:00, 131.64it/s]
+[1] Loading weights:  97%|█████████▋| 327/338 [00:02<00:00, 150.80it/s]
+[1] Loading weights: 100%|██████████| 338/338 [00:02<00:00, 139.55it/s]
+[0] /tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3303: FutureWarning: `is_gradient_checkpointing` is deprecated and will be removed in v6. Use `is_activation_checkpointing` instead.
+[0]   warnings.warn(
+[1] /tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3303: FutureWarning: `is_gradient_checkpointing` is deprecated and will be removed in v6. Use `is_activation_checkpointing` instead.
+[1]   warnings.warn(
+[0] /tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3195: FutureWarning: `gradient_checkpointing_enable` is deprecated and will be removed in v6. Use `activation_checkpointing_enable` instead.
+[0]   warnings.warn(
+[1] /tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3195: FutureWarning: `gradient_checkpointing_enable` is deprecated and will be removed in v6. Use `activation_checkpointing_enable` instead.
+[1]   warnings.warn(
+[0]   step 1/375: loss 1.2572, 15.82 s / step
+[1]   step 1/375: loss 1.3046, 17.53 s / step
+[0]   step 21/375: loss 0.5321, 18.68 s / step
+[1]   step 21/375: loss 0.8202, 20.94 s / step
+[0]   step 41/375: loss 0.4489, 18.94 s / step
+[1]   step 41/375: loss 0.6111, 20.93 s / step
+[0]   step 61/375: loss 0.5152, 18.83 s / step
+[1]   step 61/375: loss 0.5308, 21.25 s / step
+[0]   step 81/375: loss 0.4492, 18.92 s / step
+[1]   step 81/375: loss 0.4777, 21.30 s / step
+[0]   step 101/375: loss 0.5483, 18.93 s / step
+[1]   step 101/375: loss 0.4102, 21.47 s / step
+[0]   step 121/375: loss 0.3863, 19.01 s / step
+[1]   step 121/375: loss 0.5359, 21.42 s / step
+[0]   step 141/375: loss 0.3889, 19.03 s / step
+[1]   step 141/375: loss 0.5623, 21.38 s / step
+[0]   step 161/375: loss 0.4782, 18.92 s / step
+[0]   step 181/375: loss 0.5002, 18.95 s / step
+[1]   step 161/375: loss 0.4430, 21.35 s / step
+[0]   step 201/375: loss 0.4650, 18.95 s / step
+[1]   step 181/375: loss 0.6058, 21.39 s / step
+[0]   step 221/375: loss 0.5192, 18.95 s / step
+[1]   step 201/375: loss 0.5923, 21.39 s / step
+[0]   step 241/375: loss 0.4967, 18.93 s / step
+[1]   step 221/375: loss 0.4885, 21.36 s / step
+[0]   step 261/375: loss 0.5183, 18.85 s / step
+[1]   step 241/375: loss 0.4371, 21.34 s / step
+[0]   step 281/375: loss 0.4538, 18.84 s / step
+[1]   step 261/375: loss 0.5277, 21.31 s / step
+[0]   step 301/375: loss 0.4377, 18.82 s / step
+[1]   step 281/375: loss 0.4819, 21.29 s / step
+[0]   step 321/375: loss 0.5462, 18.83 s / step
+[1]   step 301/375: loss 0.4394, 21.26 s / step
+[0]   step 341/375: loss 0.5206, 18.79 s / step
+[0]   step 361/375: loss 0.4920, 18.79 s / step
+[1]   step 321/375: loss 0.4539, 21.29 s / step
+[0]   step 375/375: loss 0.3687, 18.79 s / step
+[0] s4_train: C_0.pt in 7075 s
+[0] 
+[0] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[0] Loading weights:   0%|          | 1/338 [00:00<03:46,  1.49it/s]
+[0] Loading weights:  47%|████▋     | 159/338 [00:00<00:00, 267.94it/s]
+[0] Loading weights:  70%|██████▉   | 236/338 [00:01<00:00, 259.46it/s]
+[0] Loading weights:  86%|████████▌ | 289/338 [00:01<00:00, 262.93it/s]
+[0] Loading weights:  98%|█████████▊| 332/338 [00:01<00:00, 251.97it/s]
+[0] Loading weights: 100%|██████████| 338/338 [00:01<00:00, 226.54it/s]
+[0]   step 1/375: loss 1.2464, 17.69 s / step
+[1]   step 341/375: loss 0.4588, 21.32 s / step
+[0]   step 21/375: loss 0.5610, 18.45 s / step
+[1]   step 361/375: loss 0.5267, 21.34 s / step
+[0]   step 41/375: loss 0.5530, 18.50 s / step
+[1]   step 375/375: loss 0.4289, 21.31 s / step
+[1] s4_train: C_1.pt in 8017 s
+[1] 
+[1] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[1] Loading weights:   0%|          | 1/338 [00:00<03:22,  1.66it/s]
+[1] Loading weights:  37%|███▋      | 125/338 [00:00<00:00, 238.08it/s]
+[1] Loading weights:  58%|█████▊    | 196/338 [00:01<00:00, 233.60it/s]
+[1] Loading weights:  72%|███████▏  | 245/338 [00:01<00:00, 227.88it/s]
+[1] Loading weights:  84%|████████▍ | 284/338 [00:01<00:00, 238.68it/s]
+[1] Loading weights:  94%|█████████▍| 319/338 [00:01<00:00, 245.62it/s]
+[1] Loading weights: 100%|██████████| 338/338 [00:01<00:00, 218.48it/s]
+[1]   step 1/375: loss 1.2985, 18.84 s / step
+[0]   step 61/375: loss 0.7230, 18.59 s / step
+[1]   step 21/375: loss 0.5257, 21.43 s / step
+[0]   step 81/375: loss 0.4405, 18.74 s / step
+[1]   step 41/375: loss 0.5579, 21.57 s / step
+[0]   step 101/375: loss 0.5356, 18.70 s / step
+[1]   step 61/375: loss 0.5064, 21.34 s / step
+[0]   step 121/375: loss 0.4598, 18.68 s / step
+[0]   step 141/375: loss 0.4216, 18.68 s / step
+[1]   step 81/375: loss 0.5442, 21.45 s / step
+[0]   step 161/375: loss 0.6036, 18.69 s / step
+[1]   step 101/375: loss 0.5973, 21.44 s / step
+[0]   step 181/375: loss 0.4967, 18.76 s / step
+[1]   step 121/375: loss 0.4965, 21.52 s / step
+[0]   step 201/375: loss 0.5000, 18.78 s / step
+[1]   step 141/375: loss 0.4528, 21.54 s / step
+[0]   step 221/375: loss 0.5590, 18.80 s / step
+[1]   step 161/375: loss 0.5900, 21.43 s / step
+[0]   step 241/375: loss 0.5426, 18.79 s / step
+[1]   step 181/375: loss 0.5750, 21.45 s / step
+[0]   step 261/375: loss 0.4254, 18.79 s / step
+[1]   step 201/375: loss 0.5969, 21.45 s / step
+[0]   step 281/375: loss 0.4491, 18.84 s / step
+[0]   step 301/375: loss 0.4944, 18.81 s / step
+[1]   step 221/375: loss 0.6007, 21.45 s / step
+[0]   step 321/375: loss 0.3742, 18.81 s / step
+[1]   step 241/375: loss 0.5929, 21.42 s / step
+[0]   step 341/375: loss 0.3879, 18.81 s / step
+[1]   step 261/375: loss 0.5353, 21.33 s / step
+[0]   step 361/375: loss 0.3938, 18.80 s / step
+[1]   step 281/375: loss 0.5842, 21.31 s / step
+[0]   step 375/375: loss 0.4621, 18.79 s / step
+[0] s4_train: C_2.pt in 7070 s
+[0] 
+[0] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[0] Loading weights:   0%|          | 1/338 [00:00<04:05,  1.37it/s]
+[0] Loading weights:  47%|████▋     | 160/338 [00:00<00:00, 258.45it/s]
+[0] Loading weights:  73%|███████▎  | 247/338 [00:01<00:00, 231.04it/s]
+[0] Loading weights:  90%|████████▉ | 304/338 [00:01<00:00, 227.53it/s]
+[0] Loading weights: 100%|██████████| 338/338 [00:01<00:00, 208.11it/s]
+[0]   step 1/375: loss 1.2004, 17.57 s / step
+[1]   step 301/375: loss 0.5066, 21.29 s / step
+[0]   step 21/375: loss 0.8189, 18.64 s / step
+[1]   step 321/375: loss 0.5950, 21.31 s / step
+[0]   step 41/375: loss 0.4992, 18.57 s / step
+[1]   step 341/375: loss 0.5575, 21.27 s / step
+[0]   step 61/375: loss 0.4965, 18.85 s / step
+[0]   step 81/375: loss 0.5468, 18.89 s / step
+[1]   step 361/375: loss 0.5226, 21.28 s / step
+[1]   step 375/375: loss 0.4969, 21.27 s / step
+[1] s4_train: D_0.pt in 8000 s
+[1] 
+[1] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[1] Loading weights:   0%|          | 1/338 [00:00<04:22,  1.28it/s]
+[1] Loading weights:  56%|█████▌    | 188/338 [00:00<00:00, 290.51it/s]
+[1] Loading weights:  88%|████████▊ | 298/338 [00:01<00:00, 270.88it/s]
+[1] Loading weights: 100%|██████████| 338/338 [00:01<00:00, 231.42it/s]
+[1]   step 1/375: loss 1.3839, 19.92 s / step
+[0]   step 101/375: loss 0.5996, 19.06 s / step
+[0]   step 121/375: loss 0.6257, 19.04 s / step
+[1]   step 21/375: loss 0.5636, 21.12 s / step
+[0]   step 141/375: loss 0.5347, 19.00 s / step
+[1]   step 41/375: loss 0.4673, 21.11 s / step
+[0]   step 161/375: loss 0.4837, 18.97 s / step
+[1]   step 61/375: loss 0.5980, 21.06 s / step
+[0]   step 181/375: loss 0.6204, 18.99 s / step
+[1]   step 81/375: loss 0.5712, 21.22 s / step
+[0]   step 201/375: loss 0.5495, 19.00 s / step
+[1]   step 101/375: loss 0.5502, 21.18 s / step
+[0]   step 221/375: loss 0.5145, 18.96 s / step
+[1]   step 121/375: loss 0.4473, 21.17 s / step
+[0]   step 241/375: loss 0.5265, 18.93 s / step
+[1]   step 141/375: loss 0.5005, 21.14 s / step
+[0]   step 261/375: loss 0.5540, 18.89 s / step
+[1]   step 161/375: loss 0.6742, 21.16 s / step
+[0]   step 281/375: loss 0.5858, 18.87 s / step
+[0]   step 301/375: loss 0.5033, 18.83 s / step
+[1]   step 181/375: loss 0.5516, 21.24 s / step
+[0]   step 321/375: loss 0.5263, 18.86 s / step
+[1]   step 201/375: loss 0.5713, 21.25 s / step
+[0]   step 341/375: loss 0.5052, 18.88 s / step
+[1]   step 221/375: loss 0.5779, 21.28 s / step
+[0]   step 361/375: loss 0.5213, 18.88 s / step
+[1]   step 241/375: loss 0.5451, 21.26 s / step
+[0]   step 375/375: loss 0.4874, 18.85 s / step
+[0] s4_train: D_1.pt in 7091 s
+[0] 
+[0] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[0] Loading weights:   0%|          | 1/338 [00:00<04:15,  1.32it/s]
+[0] Loading weights:  58%|█████▊    | 195/338 [00:00<00:00, 307.22it/s]
+[0] Loading weights:  90%|█████████ | 305/338 [00:01<00:00, 282.04it/s]
+[0] Loading weights: 100%|██████████| 338/338 [00:01<00:00, 244.65it/s]
+[0]   step 1/375: loss 1.3411, 16.40 s / step
+[1]   step 261/375: loss 0.4924, 21.26 s / step
+[0]   step 21/375: loss 0.4759, 18.68 s / step
+[1]   step 281/375: loss 0.5442, 21.31 s / step
+[0]   step 41/375: loss 0.6169, 18.90 s / step
+[0]   step 61/375: loss 0.4793, 18.76 s / step
+[1]   step 301/375: loss 0.5098, 21.28 s / step
+[0]   step 81/375: loss 0.5425, 18.87 s / step
+[1]   step 321/375: loss 0.5643, 21.27 s / step
+[0]   step 101/375: loss 0.6080, 18.90 s / step
+[1]   step 341/375: loss 0.4406, 21.28 s / step
+[0]   step 121/375: loss 0.5867, 18.98 s / step
+[1]   step 361/375: loss 0.4941, 21.27 s / step
+[0]   step 141/375: loss 0.5585, 19.00 s / step
+[1]   step 375/375: loss 0.5005, 21.26 s / step
+[1] s4_train: D_2.pt in 7996 s
+[0]   step 161/375: loss 0.5644, 18.97 s / step
+[0]   step 181/375: loss 0.5922, 19.06 s / step
+[0]   step 201/375: loss 0.5432, 19.12 s / step
+[0]   step 221/375: loss 0.5809, 19.16 s / step
+[0]   step 241/375: loss 0.6781, 19.18 s / step
+[0]   step 261/375: loss 0.5611, 19.14 s / step
+[0]   step 281/375: loss 0.6433, 19.14 s / step
+[0]   step 301/375: loss 0.6335, 19.15 s / step
+[0]   step 321/375: loss 0.5670, 19.19 s / step
+[0]   step 341/375: loss 0.6308, 19.17 s / step
+[0]   step 361/375: loss 0.6129, 19.19 s / step
+[0]   step 375/375: loss 0.6430, 19.20 s / step
+[0] s4_train: E_0.pt in 7223 s
+[0] 
+[1] 
+[1] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[0] Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+[1] Loading weights:   0%|          | 1/338 [00:01<06:50,  1.22s/it]
+[0] Loading weights:   0%|          | 1/338 [00:01<08:46,  1.56s/it]
+[1] Loading weights:  40%|███▉      | 135/338 [00:01<00:01, 133.28it/s]
+[0] Loading weights:  51%|█████     | 171/338 [00:01<00:01, 137.86it/s]
+[1] Loading weights:  55%|█████▍    | 185/338 [00:01<00:01, 132.43it/s]
+[1] Loading weights:  64%|██████▍   | 218/338 [00:01<00:00, 143.41it/s]
+[0] Loading weights:  71%|███████▏  | 241/338 [00:02<00:00, 139.03it/s]
+[1] Loading weights:  73%|███████▎  | 246/338 [00:02<00:00, 135.81it/s]
+[1] Loading weights:  79%|███████▉  | 268/338 [00:02<00:00, 131.86it/s]
+[0] Loading weights:  84%|████████▍ | 285/338 [00:02<00:00, 133.08it/s]
+[1] Loading weights:  86%|████████▌ | 291/338 [00:02<00:00, 133.74it/s]
+[0] Loading weights:  94%|█████████▍| 317/338 [00:02<00:00, 131.59it/s]
+[0] Loading weights: 100%|██████████| 338/338 [00:02<00:00, 115.56it/s]
+[1] Loading weights:  91%|█████████ | 308/338 [00:02<00:00, 136.92it/s]
+[1] Loading weights: 100%|██████████| 338/338 [00:02<00:00, 123.78it/s]
+[0] /tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3303: FutureWarning: `is_gradient_checkpointing` is deprecated and will be removed in v6. Use `is_activation_checkpointing` instead.
+[0]   warnings.warn(
+[1] /tmp/physcal/venv/lib/python3.11/site-packages/transformers/modeling_utils.py:3303: FutureWarning: `is_gradient_checkpointing` is deprecated and will be removed in v6. Use `is_activation_checkpointing` instead.
+[1]   warnings.warn(
+[0] s5_score: B_0__held_out.json in 2376 s
+[1] s5_score: B_1__held_out.json in 2657 s
+[1] s5_score: C_0__held_out.json would end after the deadline; stopping here
+[0] s5_score: B_2__held_out.json in 2438 s
+[0] s5_score: C_0__held_out.json would end after the deadline; stopping here
+output: 137 files, 847.6 MB in /kaggle/working
+STATUS: {"stopped_at": "s5_score", "done": ["s2_read", "s3_teachers", "s4_train"]}
+$ /tmp/physcal/venv/bin/python -m physcal.eval.r6_6a pack --out /kaggle/working --mode full
+{
+ "mb": 8.770851,
+ "files": 15,
+ "sha256": "ff976df59fa4b1220ba1724ba54be016e66a2e4ecb5a93b62028fe1675a2e37f"
+}
+

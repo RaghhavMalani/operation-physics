@@ -1,0 +1,170 @@
+# D151 (EXPLORATORY, a follow-up project; NOT the paper, D148): three feasibility items. Every rule here is D151's.
+output_dir: results/followup
+
+ttc:                                   # item 1: uncertainty-guided test-time compute, offline on X2's k = 8 samples
+  x2_config: x2                        # the samples (configs/x2.yaml sampling.output_dir) and X2's answer rule
+  agree_tolerance: 0.01                # |mu_j / mu_i - 1| <= 1% (SI); mu_i = 0 agrees only with mu_j = 0
+  k_max: 8
+  n_orders: 200                        # random draw orders per problem (default_rng(seed + pool index))
+  seed: 0
+  split_salt: "followup-ttc|"          # selection half iff SHA-256(salt + seed)[0] is even
+  policies:                            # the whole grid (D151)
+    - {name: A, kind: two_then_all, first: 2}
+    - {name: B2, kind: sequential, first: 2, votes: 2}
+    - {name: B3, kind: sequential, first: 2, votes: 3}
+    - {name: B4, kind: sequential, first: 2, votes: 4}
+    - {name: C, kind: no_loss}
+    - {name: D25, kind: sigma_gate, quantile: 0.25, then_votes: 2}
+    - {name: D50, kind: sigma_gate, quantile: 0.50, then_votes: 2}
+    - {name: D75, kind: sigma_gate, quantile: 0.75, then_votes: 2}
+  bootstrap: 10000
+  mc_a:                                # secondary: MC-A's raw spread as a two-stage stopping rule (B-v2 seed 0)
+    config: mc_a
+    sets: [a6c_pairs, a6_pairs, a6b_pairs]
+    select_set: a6c_pairs              # θ is chosen here (selection half) and applied unchanged to A6 and A6b
+    first: 2                           # re-asks drawn first
+    k_max: 8
+    quantiles: [0.25, 0.5, 0.75]       # θ grid: quantiles of the k = 2 raw spread on the selection half
+    tau: 1.0e-3                        # run 0 computation-correct: |ln(mu / f(x_meas))| <= tau (MC-A's)
+
+arith:                                 # item 2: exact arithmetic on D-pos-v2's own lines (frozen R4-5 logs, read only)
+  arm: dpos2
+  seeds: [0, 1, 2]
+  max_pow: 12                          # r5_diag.safe_eval's exponent limit
+  material_factor: 1.25                # "σ moved materially": more than 25%
+  anchors:                             # FINDINGS #35's seed means; the variants (a) and (c) must reproduce them
+    a: -0.0397
+    c: -0.0417
+  anchor_atol: 5.0e-5                  # #35 prints 4 decimals
+
+scale:                                 # item 3: Qwen2.5-Math-7B-Instruct (4-bit), inference only
+  models:
+    7b:
+      dir: .cache/huggingface/hub/models--unsloth--Qwen2.5-Math-7B-Instruct-bnb-4bit/snapshots/2ab7fb373c247ef5933d034f016efefc66608458
+      repo_id: unsloth/Qwen2.5-Math-7B-Instruct-bnb-4bit
+      revision: 2ab7fb373c247ef5933d034f016efefc66608458
+    1.5b:                              # the control (D151 (3)): D78's pinned 4-bit base, untrained, the same native format
+      dir: .cache/huggingface/hub/models--unsloth--Qwen2.5-Math-1.5B-Instruct-bnb-4bit/snapshots/e24e9530845f4e3a6648343796883cb509935039
+      repo_id: unsloth/Qwen2.5-Math-1.5B-Instruct-bnb-4bit
+      revision: e24e9530845f4e3a6648343796883cb509935039
+  system_prompt: "Please reason step by step, and put your final answer within \\boxed{}."
+  verify_from: x4_v1                   # X4's prompt with "<answer>" -> "\boxed{}" (D151)
+  verify_replace: ["<answer>", "\\boxed{}"]
+  pool_config: x2                      # X2's frozen candidate pool (1,200, round-robin over 12 cells)
+  dev_indices: [1188, 1200]            # feasibility + parser checks only; never analyzed
+  feasibility_n: 6                     # D152: the first 6 dev problems (GPU time)
+  chunk_size: 24                       # 2 per cell; the subset is the completed prefix
+  generation:                          # D152: Qwen2.5's documented sampling (X2's T = 1 degenerates on the 7B)
+    k: 8
+    temperature: 0.7
+    top_p: 0.8
+    top_k: 20
+    repetition_penalty: 1.0
+    max_new_tokens: 1024
+    seed: 0                            # chunk i: torch seed + i
+    batch_size: 8                      # sequences per generate call (a multiple of k); feasibility may raise it
+  max_seq_length: 4096                 # D157: the model's context (was 3,072); the readouts read up to ~3,530 tokens
+  tolerance: 0.01                      # correct = within 1% of the target in the requested unit
+  max_s_per_problem: 120               # feasibility: slower than this -> stop and report (D151)
+  stop_slack_s: 1200                   # T_stop = deadline - readout estimate x 1.5 - control estimate - 20 min
+  load_overhead_s: 600                 # model loads across the stages (~6, ~90 s each at most)
+  readout_margin: 1.5
+  expected_mixed_share: 0.45           # X2's 43% at k = 8 (the readout estimate before any 7B data)
+  reading:                             # X4's direct arm (configs/x4.yaml reading), smaller vocabulary chunks for 7B
+    marker: "Verdict:"
+    yes_tokens: ["yes", " yes", "Yes", " Yes", "YES", " YES"]
+    no_tokens: ["no", " no", "No", " No", "NO", " NO"]
+    score_batch_size: 2
+    logit_check_rtol: 0.02
+    head_chunk: 8192
+  hidden_batch_size: 1                 # D158: 2 -> 1 (every layer's full sequence is kept; the longest kept answers)
+  hidden_part_size: 64                 # answers per saved part (resumable)
+  logit_check_rtol: 0.02               # x2_hidden's check
+  probe:                               # x2_analysis.crossfit_confidence (configs/x2.yaml analysis.probe)
+    C: [0.001, 0.01, 0.1, 1.0]
+    folds: 5
+    max_iter: 2000
+    n_jobs: 4                          # after the GPU queue (D97); X2's setting
+    even_layers_only: false            # D151: true only if all 29 layers cannot finish by the report
+  reproduce_probe:                     # D160: a refit of a model's probe (same code, threads) must give this exactly
+    7b: 0.7525589125855713             # D159's result (results/followup/scale/results.json, e658bea)
+  reproduce_atol: 1.0e-12
+  random_init:                         # D160: the probes' random-weights control (transformers' Qwen2 init)
+    dir: random_init_model             # under <output_dir>/scale/<model>/ (gitignored, regenerable: ~15 GB for the 7B)
+    seed: 0
+    shard_gb: 2.0                      # bf16 safetensors shards
+  bootstrap: 10000
+  seed: 0
+  kaggle:                              # D157: item 3's 7B sampling on Kaggle "GPU T4 x2" with vLLM (readouts stay local)
+    repo_id: Qwen/Qwen2.5-Math-7B-Instruct
+    revision: ef9926d75ab1d54532f6a30dd5e760355eb9aa4d
+    download_patterns: ["*.json", "*.safetensors", "merges.txt", "vocab.json"]
+    weights_sha256:                    # HF's LFS sha256 at the revision; checked after the download
+      model-00001-of-00004.safetensors: 11f73294487dca1614bd7495e2c4e50372f5794f4cd175ce62d9ec2a8e97873a
+      model-00002-of-00004.safetensors: 2b992a00b09340ac3f8e54db70509b709e2eef9f601e679682e3a50b496a7b08
+      model-00003-of-00004.safetensors: 2460a589b1d606998574e0d84162e94307a15e2eea2aac6f4ea35f0361657660
+      model-00004-of-00004.safetensors: 9e7925045deba3bb6ac461f1c2e7eabbe2a189549156dff1ec08b6c750a82bc5
+    candidates_sha256: cd703f0d15cd69e4514b8bf04b6c7113c33c34cd6a8540824dee4cef481fff07  # X2's manifest
+    python: "3.11"                     # the venv (uv), isolated from Kaggle's preinstalled stack
+    uv: 0.13.1
+    packages: [vllm==0.29.0, pint==0.25.3, pyyaml==6.0.3, sympy==1.14.0]  # vLLM pins torch 2.13.0 (CUDA 13)
+    min_driver: 580                    # CUDA 13 needs driver >= 580
+    gpus: 2
+    dtype: half                        # T4 (sm75) has no bf16; the bf16 checkpoint is cast to fp16
+    tensor_parallel_size: 2
+    max_model_len: 4096                # the model's max_position_embeddings
+    gpu_memory_utilization: 0.90
+    disable_custom_all_reduce: true    # no P2P between Kaggle's two T4s
+    attention_backend: TRITON_ATTN     # what v0.29 auto-selects on sm75 (FlashInfer is off below sm80); pinned
+    max_new_tokens: 3072               # D153: > 2,048 needed; longest prompt 363 tokens, 363 + 3,072 < 4,096
+    seed: 0                            # request (pool index i, sample s): seed + k * i + s; one request per sample
+    throughput_n: 20                   # the first candidates of the first missing chunk time the run
+    sampling_hours: 9.5                # no chunk may end after session start + 9.5 h (Kaggle stops at 12 h)
+    rate_margin: 1.25                  # planned and projected times = 1.25 x the measured ones
+    min_answered_share: 0.5            # health gate on the timed candidates: boxed, parsed, not truncated
+    zip_name: followup_7b_scale.zip
+    stall_minutes: 45                  # the notebook kills a sampler silent this long (a chunk is ~3-10 min)
+    attempts: 2                        # the second with enforce_eager and NCCL_P2P_DISABLE=1
+    min_free_gb: 35                    # /tmp: weights 15.2 GB + the venv (~10 GB)
+    max_file_mb: 64                    # ingest: a larger file in the zip is refused
+  kaggle_models:                       # D160: per-model overlays of `kaggle` (the 7B's settings are `kaggle` itself)
+    1.5b:                              # D151 (3)'s native control, the same run as the 7B's otherwise
+      repo_id: Qwen/Qwen2.5-Math-1.5B-Instruct
+      revision: aafeb0fc6f22cbf0eaeed126eff8be45b0360a35
+      weights_sha256:                  # HF's LFS sha256 at the revision (3,087,467,144 bytes)
+        model.safetensors: 08faf1e950173bb44c11d26df28c55da7237dc55c77dbc1cbae4a5d7584540d9
+      zip_name: followup_1.5b_scale.zip
+      min_free_gb: 20                  # /tmp: weights 3.1 GB + the venv (~10 GB)
+  x2_published:                        # FINDINGS #19 / #22 (SFT 1.5B, our format, 516 kept problems)
+    self_consistency: 0.643
+    x4_direct: 0.526
+    probe_crossfit: 0.540
+    length: 0.535
+audit:                                 # D164: a zero-GPU confound audit of D162's table (CPU, 1 thread; exploratory)
+  output_dir: audit                    # under output_dir
+  models: [7b, 1.5b]                   # the Kaggle models; the SFT 1.5B is X2 on the same prefix
+  length_match_rel: 0.10               # a pair is length-matched if |n_c - n_i| <= 10% of the longer completion
+  text:                                # an A5-style text classifier, cross-fitted on the probe's folds
+    a5_config: nested_baselines_4bit   # A5's text features (TF-IDF) and its p grid (logistic C, 4 GBTs)
+    feature_set: problem_answer_reasoning
+    inner_folds: 5                     # GroupKFold by problem; the outer folds are the probe's (scale.probe.folds)
+r6:                                    # D167: paper #2's R6-3 / R6-4 / R6-5 (exploratory track; nothing on the GPU yet)
+  output_dir: r6                       # under output_dir: items/, states/, yes/, results.json
+  sft_dir: results/sft/qwen2.5-math-1.5b-instruct/merged   # R6-4's fine-tuned reader (X2's, 4-bit at load)
+  terse_prompt_id: v4_worked_example   # X2's prompt (the SFT format)
+  positions: [p2, p1]                  # p2 (primary): the first token after the final answer; p1: its last token
+  p1_sets: [fact_native, fact_terse]   # D167 uses p1 in R6-4 only; the other sets store p2 alone (disk: ~8 GB, not ~13)
+  part_size: 64                        # items per saved states part (resumable)
+  yes_step: 32                         # items per saved P(yes) chunk (resumable)
+  spot_check_n: 16                     # re-extracted own answers that must match the stored states
+  spot_check_rtol: 1.0e-2              # max |diff| / max |state| per layer (fp16 rounding)
+  swap_refit_atol: 1.0e-3              # refit fold probes must reproduce the cached out-of-fold values
+  rich_text:                           # R6-5 (a): A5's features with bigrams, plus 15 hand features
+    ngram_range: [1, 2]
+    hesitation: [wait, re-check, recheck, double-check, let me, however, mistake, actually, verify, again]
+    operators: ["\\frac", "\\sqrt", "\\cdot", "\\times", "\\left", "\\pi"]
+    log10_zero: -12.0                  # log10 |value| for a value of 0
+  rates:                               # measured s / context token at batch 1, temperature pauses included (GPU estimates)
+    7b: {hidden: 6.3e-4, "yes": 6.9e-4, floor_s: 0.15}     # D159: 0.77 / 0.92 s at ~1,230 / ~1,330 tokens
+    1.5b: {hidden: 1.8e-4, "yes": 1.85e-4, floor_s: 0.05}  # D162: 0.21 / 0.23 s at ~1,150 / ~1,250 tokens
+    load_s: 120                        # a model load, per stage

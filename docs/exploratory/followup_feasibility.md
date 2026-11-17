@@ -7,7 +7,8 @@ before the data they affect: D152 (item 3's decoding), D153 (item 3's local stop
 (the readouts' memory settings). D159 records the 7B readouts' run. D160 (written before their data) adds the controls,
 D161 one reproduction retry, and D162 records the controls' run. D164 (plan pushed before its numbers) audits D162's
 table for confounds without a GPU: `physcal/eval/followup_audit.py`, `results/followup/audit/`. D165–D167 pre-register
-R6-3 to R6-5 for paper #2, D168–D170 record their run, and D172 records their readings. D173–D174 add two controls at 1.5B. D175–D176 pre-register and build R6-6a, which has not run.
+R6-3 to R6-5 for paper #2, D168–D170 record their run, and D172 records their readings. D173–D174 add two controls at 1.5B. D175–D176 pre-register and build R6-6a; D177–D183 record its smoke session and
+three Kaggle sessions, and D184 its readings and a post-hoc diagnosis.
 
 | item | code | config | results |
 |---|---|---|---|
@@ -15,6 +16,7 @@ R6-3 to R6-5 for paper #2, D168–D170 record their run, and D172 records their 
 | 2. exact arithmetic on the model's own lines | `physcal/eval/followup_arith.py` | `arith` | `results/followup/arith/results.json` |
 | 3. scale check of the epistemic wall | `physcal/eval/followup_scale.py` | `scale` | `results/followup/scale/` |
 | 4. R6-3 to R6-5 (paper #2) | `physcal/eval/followup_r6.py` | `r6` | `results/followup/r6/` |
+| 5. R6-6a (paper #2), on Kaggle | `physcal/eval/r6_6a.py`, `scripts/r6_6a_diagnosis.py` | `configs/r6_6a.yaml` | `results/followup/r6_6a/run/`, `diagnosis_d184.json` |
 
 Tests: `tests/test_followup.py`, `tests/test_followup_r6.py`. CIs are 95% bootstrap intervals over problems (item 1, item 3) or over pairs (item 2,
 and MC-A in item 1).
@@ -705,6 +707,58 @@ Two local controls, run after R6-5 as a recorded exception to D171. 1.5B only; t
   not resolve it.
 - **Limits:** one model family, 4-bit readers, one synthetic domain, and 93 problems in R6-4's primary set.
 
+## R6-6a: can a probe's reading be moved into the model's own verdict? (D175, D184)
+
+**The design (D175):** the native 1.5B's P(yes) at a verification turn, fine-tuned with LoRA on 6,000 answers of 765
+train problems. The arms differ only in the target:
+
+| arm | target |
+|---|---|
+| B | the labels |
+| C | the out-of-fold hidden-state probe |
+| D | the out-of-fold rich-text reader |
+| E | C's targets shuffled within each problem |
+
+A is the untrained model. The primary metric is within-problem pairwise accuracy on fresh ID-test problems and on a held-out
+question template. Three Kaggle sessions (D180–D183). The ingest re-graded all 19,200 completions and recomputed every
+number.
+
+| within-problem pairwise accuracy | ID test (333 problems) | held-out template (505) |
+|---|---|---|
+| A: untrained | 0.616 | 0.588 |
+| **B: labels** | **0.817** | **0.819** |
+| C: probe-distilled | 0.787 | 0.785 |
+| D: text-distilled | 0.734 | 0.715 |
+| E: shuffled within problems | 0.718 | 0.702 |
+| the probe itself / rich text / self-consistency (k = 8) | 0.761 / 0.719 / 0.779 | 0.763 / 0.704 / 0.764 |
+
+- **The pre-registered readings** (both test sets agree):
+  - B − A: "direct supervision helps" (+0.20);
+  - C − A: "distillation helps" (+0.17);
+  - C − B: "labels beat the probe's target" (−0.03), as D175 thought plausible;
+  - **C − D, the headline:** "it moves more than surface" (+0.053 [+0.035, +0.071] ID, +0.069 held-out);
+  - **the check E − A fired:** +0.102 [+0.071, +0.133], "the setup leaks: stop and diagnose". So none of these is promoted
+    to a finding.
+- **The diagnosis (post-hoc):**
+  - **No data leaked:** no shared problem keys or texts between training and test, the teachers read only train answers,
+    and E differs from C.
+  - **Within-problem shuffling keeps each problem's difficulty,** and E learned cues that mark hard problems. They rank
+    answers within a problem too: E keeps its gain on length-matched pairs, and loses it where the correct answer is the
+    longer one. E is a difficulty-only control, not a null.
+- **Against that control (post-hoc):**
+  - C keeps an edge (C − E +0.069 ID, +0.082 held-out, also on length-matched and length-discordant pairs);
+  - D does not (D − E +0.016, CI containing 0);
+  - D and the rich reader drop below 0.5 where length points the wrong way; C, B and the probe do not;
+  - on the ID test, the headline C − D shrinks to +0.024 (CI containing 0) on length-matched pairs; on the held-out
+    template it stays at +0.052.
+- **Also descriptive:**
+  - the label-trained verdict beats self-consistency at one sample's cost (B − self-consistency +0.038 ID, +0.055
+    held-out);
+  - the probe-distilled verdict beats its own teacher (C − probe +0.025);
+  - in the swap test, every trained verdict "tracks the reasoning", and the untrained one reads neither.
+- **Limits:** one model (the native 1.5B), one synthetic domain, one seed for E, and one verification wording trained.
+  The diagnosis and every comparison against E or the references are post-hoc.
+
 ## What this means for a follow-up
 
 - **Test-time compute:** for this model, "spend more samples where the model is unsure" mostly means "do not sample
@@ -735,10 +789,13 @@ Two local controls, run after R6-5 as a recorded exception to D171. 1.5B only; t
     - **Whether presentation alone causes it is not shown:** R6-4's primary set reads "neither factor is shown".
   - **A follow-up worth running:** what in the native answers makes the surface so informative (length, hedging,
     re-checks, where the box sits). Also whether an SFT format that keeps those signs keeps the probe's 0.76.
-- **Probe to verbal confidence (R6-6):** R6-3 to R6-5 leave its premise standing. The probe (0.75–0.78) reads more than
-  the model's own verdict (0.60–0.69 on R6-3's pairs) and more than the rich text reader.
-  - **Its text-distilled arm matters:** much of the probe's reading is still surface.
-  - **The plan:** `docs/exploratory/r6_6_kaggle_plan.md`, a draft. The go decision is yours (D165).
+- **Probe to verbal confidence (R6-6a ran; D184):** a cheap verdict can be trained far above the untrained one. Labels
+  do best, reaching 0.82 within problems, above self-consistency at k = 8.
+  - **Whether the probe's own information moves into it is not settled:** the pre-registered check fired, and the
+    diagnosis shows the shuffled control carries difficulty.
+  - **Against that control, the probe-distilled verdict keeps an edge and the text-distilled one does not** (post-hoc).
+  - **A follow-up worth running:** a pre-registered replication with C − E as the headline (or an E′ with each problem's
+    mean target), with E at three seeds.
 
 ## Process notes and limits
 
