@@ -1,6 +1,6 @@
 # Sources of the paper's generated values, tables and figures
 
-Built from commit `3df52a0f676d` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
+Built from commit `997092320c90` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
 
 ## fig_headline
 
@@ -42,7 +42,7 @@ Built from commit `3df52a0f676d` by `scripts/paper/build.py`; every source is tr
 - `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6b_pairs_manifest.json` @ `33486465e0b3`
 - `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6c_pairs_manifest.json` @ `3e36aa054364`
 - `data/jacobian_support/r4_1.json` @ `68c4584bf672`
-- `paper/RELEASE.yaml` @ `119f08b7b2c7`
+- `paper/RELEASE.yaml` @ `2aebb5b2427c`
 - `physcal/env/formulas/dynamics.py` @ `1df5803da9d5`
 - `physcal/env/formulas/energy.py` @ `352ee72aefc0`
 - `physcal/env/formulas/kinematics.py` @ `73721bf1f2b0`
