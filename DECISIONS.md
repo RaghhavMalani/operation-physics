@@ -5690,3 +5690,63 @@ The follow-up log holds D151–D165 (the numbering is shared, D156), so the next
 - **New values:** six point estimates for the abstract and Introduction (`rc.k1.v`, `rc.ksix.gap.v`, `rc.fb.slope.v`,
   `rb.sc.v`, `rd.jone.v`, `rd.clamped.v`), read from the same sources as their interval versions.
 - **Unchanged:** D148's experiment freeze (nothing was run), FINDINGS.md and every generated table.
+
+## After the round-7 review (2026-11-18)
+
+### D185. Paper #1's final fixes from the round-7 review (ChatGPT), and the appendices, under D150's rules (your instruction, 2026-11-18)
+The review, recorded before any change it asks for. Same rules as D150 / D178: every number is a generated value or
+sits in a generated table or figure; the paper tests pass. Nothing is run (D148's freeze holds).
+
+**Must-fix.**
+- **R7-1, σ\* wording.** "True uncertainty" and "exactly" (abstract, Introduction, elsewhere) become Section 3.2's
+  operational definition: *the benchmark's reference uncertainty under the specified measurement model*, a Monte Carlo
+  estimate (`gen.nmc` draws), never an exact posterior.
+- **R7-2, the reward as implemented (Sections 3.3 and 6).**
+  - Strict propriety is attributed only to the unclipped CRPS. The implemented reward is described as what it is: a
+    clipped, scale-floored score plus step credit.
+  - "The score does not favour this, since it is proper" is replaced by the audit (#6): on the audited zero-width
+    rollouts, a 1% relative width improves the mean score with the answer fixed.
+  - The step-credit claim is narrowed to the documented guarantee (D14): a perfect answer without step credit beats a
+    failed answer with full step credit.
+- **R7-3, the appendices** replace the placeholders:
+  - **A, reproducibility:** a clickable repository link and the pinned commit; the hypothesis ledger; the frozen-set
+    manifests and checksums; one command that regenerates Figure 1 and one table from saved outputs; which logs and
+    checkpoints readers can obtain.
+  - **B, the bf16 LoRA-merge pitfall:** 91–96% of RL update entries erased, how it was caught, superseded results kept
+    and labelled (#15, D65, D67).
+  - **C, the decision timeline:** confirmatory vs exploratory, every deviation.
+- **R7-4, Figure 1** moves next to its first mention (the Introduction) and is enlarged; panel B must be readable at
+  page width.
+- **R7-5, Table 3** labels the 196 tokens as answer-generation tokens and shows X4's verification overhead separately.
+
+**Keep narrow.**
+- **R7-6, D166's limitations paragraph:** "untrained" becomes "the original instruction-tuned checkpoint before
+  task-specific SFT"; "a random-weights probe largely matched it" gives the two numbers (`post.probe.native`,
+  `post.probe.random`); it says the native-vs-SFT comparison still mixes training and format. Cite Gekhman et al.
+  (*Inside-Out*, arXiv 2503.15299) and Orgad et al. (arXiv 2410.02707), each checked first in REFERENCES_CHECK.md.
+- **R7-7:** J's J1 stays beside the clamped comparator and the 43 rank-flip pairs (already so; checked). The Llama
+  pilot reads "the sensitivity criterion passed, but the pilot did not establish invariance".
+
+**How the items are implemented.**
+- **The audit number (R7-2) is generated from the committed tape:** `scripts/paper/macros.py` re-scores, with the
+  committed verifier, the zero-σ answers of the uniform-credit run's training tape
+  (`results/train/overnight2-…/rollouts.jsonl.gz`, verifier 1.1.0, steps 401–520 as #6 states) at σ = 1% of each
+  answer's own μ (a width the policy could state), μ unchanged.
+  - **A discrepancy in #6, recorded here and not edited there:** #6's "−0.184 vs −0.191" is reproduced exactly by
+    steps 401–500 with σ = 1% of the *truth*; steps 401–520 with σ = 1% of μ give −0.185 vs −0.188 (n = 1,895). Every
+    variant tried (windows 401–500 / 401–520 / 451–520; width relative to μ or to the truth) has the same sign. The
+    paper uses the definition above and prints the generated values.
+- **The pinned commit (R7-3 A):** a commit cannot contain its own hash. The paper's sources are committed first;
+  `paper/RELEASE.yaml` then records that commit's hash in a second commit that changes nothing else but the PDF, and
+  the build reads it as a generated value. Checking out the pinned commit regenerates every value, table and figure.
+- **The hypothesis ledger (R7-3 A):** `docs/hypothesis_ledger.yaml`, one row per pre-registered family or test with
+  its entry, label (confirmatory, pilot, diagnostic) and verdict (supported, not supported, rejected / not rejected,
+  not run), written from the FINDINGS entries cited per row. It holds no numbers; `scripts/paper/tables.py` typesets
+  it.
+- **The timeline (R7-3 C):** a generated longtable of every row of `docs/decision_timeline.md`, beside the existing
+  deviations table.
+- **Figure 1 (R7-4):** `scripts/figures/headline.py` gains a stacked page-width layout (A and C above, B across the
+  full width), used by the paper. The values and the sidecar JSON do not change.
+- **The appendices** join `tests/test_paper.py`'s drafted list (no hand-typed numbers; every paragraph cites).
+- **Unchanged:** FINDINGS.md, every result file, every generated value already in the paper. The log's entry count in
+  `protocol.tex` rises by one.
