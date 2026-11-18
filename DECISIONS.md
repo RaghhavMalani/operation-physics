@@ -5750,3 +5750,35 @@ sits in a generated table or figure; the paper tests pass. Nothing is run (D148'
 - **The appendices** join `tests/test_paper.py`'s drafted list (no hand-typed numbers; every paragraph cites).
 - **Unchanged:** FINDINGS.md, every result file, every generated value already in the paper. The log's entry count in
   `protocol.tex` rises by one.
+
+**Gemini's round-7 review (recorded 2026-11-18, after ChatGPT's items above were applied and before any of these).**
+Same entry, same rules (D150: generated values only; fixes at the generator, never by hand in a generated file).
+- **G7-1, minus signs in comparison labels** (Table 5's K5, K6, K8; Table 8's J2, J3; Table 10's third descriptive
+  row). In our build the glyph is there, but it is a math minus pressed against the next label ("D-pos-v2 −B-v2"), and
+  a pdflatex (arXiv) build has no Unicode map for it. Fix: the generators write a text minus with tied spaces, and
+  `main.tex` turns on glyph-to-Unicode mapping under pdflatex.
+- **G7-2, Table 7's second header:** "Δ expected crps_log vs RSS [90% CI]".
+- **G7-3, Section 4.4:** the definition of S_i and Equation 4 are rewritten so that both read and extract cleanly; the
+  stated levels s_i are introduced in the sentence before the equation. The notation stays ∂ ln f / ∂ ln x_i, as in
+  Section 3 and the J set (a partial derivative over the givens; "d" would conflict with them).
+- **G7-4, Table 2:** no truncated cells. The generator stops cutting text, and `docs/decision_timeline.md`'s D71 cell,
+  which itself ended in "…", is completed from D71 (R2-1 to R2-7).
+- **G7-5, forward pointers:** Section 4.1 → Appendix B (done in R7); Sections 5.1 and 11 → Appendix A's ledger.
+- **G7-6, Section 8:** why dropping the worst 5% keeps X1 > D-pos-v2 > RSS while the RSS fallback reverses it. The
+  dropped problems cost all three sources almost the same (`results/r5_diag/tail.json` `trimmed`), whereas the
+  fallback replaces D-pos-v2's σ only where it disagrees most with RSS.
+- **G7-7, Section 8 swaps:** why exact aggregation scores worse (#35: on a few lines the model's own X pulls an absurd
+  root sum of squares back to a plausible size; exact arithmetic propagates the absurd value).
+- **G7-8, Section 9:** why Llama's computation-correct rate is 8.0%. A descriptive check on the committed tape
+  (`results/stage_xm/dpos2/seed0/confirmatory/rollouts.jsonl.gz`), computed by the build: the share of answers more
+  than 1% (in log) from f(x_meas) and the median distance, beside Qwen seed 0's on the same set. Most misses are far
+  beyond what rounding five-figure givens could produce, so the data point to arithmetic and chain errors. Labelled
+  descriptive and post hoc.
+- **G7-9, Section 4.4:** one sentence on why D-pos-v2 is SFT only (the derivations in its targets carry the behaviour;
+  the RL route tried for propagation, stage C, copied the smallest percentage; no RL stage followed D-pos-v2 before the
+  freeze, D148).
+- **G7-10, Figure 1:** float pages are set top-aligned, so the figure sits at the top of page 3.
+- **G7-11, a worked example:** a generated box (`scripts/paper/tables.py`, from the committed confirmatory tape) with
+  one frozen A6c pair and D-pos-v2's seed-0 completion. The pair is chosen by a rule fixed in `configs/paper.yaml`
+  before it is drawn: depth 2, levels 1% and 5%, both members computation-correct, the shortest pair of completions.
+  The caption states the rule, so the example is not presented as typical.
