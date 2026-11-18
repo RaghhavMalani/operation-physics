@@ -51,7 +51,7 @@ paper's methods section and the reproducibility appendix.
 | 10-17 22:07 | D65 (`deff739`) | RL adapters evaluated on the 4-bit training base | analysis plan, before any 4-bit eval | exploratory | [#15][f15] |
 | 10-18 00:06 | D67 (`bb7ff3c`) | The bf16 merge was a bug: corrected (unmerged, 4-bit) evals become PRIMARY for families S, N, E; merged results kept, labelled superseded | amendment, before any corrected result | confirmatory (S, N, E re-run) | [#16][f16] (supersedes [#13][f13], [#14][f14]) |
 | 10-18 09:48 | D69 (`92b868d`) | Post-hoc baselines re-fitted on 4-bit SFT calibration completions | amendment, before any such completion | comparator | – |
-| 10-18 09:50 | D71 (`55c8947`) | Review round 2, R2-1–R2-7: eval hygiene (reload fingerprint), SFT revalidation, seed-level statistics (R2-4), uniform-credit seeds (R2-6), … | amendment, before any result it affects | R2-6: exploratory (robustness) | [#18][f18] |
+| 10-18 09:50 | D71 (`55c8947`) | Review round 2, R2-1–R2-7: evaluation hygiene and the reload fingerprint (R2-1); SFT revalidation (R2-2); what σ should and should not predict (R2-3); seed-level statistics (R2-4); a publication criterion (R2-5); uniform-credit seeds 1 and 2 (R2-6); citations to verify before use (R2-7) | amendment, before any result it affects | R2-6: exploratory (robustness) | [#18][f18] |
 | 10-18 10:06 | D72 (`3f70b9a`) | R2-1's fingerprint and reload-check tolerances | analysis plan, before any fingerprint | reproducibility check | appendix |
 | 10-18 10:07 | D73 (`3eaab53`) | X1, a shallow text model of σ\* on A6 / A6b | pre-registration | confirmatory | [#17][f17] |
 | 10-18 22:12 | D74 (`d9a36c9`) | X2: within-problem correctness pairs | pre-registration | confirmatory | [#19][f19] |

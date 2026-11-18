@@ -4,3 +4,14 @@ sigma_zero_audit:   # FINDINGS #6's audit of the sigma = 0 collapse, re-run from
   run_dir: results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512
   steps: [401, 520]          # the window FINDINGS #6 states
   width_rel_mu: 0.01         # the alternative width: sigma = 1% of the answer's own mu; mu unchanged
+llama_error_audit:  # G7-8 (D185): how far the answers that miss lie from f(x_meas); descriptive, post hoc
+  tapes:
+    llama: results/stage_xm/dpos2/seed0/confirmatory/rollouts.jsonl.gz
+    qwen: results/stage_r4/dpos2/seed0/confirmatory/rollouts.jsonl.gz
+  far_log: 0.01             # |ln mu - ln f(x_meas)| above this is "far": ten times the computation-correct tau
+worked_example:     # G7-11 (D185): the worked-example box; the rule picks the pair, the box is illustrative
+  tape: results/stage_r4/dpos2/seed0/confirmatory/rollouts.jsonl.gz
+  kind: allocation          # A6c
+  depth: 2
+  levels: [0.01, 0.05]      # the levels shown in the pair
+  pick: shortest            # both members computation-correct; the pair with the fewest completion characters
