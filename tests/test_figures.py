@@ -39,3 +39,16 @@ def test_the_headline_figure_renders(tmp_path):
     m = _headline()
     paths = m.draw(m.data(), tmp_path)
     assert all(p.exists() and p.stat().st_size > 0 for p in paths)
+
+
+def test_the_page_layout_renders_with_the_same_values(tmp_path):
+    """D185 (R7-4): the paper draws the stacked page-width layout; it plots the same data and its sidecar is identical."""
+    m = _headline()
+    d = m.data()
+    wide, page = tmp_path / "wide", tmp_path / "page"
+    m.draw(d, wide)
+    paths = m.draw(d, page, layout="page")
+    assert all(p.exists() and p.stat().st_size > 0 for p in paths)
+    assert (wide / "headline_data.json").read_text() == (page / "headline_data.json").read_text()
+    with pytest.raises(ValueError):
+        m.draw(d, tmp_path / "x", layout="tall")

@@ -22,5 +22,5 @@ def build(S: Sources) -> list[str]:
     S.path("fig_headline", "scripts/figures/headline.py")
     for rel in headline.SRC.values():
         S.path("fig_headline", rel)
-    paths = headline.draw(headline.data(), OUT / "figures")
+    paths = headline.draw(headline.data(), OUT / "figures", layout="page")  # stacked, at text width (D185, R7-4)
     return [p.name for p in paths]

@@ -118,7 +118,9 @@ def data() -> dict:
     return {"A": panel_a(J), "B": panel_b(J), "C": panel_c(J), "sources": SRC}
 
 
-def draw(d: dict, out: Path) -> list[Path]:
+def draw(d: dict, out: Path, layout: str = "wide") -> list[Path]:
+    """layout "wide": three panels in a row (slides, the README). "page": A and C above, B across the full width, drawn
+    at the paper's text width so that every label prints at about its stated size (D185, R7-4)."""
     import matplotlib
 
     matplotlib.use("Agg")
@@ -126,9 +128,17 @@ def draw(d: dict, out: Path) -> list[Path]:
 
     plt.rcParams.update({"font.size": 8, "axes.edgecolor": MUTED, "axes.labelcolor": INK, "xtick.color": INK,
                          "ytick.color": INK, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42})
-    fig = plt.figure(figsize=(14.5, 4.9))
-    gs = fig.add_gridspec(1, 5, width_ratios=[0.62, 0.62, 1.15, 0.2, 1.15], wspace=0.05)  # columns 1, 3: gutters
-    ax_a, ax_b, ax_c = (fig.add_subplot(gs[0, i]) for i in (0, 2, 4))
+    if layout == "wide":
+        fig = plt.figure(figsize=(14.5, 4.9))
+        gs = fig.add_gridspec(1, 5, width_ratios=[0.62, 0.62, 1.15, 0.2, 1.15], wspace=0.05)  # columns 1, 3: gutters
+        ax_a, ax_b, ax_c = (fig.add_subplot(gs[0, i]) for i in (0, 2, 4))
+    elif layout == "page":
+        fig = plt.figure(figsize=(6.6, 7.4))
+        gs = fig.add_gridspec(2, 3, width_ratios=[0.78, 0.22, 1.6], height_ratios=[1.0, 1.25], hspace=0.34, wspace=0.05)
+        ax_a, ax_c = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 2])
+        ax_b = fig.add_subplot(gs[1, :])
+    else:
+        raise ValueError(f"unknown layout {layout!r}")
 
     # (A) coverage, 3 vs 3 seeds
     a = d["A"]
@@ -149,7 +159,8 @@ def draw(d: dict, out: Path) -> list[Path]:
     ax_a.set_xlim(-0.5, 1.5)
     ax_a.set_ylim(0, 80)
     ax_a.set_ylabel("1σ interval coverage (%)")
-    ax_a.set_title("(A) σ credit: coverage, 3 vs 3 seeds", loc="left", fontsize=9)
+    ax_a.set_title("(A) σ credit: coverage, 3 vs 3 seeds" if layout == "wide" else
+                   "(A) σ credit: coverage,\n3 vs 3 seeds", loc="left", fontsize=9)
     ax_a.grid(axis="y", color=GRID, linewidth=0.6)
     ax_a.set_axisbelow(True)
 
@@ -162,14 +173,17 @@ def draw(d: dict, out: Path) -> list[Path]:
         lo, hi = r["ci95"]
         ax_b.hlines(y, lo, hi, color=color, linewidth=1.4)
         ax_b.scatter([r["value"]], [y], s=22, color=color, zorder=3, edgecolor="white", linewidth=0.6)
-        ax_b.text(hi + 0.004, y, f"{r['value']:.3f}", va="center", fontsize=6.5, color=MUTED)
+        ax_b.text(hi + 0.004, y, f"{r['value']:.3f}", va="center", fontsize=6.5 if layout == "wide" else 7.5,
+                  color=MUTED)
     ax_b.axvline(0.5, color=MUTED, linestyle="--", linewidth=1)
-    ax_b.set_yticks(ys, [r["label"] for r in rows], fontsize=7)
+    ax_b.set_yticks(ys, [r["label"] for r in rows], fontsize=7 if layout == "wide" else 8)
     for tick, r in zip(ax_b.get_yticklabels(), rows):
         tick.set_color(MUTED if r["group"] == "control" else INK)
     sc = rows[-1]
-    ax_b.annotate(f"{b['cost_ratio']:.1f}× the tokens of one answer\n({b['tokens_k']:,.0f} vs {b['tokens_one']:,.0f} per problem)",
-                  xy=(sc["value"], ys[-1]), xytext=(0.66, ys[-1] + 2.3), fontsize=6.5, color=INK,
+    ax_b.annotate(f"{b['cost_ratio']:.1f}× the answer-generation tokens of one answer\n"
+                  f"({b['tokens_k']:,.0f} per problem vs {b['tokens_one']:,.0f} per answer)",
+                  xy=(sc["value"], ys[-1]), xytext=(0.66, ys[-1] + 2.3), fontsize=6.5 if layout == "wide" else 7.5,
+                  color=INK,
                   ha="center", arrowprops={"arrowstyle": "-", "color": MUTED, "linewidth": 0.6})
     ax_b.set_xlim(0.44, 0.73)
     ax_b.set_xlabel("within-problem pairwise accuracy, 95% CI (0.5 = chance)")
@@ -203,14 +217,15 @@ def draw(d: dict, out: Path) -> list[Path]:
     ax_c.set_ylim(-2.4, 3.5)
     ax_c.set_xlabel("A6c propagation slope (90% CI; 0 = no propagation)")
     ax_c.set_ylabel("expected crps_log − RSS (×10⁻³, 95% CI)")
-    ax_c.set_title("(C) Propagation vs forecast score (frozen set)", loc="left", fontsize=9)
+    ax_c.set_title("(C) Propagation vs forecast score (frozen set)" if layout == "wide" else
+                   "(C) Propagation vs forecast score\n(frozen set)", loc="left", fontsize=9)
     ax_c.grid(color=GRID, linewidth=0.6)
     ax_c.set_axisbelow(True)
     handles = [plt.Line2D([], [], marker=m, linestyle="none", color=col, markerfacecolor=col if f else "white",
                           label=lab) for lab, (col, m, f) in
                (("heuristic (no model)", style["heuristic"]), ("trained stated σ", style["trained"]),
                 ("post-hoc / counterfactual", style["post-hoc"]))]
-    ax_c.legend(handles=handles, loc="lower left", fontsize=6.5, frameon=False)
+    ax_c.legend(handles=handles, loc="lower left" if layout == "wide" else "lower right", fontsize=6.5, frameon=False)
 
     out.mkdir(parents=True, exist_ok=True)
     paths = [out / "headline.png", out / "headline.pdf"]
