@@ -1,0 +1,174 @@
+# The pre-registration ledger (D185; R7-3, appendix A of paper #1): every pre-registered hypothesis or test family,
+# in PREREGISTRATION.md's and DECISIONS.md's order, with its verdict as the cited FINDINGS entry states it.
+# Words only: the numbers are in the FINDINGS entries and, for the confirmatory runs, in the paper's generated tables.
+# Labels follow docs/decision_timeline.md: confirmatory, confirmatory (pilot), diagnostic, not run.
+# scripts/paper/tables.py typesets this file (table "ledger").
+rows:
+  - tests: P1-P3
+    entry: PREREGISTRATION.md, D45
+    question: the warm-up model's hidden state predicts its own error better than its stated sigma
+    label: confirmatory
+    verdict: uninterpretable; P1-P3 pass Holm, but the registered random-init sanity check fails
+    findings: "#7"
+  - tests: S1a, S1b
+    entry: PREREGISTRATION.md, D62
+    question: split credit raises 1-sigma coverage above the warm-up model (S1a) and uniform credit (S1b)
+    label: confirmatory
+    verdict: supported
+    findings: "#16, #18"
+  - tests: S2
+    entry: PREREGISTRATION.md, D62
+    question: split credit's sigma ranks errors better than uniform credit's
+    label: confirmatory
+    verdict: not supported (an earlier narrow pass came from the bf16 merge and is withdrawn)
+    findings: "#13, #16"
+  - tests: S3
+    entry: PREREGISTRATION.md, D62
+    question: split credit keeps accuracy
+    label: confirmatory
+    verdict: supported
+    findings: "#16"
+  - tests: N1-N3
+    entry: D50 (A5)
+    question: split credit's sigma beats the text baseline A5 on the same answers
+    label: confirmatory
+    verdict: not supported on any seed
+    findings: "#16"
+  - tests: gate (A3)
+    entry: D50, D54, D57
+    question: the generator's sigma* intervals cover the clean truth at nominal rates
+    label: confirmatory, amended twice after failing
+    verdict: passed on the final run
+    findings: "#9, #11, #12"
+  - tests: E1a-P, E1b-P
+    entry: D52
+    question: with the answer fixed, RL on sigma alone beats the warm-up model's sigma
+    label: confirmatory (pilot)
+    verdict: supported
+    findings: "#14, #16"
+  - tests: E1a-N, E1b-N
+    entry: D52
+    question: the same sigma beats the A5 text baseline
+    label: confirmatory (pilot)
+    verdict: not supported
+    findings: "#14, #16"
+  - tests: X1
+    entry: D73
+    question: a shallow text model of sigma* propagates on A6
+    label: confirmatory
+    verdict: labelled partial propagation on A6, slope far below one; does not transfer to A6c
+    findings: "#17, #23"
+  - tests: X2
+    entry: D74
+    question: a single-completion readout ranks a right answer above a wrong one to the same problem
+    label: confirmatory
+    verdict: stated sigma and text models not supported; the probe is supported but not distinguishable from its random-init control
+    findings: "#19"
+  - tests: X3
+    entry: D79
+    question: the RL setup has the capacity to learn a sigma that ranks errors (distillation)
+    label: confirmatory (pilot)
+    verdict: capacity likely, between problems only; at chance within problems
+    findings: "#20"
+  - tests: X4
+    entry: D89, D91
+    question: the model's own verdict on its answer ranks right above wrong within problems
+    label: confirmatory
+    verdict: not supported
+    findings: "#21"
+  - tests: E1c, E1d
+    entry: D94, D101
+    question: batch-std scaling (E1c) or a larger learning rate (E1d) lets sigma-only RL rank errors
+    label: confirmatory (pilot); reported as exploratory (R5-7)
+    verdict: E1d supported (between problems); E1c not supported
+    findings: "#25"
+  - tests: T1-T3
+    entry: D102
+    question: E1d's sigma ranks right above wrong within problems
+    label: confirmatory
+    verdict: not supported
+    findings: "#26"
+  - tests: B1-B5
+    entry: D104
+    question: supervised sigma* (stage B) propagates and beats RSS and X1
+    label: confirmatory
+    verdict: not supported
+    findings: "#27"
+  - tests: C1-C6
+    entry: D106
+    question: sigma-only RL with the predictive reward (stage C) propagates and beats its start
+    label: confirmatory (pilot)
+    verdict: C6 (beats its start) supported; C1-C5 not supported
+    findings: "#28"
+  - tests: D1-D7
+    entry: D109
+    question: an explicit propagation line (stage D) propagates and beats the references
+    label: confirmatory (pilot)
+    verdict: D6, D7 supported; D1-D5 not supported
+    findings: "#29"
+  - tests: R4-3 go rule
+    entry: D113
+    question: D-pos-v2 meets the propagation criterion on development data (go / no-go)
+    label: confirmatory (pilot)
+    verdict: GO on all three sigma values; no score gain over RSS
+    findings: "#30"
+  - tests: MC-A stopping rule
+    entry: D113
+    question: re-asking the model on perturbed inputs beats RSS
+    label: diagnostic
+    verdict: not supported; the stopping rule fires
+    findings: "#31"
+  - tests: P (K1, C2, C3)
+    entry: D118, D125
+    question: "primary: D-pos-v2's answer sigma propagates on the frozen set"
+    label: confirmatory (primary)
+    verdict: confirmed
+    findings: "#32"
+  - tests: K1-K5
+    entry: D118
+    question: the three D-pos-v2 sigmas and B-v2 propagate; D-pos-v2 scores above B-v2
+    label: confirmatory
+    verdict: all rejected under Holm (supported)
+    findings: "#32"
+  - tests: K6-K8
+    entry: D118
+    question: D-pos-v2 beats RSS (K6) and X1 (K7); B-v2 beats RSS (K8)
+    label: confirmatory
+    verdict: not rejected
+    findings: "#32"
+  - tests: M1-M5
+    entry: D119, D122
+    question: the model's own program (MC-B) beats RSS, X1, D-pos-v2 and MC-A, and propagates
+    label: confirmatory
+    verdict: not rejected
+    findings: "#33"
+  - tests: cross-model go rule
+    entry: D137, D139, D146
+    question: the R4-3 criterion on a second model family at one seed
+    label: confirmatory (pilot)
+    verdict: NO-GO; the sensitivity criterion passed, invariance could not be measured
+    findings: "#38"
+  - tests: P_J (J1, C2, C3)
+    entry: D147
+    question: D-pos-v2's sigma propagates through Jacobians outside the training range of trained chains
+    label: confirmatory
+    verdict: confirmed (a clamped in-range propagator reaches most of the contrast)
+    findings: "#39"
+  - tests: J1, J2
+    entry: D147
+    question: the J-sensitivity slope is positive; explicit exceeds implicit
+    label: confirmatory
+    verdict: rejected under Holm (supported)
+    findings: "#39"
+  - tests: J3-J6
+    entry: D147
+    question: either arm beats RSS or X1 in expected score on the J set
+    label: confirmatory
+    verdict: not rejected
+    findings: "#39"
+  - tests: H1-H5
+    entry: PREREGISTRATION.md, D141
+    question: the stated-sigma model with a depth and noise curriculum (vol beta, conditional calibration, sources, decision value, stress)
+    label: not run
+    verdict: not run; the model they were written for was never built
+    findings: "--"
