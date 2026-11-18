@@ -13,7 +13,9 @@ cd paper && tectonic main.tex
 ```
 
 `latexmk -pdf main.tex` works as well (pdflatex + BibTeX); the generated files are ASCII so arXiv's pdflatex accepts
-them. For an arXiv upload, keep the `.bbl` (`tectonic --keep-intermediates main.tex`) and include `generated/`.
+them. For arXiv, `scripts/paper/arxiv_bundle.sh` builds `arxiv_submission.tar.gz` (sources, `generated/`, the figure, the
+`.bbl`) and checks that it compiles with pdflatex alone; `ARXIV_METADATA.md` has the title, abstract, categories,
+comments and license.
 
 ## Where the numbers come from
 
