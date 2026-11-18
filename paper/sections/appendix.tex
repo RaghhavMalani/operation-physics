@@ -1,10 +1,110 @@
-% Appendices. NOT drafted yet (docs/paper_outline.md appendices A and B).
-\section{Pre-registration ledger}
-\label{app:ledger}
-\todo{Every pre-registered hypothesis marked supported, not supported, or not run (\path{docs/decision_timeline.md}).}
-
+% Appendices (drafted 2026-11-18, D185; R7-3; docs/paper_outline.md appendices A and B). Every claim cites its
+% source in a comment; every number is \pv{...} or sits in a generated table.
 \section{Reproducibility}
 \label{app:repro}
-\todo{Reload and provenance checks, pinned bases, the bf16 merge pitfall, frozen-set checksums, compute
-(docs/paper\_outline.md, appendix B). Every generated value, table and figure lists its committed sources in
-\path{paper/generated/SOURCES.md}.}
+
+% D185 (R7-3 A; paper/RELEASE.yaml, the pin recorded in the commit after the sources); D150 (every value, table and
+% figure generated from committed files; paperlib.Sources refuses untracked or modified sources).
+\paragraph{Code, data and the pinned version.}
+The code, configurations, evaluation sets, completion logs and analysis outputs are public at \pv{rel.repo}.
+This paper was built from commit \pv{rel.commit}.
+Every value in the text is a generated macro, and every table and figure is generated, from files committed in that
+repository; \path{paper/generated/SOURCES.md} lists each artifact's source files with their git blob hashes, and the
+build refuses a source that git does not track or that has uncommitted changes.
+
+% D150 (scripts/paper/build.py); tests/test_paper.py (the committed values and tables equal a fresh build) and
+% tests/test_figures.py (the figure plots the committed values).
+\paragraph{Regenerating the headline figure and the tables.}
+One command, run on a CPU from the pinned commit, regenerates Figure~\ref{fig:headline}, every table (for example
+Table~\ref{tab:cost}) and every value in the text from the saved result files:
+\begin{verbatim}
+uv run python scripts/paper/build.py
+\end{verbatim}
+It writes them to \path{paper/generated/}, and \texttt{tectonic main.tex}, run in \path{paper/}, then compiles the
+paper.
+The repository's tests check that the committed values and tables equal a fresh build.
+
+% CLAUDE.md component 6 (tape and replay); D72, D77 (R2-1: the training-time fingerprint and the reload check); D78
+% (pinned bases); .gitignore (adapter weights are local only).
+\paragraph{Logs and checkpoints.}
+The completion logs of the reported training runs and evaluations are in the repository.
+Each line holds the problem's seed and generator version, the completion, the verifier's breakdown and the run's
+provenance, and replaying a log regenerates each problem from its seed and re-scores the completion exactly.
+The result files that the tables and the figure read sit beside their logs.
+The base models are public checkpoints, loaded from pinned snapshots (\pv{model.base} and \pv{model.llama}).
+The trained LoRA adapters are not distributed with this version: the repository holds each adapter's configuration
+and the fingerprint recorded at the end of its training, not its weights.
+Re-running a model's evaluation therefore means retraining the adapter from its configuration and seed, and GPU
+training is not bit-for-bit deterministic, so a retrained adapter can differ from the one evaluated here.
+
+% D113 sec. 8 (manifests, FROZEN.md, the loader guard); D67 and D74 (the noise-free sets and X2's candidates); D147
+% (the J set); generated table tab:frozen.
+\paragraph{Frozen evaluation sets.}
+Table~\ref{tab:frozen} lists every frozen evaluation set with the manifest that holds its SHA-256 checksum.
+
+% docs/hypothesis_ledger.yaml (D185, written from the FINDINGS entries it cites); PREREGISTRATION.md; D141 (family H
+% not run); docs/decision_timeline.md (amendments after a result: D47, D54, D57, D92, D135).
+\paragraph{The pre-registration ledger.}
+Table~\ref{tab:ledger} marks every pre-registered hypothesis or test family with its verdict (supported or not,
+rejected or not rejected, confirmed, or not run), the entry that registered it and the finding that reports it.
+Amendments made after a result are in Table~\ref{tab:deviations} and Appendix~\ref{app:timeline}.
+
+\input{generated/tables/frozen}
+\input{generated/tables/ledger}
+
+\section{The bf16 LoRA-merge pitfall}
+\label{app:bf16}
+
+% FINDINGS #15 (D65; exploratory); results/precision_check/merge_rounding.json (weights only); FINDINGS #4's R2-2
+% note and D70, D71 (the SFT merge: every RL run started from the merged model; SFT-only evaluated as the runs saw it,
+% #16).
+\paragraph{What happened.}
+Reinforcement-learning adapters were trained on the \pv{model.bits}-bit base with the LoRA unmerged, but an early
+evaluation path merged each adapter into a bf16 copy of the warm-up model before generating.
+Merging rounds every updated weight to the nearest bf16 value.
+The RL updates were far smaller than one bf16 step of the base weights (per adapter, a median of \pv{bf.ulp} of a
+step), so on the \pv{bf.nadapters} RL adapters checked, \pv{bf.erased} of each update's entries were rounded to
+exactly zero.
+The warm-up adapter, whose updates are larger, lost \pv{bf.sft.erased} when it was merged; every reinforcement-learning
+run started from that merged model, and the warm-up model is evaluated as the runs saw it (merged, then quantized), so
+this loss defines the warm-up model rather than distorting comparisons between runs.
+
+% FINDINGS #15 (the training-vs-evaluation sigma gap; D65's rule, stated before the unmerged evaluations);
+% results/precision_check/report.json (split credit, the first seed at the matched step).
+\paragraph{How it was caught.}
+The evaluated $\sigma$ was several times narrower than the $\sigma$ the same policy stated during training.
+For the first split-credit seed, the median relative $\sigma$ was \pv{bf.sigma.train} in its last training steps and
+\pv{bf.sigma.merged} when sampled from the merged model.
+A check stated before its data (D65) evaluated the adapters as trained, unmerged on the quantized base.
+Sampled, the same adapter then stated \pv{bf.sigma.unmerged}, in line with training, and its greedy $1\sigma$
+coverage rose from \pv{bf.cov.merged} to \pv{bf.cov.unmerged}.
+Only \pv{bf.identical} of the paired greedy completions were identical between the two ways of applying the adapter,
+and the median per-problem ratio of the stated $\sigma$ was \pv{bf.ratio}.
+Weight-level diagnostics then placed the cause in the merge rather than in the quantized base.
+
+% D67, D68 (the corrected, unmerged evaluations become primary; merged results kept, labelled superseded); FINDINGS
+% #13, #14 (superseded), #16 (S2's verdict changed); docs/paper_outline.md claims to avoid (scope of the bf16 claim).
+\paragraph{What was done.}
+From then on every adapter was evaluated as trained, unmerged on the same quantized base, and the corrected
+evaluations became the primary results for the families they affected.
+The merged results stay in the record, labelled superseded, including one verdict that changed (S2,
+Table~\ref{tab:ledger}).
+Every result in this paper uses the corrected evaluations.
+The lesson is narrow: merging these small LoRA updates into the bf16 warm-up model erased most of them in our
+pipeline; we make no claim about bf16 merging in general.
+
+\section{The decision timeline}
+\label{app:timeline}
+
+% docs/decision_timeline.md (R5-8); D185 (R7-3 C); the deviations table (Section sec:deviations); D47, D54, D57, D92,
+% D135 (the amendments made after a result).
+Table~\ref{tab:timeline} lists every pre-registration and amendment in date order, with its first commit and its
+analysis label: confirmatory (committed before its data and run as registered), a confirmatory pilot (the same at one
+seed, which decided what ran next), or exploratory (post hoc, descriptive or diagnostic).
+Results from before the pre-registration are exploratory.
+Every amendment or deviation that touched a registered analysis is also in Table~\ref{tab:deviations}
+(Section~\ref{sec:deviations}), with its timing relative to the data it affects.
+Those made after a result are the generator gate's two amendments, the exploratory baselines of family P, the X2
+robustness checks and the bounds of the RSS fallback.
+
+\input{generated/tables/timeline}

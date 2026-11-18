@@ -1,6 +1,6 @@
 # Sources of the paper's generated values, tables and figures
 
-Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
+Built from commit `0a1c43039970` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
 
 ## fig_headline
 
@@ -13,11 +13,11 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 - `results/stage_r4/confirmatory/stage_b_dpos2/results.json` @ `95a86e29ad9b`
 - `results/x2/results.json` @ `24cb4f28b8a2`
 - `results/x2/robustness/results.json` @ `4730bb6195fc`
-- `scripts/figures/headline.py` @ `1c607f96235d`
+- `scripts/figures/headline.py` @ `68ba5429a2c7`
 
 ## macros
 
-- `DECISIONS.md` @ `5fa0ee5fe351`
+- `DECISIONS.md` @ `2dbe6ae0df22`
 - `FINDINGS.md` @ `d3660390b89c`
 - `configs/base_4bit.yaml` @ `3d9d1725e751`
 - `configs/base_llama32_3b_4bit.yaml` @ `584299a76a2e`
@@ -29,6 +29,7 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 - `configs/mc_a.yaml` @ `45c25056e018`
 - `configs/mc_b.yaml` @ `5d7b9a81130f`
 - `configs/pairs.yaml` @ `d305fb030896`
+- `configs/paper.yaml` @ `98e95843f6ef`
 - `configs/reward.yaml` @ `a5df0440dca2`
 - `configs/sft.yaml` @ `bb6d883bb58d`
 - `configs/sft_r4.yaml` @ `065e0c38b078`
@@ -41,9 +42,11 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 - `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6b_pairs_manifest.json` @ `33486465e0b3`
 - `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6c_pairs_manifest.json` @ `3e36aa054364`
 - `data/jacobian_support/r4_1.json` @ `68c4584bf672`
+- `paper/RELEASE.yaml` @ `98aa57108ebb`
 - `physcal/env/formulas/dynamics.py` @ `1df5803da9d5`
 - `physcal/env/formulas/energy.py` @ `352ee72aefc0`
 - `physcal/env/formulas/kinematics.py` @ `73721bf1f2b0`
+- `physcal/verify/scoring.py` @ `cb84d4ef8fab`
 - `results/corrected/robustness_3v3/report.json` @ `5b7f31dbb19a`
 - `results/corrected/side_by_side.json` @ `b9a8512e60fd`
 - `results/e1/pilots/pilots.json` @ `c2daacc801f0`
@@ -53,6 +56,8 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 - `results/mc_b/a6c_pairs/results.json` @ `d62ebf030557`
 - `results/phase12_sft_data_r4/manifest.json` @ `f305c1b4036e`
 - `results/posthoc_calibration_4bit/posthoc_fit.json` @ `6b6c1bf10e14`
+- `results/precision_check/merge_rounding.json` @ `9864657d98c7`
+- `results/precision_check/report.json` @ `6b8305854de4`
 - `results/r5_6/results.json` @ `6195c81bfe0a`
 - `results/r5_diag/cost.json` @ `364d31ae15dd`
 - `results/r5_diag/depth5.json` @ `75f5d52149ba`
@@ -67,6 +72,8 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 - `results/stage_r4/dpos2/seed0/summary.json` @ `dcf5e628d3e5`
 - `results/stage_xm/go_dpos2/go.json` @ `2dda03c154a5`
 - `results/stage_xm/pilot/results.json` @ `ff891cafc25d`
+- `results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/rollouts.jsonl.gz` @ `3812d17d3998`
+- `results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/rollouts.meta.json` @ `14c8453c101d`
 - `results/x2/results.json` @ `24cb4f28b8a2`
 - `results/x2/robustness/results.json` @ `4730bb6195fc`
 - `results/x3/pilot.json` @ `c0ebb47d8317`
@@ -79,14 +86,29 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 ## tab_cost
 
 - `results/r5_diag/cost.json` @ `364d31ae15dd`
+- `results/x4/results.json` @ `6894fd3e7498`
 
 ## tab_deviations
 
 - `docs/decision_timeline.md` @ `5f80e454add5`
 
+## tab_frozen
+
+- `data/eval_sets/1.1.0+c735a0d4/manifest.json` @ `16d096237235`
+- `data/eval_sets/1.1.0+c735a0d4/x2_candidates_manifest.json` @ `79f42fb18370`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6_pairs_manifest.json` @ `a4667a2fef54`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6b_pairs_manifest.json` @ `f42552284794`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6c_pairs_manifest.json` @ `e413b9b471bf`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6b_pairs_manifest.json` @ `33486465e0b3`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6c_pairs_manifest.json` @ `3e36aa054364`
+
 ## tab_j
 
 - `results/r5_6/results.json` @ `6195c81bfe0a`
+
+## tab_ledger
+
+- `docs/hypothesis_ledger.yaml` @ `31fe9224941f`
 
 ## tab_llama
 
@@ -109,6 +131,10 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 
 - `results/r5_diag/tail.json` @ `d92087ff65fd`
 
+## tab_timeline
+
+- `docs/decision_timeline.md` @ `5f80e454add5`
+
 ## table:confirmatory
 
 - `results/stage_r4/confirmatory/results.json` @ `dc002a81d4ba`
@@ -116,14 +142,26 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 ## table:cost
 
 - `results/r5_diag/cost.json` @ `364d31ae15dd`
+- `results/x4/results.json` @ `6894fd3e7498`
 
 ## table:cost_mca
 
 - `results/r5_diag/cost.json` @ `364d31ae15dd`
+- `results/x4/results.json` @ `6894fd3e7498`
 
 ## table:deviations
 
 - `docs/decision_timeline.md` @ `5f80e454add5`
+
+## table:frozen
+
+- `data/eval_sets/1.1.0+c735a0d4/manifest.json` @ `16d096237235`
+- `data/eval_sets/1.1.0+c735a0d4/x2_candidates_manifest.json` @ `79f42fb18370`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6_pairs_manifest.json` @ `a4667a2fef54`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6b_pairs_manifest.json` @ `f42552284794`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/a6c_pairs_manifest.json` @ `e413b9b471bf`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6b_pairs_manifest.json` @ `33486465e0b3`
+- `data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6c_pairs_manifest.json` @ `3e36aa054364`
 
 ## table:j_results
 
@@ -132,6 +170,10 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 ## table:j_subgroups
 
 - `results/r5_6/results.json` @ `6195c81bfe0a`
+
+## table:ledger
+
+- `docs/hypothesis_ledger.yaml` @ `31fe9224941f`
 
 ## table:llama
 
@@ -157,3 +199,7 @@ Built from commit `288fb1458911` by `scripts/paper/build.py`; every source is tr
 ## table:tail
 
 - `results/r5_diag/tail.json` @ `d92087ff65fd`
+
+## table:timeline
+
+- `docs/decision_timeline.md` @ `5f80e454add5`

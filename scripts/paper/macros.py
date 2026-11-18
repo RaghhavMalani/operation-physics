@@ -206,7 +206,7 @@ def build(S: Sources) -> Macros:
     fin = S.text(A, "FINDINGS.md")
     add("record.findings", integer(max(int(n) for n in re.findall(r"^## #(\d+)\.", fin, flags=re.M))),
         "FINDINGS.md: the highest '## #<n>.' header")
-    for part in (_act1, _act2, _act3, _generalization):
+    for part in (_act1, _act2, _act3, _generalization, _round7):
         part(S, add)
     return M
 
@@ -539,3 +539,84 @@ def _generalization(S: Sources, add) -> None:
     add("rd.xm.desc.pairs", integer(d["n"]), f"{rel} llama dpos2 a a6b_answered_pairs_slope.n")
     q = p["models"]["qwen_seed0"]["arms"]["dpos2"]["sources"]["a"]["a6b_answered_pairs_slope"]
     add("rd.xm.qwen", num(q["slope"], 3, True), f"{rel} qwen_seed0 dpos2 a a6b_answered_pairs_slope")
+
+
+# ===================================================================================== round-7 fixes and appendices (D185)
+def _round7(S: Sources, add) -> None:
+    """D185: the sigma = 0 audit (#6) re-run from the committed tape; the step-credit guarantee (D14); X4's verification
+    overhead (#21, D91); the bf16 merge (#15, D65, D67); the release pin."""
+    import ast
+    import gzip
+    import json
+    import math
+
+    from physcal.verify.scoring import ceiling, floor, score
+
+    A_ = "macros"
+    # ---- the sigma = 0 audit (#6): the zero-width answers of the uniform-credit run's training tape, re-scored with
+    # the committed verifier at sigma = width * |mu|, mu unchanged
+    pc = S.yaml(A_, "configs/paper.yaml")["sigma_zero_audit"]
+    run = pc["run_dir"]
+    S.path(A_, "physcal/verify/scoring.py")
+    meta = S.json(A_, f"{run}/rollouts.meta.json")
+    cfg = meta["reward_config"]["scoring"]
+    lo, hi = pc["steps"]
+    zero, alt, n = 0.0, 0.0, 0
+    with gzip.open(S.path(A_, f"{run}/rollouts.jsonl.gz"), "rt") as fh:
+        for line in fh:
+            r = json.loads(line)
+            if not lo <= r["step"] <= hi:
+                continue
+            b = r["breakdown"] if isinstance(r["breakdown"], dict) else ast.literal_eval(r["breakdown"])
+            if b["reason"] != "ok" or b["sigma_si"] != 0:
+                continue
+            y, mu = b["truth_si"], b["mu_si"]
+            n += 1
+            zero += b["score_final"]
+            alt += score(cfg["rule"], (mu - y) / abs(y), pc["width_rel_mu"] * abs(mu) / abs(y), cfg)
+    src = f"{run}/rollouts.jsonl.gz, steps {lo}-{hi}, reason ok, sigma_si = 0 (configs/paper.yaml; D185)"
+    add("audit.steps", f"{integer(lo)}--{integer(hi)}", "configs/paper.yaml sigma_zero_audit.steps")
+    add("audit.width", _lv(pc["width_rel_mu"]), "configs/paper.yaml sigma_zero_audit.width_rel_mu")
+    add("audit.n", integer(n), src + ": count")
+    add("audit.zero", num(zero / n, 3), src + ": mean score_final as logged")
+    add("audit.alt", num(alt / n, 3), src + ": mean crps_log at sigma = width * |mu|")
+    if not alt > zero:
+        raise ValueError("the sigma = 0 audit no longer favours the wider sigma; the paper's sentence needs review")
+    # ---- the step-credit guarantee (D14): w_steps < w_final * (ceiling - floor) of the active rule
+    rw = S.yaml(A_, "configs/reward.yaml")
+    sc = rw["scoring"]
+    add("ver.span", num(rw["weights"]["final"] * (ceiling(sc["rule"], sc) - floor(sc["rule"], sc)), 0),
+        "reward.yaml: weights.final * (ceiling - floor) of scoring.rule (D14; physcal/verify/reward.py)")
+    # ---- X4's verification overhead per checked answer (D91; FINDINGS #21)
+    rel = "results/x4/results.json"
+    tk = S.json(A_, rel)["tokens"]["sft"]
+    add("rb.xfour.extra", integer(round(tk["total_extra"]["mean"])), f"{rel} tokens.sft.total_extra.mean")
+    add("rb.xfour.extragen", integer(round(tk["generated"]["mean"])), f"{rel} tokens.sft.generated.mean")
+    add("rb.xfour.prompt", integer(sum(tk["overhead"].values())), f"{rel} tokens.sft.overhead (verification turn + marker)")
+    # ---- the bf16 merge (FINDINGS #15; D65, D67): merge rounding of every RL adapter, and the split-credit seed-0 eval
+    rel = "results/precision_check/merge_rounding.json"
+    mr = S.json(A_, rel)
+    rl = {k: v for k, v in mr.items() if not k.startswith("SFT")}
+    sw = [v["swallowed_share"] for v in rl.values()]
+    add("bf.erased", f"{pct(min(sw), 0)}--{pct(max(sw), 0)}", f"{rel} swallowed_share over the RL adapters (min-max)")
+    add("bf.nadapters", integer(len(rl)), f"{rel} RL adapters")
+    add("bf.sft.erased", pct(mr["SFT adapter (on its original base)"]["swallowed_share"], 0), f"{rel} SFT adapter swallowed_share")
+    ulp = [v["median_abs_delta_over_ulp"] for v in rl.values()]
+    add("bf.ulp", f"{num(min(ulp), 2)}--{num(max(ulp), 2)}", f"{rel} median_abs_delta_over_ulp over the RL adapters")
+    rel = "results/precision_check/report.json"
+    rp = S.json(A_, rel)["split-credit seed 0 @287"]
+    add("bf.sigma.train", pct(rp["training"]["median_rel_sigma"], 2), f"{rel} split seed 0 training.median_rel_sigma")
+    add("bf.sigma.merged", pct(rp["describe"]["bf16 sampled"]["median_rel_sigma"], 2), f"{rel} describe.bf16 sampled")
+    add("bf.sigma.unmerged", pct(rp["describe"]["4bit sampled"]["median_rel_sigma"], 2), f"{rel} describe.4bit sampled")
+    add("bf.cov.merged", pct(rp["describe"]["bf16 greedy"]["cov1"]), f"{rel} describe.bf16 greedy.cov1")
+    add("bf.cov.unmerged", pct(rp["describe"]["4bit greedy"]["cov1"]), f"{rel} describe.4bit greedy.cov1")
+    add("bf.ratio", integer(round(math.exp(rp["paired_greedy"]["median_ln_sigma_ratio_4bit_over_bf16"]))),
+        f"{rel} paired_greedy.median_ln_sigma_ratio_4bit_over_bf16 (exp)")
+    add("bf.identical", pct(rp["paired_greedy"]["identical_completion"]), f"{rel} paired_greedy.identical_completion")
+    # ---- the release pin (paper/RELEASE.yaml)
+    rel = S.yaml(A_, "paper/RELEASE.yaml")
+    repo = rel["repository"].rstrip("/")
+    add("rel.repo", f"\\href{{{repo}}}{{\\nolinkurl{{{repo.split('://', 1)[1]}}}}}", "paper/RELEASE.yaml repository")
+    c = rel["commit"]
+    add("rel.commit", f"\\href{{{repo}/tree/{c}}}{{\\texttt{{{c[:12]}}}}}" if c else "\\emph{(recorded at release)}",
+        "paper/RELEASE.yaml commit (D185: recorded in the commit after the sources)")

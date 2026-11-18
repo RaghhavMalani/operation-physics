@@ -54,6 +54,17 @@ in the same session.
 | `vonwerra2020trl` | GitHub API: huggingface/trl, created 2020-03-27 | the repository exists; software citation |
 | `unsloth` | GitHub API: unslothai/unsloth, created 2023-11-29 | the repository exists; software citation |
 
+## Cited in Limitations (new in D185; round-7 review, R7-6)
+
+Checked on 2026-11-18: the arXiv API for title, authors, date and abstract; the OpenReview API
+(`api2.openreview.net/notes/search`) for the venue, since neither arXiv record carries a journal reference. The
+sentence that cites them was written from their abstracts, read in the same session.
+
+| key | title | authors | year | venue | checked against | status |
+|---|---|---|---|---|---|---|
+| `gekhman2025insideout` | Inside-Out: Hidden Factual Knowledge in LLMs | Gekhman, Ben David, Orgad, Ofek, Belinkov, Szpektor, Herzig, Reichart | 2025 | COLM 2025 (arXiv comment "Accepted to COLM 2025"; OpenReview venue "COLM 2025", forum f7GG1MbsSM) | arXiv API, 2503.15299; OpenReview API | verified |
+| `orgad2025know` | LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations | Orgad, Toker, Gekhman, Reichart, Szpektor, Kotek, Belinkov | 2025 | ICLR 2025 (OpenReview venue "ICLR 2025 Poster", venueid ICLR.cc/2025/Conference, forum KRnsX5Em3W); the arXiv record (2410.02707, 2024) names no venue | arXiv API; OpenReview API | verified |
+
 ## Not cited (from the outline; not needed for this draft)
 
 CARE-PPO, Turtel et al. (2505.17989), Dr.GRPO / DAPO (2607.00152, 2503.14476), Guo et al. (2604.05306), Grünefeld et

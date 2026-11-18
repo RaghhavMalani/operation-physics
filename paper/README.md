@@ -26,9 +26,15 @@ them. For an arXiv upload, keep the `.bbl` (`tectonic --keep-intermediates main.
 - **No number is typed into the drafted sections** (`tests/test_paper.py` checks it). Every claim cites a FINDINGS
   number or a D-entry in a LaTeX comment.
 
-## Status (2026-11-10)
+## Status (2026-11-18)
 
-- **Drafted:** the abstract and every section (D150, D166, D178, D179), except the appendices (the pre-registration
-  ledger and reproducibility), which are still stubs.
-- **References:** each checked against its arXiv / Crossref / venue record in `REFERENCES_CHECK.md` (D179). Add a
-  reference only after checking it there.
+- **Drafted:** every section and the appendices (D150, D166, D178, D179, D185). D185 applied the round-7 review:
+  σ\* is the benchmark's reference uncertainty under the specified measurement model (a Monte Carlo estimate); strict
+  propriety is claimed only for the unclipped CRPS; Figure 1 sits in the Introduction in a stacked page-width layout;
+  Table 3 separates answer-generation tokens from X4's verification overhead.
+- **Appendices:** A, reproducibility (the repository and pinned commit, the frozen sets' checksums, the hypothesis
+  ledger from `docs/hypothesis_ledger.yaml`); B, the bf16 LoRA-merge pitfall; C, the decision timeline.
+- **The release pin:** `RELEASE.yaml` names the commit the paper's sources were committed in; it is filled in by the
+  commit after that one, which changes only `RELEASE.yaml` and the rebuilt PDF.
+- **References:** each checked against its arXiv / Crossref / OpenReview / venue record in `REFERENCES_CHECK.md`
+  (D179, D185). Add a reference only after checking it there.

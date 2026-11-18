@@ -14,7 +14,7 @@ from physcal.config import REPO_ROOT
 PAPER = REPO_ROOT / "paper"
 GEN = PAPER / "generated"
 DRAFTED = ("abstract", "introduction", "related", "setup", "methods", "protocol", "results", "discussion",
-           "acknowledgments")  # every section but the appendices
+           "acknowledgments", "appendix")  # every section (the appendices since D185)
 
 
 def _strip_comments(tex: str) -> str:

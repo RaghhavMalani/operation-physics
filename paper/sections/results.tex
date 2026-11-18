@@ -4,30 +4,22 @@
 \section{Optimization: $\sigma$ rides on the answer's advantage}
 \label{sec:act1}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{generated/figures/headline.pdf}
-  % scripts/figures/headline.py via scripts/paper/figures.py; sources in paper/generated/SOURCES.md
-  % (fig_headline); FINDINGS #18 (A), #19, #21, #22, #26, #37 (B), #32, #35, #36 (C).
-  \caption{The three findings.
-  (A) Uniform versus split credit: $1\sigma$ coverage per seed.
-  (B) Within-problem pairwise accuracy of every correctness readout measured, against self-consistency.
-  (C) On the frozen set, the noise-allocation slope against the expected-score difference from RSS.
-  Every point is read from a committed result file; the sidecar \texttt{headline\_data.json} traces each one.}
-  \label{fig:headline}
-\end{figure}
 
 % FINDINGS #6 (the collapse in training), #16 (the collapse on the evaluation set, as trained;
 % results/corrected/side_by_side.json); D67 (corrected evals); D69 (the post-hoc scale refit on 4-bit completions;
-% results/posthoc_calibration_4bit/posthoc_fit.json); D71 / FINDINGS #18 (the uniform seeds at the matched step).
+% results/posthoc_calibration_4bit/posthoc_fit.json); D71 / FINDINGS #18 (the uniform seeds at the matched step);
+% D185 (R7-2: #6's audit re-run from the committed tape, configs/paper.yaml, instead of an appeal to propriety).
 \paragraph{The failure.}
 This section and the next use the frozen noise-free evaluation set of \pv{ra.evaln} problems, with every adapter evaluated as
 trained (Section~\ref{sec:methods}).
-With sequence-level credit, the tokens of $\sigma$ share the answer's advantage, and the proper scoring rule did not
-keep the stated $\sigma$ honest.
+With sequence-level credit, the tokens of $\sigma$ share the answer's advantage, and a reward built on a proper scoring
+rule did not keep the stated $\sigma$ honest.
 Trained beyond the matched step to step \pv{ra.collapse.step}, the uniform-credit policy states $\sigma = 0$ on
 \pv{ra.collapse.zero} of the evaluation answers, and its $1\sigma$ coverage falls to \pv{ra.collapse.cov}.
-The score does not favour this, since it is proper; the collapse is a property of the optimization.
+The reward does not favour this.
+On the zero-width answers of training steps \pv{audit.steps} (\pv{audit.n} answers), a width of \pv{audit.width} of
+the answer, with the answer fixed, raises the mean score from \pv{audit.zero} to \pv{audit.alt}, so the collapse ran
+against the reward's gradient in $\sigma$.
 At the matched step (\pv{grpo.step}) it is partial: across the three uniform-credit seeds, $\sigma = 0$ on
 \pv{ra.zero.uniform} of answers and the median relative $\sigma$ is \pv{ra.sigma.uniform}.
 The warm-up model's own $\sigma$ is as narrow: a single scale factor fitted on the calibration split multiplies it by
@@ -120,7 +112,7 @@ initialized copy of the architecture, reading the same tokens, reaches \pv{rb.ac
 The difference, \pv{rb.diff.probe.random}, does not exclude zero, so the probe does not show that the model represents
 its own error; nor is it distinguishable from length (\pv{rb.diff.length.probe}).
 
-% D89, D91 (X4), FINDINGS #21; results/x4/results.json.
+% D89, D91 (X4), FINDINGS #21; results/x4/results.json; D185 (R7-5: the overhead apart from the answer).
 \paragraph{Self-verification.}
 Asked to check its own answer, the model writes a verdict on \pv{rb.xfour.verdict} of answers, and the verdict is
 ``yes'' on \pv{rb.xfour.yes.correct} of the correct answers and \pv{rb.xfour.yes.incorrect} of the incorrect ones.
@@ -128,7 +120,8 @@ Its renormalized probability of ``yes'' is slightly higher on the incorrect answ
 against \pv{rb.xfour.pyes.correct}).
 Within problems it reaches \pv{rb.acc.xfoursft}, which is not Holm-supported (one-sided $p = \pv{rb.xfour.p}$ against
 a threshold of \pv{rb.xfour.threshold}).
-The check is short (a median of \pv{rb.xfour.tokens} generated tokens) and behaves like a test of whether the final
+The check is short (a median of \pv{rb.xfour.tokens} generated tokens; with its prompt it adds a mean of
+\pv{rb.xfour.extra} tokens per checked answer beyond the answer, Table~\ref{tab:cost}) and behaves like a test of whether the final
 line matches the steps: multiplying the final value by \pv{rb.xfour.factor} lowers $P(\text{yes})$ on right and wrong
 answers alike, and the ranking does not move (\pv{rb.xfour.perturbed}).
 Across problems it is anti-informative, with an AUROC of \pv{rb.xfour.auroc} for correctness.
@@ -140,7 +133,7 @@ Scoring each answer by the share of the problem's other samples that agree with 
 strong within-problem signal: \pv{rb.acc.selfconsistency}, \pv{rb.diff.sc.probe} above the probe; E1d's difference
 from it is \pv{rb.diff.eoned.sc}.
 It needs the other samples.
-At \pv{rb.tokens.k} generated tokens per problem against \pv{rb.tokens.one} for one answer, it costs \pv{rb.cost.ratio}
+At \pv{rb.tokens.k} answer-generation tokens per problem against \pv{rb.tokens.one} for one answer, it costs \pv{rb.cost.ratio}
 times the tokens (\pv{rb.seconds.k} against \pv{rb.seconds.one} GPU-seconds per problem; Table~\ref{tab:cost}), and the
 cost grows linearly with $k$.
 The same trade-off appears on A6c for MC-A's spread over re-asked, perturbed copies (Section~\ref{sec:act3}): at
@@ -310,13 +303,14 @@ The claim is therefore narrow: propagation through Jacobians outside the trainin
 New formulas, compositions and physics were not tested.
 
 % R5-5, D137 (the go rule), D139, D146 (the NO-GO accepted as pre-registered; item 1, the descriptive A6b slope);
-% FINDINGS #38; results/stage_xm/pilot/results.json, results/stage_xm/go_dpos2/go.json; Table llama.
+% FINDINGS #38; results/stage_xm/pilot/results.json, results/stage_xm/go_dpos2/go.json; Table llama; D185 (R7-7).
 \paragraph{A second model family: an exploratory pilot that returned NO-GO.}
 We repeated both recipes on \pv{model.llama} with one seed, on the frozen A6c and A6b sets, with R4-3's criterion as a
 pre-registered go rule for running more seeds (Table~\ref{tab:llama}).
 K1 and C2 replicate: D-pos-v2's A6c slope is \pv{rd.xm.slope} on \pv{rd.xm.pairs} pairs.
 C3 cannot be measured, since only \pv{rd.xm.cthree.pairs} A6b pairs are computation-correct, so the go rule returned
 \pv{rd.xm.go} and no further seeds were run.
+The sensitivity criterion passed, but the pilot did not establish invariance.
 We report this as a replication that failed at one seed, for that reason, with the same prominence a success would
 have had.
 Descriptively, outside the go rule, the A6b slope on all \pv{rd.xm.desc.pairs} answered pairs is \pv{rd.xm.desc}:

@@ -19,7 +19,8 @@ Intervals that models construct around their own numerical estimates cover the t
 nominal level~\citep{epstein2025fermieval}, including in quantitative forecasting~\citep{qin2026quantsight}.
 These works evaluate pooled calibration against outcomes; because the right uncertainty of each question is unknown,
 they cannot test whether a stated interval tracks it.
-Our generator knows each problem's $\sigstar$, so we can ask that per problem, and our pair sets ask whether $\sigma$
+Our generator defines a reference $\sigstar$ for each problem under its measurement model, so we can ask that per
+problem, and our pair sets ask whether $\sigma$
 moves when only the source of noise moves.
 
 % D179 (damani2026rlcr, baniharouni2026doubt, wang2026pitfalls, park2026dar; checked); CLAUDE.md prior work (CRPS
@@ -36,7 +37,7 @@ $\sigma$ collapsing towards zero (Section~\ref{sec:act1}).
 For LLM regression, DAR scores the empirical distribution of several sampled predictions and credits each prediction
 by its leave-one-out contribution~\citep{park2026dar}.
 A CRPS-type reward is therefore not our contribution: in DAR the uncertainty is the spread of rollouts, whereas we
-train a single stated $\sigma$ and score it against a known $\sigstar$.
+train a single stated $\sigma$ and score it against a per-problem reference $\sigstar$.
 
 % D179 (wang2023selfconsistency, huang2024selfcorrect, gao2023pal, chen2023pot; checked); FINDINGS #21, #22, #33, #37.
 \paragraph{Sampling, self-verification and executable computation.}
@@ -50,10 +51,12 @@ Our MC-B applies that idea to uncertainty: the model writes the problem's progra
 inputs.
 These works limit MC-B's novelty, and MC-B failed (Section~\ref{sec:act3}).
 
-% D179 (jcgm101, gneiting2007strictly; checked); D15, D29 (the scoring rule); D51 (sigma* by Monte Carlo).
+% D179 (jcgm101, gneiting2007strictly; checked); D15, D29 (the scoring rule); D51 (sigma* by Monte Carlo); D185
+% (R7-2: strict propriety only for the unclipped CRPS).
 \paragraph{Uncertainty propagation and proper scoring.}
 Our $\sigstar$ follows the metrological practice of propagating distributions through a measurement model by Monte
 Carlo~\citep{jcgm101}, and the root-sum-square heuristic is the first-order rule for a product of first powers.
-Our reward and evaluation score, the CRPS in log space, is strictly proper for log-normal beliefs in the sense of
-Gneiting and Raftery~\citep{gneiting2007strictly}, so an honest $\sigma$ is optimal in expectation; whether optimization finds it
-is the question of Section~\ref{sec:act1}.
+The unclipped CRPS in log space is strictly proper for log-normal beliefs in the sense of Gneiting and
+Raftery~\citep{gneiting2007strictly}, so under it an honest $\sigma$ is optimal in expectation.
+Our implemented reward clips that score from below, floors its scale and adds step credit
+(Section~\ref{sec:verifier}); whether optimization finds an honest $\sigma$ is the question of Section~\ref{sec:act1}.

@@ -12,7 +12,7 @@ snapshot and trained with LoRA adapters~\citep{hu2022lora} of rank \pv{lora.r} (
 \pv{lora.modules} attention and MLP projections, using Unsloth~\citep{unsloth} and TRL~\citep{vonwerra2020trl}.
 Adapters are evaluated as trained: unmerged, on the same quantized base.
 An early evaluation path merged reinforcement-learning adapters into a bf16 copy of the model, which erased most of
-the update; those results are superseded and kept only as labelled records.
+the update; those results are superseded and kept only as labelled records (Appendix~\ref{app:bf16}).
 % D137 (the cross-model pilot).
 A cross-model pilot repeats the D-pos-v2 and B-v2 recipes of Section~\ref{sec:dpos} on
 \pv{model.llama}~\citep{grattafiori2024llama3}.
@@ -28,7 +28,7 @@ The $\sigma$ in these targets is a fixed \pv{sft.sigmarel} of the value, and its
 the warm-up teaches the format and the computation but never a particular uncertainty.
 It runs for \pv{sft.minutes} minutes at learning rate \pv{sft.lr}.
 
-\subsection{Reinforcement learning with a proper scoring rule}
+\subsection{Reinforcement learning with a scoring-rule reward}
 \label{sec:grpo}
 
 % D34, D36 (the GRPO design); configs/grpo_split_credit.yaml (identical to grpo_overnight2.yaml except split credit,

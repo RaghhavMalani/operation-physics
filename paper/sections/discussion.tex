@@ -4,7 +4,7 @@
 \label{sec:discussion}
 
 % R5-1 (the central tension), D118 sec. 12, FINDINGS #32 (vol beta per seed, K6, K7), #35 (the tail), #36 (the
-% fallback: post-hoc exploratory).
+% fallback: post-hoc exploratory); D185 (R7-1).
 \paragraph{Structure is not forecast quality.}
 The propagation result and the score result describe the same model.
 Problem by problem, D-pos-v2's $\sigma$ follows $\sigstar$ closely (the slope of $\ln\sigma$ on $\ln\sigstar$ is
@@ -16,7 +16,7 @@ of the regret.
 A $\sigma$ that is right on most problems and badly wrong on a few can lose to one that is moderately wrong everywhere.
 The RSS fallback shows the trade directly: it buys the score, closing \pv{rc.fb.gap} of the gap to $\sigstar$, by
 giving up most of the measured propagation (slope \pv{rc.fb.slope.v}).
-Evaluations of stated uncertainty should therefore report a structural test (does $\sigma$ move with the true
+Evaluations of stated uncertainty should therefore report a structural test (does $\sigma$ move with the reference
 uncertainty?) and a forecast score (does $\sigma$ beat simple references?) side by side; either alone would have told
 a different story here.
 
@@ -46,9 +46,9 @@ inferable only from a fuller text than the terse format provides.
 The exploratory comparison in Section~\ref{sec:limitations} is compatible with some of these explanations and settles
 none of them.
 
-% FINDINGS #6, #16, #18 (credit assignment), #25 (E1d: exploratory, frozen-answer setting, R5-7).
+% FINDINGS #6, #16, #18 (credit assignment), #25 (E1d: exploratory, frozen-answer setting, R5-7); D185 (R7-2).
 \paragraph{Credit assignment for the tokens of $\sigma$.}
-A proper scoring rule was not sufficient.
+A reward built on a proper scoring rule was not sufficient.
 With sequence-level credit the tokens of $\sigma$ were rewarded for the answer, and the policy collapsed.
 Separating their credit prevented the collapse but did not teach ranking at the learning rate tested; a larger learning
 rate with the answer held fixed taught ranking between problems, though not within them, in a single-seed pilot.
@@ -69,12 +69,13 @@ to future work.
 \label{sec:limitations}
 
 % R5-5, D137, D146 (the NO-GO; the descriptive A6b slope, D146 item 1); FINDINGS #38; CLAUDE.md hard constraints (one
-% laptop GPU).
+% laptop GPU); D185 (R7-7: the sensitivity criterion passed, invariance not established).
 \paragraph{One model family, one scale.}
 Every confirmatory result is on \pv{model.bits}-bit \pv{model.base} with LoRA adapters, trained on a single laptop
 GPU.
 The replication on \pv{model.llama} is an exploratory single-seed pilot whose pre-registered go rule returned
-\pv{rd.xm.go}: its invariance control could not be measured (\pv{rd.xm.cthree.pairs} computation-correct pairs), and
+\pv{rd.xm.go}: the sensitivity criterion passed, but the pilot did not establish invariance. Its invariance control
+could not be measured (\pv{rd.xm.cthree.pairs} computation-correct pairs), and
 its descriptive invariance slope, \pv{rd.xm.desc}, excludes zero.
 We make no cross-model claim, and none about larger models.
 
@@ -107,19 +108,25 @@ greedy prefixes.
 X1's score difference from RSS has no committed confidence interval.
 The originally pre-registered hypotheses on an RL-trained stated-$\sigma$ model with a depth and noise curriculum
 (conditional calibration against post-hoc and conformal correction, decision value, stress tests) were not run,
-because that model was never built; the pre-registration ledger lists them as not run.
+because that model was never built; the pre-registration ledger lists them as not run (Table~\ref{tab:ledger}).
 Betting and other finance metrics were cut.
 
 % R6-1 (D166): one explicitly exploratory paragraph on a comparison made after this paper's experiments were frozen
 % (D148): the follow-up track's item 3 (D157-D162; results/followup/scale/results.json). The 7B numbers are reserved
-% for a separate paper.
+% for a separate paper. D185 (R7-6): the checkpoint named precisely, the random-weights number given, the
+% training-and-format confound stated; Gekhman et al. and Orgad et al. checked in paper/REFERENCES_CHECK.md.
 \paragraph{A post-freeze, exploratory comparison.}
-After this paper's experiments were frozen, we read the same kind of cross-fitted hidden-state probe on the untrained
-\pv{model.base}, answering in its own chain-of-thought format.
+After this paper's experiments were frozen, we read the same kind of cross-fitted hidden-state probe on the original
+instruction-tuned \pv{model.base} checkpoint before task-specific SFT, answering in its own chain-of-thought format.
 Within problems it discriminated more strongly there than on the fine-tuned model (\pv{post.probe.native} against
-\pv{post.probe.sft}), but the same probe on a random-weights copy of the architecture, reading the same text, largely
-matched it (\pv{post.probe.random}).
-Between it and the untrained \pv{post.model.large}, the model's own verbalized verdict discriminated better at the
-larger size, while we observed no improvement in this probe metric between the two sizes under these conditions.
-The conditions are not matched (response format, training, decoding, sampler and problems all differ), so this is not
-evidence about what fine-tuning does to the model; it motivates a separate investigation.
+\pv{post.probe.sft}); the same probe on a random-weights copy of the architecture, reading the same text, reached
+\pv{post.probe.random}.
+Between it and the corresponding instruction-tuned \pv{post.model.large}, also without task-specific SFT, the model's
+own verbalized verdict discriminated better at the larger size, while we observed no improvement in this probe metric
+between the two sizes under these conditions.
+The comparison of the original checkpoint with the fine-tuned one still mixes training with response format, and the
+decoding, sampler and problems differ as well, so this is not evidence about what fine-tuning does to the model; it
+motivates a separate investigation.
+Prior work finds that internal states can encode more about the truthfulness of an output~\citep{orgad2025know}, and
+more factual knowledge~\citep{gekhman2025insideout}, than a model's outputs express; our results do not test whether
+this holds for the fine-tuned checkpoint in its terse format.

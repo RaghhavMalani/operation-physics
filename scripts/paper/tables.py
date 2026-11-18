@@ -262,19 +262,29 @@ SC_LABELS = {"self_consistency": "self-consistency (agreement of the other sampl
 def cost(S: Sources) -> None:
     A = "tab_cost"
     c = S.json(A, "results/r5_diag/cost.json")
+    x4 = S.json(A, "results/x4/results.json")["tokens"]["sft"]  # D91: tokens per checked answer beyond the answer
     x2 = c["x2"]
     pp = x2["per_problem"]
     rows = []
     for k, label in SC_LABELS.items():
         m = x2["methods"][k]
         tok = integer(round(pp["tokens_k"])) if k == "self_consistency" else integer(round(pp["tokens_one"]))
-        rows.append(f"{label} & {num(m['pairwise_accuracy'], 3)} {ci(*m['ci95'], sign=False)} & {tok}")
+        extra = "--"
+        if k == "x4_sft":  # R7-5 (D185): the verification overhead, shown apart from the answer's own tokens
+            extra = (f"{integer(round(x4['total_extra']['mean']))} ({integer(round(x4['generated']['mean']))} generated "
+                     f"+ {integer(sum(x4['overhead'].values()))} prompt)")
+        rows.append(f"{label} & {num(m['pairwise_accuracy'], 3)} {ci(*m['ci95'], sign=False)} & {tok} & {extra}")
     note = (f"Within-problem pairwise accuracy (a right answer ranked above a wrong one to the same problem; "
-            f"{integer(x2['methods']['self_consistency']['n_problems'])} problems, 95\\% CIs clustered over problems) "
-            f"against generated tokens per problem (k = {integer(x2['k'])} samples for self-consistency). "
-            "Source: results/r5\\_diag/cost.json (FINDINGS \\#22, \\#37).")
-    _write(S, A, "cost", _table("Correctness signals against their inference cost.", "tab:cost", "@{}L{6.4cm} l r@{}",
-                             "readout & pairwise accuracy [95\\% CI] & tokens / problem", rows, note))
+            f"{integer(x2['methods']['self_consistency']['n_problems'])} problems, 95\\% CIs clustered over problems). "
+            "Answer-generation tokens: mean generated tokens of the answers a readout needs, one answer or, for "
+            f"self-consistency, k = {integer(x2['k'])} answers per problem. Extra tokens: mean tokens per checked answer "
+            "beyond the answer itself; for X4, its verification prompt plus the generated verdict (D91). The probes and "
+            "length read the answer already generated. "
+            "Sources: results/r5\\_diag/cost.json, results/x4/results.json (FINDINGS \\#21, \\#22, \\#37).")
+    _write(S, A, "cost", _table("Correctness signals against their inference cost.", "tab:cost",
+                                "@{}L{4.4cm} l L{2.0cm} L{3.0cm}@{}",
+                                "readout & pairwise accuracy [95\\% CI] & answer-generation tokens & extra tokens",
+                                rows, note))
     rows = []
     ma = c["mc_a"]["a6c_pairs"]
     for name, v in (("$\\sigma^\\star$", ma["comparators_auroc"]["sigma_star"]), ("RSS", ma["comparators_auroc"]["rss"]),
@@ -292,7 +302,101 @@ def cost(S: Sources) -> None:
                                  "@{}l r r@{}", "signal & AUROC & extra tokens / problem", rows, note))
 
 
+# ------------------------------------------------------------------------------------------- appendices (D185)
+def _greek(s: str) -> str:
+    """Ledger prose is plain ASCII: sigma*, sigma and P_J become math."""
+    s = re.sub(r"\b([A-Z]+\d)-([A-Z]+\d)\b", "\\1\x04\\2", s)  # ranges: P1-P3 -> P1--P3
+    s = s.replace("1-sigma", "\x05")
+    s = tex_escape(s.replace("PREREGISTRATION.md", "pre-registration").replace("sigma*", "\x01").replace("sigma", "\x02").replace("P_J", "\x03"))
+    return (s.replace("\x01", r"$\sigma^\star$").replace("\x02", r"$\sigma$").replace("\x03", r"P$_J$")
+            .replace("\x04", "--").replace("\x05", r"$1\sigma$"))
+
+
+def _longtable(spec: str, caption: str, label: str, head: str, rows: list[str], note: str, width: str) -> str:
+    ncol = head.count("&") + 1
+    body = ["\\begingroup\\footnotesize", f"\\begin{{longtable}}{{{spec}}}",
+            f"\\caption{{{caption}}}\\label{{{label}}} \\\\",
+            "\\toprule", head + " \\\\", "\\midrule", "\\endfirsthead", "\\toprule", head + " \\\\", "\\midrule", "\\endhead",
+            "\\midrule", f"\\multicolumn{{{ncol}}}{{@{{}}p{{{width}}}@{{}}}}{{{note}}} \\\\", "\\endlastfoot"]
+    return "\n".join(body + [r + " \\\\" for r in rows] + ["\\end{longtable}", "\\endgroup", ""])
+
+
+def ledger(S: Sources) -> None:
+    """Appendix A: every pre-registered hypothesis with its verdict (docs/hypothesis_ledger.yaml; R7-3)."""
+    A = "tab_ledger"
+    L = S.yaml(A, "docs/hypothesis_ledger.yaml")
+    rows = [" & ".join(_greek(str(r[k])) for k in ("tests", "entry", "question", "label", "verdict", "findings"))
+            for r in L["rows"]]
+    note = ("Every pre-registered hypothesis or test family, in the order of the pre-registration and the decision log, "
+            "with its verdict as the cited FINDINGS entry states it. Supported or rejected: the registered one-sided "
+            "test passed (Holm-adjusted where the family is); not rejected: it did not, which is not evidence of "
+            "equivalence. Source: docs/hypothesis\\_ledger.yaml.")
+    _write(S, A, "ledger", _longtable("@{}L{1.7cm} L{1.8cm} L{3.7cm} L{1.9cm} L{3.7cm} L{1.2cm}@{}",
+                                      "The pre-registration ledger.", "tab:ledger",
+                                      "tests & entry & question & label & verdict & finding", rows, note, "15.4cm"))
+
+
+FROZEN = [  # (set, manifest, split key or None, what it is for)
+    ("in-distribution, noise-free", "data/eval_sets/1.1.0+c735a0d4/manifest.json", "id", "Results I"),
+    ("depth 5, noise-free", "data/eval_sets/1.1.0+c735a0d4/manifest.json", "depth_extrapolation", "Results I"),
+    ("X2 candidates", "data/eval_sets/1.1.0+c735a0d4/x2_candidates_manifest.json", None, "Results II"),
+    ("R4-5 A6", "data/eval_sets/2.0.0+bdbb2279/confirmatory/a6_pairs_manifest.json", None, "Results III"),
+    ("R4-5 A6b", "data/eval_sets/2.0.0+bdbb2279/confirmatory/a6b_pairs_manifest.json", None, "Results III"),
+    ("R4-5 A6c", "data/eval_sets/2.0.0+bdbb2279/confirmatory/a6c_pairs_manifest.json", None, "Results III"),
+    ("J sensitivity", "data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6c_pairs_manifest.json", None, "Generalization"),
+    ("J invariance", "data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6b_pairs_manifest.json", None, "Generalization"),
+]
+
+
+def frozen_sets(S: Sources) -> None:
+    """Appendix A: the frozen evaluation sets, their manifests and SHA-256 checksums (R7-3)."""
+    A = "tab_frozen"
+    rows = []
+    for name, rel, split, used in FROZEN:
+        m = S.json(A, rel)
+        d = m["splits"][split] if split else m
+        n = d.get("n_problems", d.get("n"))
+        sha = d["sha256"]
+        rows.append(f"{tex_escape(name)} & {tex_escape(m['generator_version'])} & {integer(n)} & {used} & "
+                    f"\\texttt{{{sha[:16]}\\ldots{{}}}} \\\\ \\multicolumn{{5}}{{@{{}}l@{{}}}}{{\\quad\\scriptsize\\path{{{rel}}}}}")
+    note = ("Each set is regenerated from its seeds and compared with its file before any generation; the loader "
+            "refuses the confirmatory sets without an explicit flag (D113). The first 16 hexadecimal digits of each "
+            "file's SHA-256 are shown; the full digest is in the manifest named under it.")
+    _write(S, A, "frozen", _table("The frozen evaluation sets.", "tab:frozen", "@{}l l r l l@{}",
+                                  "set & generator & problems & used in & SHA-256", rows, note, size="\\footnotesize"))
+
+
+def timeline(S: Sources) -> None:
+    """Appendix C: every row of the decision timeline (docs/decision_timeline.md; R5-8, R7-3)."""
+    A = "tab_timeline"
+    tl = S.text(A, "docs/decision_timeline.md")
+    clean = lambda s: re.sub(r"\\([*_#])", r"\1", re.sub(r"\[(#\d+)\]\[f\d+\]", r"\1", s)).replace("**", "\x00")
+    bold = lambda x: re.sub("\x00(.+?)\x00", r"\\textbf{\1}", x).replace("\x00", "")
+    rows = []
+    for line in tl.splitlines():
+        if not line.startswith("| 10-"):
+            continue
+        date, entry, what, kind, analysis, _ = [c.strip() for c in line.strip("|").split("|")]
+        commit = re.search(r"`([0-9a-f]{7})`", entry)
+        entry = re.sub(r"\s*\(.*?\)", "", clean(entry))
+        what = clean(what)
+        if len(what) > 170:
+            what = what[:167].rsplit(" ", 1)[0] + " …"
+        entry = entry.replace("PREREGISTRATION.md", "pre-registration")
+        cells = [tex_escape(entry) + (f" \\texttt{{{commit.group(1)}}}" if commit else ""), tex_escape(date),
+                 bold(tex_escape(what)), bold(tex_escape(clean(kind))), bold(tex_escape(clean(analysis)))]
+        rows.append(" & ".join(cells))
+    note = ("Every pre-registration and amendment in date order (IST, 2026), with its first commit, what it fixed, its "
+            "timing relative to the data it governs, and the analysis label. Confirmatory: committed before its data "
+            "and run as registered; pilot: the same at one seed; exploratory: post hoc, descriptive or diagnostic. "
+            "Results before the pre-registration (FINDINGS \\#1--\\#6) are exploratory. Source: "
+            "docs/decision\\_timeline.md.")
+    _write(S, A, "timeline", _longtable("@{}L{1.8cm} l L{5.0cm} L{3.1cm} L{3.1cm}@{}", "The decision timeline.",
+                                        "tab:timeline", "entry & date & what it fixed & kind & analysis", rows, note,
+                                        "15.4cm"))
+
+
 def build(S: Sources) -> list[str]:
-    for f in (pair_sets, deviations, confirmatory, j_results, llama, tail, cost):
+    for f in (pair_sets, deviations, confirmatory, j_results, llama, tail, cost, ledger, frozen_sets, timeline):
         f(S)
     return sorted(p.stem for p in (OUT / "tables").glob("*.tex"))

@@ -2,7 +2,7 @@
 \section{Setup}
 \label{sec:setup}
 
-\subsection{A generator of physics problems with known uncertainty}
+\subsection{A generator of physics problems with a reference uncertainty}
 \label{sec:generator}
 
 % Spec (CLAUDE.md, component 1); physcal/env/graph.py; D51 (generator 2.0.0); configs/env_v2.yaml.
@@ -34,7 +34,7 @@ Chains whose output amplifies relative errors in a given by more than a factor o
 The ground truth is computed in SI units with dimension checks at every step, then converted to the requested unit.
 Every problem is reproducible from its generator version and seed.
 
-\subsection{Measurement noise and the true uncertainty $\sigstar$}
+\subsection{Measurement noise and the reference uncertainty $\sigstar$}
 \label{sec:sigstar}
 
 % D51 (noise mode: 5 s.f. so that rounding is negligible against the noise, FINDINGS #8; a problem without noise
@@ -51,8 +51,9 @@ The pair sets of Section~\ref{sec:pairs} use the levels \pv{gen.levels}, and the
 Section~\ref{sec:dpos} draws a level for each given independently from \pv{gen.mixedlevels}, where a level of zero
 means an exact given.
 
-% D50/A2 (sigma* definition), D51 (stored per problem; n_mc draws); JCGM 101 (propagation of distributions).
-Because the generator knows the measurement model, it knows each problem's correct uncertainty.
+% D50/A2 (sigma* definition), D51 (stored per problem; n_mc draws); JCGM 101 (propagation of distributions); D185
+% (R7-1: the operational definition, used throughout).
+Because the generator specifies the measurement model, it can compute a reference uncertainty for each problem.
 Given the displayed values, the clean value of each noisy given is drawn as $x = x_{\text{meas}}/(1+e')$,
 $e' \sim \mathcal{N}(0, s^2)$, with exact givens and constants held fixed; \pv{gen.nmc} such draws are pushed through
 the chain, as in Monte Carlo propagation of distributions~\citep{jcgm101}.
@@ -66,6 +67,10 @@ the expected CRPS against these draws:
 where $f$ is the chain and $f(x_{\text{meas}})$ is what a correct solver computes from the displayed values.
 % D50/A2: also stored, the SD of the log draws and the delta-method value (used to build the pair sets).
 The standard deviation of the log draws and the first-order (delta-method) value are stored as well.
+Throughout the paper, $\sigstar$ means this quantity: the benchmark's reference uncertainty under the specified
+measurement model.
+It is a Monte Carlo estimate from \pv{gen.nmc} draws, and its input distribution is the one written above, not a
+posterior under a prior on the true values, so it is not an exact posterior uncertainty.
 
 % D50/A3 (gate), D57 (miss-count rule; FINAL run), FINDINGS #12 (passed), #9 and #11 (the two failed runs);
 % results/sigma_star_gate_final/gate.json.
@@ -98,7 +103,8 @@ A completion that does not parse, or whose unit has the wrong dimension, scores 
 (\pv{ver.floor}); an answer in another unit of the right dimension is converted.
 
 % D15 (the spec's relative CRPS is only approximately proper), D29 (crps_log is the default), D38 (its sigma floor);
-% configs/reward.yaml; Gneiting & Raftery (2007); closed form of the Gaussian CRPS: Gneiting et al. (2005).
+% configs/reward.yaml; Gneiting & Raftery (2007); closed form of the Gaussian CRPS: Gneiting et al. (2005); D185
+% (R7-2: propriety only for the unclipped CRPS).
 The scoring rule, $\crpslog$, scores the log of the truth $y$ against $\mathcal{N}(\ln\mu, (\sigma/\mu)^2)$:
 \begin{equation}
   \crpslog(\mu,\sigma; y) = -\,s\left[z\left(2\Phi(z)-1\right) + 2\varphi(z) - \tfrac{1}{\sqrt{\pi}}\right],\qquad
@@ -106,16 +112,22 @@ The scoring rule, $\crpslog$, scores the log of the truth $y$ against $\mathcal{
   \label{eq:crpslog}
 \end{equation}
 the Gaussian CRPS in closed form~\citep{gneiting2005emos}, clipped below at the floor.
-It is strictly proper for log-normal beliefs~\citep{gneiting2007strictly} and scale-free.
+Unclipped and without a floor on its scale, this CRPS is strictly proper for log-normal
+beliefs~\citep{gneiting2007strictly} and scale-free.
+The implemented reward is not that score: it is clipped below, its scale is floored at $\epsilon$, and during
+reinforcement learning it adds step credit, so we claim strict propriety only for the unclipped CRPS.
 % D15: dividing by the truth reweights outcomes by 1/|y|; the optimal mu shifts and the optimal sigma inflates.
 The relative CRPS of the original specification divides by the truth, which reweights outcomes and makes it only
 approximately proper; it remains an ablation option.
 % D37, D38: a floor of 0.1% made the reward flat in sigma for an overconfident policy; verifier 1.1.0 floors at 1e-6.
 The floor $\epsilon$ is \pv{ver.sigmafloor} (verifier \pv{ver.version}): an earlier, larger floor made the reward
 flat in $\sigma$ exactly where an overconfident policy needed a gradient.
-% configs/reward.yaml weights and steps; D14 (step credit can never outweigh the final answer).
+% configs/reward.yaml weights and steps; D14 (the load-time check: w_steps < w_final * (ceiling - floor)); D185 (R7-2:
+% the claim narrowed to that guarantee).
 During reinforcement learning the reward adds \pv{ver.stepweight} times the share of requested intermediates within
-\pv{ver.steptol} of their values; this weight is checked to be too small to ever outweigh the final score.
+\pv{ver.steptol} of their values.
+The configuration is checked at load time against one guarantee: a perfect answer with no step credit beats a failed
+answer with full step credit, since the step weight is below the score's range (\pv{ver.span}).
 An answer is \emph{accurate} if it is within \pv{ver.binary} of the truth.
 
 % D50/A1 (computation-correct subset); configs/pairs.yaml analysis.tau.
@@ -126,10 +138,10 @@ Comparisons of a stated $\sigma$ with $\sigstar$ that require a correct answer u
 \subsection{The oracle-centred expected score}
 \label{sec:expected}
 
-% FINDINGS #24 (stage A), D100; results/stage_a/results.json; results/r5_diag/tail.json (the gap).
+% FINDINGS #24 (stage A), D100; results/stage_a/results.json; results/r5_diag/tail.json (the gap); D185 (R7-1).
 A single realized truth says little about whether a stated $\sigma$ is right: a $\sigma$ that is \pv{sa.scale}
 times too small scores better than $\sigstar$ against the realized truth on \pv{sa.halfwins} of problems.
-Because the generator knows the predictive distribution, we also score a stated relative $\sigma$ by its
+Because the generator specifies the predictive distribution, we also score a stated relative $\sigma$ by its
 \emph{expected} $\crpslog$ over \pv{sa.draws} fresh predictive draws, centred at $f(x_{\text{meas}})$.
 Per-problem differences between sources then have \pv{sa.varratio.min}--\pv{sa.varratio.max} times less variance than
 the realized ones.
