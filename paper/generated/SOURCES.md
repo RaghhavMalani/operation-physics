@@ -1,6 +1,6 @@
 # Sources of the paper's generated values, tables and figures
 
-Built from commit `b0ea53dc7856` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
+Built from commit `92c2f92b0486` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
 
 ## fig_headline
 
@@ -17,7 +17,7 @@ Built from commit `b0ea53dc7856` by `scripts/paper/build.py`; every source is tr
 
 ## macros
 
-- `DECISIONS.md` @ `2dbe6ae0df22`
+- `DECISIONS.md` @ `661cc62325a3`
 - `FINDINGS.md` @ `d3660390b89c`
 - `configs/base_4bit.yaml` @ `3d9d1725e751`
 - `configs/base_llama32_3b_4bit.yaml` @ `584299a76a2e`
@@ -29,7 +29,7 @@ Built from commit `b0ea53dc7856` by `scripts/paper/build.py`; every source is tr
 - `configs/mc_a.yaml` @ `45c25056e018`
 - `configs/mc_b.yaml` @ `5d7b9a81130f`
 - `configs/pairs.yaml` @ `d305fb030896`
-- `configs/paper.yaml` @ `98e95843f6ef`
+- `configs/paper.yaml` @ `1b53531b66a9`
 - `configs/reward.yaml` @ `a5df0440dca2`
 - `configs/sft.yaml` @ `bb6d883bb58d`
 - `configs/sft_r4.yaml` @ `065e0c38b078`
@@ -69,7 +69,9 @@ Built from commit `b0ea53dc7856` by `scripts/paper/build.py`; every source is tr
 - `results/stage_b/results.json` @ `00758962d5bf`
 - `results/stage_r4/confirmatory/results.json` @ `dc002a81d4ba`
 - `results/stage_r4/confirmatory/stage_b_dpos2/results.json` @ `95a86e29ad9b`
+- `results/stage_r4/dpos2/seed0/confirmatory/rollouts.jsonl.gz` @ `b4263901ba4e`
 - `results/stage_r4/dpos2/seed0/summary.json` @ `dcf5e628d3e5`
+- `results/stage_xm/dpos2/seed0/confirmatory/rollouts.jsonl.gz` @ `80104da0cc05`
 - `results/stage_xm/go_dpos2/go.json` @ `2dda03c154a5`
 - `results/stage_xm/pilot/results.json` @ `ff891cafc25d`
 - `results/train/overnight2-grpo-qwen2.5-math-1.5b-instruct-sft-crps_log-v1.1.0-512/rollouts.jsonl.gz` @ `3812d17d3998`
@@ -90,7 +92,13 @@ Built from commit `b0ea53dc7856` by `scripts/paper/build.py`; every source is tr
 
 ## tab_deviations
 
-- `docs/decision_timeline.md` @ `5f80e454add5`
+- `docs/decision_timeline.md` @ `8180e2e3c3ca`
+
+## tab_example
+
+- `configs/pairs.yaml` @ `d305fb030896`
+- `configs/paper.yaml` @ `1b53531b66a9`
+- `results/stage_r4/dpos2/seed0/confirmatory/rollouts.jsonl.gz` @ `b4263901ba4e`
 
 ## tab_frozen
 
@@ -133,7 +141,7 @@ Built from commit `b0ea53dc7856` by `scripts/paper/build.py`; every source is tr
 
 ## tab_timeline
 
-- `docs/decision_timeline.md` @ `5f80e454add5`
+- `docs/decision_timeline.md` @ `8180e2e3c3ca`
 
 ## table:confirmatory
 
@@ -151,7 +159,13 @@ Built from commit `b0ea53dc7856` by `scripts/paper/build.py`; every source is tr
 
 ## table:deviations
 
-- `docs/decision_timeline.md` @ `5f80e454add5`
+- `docs/decision_timeline.md` @ `8180e2e3c3ca`
+
+## table:example
+
+- `configs/pairs.yaml` @ `d305fb030896`
+- `configs/paper.yaml` @ `1b53531b66a9`
+- `results/stage_r4/dpos2/seed0/confirmatory/rollouts.jsonl.gz` @ `b4263901ba4e`
 
 ## table:frozen
 
@@ -202,4 +216,4 @@ Built from commit `b0ea53dc7856` by `scripts/paper/build.py`; every source is tr
 
 ## table:timeline
 
-- `docs/decision_timeline.md` @ `5f80e454add5`
+- `docs/decision_timeline.md` @ `8180e2e3c3ca`

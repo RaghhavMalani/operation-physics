@@ -613,6 +613,35 @@ def _round7(S: Sources, add) -> None:
     add("bf.ratio", integer(round(math.exp(rp["paired_greedy"]["median_ln_sigma_ratio_4bit_over_bf16"]))),
         f"{rel} paired_greedy.median_ln_sigma_ratio_4bit_over_bf16 (exp)")
     add("bf.identical", pct(rp["paired_greedy"]["identical_completion"]), f"{rel} paired_greedy.identical_completion")
+    # ---- G7-6: what dropping the worst problems does to each source (results/r5_diag/tail.json trimmed; #35)
+    rel = "results/r5_diag/tail.json"
+    tr = S.json(A_, rel)["trimmed"]
+    for k, name in (("dpos2_a", "dpos"), ("rss", "rss"), ("x1", "xone")):
+        add(f"rc.trim.{name}", num(tr[k]["trimmed"] - tr[k]["full"], 4, True), f"{rel} trimmed.{k}: trimmed - full")
+    # ---- G7-8: Llama's computation-correct rate and how far its misses lie (descriptive, post hoc; D185)
+    rel = "results/stage_xm/pilot/results.json"
+    pl = S.json(A_, rel)["models"]
+    add("rd.xm.cc", pct(pl["llama"]["arms"]["dpos2"]["format_arithmetic"]["all"]["computation_correct"]),
+        f"{rel} llama dpos2 format_arithmetic.all.computation_correct")
+    add("rd.xm.cc.qwen", pct(pl["qwen_seed0"]["arms"]["dpos2"]["format_arithmetic"]["all"]["computation_correct"]),
+        f"{rel} qwen_seed0 dpos2 format_arithmetic.all.computation_correct")
+    la = S.yaml(A_, "configs/paper.yaml")["llama_error_audit"]
+    add("rd.xm.farlog", _lv(la["far_log"]), "configs/paper.yaml llama_error_audit.far_log")
+    for name, tape in la["tapes"].items():
+        errs = []
+        with gzip.open(S.path(A_, tape), "rt") as fh:
+            for line in fh:
+                r = json.loads(line)
+                b = r["breakdown"] if isinstance(r["breakdown"], dict) else ast.literal_eval(r["breakdown"])
+                if b["reason"] != "ok" or not b.get("mu_si"):
+                    continue
+                pr = r["problem"] if isinstance(r["problem"], dict) else ast.literal_eval(r["problem"])
+                ref = pr["noise"]["point_estimate_si"]
+                errs.append(abs(math.log(b["mu_si"] / ref)) if b["mu_si"] > 0 else math.inf)
+        errs.sort()
+        src = f"{tape}: |ln mu - ln f(x_meas)| over answered completions (configs/paper.yaml; D185)"
+        add(f"rd.err.{name}.far", pct(sum(e > la["far_log"] for e in errs) / len(errs), 0), src + ": share above far_log")
+        add(f"rd.err.{name}.median", pct(errs[len(errs) // 2], 1), src + ": median")
     # ---- the release pin (paper/RELEASE.yaml)
     rel = S.yaml(A_, "paper/RELEASE.yaml")
     repo = rel["repository"].rstrip("/")

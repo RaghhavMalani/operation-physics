@@ -7,11 +7,12 @@ from __future__ import annotations
 
 import re
 
-from paperlib import OUT, Sources, ascii_only, ci, est_ci, integer, num, pct, pval, tex_escape
+from paperlib import OUT, UNICODE, Sources, ascii_only, ci, est_ci, integer, num, pct, pval, tex_escape
 
 SCRIPT = "scripts/paper/tables.py"
 CONF = "results/stage_r4/confirmatory/results.json"
 J = "results/r5_6/results.json"
+MINUS = "\\nobreak\\enspace\\textminus\\nobreak\\enspace "  # a text minus with tied spaces in comparison labels (G7-1, D185)
 
 
 def _write(S: Sources, artifact: str, name: str, body: str) -> None:
@@ -84,9 +85,7 @@ def deviations(S: Sources) -> None:
         clean = lambda s: re.sub(r"\\([*_#])", r"\1", re.sub(r"\[(#\d+)\]\[f\d+\]", r"\1",
                                                                re.sub(r"`[0-9a-f]{7}`", "", s)).replace("**", "\x00"))
         entry = re.sub(r"\s*\(.*?\)", "", clean(entry))
-        what = clean(what)
-        if len(what) > 150:
-            what = what[:147].rsplit(" ", 1)[0] + " …"
+        what = clean(what)  # never cut (G7-4, D185)
         bold = lambda t: re.sub("\x00(.+?)\x00", r"\\textbf{\1}", t).replace("\x00", "")  # a cut-off marker
         rows.append(f"{tex_escape(entry)} & {tex_escape(date)} & {bold(tex_escape(what))} & {bold(tex_escape(clean(kind)))}")
     note = ("Every amendment and deviation in the decision timeline (dates IST, 2026), with when it was made relative "
@@ -104,8 +103,8 @@ def deviations(S: Sources) -> None:
 # ------------------------------------------------------------------------------------------- R4-3 confirmatory (#32)
 K_NAMES = {"K1": "D-pos-v2 (a): A6c slope $>0$ (primary)", "K2": "D-pos-v2 (b) line's $X$: A6c slope $>0$",
            "K3": "D-pos-v2 (c) exact from terms: A6c slope $>0$", "K4": "B-v2: A6c slope $>0$",
-           "K5": "D-pos-v2 $-$ B-v2 (expected crps\\_log)", "K6": "D-pos-v2 $-$ RSS", "K7": "D-pos-v2 $-$ X1",
-           "K8": "B-v2 $-$ RSS"}
+           "K5": f"D-pos-v2{MINUS}B-v2 (expected crps\\_log)", "K6": f"D-pos-v2{MINUS}RSS", "K7": f"D-pos-v2{MINUS}X1",
+           "K8": f"B-v2{MINUS}RSS"}
 
 
 def confirmatory(S: Sources) -> None:
@@ -136,9 +135,9 @@ def confirmatory(S: Sources) -> None:
 
 
 # ------------------------------------------------------------------------------------------- R5-6 part J (#39)
-J_NAMES = {"J1": "D-pos-v2 (a): J-sensitivity slope $>0$ (primary)", "J2": "explicit $-$ implicit slope",
-           "J3": "D-pos-v2 $-$ RSS (expected crps\\_log)", "J4": "D-pos-v2 $-$ X1", "J5": "B-v2 $-$ RSS",
-           "J6": "B-v2 $-$ X1"}
+J_NAMES = {"J1": "D-pos-v2 (a): J-sensitivity slope $>0$ (primary)", "J2": f"explicit{MINUS}implicit slope",
+           "J3": f"D-pos-v2{MINUS}RSS (expected crps\\_log)", "J4": f"D-pos-v2{MINUS}X1", "J5": f"B-v2{MINUS}RSS",
+           "J6": f"B-v2{MINUS}X1"}
 
 
 def j_results(S: Sources) -> None:
@@ -205,7 +204,7 @@ def llama(S: Sources) -> None:
     b = ll["arms"]["b2"]["sources"]["a"]
     rows.append(f"desc. & B-v2 (a): A6c slope & {num(b['a6c_slope'], 3, True)} {ci(*b['a6c_ci90'])} & ")
     dd = ll["differences"]["dpos2_minus_b2"]
-    rows.append(f"desc. & D-pos-v2 $-$ B-v2 (expected crps\\_log) & {num(dd['value'], 4, True)} {ci(*dd['ci90'], nd=4)} & ")
+    rows.append(f"desc. & D-pos-v2{MINUS}B-v2 (expected crps\\_log) & {num(dd['value'], 4, True)} {ci(*dd['ci90'], nd=4)} & ")
     for arm, label in (("dpos2", "D-pos-v2"), ("b2", "B-v2")):
         fa = ll["arms"][arm]["format_arithmetic"]["all"]
         rows.append(f"format & {label}: parsed / units / computation-correct & {pct(fa['parsed'])} / "
@@ -249,7 +248,7 @@ def tail(S: Sources) -> None:
             f"RSS-to-$\\sigma^\\star$ gap {num(gap, 5)} (expected crps\\_log). "
             "Source: results/r5\\_diag/tail.json (FINDINGS \\#35).")
     _write(S, A, "swaps", _table("Component swaps: which part of the explicit $\\sigma$ costs the score.", "tab:swaps",
-                              "@{}L{6.2cm} l r r@{}", "$\\sigma$ with & $-$ RSS [90\\% CI] & gap closed & A6c slope",
+                              "@{}L{5.0cm} L{4.7cm} r r@{}", "$\\sigma$ with & $\\Delta$ expected crps\\_log vs RSS [90\\% CI] & gap closed & A6c slope",
                               rows, note))
 
 
@@ -379,9 +378,7 @@ def timeline(S: Sources) -> None:
         date, entry, what, kind, analysis, _ = [c.strip() for c in line.strip("|").split("|")]
         commit = re.search(r"`([0-9a-f]{7})`", entry)
         entry = re.sub(r"\s*\(.*?\)", "", clean(entry))
-        what = clean(what)
-        if len(what) > 170:
-            what = what[:167].rsplit(" ", 1)[0] + " …"
+        what = clean(what)  # never cut (G7-4, D185)
         entry = entry.replace("PREREGISTRATION.md", "pre-registration")
         cells = [tex_escape(entry) + (f" \\texttt{{{commit.group(1)}}}" if commit else ""), tex_escape(date),
                  bold(tex_escape(what)), bold(tex_escape(clean(kind))), bold(tex_escape(clean(analysis)))]
@@ -396,7 +393,85 @@ def timeline(S: Sources) -> None:
                                         "15.4cm"))
 
 
+TT = {"\\": r"\textbackslash{}", "{": r"\{", "}": r"\}", "$": r"\$", "&": r"\&", "#": r"\#", "^": r"\^{}", "_": r"\_",
+      "%": r"\%", "~": r"\~{}", "<": r"\textless{}", ">": r"\textgreater{}", **UNICODE}
+
+
+def _tt(s: str) -> str:
+    """A completion line, verbatim in typewriter type (no math substitutions for * or ^)."""
+    return "".join(TT.get(c, c) for c in s)
+
+
+def worked_example(S: Sources) -> None:
+    """G7-11 (D185): one frozen A6c pair and D-pos-v2's completion, chosen by configs/paper.yaml's rule."""
+    import ast
+    import gzip
+    import json
+    import math
+    from collections import defaultdict
+
+    A = "tab_example"
+    cfg = S.yaml(A, "configs/paper.yaml")["worked_example"]
+    tau = S.yaml(A, "configs/pairs.yaml")["analysis"]["tau"]
+    pairs = defaultdict(dict)
+    with gzip.open(S.path(A, cfg["tape"]), "rt") as fh:
+        for line in fh:
+            r = json.loads(line)
+            pr = r["problem"] if isinstance(r["problem"], dict) else ast.literal_eval(r["problem"])
+            pa = pr["noise"]["pair"]
+            if pa.get("kind") != cfg["kind"] or pr["depth"] != cfg["depth"] or pa["construction"]["levels"] != cfg["levels"]:
+                continue
+            b = r["breakdown"] if isinstance(r["breakdown"], dict) else ast.literal_eval(r["breakdown"])
+            pairs[pa["pair_seed"]][pa["member"]] = (r, pr, b)
+    ok = lambda m: m[2]["reason"] == "ok" and (m[2].get("mu_si") or 0) > 0 and \
+        abs(math.log(m[2]["mu_si"] / m[1]["noise"]["point_estimate_si"])) <= tau
+    cands = sorted((len(m["lo"][0]["completion"]) + len(m["hi"][0]["completion"]), seed)
+                   for seed, m in pairs.items() if set(m) == {"lo", "hi"} and ok(m["lo"]) and ok(m["hi"]))
+    if cfg["pick"] != "shortest" or not cands:
+        raise ValueError("worked_example: no pair matches the rule")
+    seed = cands[0][1]
+    m = pairs[seed]
+    para = lambda pr, i: [x for x in pr["text"].split("\n\n") if x.strip()][i]
+    hi_given = lambda pr: max(pr["noise"]["givens"], key=lambda g: pr["noise"]["givens"][g]["rel"])
+    r_lo, p_lo, b_lo = m["lo"]
+    r_hi, p_hi, b_hi = m["hi"]
+    rows = []
+    for k, (r, pr, b) in enumerate((m["lo"], m["hi"]), 1):
+        rows.append(f"{k} & \\texttt{{{_tt(hi_given(pr))}}} & {num(pr['noise']['sigma_star_log'], 3)} & "
+                    f"{num(b['sigma_si'] / b['mu_si'], 3)} \\\\")
+    # the caption's claim, checked: apart from the propagation line and the answer, the two completions are identical
+    strip = lambda c: [ln for ln in c.splitlines() if not ln.startswith(("sigma_rel", "<answer>"))]
+    if strip(r_lo["completion"]) != strip(r_hi["completion"]):
+        raise ValueError("worked_example: the two completions differ outside the propagation line and the answer")
+    comp = "\\\\\n".join(_tt(ln) if ln.strip() else "\\mbox{}" for ln in r_hi["completion"].splitlines())
+    body = [
+        "\\begin{figure}[tp]", "\\small",
+        "\\fbox{\\begin{minipage}{\\dimexpr\\linewidth-2\\fboxsep-2\\fboxrule\\relax}",
+        f"\\textbf{{The pair}} (frozen A6c set, {tex_escape(p_lo['family'])}, depth {integer(p_lo['depth'])}, pair seed "
+        f"\\texttt{{{seed}}}). The two members share the scenario, every displayed value and the question; only which "
+        f"given carries {pct(cfg['levels'][1], 0)} changes (every other given carries {pct(cfg['levels'][0], 0)}).\\par\\smallskip",
+        f"\\emph{{Member 1:}} {tex_escape(para(p_lo, 1))}\\par\\smallskip",
+        f"\\emph{{Member 2:}} {tex_escape(para(p_hi, 1))}\\par\\smallskip",
+        f"\\emph{{Question (both):}} {tex_escape(para(p_hi, -1))}\\par\\medskip",
+        "\\textbf{D-pos-v2's completion for member 2} (seed 0, greedy, verbatim):\\par\\smallskip",
+        "{\\ttfamily\\footnotesize\\raggedright " + comp + "\\par}\\medskip",
+        "\\centering\\begin{tabular}{@{}c l r r@{}}", "\\toprule",
+        "member & given at the higher level & $\\sigma^\\star$ (log scale) & stated relative $\\sigma$ \\\\", "\\midrule",
+        *rows, "\\bottomrule", "\\end{tabular}",
+        "\\end{minipage}}",
+        "\\caption{A worked example: one A6c pair and D-pos-v2's answer. D-pos-v2's two completions are identical except "
+        "for the propagation line and the answer: the derivation and the sensitivities $S_i$ are the same, only the level "
+        "each $S_i$ is multiplied by moves, and the stated $\\sigma$ moves with $\\sigma^\\star$. Chosen by a fixed rule (configs/paper.yaml): the depth-" + integer(cfg["depth"]) +
+        " pair with levels " + ", ".join(pct(x, 0) for x in cfg["levels"]) + " whose two completions are both "
+        "computation-correct and shortest in total. It is illustrative, not typical: most answers are not "
+        "computation-correct (Section~\\ref{sec:act3}). The trailing confidence tag is part of the R4 output format "
+        "(D83) and is not used here. Source: " + tex_escape(cfg["tape"]) + ".}",
+        "\\label{fig:example}", "\\end{figure}", ""]
+    _write(S, A, "example", "\n".join(body))
+
+
 def build(S: Sources) -> list[str]:
-    for f in (pair_sets, deviations, confirmatory, j_results, llama, tail, cost, ledger, frozen_sets, timeline):
+    for f in (pair_sets, deviations, confirmatory, j_results, llama, tail, cost, ledger, frozen_sets, timeline,
+              worked_example):
         f(S)
     return sorted(p.stem for p in (OUT / "tables").glob("*.tex"))

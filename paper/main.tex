@@ -5,6 +5,7 @@
 \documentclass[11pt]{article}
 \usepackage{iftex}
 \ifPDFTeX
+  \input{glyphtounicode}\pdfgentounicode=1  % searchable, copyable minus signs and math (G7-1, D185)
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
 \fi
@@ -36,6 +37,7 @@
 \newcommand{\sigstar}{\sigma^{\star}}
 \newcommand{\crpslog}{\mathrm{crps}_{\log}}
 \newcommand{\todo}[1]{\textcolor{gray}{\emph{[#1]}}}
+\makeatletter\setlength{\@fptop}{0pt}\makeatother  % float pages start at the top (G7-10, D185)
 
 \title{When Language Models Quote Uncertainty:\\Separating Reasoning Errors from Measurement Noise}
 \author{Raghhav Malani\\PES University, Bengaluru}

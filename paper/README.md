@@ -28,7 +28,8 @@ them. For an arXiv upload, keep the `.bbl` (`tectonic --keep-intermediates main.
 
 ## Status (2026-11-18)
 
-- **Drafted:** every section and the appendices (D150, D166, D178, D179, D185). D185 applied the round-7 review:
+- **Drafted:** every section and the appendices (D150, D166, D178, D179, D185). D185 applied both round-7 reviews
+  (ChatGPT, Gemini), with a worked example (Figure 2) generated from the frozen confirmatory logs:
   σ\* is the benchmark's reference uncertainty under the specified measurement model (a Monte Carlo estimate); strict
   propriety is claimed only for the unclipped CRPS; Figure 1 sits in the Introduction in a stacked page-width layout;
   Table 3 separates answer-generation tokens from X4's verification overhead.

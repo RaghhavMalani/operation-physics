@@ -88,20 +88,27 @@ They reuse \pv{rfour.n} training problems with mixed noise: each given's level i
 \pv{gen.mixedlevels}, and \pv{rfour.mixing} problems mix two or more noisy levels.
 Both arms see the same problems.
 
-% D113 sec. 1 (the explicit arm's format and masks); sft_r4.yaml arms.
+% D113 sec. 1 (the explicit arm's format and masks); sft_r4.yaml arms; D185 (G7-3: S_i and Equation 4 written so that
+% they read and extract cleanly; G7-9: why SFT only, FINDINGS #28, #30, D148; G7-11: the worked example).
 \paragraph{D-pos-v2 (explicit).}
 After the solution, the target completion writes one line per noisy given $x_i$:
-the given's total log-sensitivity $S_i = \partial\ln f/\partial\ln x_i$ as a symbolic expression derived by the chain
-rule over the steps, the same expression with the solution's values substituted, and its value to
+the given's total log-sensitivity, $S_i = \partial \ln f \,/\, \partial \ln x_i$, as a symbolic expression derived by
+the chain rule over the steps, the same expression with the solution's values substituted, and its value to
 \pv{rfour.sfmt} significant figures.
 A power-law term is stated as its exponent.
-A propagation line then combines the terms with the stated levels $s_i$,
+A propagation line then multiplies each sensitivity $S_i$ by its given's stated level $s_i$ and takes the root sum of
+squares of the products:
 \begin{equation}
-  \sigma_{\text{rel}} = \sqrt{\textstyle\sum_i (S_i\, s_i)^2} = X,
+  \sigma_{\text{rel}} = \Bigl(\sum_i S_i^2\, s_i^2\Bigr)^{1/2} = X .
   \label{eq:line}
 \end{equation}
-and the answer states $\sigma = X\,|\mu|$.
+The answer then states $\sigma = X\,|\mu|$.
 Every token is trained, including the sensitivities, the line and $\sigma$.
+D-pos-v2 is trained by supervised fine-tuning only: with the derivations written into its targets, fine-tuning alone
+produced propagation (Section~\ref{sec:act3}), whereas the reinforcement-learning route tried for propagation, $\sigma$-only
+RL with the predictive reward (stage C), learned to copy the smallest stated percentage, and no RL stage followed
+D-pos-v2 before the experiments were frozen.
+Figure~\ref{fig:example} shows one A6c pair and D-pos-v2's completion for it.
 % D113 sec. 3 (the three sigma values; (c_S) descriptive).
 We read three values of $\sigma$ from each D-pos-v2 completion:
 (a) the answer's relative $\sigma$;
@@ -122,6 +129,8 @@ Each arm trains a fresh adapter on the pinned base for \pv{rfour.epochs} epochs 
 learning rate \pv{rfour.lr} and effective batch \pv{rfour.batch}, with \pv{rfour.seeds} seeds per arm.
 The seed changes the adapter's initialization and the data order, not the data.
 Evaluation is greedy, with up to \pv{rfour.tokens} new tokens, enough for the longest derivations.
+
+\input{generated/tables/example}
 
 \subsection{Reference uncertainties}
 \label{sec:comparators}

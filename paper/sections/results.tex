@@ -225,7 +225,8 @@ pairs; Theil--Sen gives \pv{rc.dfive.dev.ts} and \pv{rc.dfive.frozen.ts}.
 A few high-leverage reversed pairs decide the OLS slope, so we claim neither that the model propagates nor that it
 fails to propagate at a single depth.
 
-% R5-2 (a descriptive autopsy), D133; FINDINGS #35; results/r5_diag/tail.json; Table tail.
+% R5-2 (a descriptive autopsy), D133; FINDINGS #35; results/r5_diag/tail.json; Table tail; D185 (G7-6: tail.json
+% trimmed, the change in each source's mean; D135, #36 for the fallback).
 \paragraph{Where the loss is: the tail.}
 The regret against $\sigstar$ is concentrated: the worst \pv{rc.tail.worst} of problems hold \pv{rc.tail.share} of
 each seed's expected-score regret (Table~\ref{tab:tail}).
@@ -236,8 +237,14 @@ Decimal shifts in copying $X$ into the answer (\pv{rc.tail.copy}) and the wrong 
 The substitution errors tie the two error streams together: one wrong intermediate corrupts both $\mu$ and its
 sensitivity.
 Dropping that worst \pv{rc.tail.worst} does not change the order of X1, D-pos-v2 and RSS.
+Those problems are hard for every source: dropping them raises the mean expected score of D-pos-v2 by \pv{rc.trim.dpos},
+of RSS by \pv{rc.trim.rss} and of X1 by \pv{rc.trim.xone}, almost the same amount, so the order
+holds.
+The RSS fallback below acts differently: it replaces D-pos-v2's $\sigma$ only on the problems where it disagrees most
+with RSS, which removes D-pos-v2's own excess loss and leaves the other sources unchanged, and that reverses the order.
 
-% R5-3 (a diagnostic, never a method), D133; FINDINGS #35; results/r5_diag/tail.json; Table swaps.
+% R5-3 (a diagnostic, never a method), D133; FINDINGS #35; results/r5_diag/tail.json; Table swaps; D185 (G7-7: #35's
+% account of why exact aggregation scores worse).
 \paragraph{Component swaps.}
 Replacing one component of D-pos-v2's $\sigma$ at a time with its exact value shows which one costs the score
 (Table~\ref{tab:swaps}).
@@ -246,6 +253,9 @@ With exact sensitivities, and the model's own levels, aggregation and copy, the 
 slope rises to \pv{rc.swap.s.slope}.
 Exact levels (\pv{rc.swap.levels.gap} of the gap), exact aggregation (\pv{rc.swap.aggregation.gap}) or an exact copy
 (\pv{rc.swap.copy.gap}) close little or none of it.
+Exact aggregation scores worse than the stated $\sigma$ because on a few lines with a wrong sensitivity the model's own
+arithmetic damps the absurd root sum of squares back to a plausible size, whereas exact arithmetic carries the absurd
+value into $\sigma$.
 This counterfactual locates the loss; it is not a method, since no model here computes exact sensitivities.
 The swaps' slopes use every pair, with an unanswered member at the floor, so D-pos-v2's own row reads
 \pv{rc.swap.stated.slope} rather than K1's estimate on answered pairs.
@@ -303,13 +313,19 @@ The claim is therefore narrow: propagation through Jacobians outside the trainin
 New formulas, compositions and physics were not tested.
 
 % R5-5, D137 (the go rule), D139, D146 (the NO-GO accepted as pre-registered; item 1, the descriptive A6b slope);
-% FINDINGS #38; results/stage_xm/pilot/results.json, results/stage_xm/go_dpos2/go.json; Table llama; D185 (R7-7).
+% FINDINGS #38; results/stage_xm/pilot/results.json, results/stage_xm/go_dpos2/go.json; Table llama; D185 (R7-7;
+% G7-8: the distance of the misses from f(x_meas), descriptive and post hoc, configs/paper.yaml llama_error_audit).
 \paragraph{A second model family: an exploratory pilot that returned NO-GO.}
 We repeated both recipes on \pv{model.llama} with one seed, on the frozen A6c and A6b sets, with R4-3's criterion as a
 pre-registered go rule for running more seeds (Table~\ref{tab:llama}).
 K1 and C2 replicate: D-pos-v2's A6c slope is \pv{rd.xm.slope} on \pv{rd.xm.pairs} pairs.
 C3 cannot be measured, since only \pv{rd.xm.cthree.pairs} A6b pairs are computation-correct, so the go rule returned
 \pv{rd.xm.go} and no further seeds were run.
+The model's computation-correct rate is \pv{rd.xm.cc} (\pv{model.base}'s single seed: \pv{rd.xm.cc.qwen}).
+The misses are not rounding: in a descriptive check on the same logs, \pv{rd.err.llama.far} of its answers lie more
+than \pv{rd.xm.farlog} from what the displayed values give (median distance \pv{rd.err.llama.median}; for
+\pv{model.base}, \pv{rd.err.qwen.far} and \pv{rd.err.qwen.median}), far beyond what rounding five-figure givens could
+produce, so the data point to arithmetic and chain errors.
 The sensitivity criterion passed, but the pilot did not establish invariance.
 We report this as a replication that failed at one seed, for that reason, with the same prominence a success would
 have had.
