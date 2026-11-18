@@ -5783,3 +5783,7 @@ Same entry, same rules (D150: generated values only; fixes at the generator, nev
   depth 2, levels 1% and 5%, both members computation-correct, the shortest pair of completions. The candidates were
   looked at while the rule was written, so the example is illustrative, not a sample; the caption states the rule and
   that a computation-correct pair is not typical.
+
+**After both reviews (your instruction, 2026-11-18).**
+- **FINDINGS #6** gets a dated correction note on its audit (window 401–520, σ = 1% of the model's own answer), pointing here; its original text is not rewritten.
+- **Appendix A** says the adapter weights are available from the author on request (the repository holds their configurations and fingerprints only).
