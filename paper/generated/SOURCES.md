@@ -1,6 +1,6 @@
 # Sources of the paper's generated values, tables and figures
 
-Built from commit `55cc91462746` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
+Built from commit `3df52a0f676d` by `scripts/paper/build.py`; every source is tracked by git and had no uncommitted change. Blob hashes identify the exact file version.
 
 ## fig_headline
 
@@ -17,8 +17,8 @@ Built from commit `55cc91462746` by `scripts/paper/build.py`; every source is tr
 
 ## macros
 
-- `DECISIONS.md` @ `661cc62325a3`
-- `FINDINGS.md` @ `d3660390b89c`
+- `DECISIONS.md` @ `5631d62ec592`
+- `FINDINGS.md` @ `a1fb202ce06b`
 - `configs/base_4bit.yaml` @ `3d9d1725e751`
 - `configs/base_llama32_3b_4bit.yaml` @ `584299a76a2e`
 - `configs/env_v2.yaml` @ `547e903d8e18`

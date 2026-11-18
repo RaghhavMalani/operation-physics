@@ -25,17 +25,18 @@ paper.
 The repository's tests check that the committed values and tables equal a fresh build.
 
 % CLAUDE.md component 6 (tape and replay); D72, D77 (R2-1: the training-time fingerprint and the reload check); D78
-% (pinned bases); .gitignore (adapter weights are local only).
+% (pinned bases); .gitignore (adapter weights are local only); D185 (your instruction: weights on request).
 \paragraph{Logs and checkpoints.}
 The completion logs of the reported training runs and evaluations are in the repository.
 Each line holds the problem's seed and generator version, the completion, the verifier's breakdown and the run's
 provenance, and replaying a log regenerates each problem from its seed and re-scores the completion exactly.
 The result files that the tables and the figure read sit beside their logs.
 The base models are public checkpoints, loaded from pinned snapshots (\pv{model.base} and \pv{model.llama}).
-The trained LoRA adapters are not distributed with this version: the repository holds each adapter's configuration
-and the fingerprint recorded at the end of its training, not its weights.
-Re-running a model's evaluation therefore means retraining the adapter from its configuration and seed, and GPU
-training is not bit-for-bit deterministic, so a retrained adapter can differ from the one evaluated here.
+The repository holds each trained LoRA adapter's configuration and the fingerprint recorded at the end of its
+training, but not its weights; the adapter weights are available from the author on request, and the fingerprint
+lets a reader check that a received adapter is the one evaluated here.
+Retraining an adapter from its configuration and seed is also possible, but GPU training is not bit-for-bit
+deterministic, so a retrained adapter can differ from the evaluated one.
 
 % D113 sec. 8 (manifests, FROZEN.md, the loader guard); D67 and D74 (the noise-free sets and X2's candidates); D147
 % (the J set); generated table tab:frozen.

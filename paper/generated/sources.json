@@ -13,8 +13,8 @@
    "scripts/figures/headline.py": "68ba5429a2c7"
   },
   "macros": {
-   "DECISIONS.md": "661cc62325a3",
-   "FINDINGS.md": "d3660390b89c",
+   "DECISIONS.md": "5631d62ec592",
+   "FINDINGS.md": "a1fb202ce06b",
    "configs/base_4bit.yaml": "3d9d1725e751",
    "configs/base_llama32_3b_4bit.yaml": "584299a76a2e",
    "configs/env_v2.yaml": "547e903d8e18",
@@ -190,7 +190,7 @@
    "docs/decision_timeline.md": "8180e2e3c3ca"
   }
  },
- "commit": "55cc9146274665ed4a0a9c527fb1feef4bbf9fde",
+ "commit": "3df52a0f676ddd5f0c55b1bd22208429f53516be",
  "figures": [
   "headline.png",
   "headline.pdf",
