@@ -5779,6 +5779,7 @@ Same entry, same rules (D150: generated values only; fixes at the generator, nev
   freeze, D148).
 - **G7-10, Figure 1:** float pages are set top-aligned, so the figure sits at the top of page 3.
 - **G7-11, a worked example:** a generated box (`scripts/paper/tables.py`, from the committed confirmatory tape) with
-  one frozen A6c pair and D-pos-v2's seed-0 completion. The pair is chosen by a rule fixed in `configs/paper.yaml`
-  before it is drawn: depth 2, levels 1% and 5%, both members computation-correct, the shortest pair of completions.
-  The caption states the rule, so the example is not presented as typical.
+  one frozen A6c pair and D-pos-v2's seed-0 completion. The pair is chosen by a rule stated in `configs/paper.yaml`:
+  depth 2, levels 1% and 5%, both members computation-correct, the shortest pair of completions. The candidates were
+  looked at while the rule was written, so the example is illustrative, not a sample; the caption states the rule and
+  that a computation-correct pair is not typical.
