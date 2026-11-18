@@ -35,6 +35,6 @@ them. For an arXiv upload, keep the `.bbl` (`tectonic --keep-intermediates main.
 - **Appendices:** A, reproducibility (the repository and pinned commit, the frozen sets' checksums, the hypothesis
   ledger from `docs/hypothesis_ledger.yaml`); B, the bf16 LoRA-merge pitfall; C, the decision timeline.
 - **The release pin:** `RELEASE.yaml` names the commit the paper's sources were committed in; it is filled in by the
-  commit after that one, which changes only `RELEASE.yaml` and the rebuilt PDF.
+  commit after that one, which changes only `RELEASE.yaml` and what is rebuilt from it (the generated values and the PDF).
 - **References:** each checked against its arXiv / Crossref / OpenReview / venue record in `REFERENCES_CHECK.md`
   (D179, D185). Add a reference only after checking it there.

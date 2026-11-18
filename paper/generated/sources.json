@@ -38,7 +38,7 @@
    "data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6b_pairs_manifest.json": "33486465e0b3",
    "data/eval_sets/2.0.0+bdbb2279/confirmatory/r5_6/a6c_pairs_manifest.json": "3e36aa054364",
    "data/jacobian_support/r4_1.json": "68c4584bf672",
-   "paper/RELEASE.yaml": "98aa57108ebb",
+   "paper/RELEASE.yaml": "4ee9882dbfc7",
    "physcal/env/formulas/dynamics.py": "1df5803da9d5",
    "physcal/env/formulas/energy.py": "352ee72aefc0",
    "physcal/env/formulas/kinematics.py": "73721bf1f2b0",
@@ -178,7 +178,7 @@
    "docs/decision_timeline.md": "5f80e454add5"
   }
  },
- "commit": "0a1c43039970a56a218af333374a39e2ab78f87c",
+ "commit": "b0ea53dc78565dfcff91cac25eb4febf71f7460f",
  "figures": [
   "headline.png",
   "headline.pdf",
