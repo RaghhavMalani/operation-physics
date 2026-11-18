@@ -2,4 +2,4 @@
 # file records that commit in a follow-up commit that changes only this file and the rebuilt PDF.
 # scripts/paper/macros.py reads it (rel.repo, rel.commit).
 repository: https://github.com/RaghhavMalani/operation-physics
-commit: null
+commit: 1919304260761a7fe907f344aff7c44bfcb3d97b
